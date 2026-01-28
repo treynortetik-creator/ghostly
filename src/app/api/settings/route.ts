@@ -2,8 +2,9 @@
  * The Counting House - Settings API
  *
  * Endpoints:
- * GET /api/settings - Get current settings
- * PUT /api/settings - Update settings
+ * GET /api/settings - Get current settings (including custom AI prompts)
+ * PUT /api/settings - Update settings (including custom AI prompts)
+ * DELETE /api/settings?prompt_key=... - Delete a custom AI prompt (reset to default)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -15,6 +16,19 @@ interface AppSettings {
   fiscal_year_id: string;
   openrouter_model: string;
   [key: string]: string; // Index signature for Json compatibility
+}
+
+// Valid prompt keys stored in app_settings
+const PROMPT_KEYS = ['prompt_csv_categorization', 'prompt_pdf_extraction'] as const;
+type PromptKey = typeof PROMPT_KEYS[number];
+
+interface PromptValue {
+  prompt: string;
+}
+
+interface PromptsResponse {
+  csv_categorization: string | null;
+  pdf_extraction: string | null;
 }
 
 // ============================================
@@ -42,6 +56,10 @@ export async function GET() {
             openrouter_model: 'anthropic/claude-3-haiku',
           },
           fiscal_year: null,
+          prompts: {
+            csv_categorization: null,
+            pdf_extraction: null,
+          },
         });
       }
       throw settingsError;
@@ -60,9 +78,13 @@ export async function GET() {
       fiscalYear = fyData;
     }
 
+    // Fetch custom AI prompts
+    const prompts = await fetchPrompts(supabase);
+
     return NextResponse.json({
       settings,
       fiscal_year: fiscalYear,
+      prompts,
     });
   } catch (error) {
     console.error('Settings API error:', error);
@@ -140,6 +162,43 @@ export async function PUT(request: NextRequest) {
       throw updateError;
     }
 
+    // Handle prompt upserts/deletes if provided
+    if (body.prompts) {
+      const promptMap: Record<string, PromptKey> = {
+        csv_categorization: 'prompt_csv_categorization',
+        pdf_extraction: 'prompt_pdf_extraction',
+      };
+
+      for (const [shortKey, dbKey] of Object.entries(promptMap)) {
+        if (!(shortKey in body.prompts)) continue;
+
+        const value = body.prompts[shortKey];
+
+        if (value && typeof value === 'string' && value.trim().length > 0) {
+          // Upsert the prompt
+          const { error: promptError } = await supabase
+            .from('app_settings')
+            .upsert({
+              key: dbKey,
+              value: { prompt: value.trim() } as unknown as Json,
+              updated_at: new Date().toISOString(),
+            }, {
+              onConflict: 'key',
+            });
+
+          if (promptError) {
+            console.error(`Prompt upsert error for ${dbKey}:`, promptError);
+          }
+        } else {
+          // Delete the prompt row (reset to default)
+          await supabase
+            .from('app_settings')
+            .delete()
+            .eq('key', dbKey);
+        }
+      }
+    }
+
     // Fetch the fiscal year details if we have one
     let fiscalYear = null;
     if (updatedSettings.fiscal_year_id) {
@@ -151,9 +210,13 @@ export async function PUT(request: NextRequest) {
       fiscalYear = fyData;
     }
 
+    // Fetch updated prompts
+    const prompts = await fetchPrompts(supabase);
+
     return NextResponse.json({
       settings: updatedSettings,
       fiscal_year: fiscalYear,
+      prompts,
       message: 'Settings updated successfully',
     });
   } catch (error) {
@@ -163,4 +226,73 @@ export async function PUT(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// ============================================
+// DELETE /api/settings?prompt_key=...
+// ============================================
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const promptKey = searchParams.get('prompt_key');
+
+    if (!promptKey || !PROMPT_KEYS.includes(promptKey as PromptKey)) {
+      return NextResponse.json(
+        { error: `Invalid prompt_key. Must be one of: ${PROMPT_KEYS.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    const supabase = await createClient();
+
+    const { error } = await supabase
+      .from('app_settings')
+      .delete()
+      .eq('key', promptKey);
+
+    if (error) {
+      console.error('Prompt delete error:', error);
+      throw error;
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Delete prompt error:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete prompt' },
+      { status: 500 }
+    );
+  }
+}
+
+// ============================================
+// Helper: Fetch custom AI prompts
+// ============================================
+
+async function fetchPrompts(supabase: Awaited<ReturnType<typeof createClient>>): Promise<PromptsResponse> {
+  const { data: promptRows } = await supabase
+    .from('app_settings')
+    .select('key, value')
+    .in('key', [...PROMPT_KEYS]);
+
+  const prompts: PromptsResponse = {
+    csv_categorization: null,
+    pdf_extraction: null,
+  };
+
+  if (promptRows) {
+    for (const row of promptRows) {
+      const val = row.value as unknown as PromptValue | null;
+      const promptText = val?.prompt || null;
+
+      if (row.key === 'prompt_csv_categorization') {
+        prompts.csv_categorization = promptText;
+      } else if (row.key === 'prompt_pdf_extraction') {
+        prompts.pdf_extraction = promptText;
+      }
+    }
+  }
+
+  return prompts;
 }

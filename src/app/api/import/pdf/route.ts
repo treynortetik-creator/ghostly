@@ -7,6 +7,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { logError } from '@/lib/error-logger';
+import { createClient } from '@/lib/supabase/server';
+import {
+  getCustomPrompt,
+  buildPdfExtractionPrompt,
+  type AssignmentTarget,
+} from '@/lib/openrouter';
 
 // Dynamic import pdf-parse at runtime to avoid build-time issues
 // with canvas/DOMMatrix dependencies
@@ -36,6 +42,24 @@ interface ExtractedPDFData {
     amount: 'high' | 'medium' | 'low' | 'none';
     date: 'high' | 'medium' | 'low' | 'none';
   };
+}
+
+interface AiExtractionResult {
+  vendor: string;
+  amount: number;
+  date: string;
+  confidence: {
+    vendor: 'high' | 'medium' | 'low';
+    amount: 'high' | 'medium' | 'low';
+    date: 'high' | 'medium' | 'low';
+  };
+  suggestedAssignment: {
+    id: string | null;
+    type: 'event' | 'category' | null;
+    name: string | null;
+    confidence: number;
+  };
+  reasoning: string;
 }
 
 // ============================================
@@ -340,14 +364,95 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extract data
+    // Extract data (regex fallback)
     const extractedData = extractDataFromText(text);
+
+    // Try AI extraction
+    let aiExtraction: AiExtractionResult | null = null;
+
+    if (process.env.OPENROUTER_API_KEY) {
+      try {
+        const supabase = await createClient();
+
+        // Fetch events and categories for assignment context
+        const [{ data: events }, { data: categories }] = await Promise.all([
+          supabase.from('events').select('id, name, event_type, quarter').is('deleted_at', null),
+          supabase.from('budget_categories').select('id, name, description').is('deleted_at', null),
+        ]);
+
+        const targets: AssignmentTarget[] = [
+          ...(events || []).map(e => ({
+            id: e.id, name: e.name, type: 'event' as const,
+            eventType: e.event_type, quarter: e.quarter || undefined,
+          })),
+          ...(categories || []).map(c => ({
+            id: c.id, name: c.name, type: 'category' as const,
+            description: c.description || undefined,
+          })),
+        ];
+
+        // Get custom prompt if any
+        const customPrompt = await getCustomPrompt('prompt_pdf_extraction', supabase);
+        const systemPrompt = buildPdfExtractionPrompt(targets, customPrompt || undefined);
+
+        // Get the model setting
+        const { data: configRow } = await supabase
+          .from('app_settings').select('value').eq('key', 'app_config').single();
+        const model = (configRow?.value as Record<string, unknown>)?.openrouter_model as string || 'anthropic/claude-3-haiku';
+
+        // Call OpenRouter directly (chatCompletion is not exported)
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+            'X-Title': 'The Counting House',
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: `Extract data from this invoice text:\n\n${text.substring(0, 4000)}` },
+            ],
+            temperature: 0.3,
+            max_tokens: 2000,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          let content = data.choices?.[0]?.message?.content || '';
+
+          // Clean up response (remove markdown if present)
+          content = content.trim();
+          if (content.startsWith('```json')) content = content.slice(7);
+          if (content.startsWith('```')) content = content.slice(3);
+          if (content.endsWith('```')) content = content.slice(0, -3);
+          content = content.trim();
+
+          const parsed = JSON.parse(content);
+          aiExtraction = parsed as AiExtractionResult;
+        }
+      } catch (err) {
+        console.error('AI extraction failed, falling back to regex:', err);
+        // Continue with regex fallback
+      }
+    }
 
     return NextResponse.json({
       success: true,
       fileName: file.name,
       pageCount: pdfData.numpages,
-      extracted: extractedData,
+      extracted: aiExtraction ? {
+        vendor: aiExtraction.vendor,
+        amount: aiExtraction.amount,
+        date: aiExtraction.date,
+        rawText: text.substring(0, 2000),
+        confidence: aiExtraction.confidence,
+      } : extractedData,
+      suggestedAssignment: aiExtraction?.suggestedAssignment || null,
+      aiPowered: !!aiExtraction,
     });
   } catch (err) {
     console.error('PDF import error:', err);

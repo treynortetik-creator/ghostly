@@ -5,3 +5,4 @@
 
 export { FiscalYearSelector } from './FiscalYearSelector';
 export { ModelSelector } from './ModelSelector';
+export { PromptEditor } from './PromptEditor';

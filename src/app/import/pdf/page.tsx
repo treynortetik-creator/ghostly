@@ -10,6 +10,7 @@ import {
   CheckCircle,
   AlertCircle,
   Save,
+  Sparkles,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
@@ -35,6 +36,13 @@ interface ParsedPDFResult {
   fileName: string;
   pageCount: number;
   extracted: ExtractedData;
+  suggestedAssignment?: {
+    id: string | null;
+    type: 'event' | 'category' | null;
+    name: string | null;
+    confidence: number;
+  } | null;
+  aiPowered?: boolean;
 }
 
 interface SavedExpense {
@@ -132,7 +140,19 @@ export default function PDFImportPage() {
         fileName: data.fileName,
         pageCount: data.pageCount,
         extracted: data.extracted,
+        suggestedAssignment: data.suggestedAssignment ?? null,
+        aiPowered: data.aiPowered ?? false,
       });
+
+      // Pre-select AI suggested assignment
+      if (data.suggestedAssignment?.id && data.suggestedAssignment?.type) {
+        const suggestedOption = assignmentOptions.find(
+          (opt: AssignmentOption) => opt.id === data.suggestedAssignment.id
+        );
+        if (suggestedOption) {
+          setSelectedAssignment(suggestedOption);
+        }
+      }
 
       // Initialize editable data
       setEditableData({
@@ -147,7 +167,7 @@ export default function PDFImportPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [assignmentOptions]);
 
   // Handle data changes from preview
   const handleDataChange = useCallback((data: EditableExpenseData) => {
@@ -363,6 +383,19 @@ export default function PDFImportPage() {
 
       {step === 'review' && pdfResult && (
         <div className="space-y-6">
+          {/* AI Powered Badge */}
+          {pdfResult.aiPowered && (
+            <div className="flex items-center gap-2 p-3 bg-ink-gold/10 border border-ink-gold/30 rounded-lg">
+              <Sparkles className="w-4 h-4 text-ink-gold" />
+              <span className="text-sm font-medium text-ink-gold">
+                AI-Powered Extraction
+              </span>
+              <span className="text-xs text-sepia">
+                — Fields extracted and assignment suggested by AI
+              </span>
+            </div>
+          )}
+
           {/* Extracted Data Preview */}
           <PDFPreview
             fileName={pdfResult.fileName}
@@ -386,6 +419,21 @@ export default function PDFImportPage() {
                 onChange={setSelectedAssignment}
                 placeholder="Select event or category..."
               />
+              {pdfResult.suggestedAssignment?.confidence != null && selectedAssignment && (
+                <div className="mt-3 flex items-center gap-2">
+                  <span className={`
+                    inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
+                    ${pdfResult.suggestedAssignment.confidence >= 0.7
+                      ? 'bg-ink-green/10 text-ink-green'
+                      : pdfResult.suggestedAssignment.confidence >= 0.4
+                      ? 'bg-ink-gold/10 text-ink-gold'
+                      : 'bg-ink-red/10 text-ink-red'
+                    }
+                  `}>
+                    AI Confidence: {Math.round(pdfResult.suggestedAssignment.confidence * 100)}%
+                  </span>
+                </div>
+              )}
             </CardContent>
           </Card>
 

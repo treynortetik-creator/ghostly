@@ -182,25 +182,44 @@ async function chatCompletion(
 }
 
 // ============================================
-// CATEGORIZATION FUNCTIONS
+// PROMPT CONSTANTS & HELPERS
 // ============================================
 
 /**
- * Build the system prompt for categorization
+ * Fetch a custom prompt from the app_settings table by key.
+ * Returns the `prompt` field from the JSON value, or null if not found.
  */
-function buildCategorizationSystemPrompt(targets: AssignmentTarget[]): string {
-  const events = targets.filter(t => t.type === 'event');
-  const categories = targets.filter(t => t.type === 'category');
+export async function getCustomPrompt(key: string, supabase: any): Promise<string | null> {
+  try {
+    const { data, error } = await supabase
+      .from('app_settings')
+      .select('value')
+      .eq('key', key)
+      .single();
 
-  return `You are a financial categorization assistant for a corporate events budget tracking system called "The Counting House".
+    if (error || !data) {
+      return null;
+    }
+
+    return data.value?.prompt ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Default system prompt template for CSV transaction categorization.
+ * Placeholders {events_list} and {categories_list} are substituted at runtime.
+ */
+export const DEFAULT_CSV_PROMPT = `You are a financial categorization assistant for a corporate events budget tracking system called "The Counting House".
 
 Your task is to analyze credit card transactions and suggest which event or budget category each transaction should be assigned to.
 
 AVAILABLE EVENTS:
-${events.map(e => `- ID: ${e.id} | Name: "${e.name}" | Type: ${e.eventType || 'N/A'} | Quarter: ${e.quarter || 'TBD'}`).join('\n')}
+{events_list}
 
 AVAILABLE BUDGET CATEGORIES:
-${categories.map(c => `- ID: ${c.id} | Name: "${c.name}"${c.description ? ` | Description: ${c.description}` : ''}`).join('\n')}
+{categories_list}
 
 GUIDELINES:
 1. Match transactions to events based on vendor names, memos, and timing (event dates vs transaction dates)
@@ -231,6 +250,95 @@ Respond with valid JSON only. No markdown, no explanation outside JSON.
     }
   ]
 }`;
+
+/**
+ * Default system prompt template for PDF invoice extraction.
+ * Placeholders {events_list} and {categories_list} are substituted at runtime.
+ */
+export const DEFAULT_PDF_PROMPT = `You are an invoice data extraction and categorization assistant for "The Counting House", a corporate events budget tracking system.
+
+Given the raw text extracted from a PDF invoice, extract the following fields and suggest an event/category assignment:
+
+EXTRACT THESE FIELDS:
+1. vendor: The company or person who issued the invoice
+2. amount: The total amount due (in USD)
+3. date: The invoice date (format: YYYY-MM-DD)
+
+AVAILABLE EVENTS:
+{events_list}
+
+AVAILABLE BUDGET CATEGORIES:
+{categories_list}
+
+ASSIGNMENT GUIDELINES:
+- Match based on vendor name, invoice description, and any event/conference references
+- Use budget categories for general expenses not tied to a specific event
+- Provide confidence score 0.0-1.0
+
+RESPONSE FORMAT (JSON only, no markdown):
+{
+  "vendor": "string",
+  "amount": number,
+  "date": "YYYY-MM-DD",
+  "confidence": {
+    "vendor": "high|medium|low",
+    "amount": "high|medium|low",
+    "date": "high|medium|low"
+  },
+  "suggestedAssignment": {
+    "id": "string or null",
+    "type": "event|category|null",
+    "name": "string or null",
+    "confidence": number
+  },
+  "reasoning": "brief explanation"
+}`;
+
+// ============================================
+// CATEGORIZATION FUNCTIONS
+// ============================================
+
+/**
+ * Format the events list for prompt substitution
+ */
+function formatEventsList(targets: AssignmentTarget[]): string {
+  const events = targets.filter(t => t.type === 'event');
+  return events.map(e => `- ID: ${e.id} | Name: "${e.name}" | Type: ${e.eventType || 'N/A'} | Quarter: ${e.quarter || 'TBD'}`).join('\n');
+}
+
+/**
+ * Format the categories list for prompt substitution
+ */
+function formatCategoriesList(targets: AssignmentTarget[]): string {
+  const categories = targets.filter(t => t.type === 'category');
+  return categories.map(c => `- ID: ${c.id} | Name: "${c.name}"${c.description ? ` | Description: ${c.description}` : ''}`).join('\n');
+}
+
+/**
+ * Substitute {events_list} and {categories_list} placeholders in a prompt template
+ */
+function substitutePromptPlaceholders(template: string, targets: AssignmentTarget[]): string {
+  return template
+    .replace('{events_list}', formatEventsList(targets))
+    .replace('{categories_list}', formatCategoriesList(targets));
+}
+
+/**
+ * Build the system prompt for categorization.
+ * If a customPrompt is provided, uses it as the template; otherwise uses DEFAULT_CSV_PROMPT.
+ */
+export function buildCategorizationSystemPrompt(targets: AssignmentTarget[], customPrompt?: string): string {
+  const template = customPrompt || DEFAULT_CSV_PROMPT;
+  return substitutePromptPlaceholders(template, targets);
+}
+
+/**
+ * Build the system prompt for PDF invoice extraction.
+ * If a customPrompt is provided, uses it as the template; otherwise uses DEFAULT_PDF_PROMPT.
+ */
+export function buildPdfExtractionPrompt(targets: AssignmentTarget[], customPrompt?: string): string {
+  const template = customPrompt || DEFAULT_PDF_PROMPT;
+  return substitutePromptPlaceholders(template, targets);
 }
 
 /**

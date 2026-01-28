@@ -2,11 +2,12 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { Settings, Save, RefreshCw, CheckCircle, AlertCircle, DollarSign, Calendar, FolderOpen } from 'lucide-react';
+import { Settings, Save, RefreshCw, CheckCircle, AlertCircle, DollarSign, Calendar, FolderOpen, Bot } from 'lucide-react';
 import { AppShell } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card';
-import { FiscalYearSelector, ModelSelector } from '@/components/settings';
+import { FiscalYearSelector, ModelSelector, PromptEditor } from '@/components/settings';
+import { DEFAULT_CSV_PROMPT, DEFAULT_PDF_PROMPT } from '@/lib/openrouter';
 import type { FiscalYear } from '@/types/database';
 
 /* ============================================
@@ -25,6 +26,7 @@ interface SettingsData {
 interface SettingsApiResponse {
   settings: SettingsData;
   fiscal_year: FiscalYear | null;
+  prompts?: { csv_categorization: string | null; pdf_extraction: string | null };
 }
 
 interface BudgetSummary {
@@ -42,6 +44,11 @@ export default function SettingsPage() {
     openrouter_model: 'anthropic/claude-3-haiku',
   });
   const [originalSettings, setOriginalSettings] = useState<SettingsData | null>(null);
+  const [prompts, setPrompts] = useState<{ csv_categorization: string | null; pdf_extraction: string | null }>({
+    csv_categorization: null,
+    pdf_extraction: null,
+  });
+  const [originalPrompts, setOriginalPrompts] = useState<typeof prompts | null>(null);
   const [budgetSummary, setBudgetSummary] = useState<BudgetSummary | null>(null);
 
   // UI state
@@ -53,7 +60,9 @@ export default function SettingsPage() {
   // Check if settings have changed
   const hasChanges = originalSettings && (
     settings.fiscal_year_id !== originalSettings.fiscal_year_id ||
-    settings.openrouter_model !== originalSettings.openrouter_model
+    settings.openrouter_model !== originalSettings.openrouter_model ||
+    prompts.csv_categorization !== originalPrompts?.csv_categorization ||
+    prompts.pdf_extraction !== originalPrompts?.pdf_extraction
   );
 
   // Fetch current settings and budget summary
@@ -79,6 +88,10 @@ export default function SettingsPage() {
       };
       setSettings(fetchedSettings);
       setOriginalSettings(fetchedSettings);
+
+      const fetchedPrompts = data.prompts || { csv_categorization: null, pdf_extraction: null };
+      setPrompts(fetchedPrompts);
+      setOriginalPrompts(fetchedPrompts);
 
       // Calculate budget summary
       if (eventsRes.ok && categoriesRes.ok) {
@@ -117,7 +130,7 @@ export default function SettingsPage() {
       const response = await fetch('/api/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings),
+        body: JSON.stringify({ ...settings, prompts }),
       });
 
       if (!response.ok) {
@@ -132,6 +145,11 @@ export default function SettingsPage() {
       };
       setSettings(updatedSettings);
       setOriginalSettings(updatedSettings);
+
+      const updatedPrompts = data.prompts || { csv_categorization: null, pdf_extraction: null };
+      setPrompts(updatedPrompts);
+      setOriginalPrompts(updatedPrompts);
+
       setSuccessMessage('Settings saved successfully');
 
       // Clear success message after 3 seconds
@@ -147,6 +165,7 @@ export default function SettingsPage() {
   const handleReset = () => {
     if (originalSettings) {
       setSettings(originalSettings);
+      if (originalPrompts) setPrompts(originalPrompts);
       setError(null);
       setSuccessMessage(null);
     }
@@ -229,6 +248,36 @@ export default function SettingsPage() {
             <ModelSelector
               value={settings.openrouter_model}
               onChange={(model) => setSettings(prev => ({ ...prev, openrouter_model: model }))}
+              disabled={isSaving}
+            />
+          </div>
+
+          {/* AI Prompts Section */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-md bg-ink-gold/10 text-ink-gold">
+                <Bot className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-xl font-serif font-bold text-wood-dark">AI Prompts</h2>
+                <p className="text-sm text-sepia">Customize the prompts used for AI-powered features</p>
+              </div>
+            </div>
+
+            <PromptEditor
+              label="CSV Categorization Prompt"
+              description="Used when importing Brex CSV files to automatically suggest event/category assignments for each transaction."
+              value={prompts.csv_categorization}
+              defaultValue={DEFAULT_CSV_PROMPT}
+              onChange={(val) => setPrompts(prev => ({ ...prev, csv_categorization: val }))}
+              disabled={isSaving}
+            />
+            <PromptEditor
+              label="PDF Extraction Prompt"
+              description="Used when importing PDF invoices to extract vendor, amount, date and suggest an assignment."
+              value={prompts.pdf_extraction}
+              defaultValue={DEFAULT_PDF_PROMPT}
+              onChange={(val) => setPrompts(prev => ({ ...prev, pdf_extraction: val }))}
               disabled={isSaving}
             />
           </div>
