@@ -52,29 +52,38 @@ export async function GET(request: NextRequest) {
 
     if (filters.fiscal_year_id) query = query.eq('fiscal_year_id', filters.fiscal_year_id);
 
-    const { data: rawCategories, error: categoriesError } = await query.order('name', { ascending: true });
-
-    if (categoriesError) throw categoriesError;
-
-    // Compute expense totals per category
-    const categories: CategoryWithTotals[] = [];
-    for (const category of rawCategories || []) {
-      const { data: expenseData } = await supabase
+    // Fetch categories and all category expense totals in parallel (avoids N+1)
+    const [categoriesResult, expenseTotalsResult] = await Promise.all([
+      query.order('name', { ascending: true }),
+      supabase
         .from('expenses')
-        .select('amount')
-        .eq('category_id', category.id)
-        .is('deleted_at', null);
+        .select('category_id, amount')
+        .not('category_id', 'is', null)
+        .is('deleted_at', null),
+    ]);
 
-      const actualSpent = (expenseData || []).reduce((sum, e) => sum + e.amount, 0);
+    if (categoriesResult.error) throw categoriesResult.error;
+
+    // Build expense totals map from single query
+    const expenseByCategory = new Map<string, { total: number; count: number }>();
+    for (const exp of expenseTotalsResult.data || []) {
+      if (exp.category_id) {
+        const prev = expenseByCategory.get(exp.category_id) || { total: 0, count: 0 };
+        expenseByCategory.set(exp.category_id, { total: prev.total + exp.amount, count: prev.count + 1 });
+      }
+    }
+
+    const categories: CategoryWithTotals[] = (categoriesResult.data || []).map(category => {
+      const stats = expenseByCategory.get(category.id) || { total: 0, count: 0 };
       const budgetAmount = category.budget_amount ?? 0;
-      categories.push({
+      return {
         ...category,
         budget_amount: budgetAmount,
-        actual_spent: actualSpent,
-        remaining: budgetAmount - actualSpent,
-        expense_count: (expenseData || []).length,
-      });
-    }
+        actual_spent: stats.total,
+        remaining: budgetAmount - stats.total,
+        expense_count: stats.count,
+      };
+    });
 
     return NextResponse.json({
       categories,

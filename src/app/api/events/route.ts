@@ -75,30 +75,39 @@ export async function GET(request: NextRequest) {
     if (filters.quarter) query = query.eq('quarter', filters.quarter);
     if (filters.fiscal_year_id) query = query.eq('fiscal_year_id', filters.fiscal_year_id);
 
-    const { data: rawEvents, error: eventsError } = await query.order('date_start', { ascending: true, nullsFirst: false });
-
-    if (eventsError) throw eventsError;
-
-    // Compute expense totals per event
-    const events: EventWithTotals[] = [];
-    for (const event of rawEvents || []) {
-      const { data: expenseData } = await supabase
+    // Fetch events and all event expense totals in parallel (avoids N+1)
+    const [eventsResult, expenseTotalsResult] = await Promise.all([
+      query.order('date_start', { ascending: true, nullsFirst: false }),
+      supabase
         .from('expenses')
-        .select('amount')
-        .eq('event_id', event.id)
-        .is('deleted_at', null);
+        .select('event_id, amount')
+        .not('event_id', 'is', null)
+        .is('deleted_at', null),
+    ]);
 
-      const actualSpent = (expenseData || []).reduce((sum, e) => sum + e.amount, 0);
-      events.push({
+    if (eventsResult.error) throw eventsResult.error;
+
+    // Build expense totals map from single query
+    const expenseByEvent = new Map<string, { total: number; count: number }>();
+    for (const exp of expenseTotalsResult.data || []) {
+      if (exp.event_id) {
+        const prev = expenseByEvent.get(exp.event_id) || { total: 0, count: 0 };
+        expenseByEvent.set(exp.event_id, { total: prev.total + exp.amount, count: prev.count + 1 });
+      }
+    }
+
+    const events: EventWithTotals[] = (eventsResult.data || []).map(event => {
+      const stats = expenseByEvent.get(event.id) || { total: 0, count: 0 };
+      return {
         ...event,
         budget_amount: event.budget_amount ?? 0,
         expansion_goal: event.expansion_goal ?? 0,
         net_new_goal: event.net_new_goal ?? 0,
-        actual_spent: actualSpent,
-        remaining: (event.budget_amount ?? 0) - actualSpent,
-        expense_count: (expenseData || []).length,
-      });
-    }
+        actual_spent: stats.total,
+        remaining: (event.budget_amount ?? 0) - stats.total,
+        expense_count: stats.count,
+      };
+    });
 
     // Sort by date_start (null dates at end), then by name
     events.sort((a, b) => {
