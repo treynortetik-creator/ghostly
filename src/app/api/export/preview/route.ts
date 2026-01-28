@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import type { QuarterType } from '@/types/database';
 
 /* ============================================
    EXPORT PREVIEW API
@@ -80,7 +81,7 @@ export async function GET(request: Request) {
       .is('deleted_at', null);
 
     if (scope === 'quarter') {
-      eventsQuery = eventsQuery.eq('quarter', quarter);
+      eventsQuery = eventsQuery.eq('quarter', quarter as QuarterType);
     } else if (scope === 'month' || scope === 'custom') {
       eventsQuery = eventsQuery
         .gte('date_start', dateRange.start)
