@@ -9,14 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import type { ExpenseSource } from '@/types/database';
-import {
-  getExpenseById,
-  deleteExpense,
-  updateExpense,
-  type ExpenseWithRelations,
-} from '@/lib/mock-data/expenses';
-import { getEventById } from '@/lib/mock-data/events';
-import { getCategoryById } from '@/lib/mock-data/categories';
+import { createClient } from '@/lib/supabase/server';
 
 // ============================================
 // GET /api/expenses/[id]
@@ -28,26 +21,35 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const supabase = await createClient();
 
-    // TODO: Replace with real Supabase query when connected
-    // const supabase = await createClient();
-    // const { data: expense, error } = await supabase
-    //   .from('expenses')
-    //   .select('*, events(*), budget_categories(*)')
-    //   .eq('id', id)
-    //   .is('deleted_at', null)
-    //   .single();
+    const { data: expense, error } = await supabase
+      .from('expenses')
+      .select('*, events(name), budget_categories(name)')
+      .eq('id', id)
+      .is('deleted_at', null)
+      .single();
 
-    const expense = getExpenseById(id);
-
-    if (!expense) {
+    if (error?.code === 'PGRST116' || !expense) {
       return NextResponse.json(
         { error: 'Expense not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ expense });
+    if (error) throw error;
+
+    // Map joined relations to flat fields
+    const { events: eventRel, budget_categories: catRel, ...rest } = expense as any;
+    const mapped = {
+      ...rest,
+      event_name: eventRel?.name || null,
+      category_name: catRel?.name || null,
+      target_type: rest.event_id ? 'event' as const : 'category' as const,
+      target_name: eventRel?.name || catRel?.name || 'Unknown',
+    };
+
+    return NextResponse.json({ expense: mapped });
   } catch (error) {
     console.error('Get expense error:', error);
     return NextResponse.json(
@@ -68,15 +70,24 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
+    const supabase = await createClient();
 
     // Check if expense exists
-    const existingExpense = getExpenseById(id);
-    if (!existingExpense) {
+    const { data: existingExpense, error: findError } = await supabase
+      .from('expenses')
+      .select('*')
+      .eq('id', id)
+      .is('deleted_at', null)
+      .single();
+
+    if (findError?.code === 'PGRST116' || !existingExpense) {
       return NextResponse.json(
         { error: 'Expense not found' },
         { status: 404 }
       );
     }
+
+    if (findError) throw findError;
 
     // Determine new event_id and category_id values
     const newEventId = body.event_id !== undefined ? body.event_id : existingExpense.event_id;
@@ -102,8 +113,14 @@ export async function PUT(
 
     // Validate event_id exists if provided
     if (hasEventId) {
-      const event = getEventById(newEventId);
-      if (!event) {
+      const { data: event, error: eventError } = await supabase
+        .from('events')
+        .select('id, name')
+        .eq('id', newEventId)
+        .is('deleted_at', null)
+        .single();
+
+      if (eventError || !event) {
         return NextResponse.json(
           { error: 'Event not found' },
           { status: 400 }
@@ -113,8 +130,14 @@ export async function PUT(
 
     // Validate category_id exists if provided
     if (hasCategoryId) {
-      const category = getCategoryById(newCategoryId);
-      if (!category) {
+      const { data: category, error: categoryError } = await supabase
+        .from('budget_categories')
+        .select('id, name')
+        .eq('id', newCategoryId)
+        .is('deleted_at', null)
+        .single();
+
+      if (categoryError || !category) {
         return NextResponse.json(
           { error: 'Category not found' },
           { status: 400 }
@@ -155,46 +178,41 @@ export async function PUT(
       }
     }
 
-    // TODO: Replace with real Supabase update when connected
-    // const supabase = await createClient();
-    // const { data, error } = await supabase
-    //   .from('expenses')
-    //   .update({ ...body, updated_at: new Date().toISOString() })
-    //   .eq('id', id)
-    //   .select()
-    //   .single();
-
     // Build update payload
-    const updates = {
+    const updateData: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
       event_id: hasEventId ? newEventId : null,
       category_id: hasCategoryId ? newCategoryId : null,
-      amount: body.amount !== undefined ? parseFloat(body.amount) : existingExpense.amount,
-      expense_date: body.expense_date ?? existingExpense.expense_date,
-      vendor: body.vendor !== undefined ? body.vendor : existingExpense.vendor,
-      memo: body.memo !== undefined ? body.memo : existingExpense.memo,
-      source_type: body.source_type ?? existingExpense.source_type,
-      source_reference: body.source_reference !== undefined ? body.source_reference : existingExpense.source_reference,
     };
 
-    // Persist update to mock data
-    const updated = updateExpense(id, updates);
-    if (!updated) {
-      return NextResponse.json(
-        { error: 'Failed to update expense' },
-        { status: 500 }
-      );
-    }
+    if (body.amount !== undefined) updateData.amount = parseFloat(body.amount);
+    if (body.expense_date !== undefined) updateData.expense_date = body.expense_date;
+    if (body.vendor !== undefined) updateData.vendor = body.vendor;
+    if (body.memo !== undefined) updateData.memo = body.memo;
+    if (body.source_type !== undefined) updateData.source_type = body.source_type;
+    if (body.source_reference !== undefined) updateData.source_reference = body.source_reference;
 
-    // Re-fetch the updated expense with relations
-    const updatedExpense = getExpenseById(id);
-    if (!updatedExpense) {
-      return NextResponse.json(
-        { error: 'Failed to retrieve updated expense' },
-        { status: 500 }
-      );
-    }
+    const { data: updatedExpense, error: updateError } = await supabase
+      .from('expenses')
+      .update(updateData)
+      .eq('id', id)
+      .is('deleted_at', null)
+      .select('*, events(name), budget_categories(name)')
+      .single();
 
-    return NextResponse.json({ expense: updatedExpense });
+    if (updateError) throw updateError;
+
+    // Map joined relations to flat fields
+    const { events: eventRel, budget_categories: catRel, ...rest } = updatedExpense as any;
+    const mapped = {
+      ...rest,
+      event_name: eventRel?.name || null,
+      category_name: catRel?.name || null,
+      target_type: rest.event_id ? 'event' as const : 'category' as const,
+      target_name: eventRel?.name || catRel?.name || 'Unknown',
+    };
+
+    return NextResponse.json({ expense: mapped });
   } catch (error) {
     console.error('Update expense error:', error);
     return NextResponse.json(
@@ -214,31 +232,32 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const supabase = await createClient();
 
     // Check if expense exists
-    const existingExpense = getExpenseById(id);
-    if (!existingExpense) {
+    const { data: existingExpense, error: findError } = await supabase
+      .from('expenses')
+      .select('id')
+      .eq('id', id)
+      .is('deleted_at', null)
+      .single();
+
+    if (findError?.code === 'PGRST116' || !existingExpense) {
       return NextResponse.json(
         { error: 'Expense not found' },
         { status: 404 }
       );
     }
 
-    // TODO: Replace with real Supabase soft delete when connected
-    // const supabase = await createClient();
-    // const { error } = await supabase
-    //   .from('expenses')
-    //   .update({ deleted_at: new Date().toISOString() })
-    //   .eq('id', id);
+    if (findError) throw findError;
 
-    // Soft delete - sets deleted_at timestamp
-    const deleted = deleteExpense(id);
-    if (!deleted) {
-      return NextResponse.json(
-        { error: 'Failed to delete expense' },
-        { status: 500 }
-      );
-    }
+    // Soft delete
+    const { error: deleteError } = await supabase
+      .from('expenses')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id);
+
+    if (deleteError) throw deleteError;
 
     return NextResponse.json({
       message: 'Expense deleted successfully',

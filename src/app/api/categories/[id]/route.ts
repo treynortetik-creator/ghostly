@@ -8,12 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  getCategoryById,
-  mockCategories,
-} from '@/lib/mock-data/categories';
-import { mockFiscalYear } from '@/lib/mock-data/events';
-import { allExpenses } from '@/lib/mock-data/expenses';
+import { createClient } from '@/lib/supabase/server';
 
 // ============================================
 // GET /api/categories/[id]
@@ -25,40 +20,61 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const supabase = await createClient();
 
-    // TODO: Replace with real Supabase query when connected
-    // const supabase = await createClient();
-    // const { data: category, error } = await supabase
-    //   .from('budget_categories')
-    //   .select('*, expenses(*)')
-    //   .eq('id', id)
-    //   .is('deleted_at', null)
-    //   .single();
+    const { data: category, error: categoryError } = await supabase
+      .from('budget_categories')
+      .select('*')
+      .eq('id', id)
+      .is('deleted_at', null)
+      .single();
 
-    const category = getCategoryById(id);
-
-    if (!category) {
+    if (categoryError?.code === 'PGRST116' || !category) {
       return NextResponse.json(
         { error: 'Category not found' },
         { status: 404 }
       );
     }
 
-    // Read expenses from consolidated allExpenses (where deletions happen)
-    const expenses = allExpenses.filter(e => e.category_id === id && !e.deleted_at);
-    const actualSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
+    if (categoryError) throw categoryError;
+
+    // Query expenses for this category
+    const { data: expenses, error: expensesError } = await supabase
+      .from('expenses')
+      .select('*')
+      .eq('category_id', id)
+      .is('deleted_at', null)
+      .order('expense_date', { ascending: false });
+
+    if (expensesError) throw expensesError;
+
+    const expenseList = expenses || [];
+    const actualSpent = expenseList.reduce((sum, e) => sum + e.amount, 0);
+    const budgetAmount = category.budget_amount ?? 0;
 
     const categoryWithTotals = {
       ...category,
+      budget_amount: budgetAmount,
       actual_spent: actualSpent,
-      remaining: category.budget_amount - actualSpent,
-      expense_count: expenses.length,
+      remaining: budgetAmount - actualSpent,
+      expense_count: expenseList.length,
     };
+
+    // Query fiscal year if category has one
+    let fiscalYear = null;
+    if (category.fiscal_year_id) {
+      const { data: fy } = await supabase
+        .from('fiscal_years')
+        .select('*')
+        .eq('id', category.fiscal_year_id)
+        .single();
+      fiscalYear = fy;
+    }
 
     return NextResponse.json({
       category: categoryWithTotals,
-      expenses,
-      fiscal_year: mockFiscalYear,
+      expenses: expenseList,
+      fiscal_year: fiscalYear,
     });
   } catch (error) {
     console.error('Get category error:', error);
@@ -80,15 +96,24 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
+    const supabase = await createClient();
 
     // Check if category exists
-    const existingCategory = getCategoryById(id);
-    if (!existingCategory) {
+    const { data: existingCategory, error: findError } = await supabase
+      .from('budget_categories')
+      .select('*')
+      .eq('id', id)
+      .is('deleted_at', null)
+      .single();
+
+    if (findError?.code === 'PGRST116' || !existingCategory) {
       return NextResponse.json(
         { error: 'Category not found' },
         { status: 404 }
       );
     }
+
+    if (findError) throw findError;
 
     // Validate budget_amount if provided
     if (body.budget_amount !== undefined) {
@@ -103,9 +128,15 @@ export async function PUT(
 
     // Check for duplicate name if name is being changed
     if (body.name && body.name.toLowerCase() !== existingCategory.name.toLowerCase()) {
-      const duplicateCategory = mockCategories.find(
-        c => c.name.toLowerCase() === body.name.toLowerCase() && !c.deleted_at && c.id !== id
-      );
+      const { data: duplicateCategory } = await supabase
+        .from('budget_categories')
+        .select('id')
+        .ilike('name', body.name)
+        .is('deleted_at', null)
+        .neq('id', id)
+        .limit(1)
+        .single();
+
       if (duplicateCategory) {
         return NextResponse.json(
           { error: 'A category with this name already exists' },
@@ -114,34 +145,43 @@ export async function PUT(
       }
     }
 
-    // TODO: Replace with real Supabase update when connected
-    // const supabase = await createClient();
-    // const { data, error } = await supabase
-    //   .from('budget_categories')
-    //   .update({ ...body, updated_at: new Date().toISOString() })
-    //   .eq('id', id)
-    //   .select()
-    //   .single();
-
-    // Create updated category (mock)
-    const now = new Date().toISOString();
-    const updatedCategory = {
-      ...existingCategory,
-      name: body.name ?? existingCategory.name,
-      fiscal_year_id: body.fiscal_year_id ?? existingCategory.fiscal_year_id,
-      budget_amount: body.budget_amount !== undefined ? parseFloat(body.budget_amount) : existingCategory.budget_amount,
-      description: body.description !== undefined ? body.description : existingCategory.description,
-      updated_at: now,
+    // Build update payload
+    const updateData: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
     };
 
-    const expenses = allExpenses.filter(e => e.category_id === id && !e.deleted_at);
-    const actualSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
+    if (body.name !== undefined) updateData.name = body.name;
+    if (body.fiscal_year_id !== undefined) updateData.fiscal_year_id = body.fiscal_year_id;
+    if (body.budget_amount !== undefined) updateData.budget_amount = parseFloat(body.budget_amount);
+    if (body.description !== undefined) updateData.description = body.description;
+
+    const { data: updatedCategory, error: updateError } = await supabase
+      .from('budget_categories')
+      .update(updateData)
+      .eq('id', id)
+      .is('deleted_at', null)
+      .select()
+      .single();
+
+    if (updateError) throw updateError;
+
+    // Query expenses for totals
+    const { data: expenses } = await supabase
+      .from('expenses')
+      .select('*')
+      .eq('category_id', id)
+      .is('deleted_at', null);
+
+    const expenseList = expenses || [];
+    const actualSpent = expenseList.reduce((sum, e) => sum + e.amount, 0);
+    const budgetAmount = updatedCategory.budget_amount ?? 0;
 
     const categoryWithTotals = {
       ...updatedCategory,
+      budget_amount: budgetAmount,
       actual_spent: actualSpent,
-      remaining: updatedCategory.budget_amount - actualSpent,
-      expense_count: expenses.length,
+      remaining: budgetAmount - actualSpent,
+      expense_count: expenseList.length,
     };
 
     return NextResponse.json(categoryWithTotals);
@@ -164,25 +204,32 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const supabase = await createClient();
 
     // Check if category exists
-    const existingCategory = getCategoryById(id);
-    if (!existingCategory) {
+    const { data: existingCategory, error: findError } = await supabase
+      .from('budget_categories')
+      .select('id')
+      .eq('id', id)
+      .is('deleted_at', null)
+      .single();
+
+    if (findError?.code === 'PGRST116' || !existingCategory) {
       return NextResponse.json(
         { error: 'Category not found' },
         { status: 404 }
       );
     }
 
-    // TODO: Replace with real Supabase soft delete when connected
-    // const supabase = await createClient();
-    // const { error } = await supabase
-    //   .from('budget_categories')
-    //   .update({ deleted_at: new Date().toISOString() })
-    //   .eq('id', id);
+    if (findError) throw findError;
 
-    // Soft delete (mock) - just return success
-    // In real implementation, we would set deleted_at
+    // Soft delete
+    const { error: deleteError } = await supabase
+      .from('budget_categories')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id);
+
+    if (deleteError) throw deleteError;
 
     return NextResponse.json({
       message: 'Category deleted successfully',

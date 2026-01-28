@@ -7,13 +7,21 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  mockCategories,
-  getCategories,
-  type CategoryWithTotals,
-} from '@/lib/mock-data/categories';
-import { mockFiscalYear } from '@/lib/mock-data/events';
-import { allExpenses } from '@/lib/mock-data/expenses';
+import { createClient } from '@/lib/supabase/server';
+
+interface CategoryWithTotals {
+  id: string;
+  name: string;
+  fiscal_year_id: string | null;
+  budget_amount: number;
+  description: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  deleted_at: string | null;
+  actual_spent: number;
+  remaining: number;
+  expense_count: number;
+}
 
 // ============================================
 // GET /api/categories
@@ -35,27 +43,38 @@ export async function GET(request: NextRequest) {
       filters.fiscal_year_id = fiscalYearId;
     }
 
-    // TODO: Replace with real Supabase queries when connected
-    // const supabase = await createClient();
-    // let query = supabase.from('budget_categories').select('*').is('deleted_at', null);
-    // if (filters.fiscal_year_id) query = query.eq('fiscal_year_id', filters.fiscal_year_id);
-    // const { data, error } = await query.order('name', { ascending: true });
+    const supabase = await createClient();
 
-    // Use getCategories for filtering, then compute totals from consolidated allExpenses
-    const filteredCategories = getCategories(filters);
-    const categories: CategoryWithTotals[] = filteredCategories.map(category => {
-      const catExpenses = allExpenses.filter(e => e.category_id === category.id && !e.deleted_at);
-      const actualSpent = catExpenses.reduce((sum, e) => sum + e.amount, 0);
-      return {
+    let query = supabase
+      .from('budget_categories')
+      .select('*')
+      .is('deleted_at', null);
+
+    if (filters.fiscal_year_id) query = query.eq('fiscal_year_id', filters.fiscal_year_id);
+
+    const { data: rawCategories, error: categoriesError } = await query.order('name', { ascending: true });
+
+    if (categoriesError) throw categoriesError;
+
+    // Compute expense totals per category
+    const categories: CategoryWithTotals[] = [];
+    for (const category of rawCategories || []) {
+      const { data: expenseData } = await supabase
+        .from('expenses')
+        .select('amount')
+        .eq('category_id', category.id)
+        .is('deleted_at', null);
+
+      const actualSpent = (expenseData || []).reduce((sum, e) => sum + e.amount, 0);
+      const budgetAmount = category.budget_amount ?? 0;
+      categories.push({
         ...category,
+        budget_amount: budgetAmount,
         actual_spent: actualSpent,
-        remaining: category.budget_amount - actualSpent,
-        expense_count: catExpenses.length,
-      };
-    });
-
-    // Sort by name alphabetically
-    categories.sort((a, b) => a.name.localeCompare(b.name));
+        remaining: budgetAmount - actualSpent,
+        expense_count: (expenseData || []).length,
+      });
+    }
 
     return NextResponse.json({
       categories,
@@ -101,42 +120,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const supabase = await createClient();
+
     // Check for duplicate name
-    const existingCategory = mockCategories.find(
-      c => c.name.toLowerCase() === body.name.toLowerCase() && !c.deleted_at
-    );
-    if (existingCategory) {
+    const { data: existing } = await supabase
+      .from('budget_categories')
+      .select('id')
+      .ilike('name', body.name)
+      .is('deleted_at', null);
+
+    if (existing && existing.length > 0) {
       return NextResponse.json(
         { error: 'A category with this name already exists' },
         { status: 400 }
       );
     }
 
-    // TODO: Replace with real Supabase insert when connected
-    // const supabase = await createClient();
-    // const { data, error } = await supabase.from('budget_categories').insert(categoryData).select().single();
+    const { data: newCategory, error: insertError } = await supabase
+      .from('budget_categories')
+      .insert({
+        name: body.name,
+        fiscal_year_id: body.fiscal_year_id || null,
+        budget_amount: budgetAmount,
+        description: body.description || null,
+      })
+      .select()
+      .single();
 
-    // Create mock category
-    const now = new Date().toISOString();
-    const newCategory: CategoryWithTotals = {
-      id: `cat-new-${Date.now()}`,
-      name: body.name,
-      fiscal_year_id: body.fiscal_year_id || mockFiscalYear.id,
-      budget_amount: budgetAmount,
-      description: body.description || null,
-      created_at: now,
-      updated_at: now,
-      deleted_at: null,
+    if (insertError) throw insertError;
+
+    return NextResponse.json({
+      ...newCategory,
+      budget_amount: newCategory.budget_amount ?? 0,
       actual_spent: 0,
-      remaining: budgetAmount,
+      remaining: newCategory.budget_amount ?? 0,
       expense_count: 0,
-    };
-
-    // In a real implementation, we would add to the database
-    // For mock purposes, we'll just return the created category
-    // mockCategories.push(newCategory); // Not persisting in mock
-
-    return NextResponse.json(newCategory, { status: 201 });
+    }, { status: 201 });
   } catch (error) {
     console.error('Create category error:', error);
     return NextResponse.json(

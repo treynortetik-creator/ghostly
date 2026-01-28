@@ -12,9 +12,7 @@ import {
   type AssignmentTarget,
   type TransactionForCategorization,
 } from '@/lib/openrouter';
-import { getEventsWithTotals } from '@/lib/mock-data/events';
-import { getCategoriesWithTotals } from '@/lib/mock-data/categories';
-import { getExpenses } from '@/lib/mock-data/expenses';
+import { createClient } from '@/lib/supabase/server';
 
 // ============================================
 // TYPES
@@ -305,23 +303,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get existing expenses for duplicate detection
-    const existingExpenses = getExpenses();
+    // Get existing data from Supabase
+    const supabase = await createClient();
 
-    // Get events and categories for AI categorization
-    const events = getEventsWithTotals();
-    const categories = getCategoriesWithTotals();
+    const [
+      { data: existingExpenses },
+      { data: events },
+      { data: categories },
+    ] = await Promise.all([
+      supabase.from('expenses').select('id, amount, expense_date, vendor').is('deleted_at', null),
+      supabase.from('events').select('id, name, event_type, quarter').is('deleted_at', null),
+      supabase.from('budget_categories').select('id, name, description').is('deleted_at', null),
+    ]);
 
     // Build assignment targets
     const targets: AssignmentTarget[] = [
-      ...events.map(e => ({
+      ...(events || []).map(e => ({
         id: e.id,
         name: e.name,
         type: 'event' as const,
         eventType: e.event_type,
-        quarter: e.quarter,
+        quarter: e.quarter || undefined,
       })),
-      ...categories.map(c => ({
+      ...(categories || []).map(c => ({
         id: c.id,
         name: c.name,
         type: 'category' as const,
@@ -337,7 +341,7 @@ export async function POST(request: NextRequest) {
     }));
 
     for (const txn of transactionsWithDuplicates) {
-      const duplicate = findDuplicate(txn, existingExpenses);
+      const duplicate = findDuplicate(txn, existingExpenses || []);
       if (duplicate) {
         txn.isDuplicate = true;
         txn.duplicateOf = duplicate;

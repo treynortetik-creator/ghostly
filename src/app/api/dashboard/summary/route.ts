@@ -10,9 +10,7 @@ import { NextResponse } from 'next/server';
 import { logError } from '@/lib/error-logger';
 import { getSession } from '@/lib/auth';
 import type { EventType, QuarterType } from '@/types/database';
-import { mockEvents } from '@/lib/mock-data/events';
-import { mockCategories } from '@/lib/mock-data/categories';
-import { allExpenses } from '@/lib/mock-data/expenses';
+import { createClient } from '@/lib/supabase/server';
 
 // ============================================
 // TYPE DEFINITIONS
@@ -56,18 +54,28 @@ export async function GET() {
       );
     }
 
-    // Get active (non-deleted) data
-    const activeEvents = mockEvents.filter(e => !e.deleted_at);
-    const activeCategories = mockCategories.filter(c => !c.deleted_at);
-    const activeExpenses = allExpenses.filter(e => !e.deleted_at);
+    const supabase = await createClient();
+
+    // Fetch all three datasets in parallel
+    const [
+      { data: activeEvents, error: eventsErr },
+      { data: activeCategories, error: catsErr },
+      { data: activeExpenses, error: expErr },
+    ] = await Promise.all([
+      supabase.from('events').select('*').is('deleted_at', null),
+      supabase.from('budget_categories').select('*').is('deleted_at', null),
+      supabase.from('expenses').select('*').is('deleted_at', null),
+    ]);
+
+    if (eventsErr || catsErr || expErr) throw eventsErr || catsErr || expErr;
 
     // ---- By Event Type ----
     const eventTypes: EventType[] = ['executive', 'national', 'state', 'regional', 'customer'];
     const byEventType = eventTypes.map(type => {
-      const eventsOfType = activeEvents.filter(e => e.event_type === type);
-      const budget = eventsOfType.reduce((sum, e) => sum + e.budget_amount, 0);
+      const eventsOfType = (activeEvents ?? []).filter(e => e.event_type === type);
+      const budget = eventsOfType.reduce((sum, e) => sum + (e.budget_amount ?? 0), 0);
       const eventIds = new Set(eventsOfType.map(e => e.id));
-      const actual = activeExpenses
+      const actual = (activeExpenses ?? [])
         .filter(e => e.event_id && eventIds.has(e.event_id))
         .reduce((sum, e) => sum + e.amount, 0);
       return { type, budget, actual };
@@ -76,21 +84,21 @@ export async function GET() {
     // ---- By Quarter ----
     const quarters: QuarterType[] = ['Q1', 'Q2', 'Q3', 'Q4', 'TBD'];
     const byQuarter = quarters.map(quarter => {
-      const eventsInQuarter = activeEvents.filter(e => e.quarter === quarter);
-      const budget = eventsInQuarter.reduce((sum, e) => sum + e.budget_amount, 0);
+      const eventsInQuarter = (activeEvents ?? []).filter(e => e.quarter === quarter);
+      const budget = eventsInQuarter.reduce((sum, e) => sum + (e.budget_amount ?? 0), 0);
       const eventIds = new Set(eventsInQuarter.map(e => e.id));
-      const actual = activeExpenses
+      const actual = (activeExpenses ?? [])
         .filter(e => e.event_id && eventIds.has(e.event_id))
         .reduce((sum, e) => sum + e.amount, 0);
       return { quarter, budget, actual };
     });
 
     // ---- By Category ----
-    const byCategory = activeCategories.map(cat => {
-      const actual = activeExpenses
+    const byCategory = (activeCategories ?? []).map(cat => {
+      const actual = (activeExpenses ?? [])
         .filter(e => e.category_id === cat.id)
         .reduce((sum, e) => sum + e.amount, 0);
-      return { name: cat.name, budget: cat.budget_amount, actual };
+      return { name: cat.name, budget: cat.budget_amount ?? 0, actual };
     });
 
     // ---- Totals ----

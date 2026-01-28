@@ -7,9 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import type { ExpenseSource } from '@/types/database';
-import { getEventById } from '@/lib/mock-data/events';
-import { getCategoryById } from '@/lib/mock-data/categories';
-import { type ExpenseWithRelations, allExpenses } from '@/lib/mock-data/expenses';
+import { createClient } from '@/lib/supabase/server';
 
 // ============================================
 // TYPES
@@ -41,6 +39,7 @@ interface ImportResult {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createClient();
     const body = await request.json();
     const { transactions } = body as { transactions: TransactionToImport[] };
 
@@ -73,12 +72,22 @@ export async function POST(request: NextRequest) {
       }
 
       if (txn.assignmentType === 'event') {
-        const event = getEventById(txn.assignmentId);
+        const { data: event } = await supabase
+          .from('events')
+          .select('id')
+          .eq('id', txn.assignmentId)
+          .is('deleted_at', null)
+          .single();
         if (!event) {
           validationErrors.push(`Transaction ${txn.id}: Event ${txn.assignmentId} not found`);
         }
       } else if (txn.assignmentType === 'category') {
-        const category = getCategoryById(txn.assignmentId);
+        const { data: category } = await supabase
+          .from('budget_categories')
+          .select('id')
+          .eq('id', txn.assignmentId)
+          .is('deleted_at', null)
+          .single();
         if (!category) {
           validationErrors.push(`Transaction ${txn.id}: Category ${txn.assignmentId} not found`);
         }
@@ -101,54 +110,50 @@ export async function POST(request: NextRequest) {
 
     // Process transactions
     const results: ImportResult[] = [];
-    const createdExpenses: ExpenseWithRelations[] = [];
+    const createdExpenses: Record<string, unknown>[] = [];
     const now = new Date().toISOString();
 
     for (const txn of transactions) {
       try {
         const isEvent = txn.assignmentType === 'event';
-        const event = isEvent ? getEventById(txn.assignmentId) : null;
-        const category = !isEvent ? getCategoryById(txn.assignmentId) : null;
 
-        // Handle replace action
+        // Handle replace action - soft delete old expense
         if (txn.status === 'replace' && txn.replaceExpenseId) {
-          // In a real implementation, we would:
-          // 1. Soft-delete the existing expense
-          // 2. Create the new expense
-          // For mock purposes, we'll just mark as replaced
-
-          // Find and mark old expense as deleted (in real Supabase, use soft delete)
-          const existingIndex = allExpenses.findIndex(e => e.id === txn.replaceExpenseId);
-          if (existingIndex >= 0) {
-            allExpenses[existingIndex].deleted_at = now;
-          }
+          await supabase
+            .from('expenses')
+            .update({ deleted_at: now })
+            .eq('id', txn.replaceExpenseId);
         }
 
-        // Create new expense
-        const newExpense: ExpenseWithRelations = {
-          id: `exp-brex-${Date.now()}-${txn.id}`,
-          event_id: isEvent ? txn.assignmentId : null,
-          category_id: !isEvent ? txn.assignmentId : null,
-          amount: txn.amount,
-          expense_date: txn.date,
-          vendor: txn.vendor,
-          memo: txn.memo,
-          source_type: 'brex' as ExpenseSource,
-          source_reference: txn.id,
-          is_duplicate: false,
-          created_at: now,
-          updated_at: now,
-          deleted_at: null,
-          event_name: event?.name || null,
-          category_name: category?.name || null,
-          target_type: isEvent ? 'event' : 'category',
-          target_name: event?.name || category?.name || 'Unknown',
-        };
+        // Create new expense via Supabase
+        const { data: newExpense, error: insertError } = await supabase
+          .from('expenses')
+          .insert({
+            event_id: isEvent ? txn.assignmentId : null,
+            category_id: !isEvent ? txn.assignmentId : null,
+            amount: txn.amount,
+            expense_date: txn.date,
+            vendor: txn.vendor,
+            memo: txn.memo,
+            source_type: 'brex' as ExpenseSource,
+            source_reference: txn.id,
+            is_duplicate: false,
+          })
+          .select('*, events(name), budget_categories(name)')
+          .single();
 
-        // In a real implementation, we would insert into Supabase
-        // For mock purposes, add to the in-memory array
-        createdExpenses.push(newExpense);
-        // allExpenses.push(newExpense); // Uncomment to persist in mock
+        if (insertError || !newExpense) {
+          throw insertError || new Error('Insert failed');
+        }
+
+        const { events: eventRel, budget_categories: catRel, ...rest } = newExpense as any;
+        createdExpenses.push({
+          ...rest,
+          event_name: eventRel?.name || null,
+          category_name: catRel?.name || null,
+          target_type: isEvent ? 'event' : 'category',
+          target_name: eventRel?.name || catRel?.name || 'Unknown',
+        });
 
         results.push({
           success: true,

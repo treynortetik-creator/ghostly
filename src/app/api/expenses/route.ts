@@ -9,13 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logError } from '@/lib/error-logger';
 import type { ExpenseSource } from '@/types/database';
-import {
-  getExpenses,
-  addExpense,
-  type ExpenseWithRelations,
-} from '@/lib/mock-data/expenses';
-import { getEventById } from '@/lib/mock-data/events';
-import { getCategoryById } from '@/lib/mock-data/categories';
+import { createClient } from '@/lib/supabase/server';
 
 // ============================================
 // GET /api/expenses
@@ -35,7 +29,7 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get('sort_by') || 'date'; // date, amount, vendor
     const sortOrder = searchParams.get('sort_order') || 'desc'; // asc, desc
 
-    // Build filters object
+    // Build filters object for meta response
     const filters: {
       event_id?: string;
       category_id?: string;
@@ -64,37 +58,65 @@ export async function GET(request: NextRequest) {
       filters.source_type = sourceType;
     }
 
-    // TODO: Replace with real Supabase queries when connected
-    // const supabase = await createClient();
-    // let query = supabase.from('expenses').select('*, events(*), budget_categories(*)').is('deleted_at', null);
-    // if (filters.event_id) query = query.eq('event_id', filters.event_id);
-    // if (filters.category_id) query = query.eq('category_id', filters.category_id);
-    // etc...
+    const supabase = await createClient();
 
-    let expenses = getExpenses(filters);
+    // Build query with joined relations
+    let query = supabase
+      .from('expenses')
+      .select('*, events(name), budget_categories(name)')
+      .is('deleted_at', null);
 
-    // Sort expenses
-    expenses.sort((a, b) => {
-      let comparison = 0;
+    // Apply filters
+    if (filters.event_id) {
+      query = query.eq('event_id', filters.event_id);
+    }
+    if (filters.category_id) {
+      query = query.eq('category_id', filters.category_id);
+    }
+    if (filters.date_start) {
+      query = query.gte('expense_date', filters.date_start);
+    }
+    if (filters.date_end) {
+      query = query.lte('expense_date', filters.date_end);
+    }
+    if (filters.vendor) {
+      query = query.ilike('vendor', `%${filters.vendor}%`);
+    }
+    if (filters.source_type) {
+      query = query.eq('source_type', filters.source_type);
+    }
 
-      switch (sortBy) {
-        case 'amount':
-          comparison = a.amount - b.amount;
-          break;
-        case 'vendor':
-          comparison = (a.vendor || '').localeCompare(b.vendor || '');
-          break;
-        case 'date':
-        default:
-          comparison = a.expense_date.localeCompare(b.expense_date);
-          break;
-      }
+    // Map sortBy param to actual column name
+    const sortColumnMap: Record<string, string> = {
+      date: 'expense_date',
+      amount: 'amount',
+      vendor: 'vendor',
+    };
+    const sortColumn = sortColumnMap[sortBy] || 'expense_date';
+    const ascending = sortOrder === 'asc';
 
-      return sortOrder === 'asc' ? comparison : -comparison;
+    query = query.order(sortColumn, { ascending });
+
+    const { data: rawExpenses, error } = await query;
+
+    if (error) {
+      throw error;
+    }
+
+    // Map results to add relation fields
+    const expenses = (rawExpenses || []).map(e => {
+      const { events: eventRel, budget_categories: catRel, ...rest } = e as any;
+      return {
+        ...rest,
+        event_name: eventRel?.name || null,
+        category_name: catRel?.name || null,
+        target_type: rest.event_id ? 'event' as const : 'category' as const,
+        target_name: eventRel?.name || catRel?.name || 'Unknown',
+      };
     });
 
     // Calculate totals
-    const totalAmount = expenses.reduce((sum, e) => sum + e.amount, 0);
+    const totalAmount = expenses.reduce((sum: number, e: any) => sum + e.amount, 0);
 
     return NextResponse.json({
       expenses,
@@ -152,28 +174,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate event_id exists if provided
-    if (hasEventId) {
-      const event = getEventById(body.event_id);
-      if (!event) {
-        return NextResponse.json(
-          { error: 'Event not found' },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Validate category_id exists if provided
-    if (hasCategoryId) {
-      const category = getCategoryById(body.category_id);
-      if (!category) {
-        return NextResponse.json(
-          { error: 'Category not found' },
-          { status: 400 }
-        );
-      }
-    }
-
     // Validate amount is a positive number
     const amount = parseFloat(body.amount);
     if (isNaN(amount) || amount <= 0) {
@@ -202,53 +202,77 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Replace with real Supabase insert when connected
-    // const supabase = await createClient();
-    // const { data, error } = await supabase.from('expenses').insert(expenseData).select().single();
+    const supabase = await createClient();
 
-    // Create mock expense
-    const now = new Date().toISOString();
-    const event = hasEventId ? getEventById(body.event_id) : null;
-    const category = hasCategoryId ? getCategoryById(body.category_id) : null;
+    // Validate event_id exists if provided
+    let eventName: string | null = null;
+    if (hasEventId) {
+      const { data: event, error: eventError } = await supabase
+        .from('events')
+        .select('id, name')
+        .eq('id', body.event_id)
+        .is('deleted_at', null)
+        .single();
 
-    const newExpense: ExpenseWithRelations = {
-      id: `exp-new-${Date.now()}`,
-      event_id: hasEventId ? body.event_id : null,
-      category_id: hasCategoryId ? body.category_id : null,
-      amount: amount,
-      expense_date: body.expense_date,
-      vendor: body.vendor || null,
-      memo: body.memo || null,
-      source_type: sourceType as ExpenseSource,
-      source_reference: body.source_reference || null,
-      is_duplicate: false,
-      created_at: now,
-      updated_at: now,
-      deleted_at: null,
-      event_name: event?.name || null,
-      category_name: category?.name || null,
-      target_type: hasEventId ? 'event' : 'category',
-      target_name: event?.name || category?.name || 'Unknown',
+      if (eventError || !event) {
+        return NextResponse.json(
+          { error: 'Event not found' },
+          { status: 400 }
+        );
+      }
+      eventName = event.name;
+    }
+
+    // Validate category_id exists if provided
+    let categoryName: string | null = null;
+    if (hasCategoryId) {
+      const { data: category, error: categoryError } = await supabase
+        .from('budget_categories')
+        .select('id, name')
+        .eq('id', body.category_id)
+        .is('deleted_at', null)
+        .single();
+
+      if (categoryError || !category) {
+        return NextResponse.json(
+          { error: 'Category not found' },
+          { status: 400 }
+        );
+      }
+      categoryName = category.name;
+    }
+
+    // Insert expense into Supabase
+    const { data: newExpense, error: insertError } = await supabase
+      .from('expenses')
+      .insert({
+        event_id: hasEventId ? body.event_id : null,
+        category_id: hasCategoryId ? body.category_id : null,
+        amount: amount,
+        expense_date: body.expense_date,
+        vendor: body.vendor || null,
+        memo: body.memo || null,
+        source_type: sourceType as ExpenseSource,
+        source_reference: body.source_reference || null,
+        is_duplicate: false,
+      })
+      .select()
+      .single();
+
+    if (insertError || !newExpense) {
+      throw insertError || new Error('Failed to insert expense');
+    }
+
+    // Build the response with relation fields
+    const response = {
+      ...newExpense,
+      event_name: eventName,
+      category_name: categoryName,
+      target_type: hasEventId ? 'event' as const : 'category' as const,
+      target_name: eventName || categoryName || 'Unknown',
     };
 
-    // Persist to mock data (base expense without relations for storage)
-    addExpense({
-      id: newExpense.id,
-      event_id: newExpense.event_id,
-      category_id: newExpense.category_id,
-      amount: newExpense.amount,
-      expense_date: newExpense.expense_date,
-      vendor: newExpense.vendor,
-      memo: newExpense.memo,
-      source_type: newExpense.source_type,
-      source_reference: newExpense.source_reference,
-      is_duplicate: newExpense.is_duplicate,
-      created_at: newExpense.created_at,
-      updated_at: newExpense.updated_at,
-      deleted_at: newExpense.deleted_at,
-    });
-
-    return NextResponse.json(newExpense, { status: 201 });
+    return NextResponse.json(response, { status: 201 });
   } catch (err) {
     console.error('Create expense error:', err);
     logError('Failed to create expense', { error: err as Error, source: 'api/expenses', context: { method: 'POST' } });
