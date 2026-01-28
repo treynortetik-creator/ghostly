@@ -145,8 +145,8 @@ export default function EventDetailPage({ params }: PageProps) {
     return amount.toLocaleString('en-US', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     });
   };
 

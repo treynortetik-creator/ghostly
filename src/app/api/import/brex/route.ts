@@ -222,8 +222,8 @@ function findDuplicate(
   }>
 ): DuplicateInfo | undefined {
   const duplicate = existingExpenses.find(exp => {
-    // Match amount (within 0.01 for floating point comparison)
-    const amountMatch = Math.abs(exp.amount - transaction.amount) < 0.01;
+    // Compare cents as integers to avoid floating-point issues
+    const amountMatch = Math.round(exp.amount * 100) === Math.round(transaction.amount * 100);
 
     // Match date
     const dateMatch = exp.expense_date === transaction.date;

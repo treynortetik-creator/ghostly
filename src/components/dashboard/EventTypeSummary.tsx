@@ -65,8 +65,8 @@ function EventTypeRow({ data }: { data: EventTypeData }) {
     return value.toLocaleString('en-US', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     });
   };
 
@@ -150,13 +150,15 @@ export function EventTypeSummary({ data, className }: EventTypeSummaryProps) {
               {totalActual.toLocaleString('en-US', {
                 style: 'currency',
                 currency: 'USD',
-                minimumFractionDigits: 0,
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
               })}
               <span className="text-sepia font-normal text-sm">
                 {' '}/ {totalBudget.toLocaleString('en-US', {
                   style: 'currency',
                   currency: 'USD',
-                  minimumFractionDigits: 0,
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
                 })}
               </span>
             </p>

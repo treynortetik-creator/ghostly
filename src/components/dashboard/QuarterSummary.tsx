@@ -61,8 +61,8 @@ function QuarterCard({ data }: { data: QuarterData }) {
     return value.toLocaleString('en-US', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     });
   };
 
@@ -165,13 +165,15 @@ export function QuarterSummary({ data, className }: QuarterSummaryProps) {
               {totalActual.toLocaleString('en-US', {
                 style: 'currency',
                 currency: 'USD',
-                minimumFractionDigits: 0,
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
               })}
               <span className="text-sepia font-normal text-sm">
                 {' '}/ {totalBudget.toLocaleString('en-US', {
                   style: 'currency',
                   currency: 'USD',
-                  minimumFractionDigits: 0,
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
                 })}
               </span>
             </p>

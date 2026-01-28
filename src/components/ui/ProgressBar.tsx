@@ -86,8 +86,8 @@ const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
       return val.toLocaleString('en-US', {
         style: 'currency',
         currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
       });
     };
 
@@ -225,7 +225,8 @@ const BudgetProgress = forwardRef<HTMLDivElement, BudgetProgressProps>(
               {spent.toLocaleString('en-US', {
                 style: 'currency',
                 currency: 'USD',
-                minimumFractionDigits: 0,
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
               })}
             </span>
           </div>
@@ -235,7 +236,8 @@ const BudgetProgress = forwardRef<HTMLDivElement, BudgetProgressProps>(
               {budget.toLocaleString('en-US', {
                 style: 'currency',
                 currency: 'USD',
-                minimumFractionDigits: 0,
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
               })}
             </span>
           </div>
@@ -245,7 +247,8 @@ const BudgetProgress = forwardRef<HTMLDivElement, BudgetProgressProps>(
               {remaining.toLocaleString('en-US', {
                 style: 'currency',
                 currency: 'USD',
-                minimumFractionDigits: 0,
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
               })}
             </span>
           </div>

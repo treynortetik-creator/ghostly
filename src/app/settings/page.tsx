@@ -344,10 +344,10 @@ export default function SettingsPage() {
                     {setTotal > 0 && (
                       <div className="mt-3 flex items-center justify-between text-sm">
                         <span className="text-sepia">
-                          Allocated: {allocated.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 })}
+                          Allocated: {allocated.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                         <span className={unallocated >= 0 ? 'text-ink-green font-medium' : 'text-ink-red font-medium'}>
-                          {unallocated >= 0 ? 'Unallocated' : 'Over-allocated'}: {Math.abs(unallocated).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 })}
+                          {unallocated >= 0 ? 'Unallocated' : 'Over-allocated'}: {Math.abs(unallocated).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </div>
                     )}
@@ -365,7 +365,8 @@ export default function SettingsPage() {
                         {budgetSummary.eventsBudget.toLocaleString('en-US', {
                           style: 'currency',
                           currency: 'USD',
-                          minimumFractionDigits: 0,
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
                         })}
                       </p>
                       <p className="text-xs text-sepia mt-1">
@@ -388,7 +389,8 @@ export default function SettingsPage() {
                         {budgetSummary.categoriesBudget.toLocaleString('en-US', {
                           style: 'currency',
                           currency: 'USD',
-                          minimumFractionDigits: 0,
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
                         })}
                       </p>
                       <p className="text-xs text-sepia mt-1">
