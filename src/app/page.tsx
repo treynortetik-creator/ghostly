@@ -21,6 +21,7 @@ import type { EventType, QuarterType } from '@/types/database';
 interface DashboardSummary {
   total: {
     budget: number;
+    allocated: number;
     actual: number;
     remaining: number;
   };
@@ -148,6 +149,7 @@ export default function DashboardPage() {
           {/* Budget Overview Card */}
           <BudgetOverviewCard
             budget={data.total.budget}
+            allocated={data.total.allocated}
             actual={data.total.actual}
             remaining={data.total.remaining}
           />

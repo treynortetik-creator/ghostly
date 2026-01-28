@@ -21,10 +21,15 @@ import type { FiscalYear } from '@/types/database';
 interface SettingsData {
   fiscal_year_id: string;
   openrouter_model: string;
+  total_budget: string;
 }
 
 interface SettingsApiResponse {
-  settings: SettingsData;
+  settings: {
+    fiscal_year_id: string;
+    openrouter_model: string;
+    total_budget: number;
+  };
   fiscal_year: FiscalYear | null;
   prompts?: { csv_categorization: string | null; pdf_extraction: string | null };
 }
@@ -42,6 +47,7 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<SettingsData>({
     fiscal_year_id: '',
     openrouter_model: 'anthropic/claude-3-haiku',
+    total_budget: '0',
   });
   const [originalSettings, setOriginalSettings] = useState<SettingsData | null>(null);
   const [prompts, setPrompts] = useState<{ csv_categorization: string | null; pdf_extraction: string | null }>({
@@ -61,6 +67,7 @@ export default function SettingsPage() {
   const hasChanges = originalSettings && (
     settings.fiscal_year_id !== originalSettings.fiscal_year_id ||
     settings.openrouter_model !== originalSettings.openrouter_model ||
+    settings.total_budget !== originalSettings.total_budget ||
     prompts.csv_categorization !== originalPrompts?.csv_categorization ||
     prompts.pdf_extraction !== originalPrompts?.pdf_extraction
   );
@@ -82,9 +89,10 @@ export default function SettingsPage() {
       if (!settingsRes.ok) throw new Error('Failed to fetch settings');
 
       const data: SettingsApiResponse = await settingsRes.json();
-      const fetchedSettings = {
+      const fetchedSettings: SettingsData = {
         fiscal_year_id: data.settings.fiscal_year_id,
         openrouter_model: data.settings.openrouter_model,
+        total_budget: (data.settings.total_budget ?? 0).toString(),
       };
       setSettings(fetchedSettings);
       setOriginalSettings(fetchedSettings);
@@ -130,7 +138,12 @@ export default function SettingsPage() {
       const response = await fetch('/api/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...settings, prompts }),
+        body: JSON.stringify({
+          fiscal_year_id: settings.fiscal_year_id,
+          openrouter_model: settings.openrouter_model,
+          total_budget: parseFloat(settings.total_budget) || 0,
+          prompts,
+        }),
       });
 
       if (!response.ok) {
@@ -139,9 +152,10 @@ export default function SettingsPage() {
       }
 
       const data = await response.json();
-      const updatedSettings = {
+      const updatedSettings: SettingsData = {
         fiscal_year_id: data.settings.fiscal_year_id,
         openrouter_model: data.settings.openrouter_model,
+        total_budget: (data.settings.total_budget ?? 0).toString(),
       };
       setSettings(updatedSettings);
       setOriginalSettings(updatedSettings);
@@ -283,91 +297,114 @@ export default function SettingsPage() {
           </div>
 
           {/* Budget Overview */}
-          {budgetSummary && (
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-md bg-ink-gold/10 text-ink-gold">
-                    <DollarSign className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <CardTitle>Budget Overview</CardTitle>
-                    <CardDescription>
-                      Total budget is the sum of all event and category budgets
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Total Budget Display */}
-                <div className="p-4 rounded-lg bg-ink-gold/5 border border-ink-gold/20">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-sepia">Total Annual Budget</span>
-                    <span className="text-2xl font-serif font-bold text-ink-gold">
-                      {budgetSummary.totalBudget.toLocaleString('en-US', {
-                        style: 'currency',
-                        currency: 'USD',
-                        minimumFractionDigits: 0,
-                      })}
-                    </span>
-                  </div>
-                </div>
+          {budgetSummary && (() => {
+            const setTotal = parseFloat(settings.total_budget) || 0;
+            const allocated = budgetSummary.eventsBudget + budgetSummary.categoriesBudget;
+            const unallocated = setTotal - allocated;
 
-                {/* Budget Breakdown */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Events Budget */}
-                  <div className="p-4 rounded-lg border border-wood-medium/20 bg-parchment">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="w-4 h-4 text-ink-gold" />
-                      <span className="text-sm font-medium text-wood-dark">Events Budget</span>
+            return (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-md bg-ink-gold/10 text-ink-gold">
+                      <DollarSign className="w-5 h-5" />
                     </div>
-                    <p className="text-xl font-serif font-semibold text-wood-dark">
-                      {budgetSummary.eventsBudget.toLocaleString('en-US', {
-                        style: 'currency',
-                        currency: 'USD',
-                        minimumFractionDigits: 0,
-                      })}
-                    </p>
-                    <p className="text-xs text-sepia mt-1">
-                      Across {budgetSummary.eventsCount} event{budgetSummary.eventsCount !== 1 ? 's' : ''}
-                    </p>
-                    <Link href="/events">
-                      <Button variant="ghost" size="sm" className="mt-3 w-full">
-                        Edit Event Budgets →
-                      </Button>
-                    </Link>
-                  </div>
-
-                  {/* Categories Budget */}
-                  <div className="p-4 rounded-lg border border-wood-medium/20 bg-parchment">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FolderOpen className="w-4 h-4 text-ink-green" />
-                      <span className="text-sm font-medium text-wood-dark">Categories Budget</span>
+                    <div>
+                      <CardTitle>Budget Overview</CardTitle>
+                      <CardDescription>
+                        Set your annual budget target and track allocations across events and categories
+                      </CardDescription>
                     </div>
-                    <p className="text-xl font-serif font-semibold text-wood-dark">
-                      {budgetSummary.categoriesBudget.toLocaleString('en-US', {
-                        style: 'currency',
-                        currency: 'USD',
-                        minimumFractionDigits: 0,
-                      })}
-                    </p>
-                    <p className="text-xs text-sepia mt-1">
-                      Across {budgetSummary.categoriesCount} categor{budgetSummary.categoriesCount !== 1 ? 'ies' : 'y'}
-                    </p>
-                    <Link href="/categories">
-                      <Button variant="ghost" size="sm" className="mt-3 w-full">
-                        Edit Category Budgets →
-                      </Button>
-                    </Link>
                   </div>
-                </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Editable Total Budget */}
+                  <div className="p-4 rounded-lg bg-ink-gold/5 border border-ink-gold/20">
+                    <label htmlFor="total_budget" className="block text-sm text-sepia mb-2">
+                      Total Annual Budget
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-gold font-serif text-lg">$</span>
+                      <input
+                        type="text"
+                        id="total_budget"
+                        value={settings.total_budget}
+                        onChange={(e) => {
+                          const cleaned = e.target.value.replace(/[^0-9.]/g, '');
+                          const parts = cleaned.split('.');
+                          const sanitized = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : cleaned;
+                          setSettings(prev => ({ ...prev, total_budget: sanitized }));
+                        }}
+                        className="w-full pl-8 pr-4 py-2.5 rounded-md bg-parchment border border-ink-gold/40 text-2xl font-serif font-bold text-ink-gold focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold transition-colors duration-200 disabled:opacity-50"
+                        placeholder="0"
+                        disabled={isSaving}
+                      />
+                    </div>
+                    {/* Allocated vs Unallocated */}
+                    {setTotal > 0 && (
+                      <div className="mt-3 flex items-center justify-between text-sm">
+                        <span className="text-sepia">
+                          Allocated: {allocated.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 })}
+                        </span>
+                        <span className={unallocated >= 0 ? 'text-ink-green font-medium' : 'text-ink-red font-medium'}>
+                          {unallocated >= 0 ? 'Unallocated' : 'Over-allocated'}: {Math.abs(unallocated).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 })}
+                        </span>
+                      </div>
+                    )}
+                  </div>
 
-                <p className="text-xs text-sepia/70 italic text-center pt-2">
-                  To adjust the total budget, edit individual event or category budgets using the links above.
-                </p>
-              </CardContent>
-            </Card>
-          )}
+                  {/* Budget Breakdown */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Events Budget */}
+                    <div className="p-4 rounded-lg border border-wood-medium/20 bg-parchment">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Calendar className="w-4 h-4 text-ink-gold" />
+                        <span className="text-sm font-medium text-wood-dark">Events Budget</span>
+                      </div>
+                      <p className="text-xl font-serif font-semibold text-wood-dark">
+                        {budgetSummary.eventsBudget.toLocaleString('en-US', {
+                          style: 'currency',
+                          currency: 'USD',
+                          minimumFractionDigits: 0,
+                        })}
+                      </p>
+                      <p className="text-xs text-sepia mt-1">
+                        Across {budgetSummary.eventsCount} event{budgetSummary.eventsCount !== 1 ? 's' : ''}
+                      </p>
+                      <Link href="/events">
+                        <Button variant="ghost" size="sm" className="mt-3 w-full">
+                          Edit Event Budgets →
+                        </Button>
+                      </Link>
+                    </div>
+
+                    {/* Categories Budget */}
+                    <div className="p-4 rounded-lg border border-wood-medium/20 bg-parchment">
+                      <div className="flex items-center gap-2 mb-2">
+                        <FolderOpen className="w-4 h-4 text-ink-green" />
+                        <span className="text-sm font-medium text-wood-dark">Categories Budget</span>
+                      </div>
+                      <p className="text-xl font-serif font-semibold text-wood-dark">
+                        {budgetSummary.categoriesBudget.toLocaleString('en-US', {
+                          style: 'currency',
+                          currency: 'USD',
+                          minimumFractionDigits: 0,
+                        })}
+                      </p>
+                      <p className="text-xs text-sepia mt-1">
+                        Across {budgetSummary.categoriesCount} categor{budgetSummary.categoriesCount !== 1 ? 'ies' : 'y'}
+                      </p>
+                      <Link href="/categories">
+                        <Button variant="ghost" size="sm" className="mt-3 w-full">
+                          Edit Category Budgets →
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })()}
 
           {/* Save Actions */}
           <Card>

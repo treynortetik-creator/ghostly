@@ -15,7 +15,8 @@ import type { Json } from '@/types/database';
 interface AppSettings {
   fiscal_year_id: string;
   openrouter_model: string;
-  [key: string]: string; // Index signature for Json compatibility
+  total_budget: number;
+  [key: string]: string | number; // Index signature for Json compatibility
 }
 
 // Valid prompt keys stored in app_settings
@@ -54,6 +55,7 @@ export async function GET() {
           settings: {
             fiscal_year_id: '',
             openrouter_model: 'anthropic/claude-3-haiku',
+            total_budget: 0,
           },
           fiscal_year: null,
           prompts: {
@@ -65,7 +67,12 @@ export async function GET() {
       throw settingsError;
     }
 
-    const settings = settingsRow.value as unknown as AppSettings;
+    const rawSettings = settingsRow.value as unknown as Partial<AppSettings>;
+    const settings: AppSettings = {
+      fiscal_year_id: rawSettings.fiscal_year_id || '',
+      openrouter_model: rawSettings.openrouter_model || 'anthropic/claude-3-haiku',
+      total_budget: typeof rawSettings.total_budget === 'number' ? rawSettings.total_budget : 0,
+    };
 
     // Fetch the fiscal year details if we have one
     let fiscalYear = null;
@@ -128,6 +135,17 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    // Validate total_budget if provided
+    if (body.total_budget !== undefined) {
+      const budget = parseFloat(body.total_budget);
+      if (isNaN(budget) || budget < 0) {
+        return NextResponse.json(
+          { error: 'Invalid total_budget: Must be a non-negative number' },
+          { status: 400 }
+        );
+      }
+    }
+
     // Get current settings first
     const { data: currentRow } = await supabase
       .from('app_settings')
@@ -135,15 +153,18 @@ export async function PUT(request: NextRequest) {
       .eq('key', 'app_config')
       .single();
 
-    const currentSettings = (currentRow?.value as unknown as AppSettings) || {
-      fiscal_year_id: '',
-      openrouter_model: 'anthropic/claude-3-haiku',
+    const rawCurrent = (currentRow?.value as unknown as Partial<AppSettings>) || {};
+    const currentSettings: AppSettings = {
+      fiscal_year_id: rawCurrent.fiscal_year_id || '',
+      openrouter_model: rawCurrent.openrouter_model || 'anthropic/claude-3-haiku',
+      total_budget: typeof rawCurrent.total_budget === 'number' ? rawCurrent.total_budget : 0,
     };
 
     // Build updated settings
     const updatedSettings: AppSettings = {
       fiscal_year_id: body.fiscal_year_id ?? currentSettings.fiscal_year_id,
       openrouter_model: body.openrouter_model ?? currentSettings.openrouter_model,
+      total_budget: body.total_budget !== undefined ? parseFloat(body.total_budget) : currentSettings.total_budget,
     };
 
     // Upsert the settings

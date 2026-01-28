@@ -19,6 +19,7 @@ import { createClient } from '@/lib/supabase/server';
 export interface DashboardSummary {
   total: {
     budget: number;
+    allocated: number;
     actual: number;
     remaining: number;
   };
@@ -56,18 +57,24 @@ export async function GET() {
 
     const supabase = await createClient();
 
-    // Fetch all three datasets in parallel
+    // Fetch all datasets in parallel (including app_settings for total_budget)
     const [
       { data: activeEvents, error: eventsErr },
       { data: activeCategories, error: catsErr },
       { data: activeExpenses, error: expErr },
+      { data: settingsRow },
     ] = await Promise.all([
       supabase.from('events').select('*').is('deleted_at', null),
       supabase.from('budget_categories').select('*').is('deleted_at', null),
       supabase.from('expenses').select('*').is('deleted_at', null),
+      supabase.from('app_settings').select('value').eq('key', 'app_config').single(),
     ]);
 
     if (eventsErr || catsErr || expErr) throw eventsErr || catsErr || expErr;
+
+    // Extract the settable total budget (0 means use computed sum)
+    const appConfig = settingsRow?.value as Record<string, unknown> | null;
+    const setTotalBudget = typeof appConfig?.total_budget === 'number' ? appConfig.total_budget : 0;
 
     // ---- By Event Type ----
     const eventTypes: EventType[] = ['executive', 'national', 'state', 'regional', 'customer'];
@@ -107,12 +114,14 @@ export async function GET() {
     const categoriesBudget = byCategory.reduce((sum, c) => sum + c.budget, 0);
     const categoriesActual = byCategory.reduce((sum, c) => sum + c.actual, 0);
 
-    const totalBudget = eventsBudget + categoriesBudget;
+    const allocatedBudget = eventsBudget + categoriesBudget;
+    const totalBudget = setTotalBudget > 0 ? setTotalBudget : allocatedBudget;
     const totalActual = eventsActual + categoriesActual;
 
     const summary: DashboardSummary = {
       total: {
         budget: totalBudget,
+        allocated: allocatedBudget,
         actual: totalActual,
         remaining: totalBudget - totalActual,
       },

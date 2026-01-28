@@ -12,6 +12,7 @@ import { DollarSign, TrendingDown, TrendingUp, Wallet } from 'lucide-react';
 
 export interface BudgetOverviewCardProps {
   budget: number;
+  allocated?: number;
   actual: number;
   remaining: number;
   className?: string;
@@ -19,10 +20,12 @@ export interface BudgetOverviewCardProps {
 
 export function BudgetOverviewCard({
   budget,
+  allocated,
   actual,
   remaining,
   className,
 }: BudgetOverviewCardProps) {
+  const hasSetBudget = allocated !== undefined && allocated !== budget;
   const percentUsed = budget > 0 ? (actual / budget) * 100 : 0;
   const isOverBudget = actual > budget;
 
@@ -114,6 +117,16 @@ export function BudgetOverviewCard({
             </p>
           </div>
         </div>
+
+        {/* Allocated indicator (when a total budget is set) */}
+        {hasSetBudget && allocated !== undefined && (
+          <div className="flex items-center justify-between text-sm px-1 mb-4">
+            <span className="text-sepia">Allocated to events &amp; categories</span>
+            <span className={allocated > budget ? 'text-ink-red font-medium' : 'text-wood-dark font-medium'}>
+              {formatCurrency(allocated)} of {formatCurrency(budget)}
+            </span>
+          </div>
+        )}
 
         {/* Progress Bar */}
         <div className="pt-4 border-t border-wood-medium/20">
