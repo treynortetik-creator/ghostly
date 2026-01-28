@@ -140,6 +140,18 @@ export interface ExpenseWithRelations extends Expense {
 }
 
 // ============================================
+// JSON TYPE FOR SUPABASE
+// ============================================
+
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
+
+// ============================================
 // SUPABASE DATABASE TYPE HELPER
 // ============================================
 
@@ -147,38 +159,206 @@ export interface ExpenseWithRelations extends Expense {
  * Database schema type for Supabase client
  */
 export interface Database {
+  // Internal Supabase type for proper client typing
+  __InternalSupabase: {
+    PostgrestVersion: '14.1';
+  };
   public: {
     Tables: {
       fiscal_years: {
-        Row: FiscalYear;
-        Insert: FiscalYearInsert;
-        Update: Partial<FiscalYearInsert>;
+        Row: {
+          id: string;
+          year: number;
+          created_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          year: number;
+          created_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          year?: number;
+          created_at?: string | null;
+        };
+        Relationships: [];
       };
       app_settings: {
-        Row: AppSetting;
-        Insert: AppSettingInsert;
-        Update: AppSettingUpdate;
+        Row: {
+          id: string;
+          key: string;
+          value: Json;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          key: string;
+          value: Json;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          key?: string;
+          value?: Json;
+          updated_at?: string | null;
+        };
+        Relationships: [];
       };
       events: {
-        Row: Event;
-        Insert: EventInsert;
-        Update: EventUpdate;
+        Row: {
+          id: string;
+          name: string;
+          event_type: EventType;
+          quarter: QuarterType | null;
+          fiscal_year_id: string | null;
+          date_start: string | null;
+          date_end: string | null;
+          location: string | null;
+          budget_amount: number | null;
+          expansion_goal: number | null;
+          net_new_goal: number | null;
+          approach_notes: string | null;
+          marketing_notes: string | null;
+          sales_notes: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          event_type: EventType;
+          quarter?: QuarterType | null;
+          fiscal_year_id?: string | null;
+          date_start?: string | null;
+          date_end?: string | null;
+          location?: string | null;
+          budget_amount?: number | null;
+          expansion_goal?: number | null;
+          net_new_goal?: number | null;
+          approach_notes?: string | null;
+          marketing_notes?: string | null;
+          sales_notes?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          event_type?: EventType;
+          quarter?: QuarterType | null;
+          fiscal_year_id?: string | null;
+          date_start?: string | null;
+          date_end?: string | null;
+          location?: string | null;
+          budget_amount?: number | null;
+          expansion_goal?: number | null;
+          net_new_goal?: number | null;
+          approach_notes?: string | null;
+          marketing_notes?: string | null;
+          sales_notes?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Relationships: [];
       };
       budget_categories: {
-        Row: BudgetCategory;
-        Insert: BudgetCategoryInsert;
-        Update: BudgetCategoryUpdate;
+        Row: {
+          id: string;
+          name: string;
+          fiscal_year_id: string | null;
+          budget_amount: number | null;
+          description: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          fiscal_year_id?: string | null;
+          budget_amount?: number | null;
+          description?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          fiscal_year_id?: string | null;
+          budget_amount?: number | null;
+          description?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Relationships: [];
       };
       expenses: {
-        Row: Expense;
-        Insert: ExpenseInsert;
-        Update: ExpenseUpdate;
+        Row: {
+          id: string;
+          event_id: string | null;
+          category_id: string | null;
+          amount: number;
+          expense_date: string;
+          vendor: string | null;
+          memo: string | null;
+          source_type: ExpenseSource;
+          source_reference: string | null;
+          is_duplicate: boolean | null;
+          created_at: string | null;
+          updated_at: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          event_id?: string | null;
+          category_id?: string | null;
+          amount: number;
+          expense_date: string;
+          vendor?: string | null;
+          memo?: string | null;
+          source_type?: ExpenseSource;
+          source_reference?: string | null;
+          is_duplicate?: boolean | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          event_id?: string | null;
+          category_id?: string | null;
+          amount?: number;
+          expense_date?: string;
+          vendor?: string | null;
+          memo?: string | null;
+          source_type?: ExpenseSource;
+          source_reference?: string | null;
+          is_duplicate?: boolean | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Relationships: [];
       };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      [_ in never]: never;
     };
     Enums: {
       event_type: EventType;
       quarter_type: QuarterType;
       expense_source: ExpenseSource;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
     };
   };
 }

@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getFiscalYears, createFiscalYear, mockFiscalYears } from '@/lib/mock-data/settings';
+import { createClient } from '@/lib/supabase/server';
 
 // ============================================
 // GET /api/fiscal-years
@@ -15,16 +15,22 @@ import { getFiscalYears, createFiscalYear, mockFiscalYears } from '@/lib/mock-da
 
 export async function GET() {
   try {
-    // TODO: Replace with real Supabase queries when connected
-    // const supabase = await createClient();
-    // const { data, error } = await supabase.from('fiscal_years').select('*').order('year', { ascending: false });
+    const supabase = await createClient();
 
-    const fiscalYears = getFiscalYears();
+    const { data: fiscalYears, error } = await supabase
+      .from('fiscal_years')
+      .select('*')
+      .order('year', { ascending: false });
+
+    if (error) {
+      console.error('Fiscal years fetch error:', error);
+      throw error;
+    }
 
     return NextResponse.json({
-      fiscal_years: fiscalYears,
+      fiscal_years: fiscalYears || [],
       meta: {
-        total: fiscalYears.length,
+        total: fiscalYears?.length || 0,
       },
     });
   } catch (error) {
@@ -43,6 +49,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const supabase = await createClient();
 
     // Validate required field
     if (!body.year) {
@@ -62,7 +69,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if fiscal year already exists
-    const existing = mockFiscalYears.find(fy => fy.year === year);
+    const { data: existing } = await supabase
+      .from('fiscal_years')
+      .select('id')
+      .eq('year', year)
+      .single();
+
     if (existing) {
       return NextResponse.json(
         { error: `Fiscal year ${year} already exists` },
@@ -70,11 +82,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Replace with real Supabase insert when connected
-    // const supabase = await createClient();
-    // const { data, error } = await supabase.from('fiscal_years').insert({ year }).select().single();
+    // Insert new fiscal year
+    const { data: newFiscalYear, error: insertError } = await supabase
+      .from('fiscal_years')
+      .insert({ year })
+      .select()
+      .single();
 
-    const newFiscalYear = createFiscalYear(year);
+    if (insertError) {
+      console.error('Fiscal year insert error:', insertError);
+      // Handle unique constraint violation
+      if (insertError.code === '23505') {
+        return NextResponse.json(
+          { error: `Fiscal year ${year} already exists` },
+          { status: 409 }
+        );
+      }
+      throw insertError;
+    }
 
     return NextResponse.json(newFiscalYear, { status: 201 });
   } catch (error) {

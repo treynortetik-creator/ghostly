@@ -7,7 +7,15 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSettings, updateSettings, getFiscalYearById, type Settings } from '@/lib/mock-data/settings';
+import { createClient } from '@/lib/supabase/server';
+import type { Json } from '@/types/database';
+
+// Settings interface matching our app_config structure
+interface AppSettings {
+  fiscal_year_id: string;
+  openrouter_model: string;
+  [key: string]: string; // Index signature for Json compatibility
+}
 
 // ============================================
 // GET /api/settings
@@ -15,16 +23,46 @@ import { getSettings, updateSettings, getFiscalYearById, type Settings } from '@
 
 export async function GET() {
   try {
-    // TODO: Replace with real Supabase queries when connected
-    // const supabase = await createClient();
-    // const { data, error } = await supabase.from('app_settings').select('*').single();
+    const supabase = await createClient();
 
-    const settings = getSettings();
-    const fiscalYear = getFiscalYearById(settings.fiscal_year_id);
+    // Fetch app config from app_settings table
+    const { data: settingsRow, error: settingsError } = await supabase
+      .from('app_settings')
+      .select('*')
+      .eq('key', 'app_config')
+      .single();
+
+    if (settingsError) {
+      console.error('Settings fetch error:', settingsError);
+      // Return default settings if not found
+      if (settingsError.code === 'PGRST116') {
+        return NextResponse.json({
+          settings: {
+            fiscal_year_id: '',
+            openrouter_model: 'anthropic/claude-3-haiku',
+          },
+          fiscal_year: null,
+        });
+      }
+      throw settingsError;
+    }
+
+    const settings = settingsRow.value as unknown as AppSettings;
+
+    // Fetch the fiscal year details if we have one
+    let fiscalYear = null;
+    if (settings.fiscal_year_id) {
+      const { data: fyData } = await supabase
+        .from('fiscal_years')
+        .select('*')
+        .eq('id', settings.fiscal_year_id)
+        .single();
+      fiscalYear = fyData;
+    }
 
     return NextResponse.json({
       settings,
-      fiscal_year: fiscalYear || null,
+      fiscal_year: fiscalYear,
     });
   } catch (error) {
     console.error('Settings API error:', error);
@@ -42,11 +80,17 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
+    const supabase = await createClient();
 
     // Validate fiscal_year_id if provided
     if (body.fiscal_year_id) {
-      const fiscalYear = getFiscalYearById(body.fiscal_year_id);
-      if (!fiscalYear) {
+      const { data: fyData, error: fyError } = await supabase
+        .from('fiscal_years')
+        .select('id')
+        .eq('id', body.fiscal_year_id)
+        .single();
+
+      if (fyError || !fyData) {
         return NextResponse.json(
           { error: 'Invalid fiscal_year_id: Fiscal year not found' },
           { status: 400 }
@@ -62,20 +106,54 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // TODO: Replace with real Supabase update when connected
-    // const supabase = await createClient();
-    // const { data, error } = await supabase.from('app_settings').update(updates).select().single();
+    // Get current settings first
+    const { data: currentRow } = await supabase
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'app_config')
+      .single();
 
-    const updates: Partial<Settings> = {};
-    if (body.fiscal_year_id) updates.fiscal_year_id = body.fiscal_year_id;
-    if (body.openrouter_model !== undefined) updates.openrouter_model = body.openrouter_model;
+    const currentSettings = (currentRow?.value as unknown as AppSettings) || {
+      fiscal_year_id: '',
+      openrouter_model: 'anthropic/claude-3-haiku',
+    };
 
-    const updatedSettings = updateSettings(updates);
-    const fiscalYear = getFiscalYearById(updatedSettings.fiscal_year_id);
+    // Build updated settings
+    const updatedSettings: AppSettings = {
+      fiscal_year_id: body.fiscal_year_id ?? currentSettings.fiscal_year_id,
+      openrouter_model: body.openrouter_model ?? currentSettings.openrouter_model,
+    };
+
+    // Upsert the settings
+    const { error: updateError } = await supabase
+      .from('app_settings')
+      .upsert({
+        key: 'app_config',
+        value: updatedSettings as Json,
+        updated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'key',
+      });
+
+    if (updateError) {
+      console.error('Settings update error:', updateError);
+      throw updateError;
+    }
+
+    // Fetch the fiscal year details if we have one
+    let fiscalYear = null;
+    if (updatedSettings.fiscal_year_id) {
+      const { data: fyData } = await supabase
+        .from('fiscal_years')
+        .select('*')
+        .eq('id', updatedSettings.fiscal_year_id)
+        .single();
+      fiscalYear = fyData;
+    }
 
     return NextResponse.json({
       settings: updatedSettings,
-      fiscal_year: fiscalYear || null,
+      fiscal_year: fiscalYear,
       message: 'Settings updated successfully',
     });
   } catch (error) {
