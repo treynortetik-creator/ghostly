@@ -45,11 +45,11 @@ const importOptions: ImportOption[] = [
       'Upload PDF invoices or receipts',
       'Automatic text extraction (vendor, amount, date)',
       'Review extracted data before saving',
-      'Attach original PDF to expense record',
+      'Manually assign to event or category',
     ],
     icon: FileText,
     href: '/import/pdf',
-    available: false, // Coming in Phase 5.2
+    available: true,
   },
 ];
 
