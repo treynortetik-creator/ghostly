@@ -7,6 +7,7 @@
  */
 
 import { NextResponse } from 'next/server';
+import { getSession } from '@/lib/auth';
 import type { EventType, QuarterType } from '@/types/database';
 
 // ============================================
@@ -129,6 +130,15 @@ const mockCategories = [
 
 export async function GET() {
   try {
+    // Check authentication
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
     // TODO: Replace with real Supabase queries when connected
     // const supabase = await createClient();
     //

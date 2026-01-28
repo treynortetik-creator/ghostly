@@ -130,11 +130,13 @@ export interface BudgetCategoryWithFiscalYear extends BudgetCategory {
 }
 
 /**
- * Expense with its related event or category populated
+ * Expense with computed display fields
  */
 export interface ExpenseWithRelations extends Expense {
-  event: Event | null;
-  category: BudgetCategory | null;
+  event_name: string | null;
+  category_name: string | null;
+  target_type: 'event' | 'category';
+  target_name: string;
 }
 
 // ============================================

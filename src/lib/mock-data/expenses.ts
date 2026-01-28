@@ -3,7 +3,10 @@
  * Combines event and category expenses for unified expense management
  */
 
-import type { Expense, ExpenseSource } from '@/types/database';
+import type { Expense, ExpenseSource, ExpenseWithRelations } from '@/types/database';
+
+// Re-export ExpenseWithRelations for backwards compatibility
+export type { ExpenseWithRelations } from '@/types/database';
 import { mockExpenses as eventExpenses } from './events';
 import { mockCategoryExpenses } from './categories';
 import { getEventById } from './events';
@@ -132,17 +135,6 @@ export const allExpenses: Expense[] = [
   ...mockCategoryExpenses,
   ...additionalExpenses,
 ];
-
-// ============================================
-// EXPENSE WITH RELATIONS TYPE
-// ============================================
-
-export interface ExpenseWithRelations extends Expense {
-  event_name: string | null;
-  category_name: string | null;
-  target_type: 'event' | 'category';
-  target_name: string;
-}
 
 // ============================================
 // HELPER FUNCTIONS

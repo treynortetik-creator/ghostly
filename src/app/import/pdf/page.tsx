@@ -65,14 +65,16 @@ export default function PDFImportPage() {
 
   // Load assignment options (events and categories)
   useEffect(() => {
+    const abortController = new AbortController();
+
     const loadOptions = async () => {
       try {
         // Fetch events
-        const eventsRes = await fetch('/api/events');
+        const eventsRes = await fetch('/api/events', { signal: abortController.signal });
         const eventsData = await eventsRes.json();
 
         // Fetch categories
-        const categoriesRes = await fetch('/api/categories');
+        const categoriesRes = await fetch('/api/categories', { signal: abortController.signal });
         const categoriesData = await categoriesRes.json();
 
         const options: AssignmentOption[] = [
@@ -92,12 +94,17 @@ export default function PDFImportPage() {
 
         setAssignmentOptions(options);
       } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return; // Expected when component unmounts
+        }
         console.error('Failed to load assignment options:', err);
         // Don't show error - options will be empty but user can still proceed
       }
     };
 
     loadOptions();
+
+    return () => abortController.abort();
   }, []);
 
   // Handle file upload

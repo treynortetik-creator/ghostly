@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
+import { timingSafeEqual } from 'crypto';
 import { cookies } from 'next/headers';
 
 // Cookie name for the auth token
@@ -40,9 +41,15 @@ export function verifyCredentials(username: string, password: string): boolean {
     return false;
   }
 
-  // Simple string comparison for single-user app
-  // In a production multi-user app, you'd use bcrypt or similar
-  return password === envPassword;
+  // Use timing-safe comparison to prevent timing attacks
+  const passwordBuffer = Buffer.from(password);
+  const envPasswordBuffer = Buffer.from(envPassword);
+
+  // timingSafeEqual requires both buffers to be same length
+  if (passwordBuffer.length !== envPasswordBuffer.length) {
+    return false;
+  }
+  return timingSafeEqual(passwordBuffer, envPasswordBuffer);
 }
 
 /**

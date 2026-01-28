@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Receipt, AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -148,7 +148,7 @@ export function ExpenseList({
   const endItem = Math.min(currentPage * pageSize, sortedExpenses.length);
 
   // Reset to page 1 when filters or sorting changes
-  useMemo(() => {
+  useEffect(() => {
     setCurrentPage(1);
   }, [filters, sortField, sortOrder, pageSize]);
 
@@ -184,7 +184,7 @@ export function ExpenseList({
   };
 
   // Clear selection when expenses change
-  useMemo(() => {
+  useEffect(() => {
     setSelectedIds(new Set());
   }, [expenses]);
 
