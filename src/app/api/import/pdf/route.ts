@@ -347,9 +347,10 @@ export async function POST(request: NextRequest) {
     try {
       pdfData = await parsePDF(buffer);
     } catch (error) {
-      console.error('PDF parse error:', error);
+      const errMsg = error instanceof Error ? error.message : String(error);
+      console.error('PDF parse error:', errMsg, error);
       return NextResponse.json(
-        { error: 'Failed to parse PDF. The file may be corrupted or password-protected.' },
+        { error: `Failed to parse PDF: ${errMsg}` },
         { status: 400 }
       );
     }
