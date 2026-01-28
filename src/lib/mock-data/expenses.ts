@@ -218,6 +218,43 @@ export function getExpenseById(id: string): ExpenseWithRelations | undefined {
 }
 
 /**
+ * Soft delete an expense by ID
+ * Sets deleted_at timestamp so it's filtered out of queries
+ */
+export function deleteExpense(id: string): boolean {
+  const index = allExpenses.findIndex(e => e.id === id && !e.deleted_at);
+  if (index === -1) return false;
+
+  allExpenses[index] = {
+    ...allExpenses[index],
+    deleted_at: new Date().toISOString(),
+  };
+  return true;
+}
+
+/**
+ * Add a new expense to the mock data
+ */
+export function addExpense(expense: Expense): void {
+  allExpenses.push(expense);
+}
+
+/**
+ * Update an expense in the mock data
+ */
+export function updateExpense(id: string, updates: Partial<Expense>): boolean {
+  const index = allExpenses.findIndex(e => e.id === id && !e.deleted_at);
+  if (index === -1) return false;
+
+  allExpenses[index] = {
+    ...allExpenses[index],
+    ...updates,
+    updated_at: new Date().toISOString(),
+  };
+  return true;
+}
+
+/**
  * Source type display labels
  */
 export const sourceTypeLabels: Record<ExpenseSource, string> = {

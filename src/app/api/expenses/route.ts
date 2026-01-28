@@ -11,7 +11,7 @@ import { logError } from '@/lib/error-logger';
 import type { ExpenseSource } from '@/types/database';
 import {
   getExpenses,
-  allExpenses,
+  addExpense,
   type ExpenseWithRelations,
 } from '@/lib/mock-data/expenses';
 import { getEventById } from '@/lib/mock-data/events';
@@ -231,9 +231,22 @@ export async function POST(request: NextRequest) {
       target_name: event?.name || category?.name || 'Unknown',
     };
 
-    // In a real implementation, we would add to the database
-    // For mock purposes, we'll just return the created expense
-    // allExpenses.push(newExpense); // Not persisting in mock
+    // Persist to mock data (base expense without relations for storage)
+    addExpense({
+      id: newExpense.id,
+      event_id: newExpense.event_id,
+      category_id: newExpense.category_id,
+      amount: newExpense.amount,
+      expense_date: newExpense.expense_date,
+      vendor: newExpense.vendor,
+      memo: newExpense.memo,
+      source_type: newExpense.source_type,
+      source_reference: newExpense.source_reference,
+      is_duplicate: newExpense.is_duplicate,
+      created_at: newExpense.created_at,
+      updated_at: newExpense.updated_at,
+      deleted_at: newExpense.deleted_at,
+    });
 
     return NextResponse.json(newExpense, { status: 201 });
   } catch (err) {

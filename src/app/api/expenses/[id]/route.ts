@@ -11,7 +11,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { ExpenseSource } from '@/types/database';
 import {
   getExpenseById,
-  allExpenses,
+  deleteExpense,
+  updateExpense,
   type ExpenseWithRelations,
 } from '@/lib/mock-data/expenses';
 import { getEventById } from '@/lib/mock-data/events';
@@ -163,13 +164,8 @@ export async function PUT(
     //   .select()
     //   .single();
 
-    // Create updated expense (mock)
-    const now = new Date().toISOString();
-    const event = hasEventId ? getEventById(newEventId) : null;
-    const category = hasCategoryId ? getCategoryById(newCategoryId) : null;
-
-    const updatedExpense: ExpenseWithRelations = {
-      ...existingExpense,
+    // Build update payload
+    const updates = {
       event_id: hasEventId ? newEventId : null,
       category_id: hasCategoryId ? newCategoryId : null,
       amount: body.amount !== undefined ? parseFloat(body.amount) : existingExpense.amount,
@@ -178,12 +174,25 @@ export async function PUT(
       memo: body.memo !== undefined ? body.memo : existingExpense.memo,
       source_type: body.source_type ?? existingExpense.source_type,
       source_reference: body.source_reference !== undefined ? body.source_reference : existingExpense.source_reference,
-      updated_at: now,
-      event_name: event?.name || null,
-      category_name: category?.name || null,
-      target_type: hasEventId ? 'event' : 'category',
-      target_name: event?.name || category?.name || 'Unknown',
     };
+
+    // Persist update to mock data
+    const updated = updateExpense(id, updates);
+    if (!updated) {
+      return NextResponse.json(
+        { error: 'Failed to update expense' },
+        { status: 500 }
+      );
+    }
+
+    // Re-fetch the updated expense with relations
+    const updatedExpense = getExpenseById(id);
+    if (!updatedExpense) {
+      return NextResponse.json(
+        { error: 'Failed to retrieve updated expense' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ expense: updatedExpense });
   } catch (error) {
@@ -222,8 +231,14 @@ export async function DELETE(
     //   .update({ deleted_at: new Date().toISOString() })
     //   .eq('id', id);
 
-    // Soft delete (mock) - just return success
-    // In real implementation, we would set deleted_at
+    // Soft delete - sets deleted_at timestamp
+    const deleted = deleteExpense(id);
+    if (!deleted) {
+      return NextResponse.json(
+        { error: 'Failed to delete expense' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       message: 'Expense deleted successfully',
