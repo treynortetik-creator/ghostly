@@ -10,6 +10,9 @@ import { NextResponse } from 'next/server';
 import { logError } from '@/lib/error-logger';
 import { getSession } from '@/lib/auth';
 import type { EventType, QuarterType } from '@/types/database';
+import { mockEvents } from '@/lib/mock-data/events';
+import { mockCategories } from '@/lib/mock-data/categories';
+import { allExpenses } from '@/lib/mock-data/expenses';
 
 // ============================================
 // TYPE DEFINITIONS
@@ -39,93 +42,6 @@ export interface DashboardSummary {
 }
 
 // ============================================
-// MOCK DATA (Based on seed.sql)
-// Will be replaced with real Supabase queries
-// ============================================
-
-// Event budgets by type from seed data
-const mockEventsByType: Record<EventType, { budget: number; actual: number }> = {
-  executive: {
-    // 12 events: 16500+30500+65000+40000+8700+5000+35000+8000+50000+7500+35000+38000 = 339,200
-    budget: 339200,
-    actual: 125000, // ~37% spent
-  },
-  national: {
-    // 19 events: 25000+48000+1700+2200+2500+800+12500+1500+80000+1500+1000+5000+5000+5000+18000+30000+15000+1200+10000 = 265,900
-    budget: 265900,
-    actual: 98500, // ~37% spent
-  },
-  state: {
-    // 13 events: 1200+4000+1300+11000+300+4000+4600+8000+1200+10000+500+10000+60000 = 116,100
-    budget: 116100,
-    actual: 45200, // ~39% spent
-  },
-  regional: {
-    // No regional events in seed data
-    budget: 0,
-    actual: 0,
-  },
-  customer: {
-    // 1 event: 150,000
-    budget: 150000,
-    actual: 18750, // ~12.5% spent
-  },
-};
-
-// Quarter budgets from seed data
-const mockByQuarter: Record<QuarterType, { budget: number; actual: number }> = {
-  Q1: {
-    // Executive Q1: 16500+30500+65000+40000 = 152,000
-    // National Q1: 1700+2200+2500+800 = 7,200
-    // State Q1: 1200 = 1,200
-    // Total: 160,400
-    budget: 160400,
-    actual: 85200, // ~53% spent (Q1 mostly complete)
-  },
-  Q2: {
-    // Executive Q2: 8700+5000+35000+8000 = 56,700
-    // National Q2: 12500+1500+80000+1500+10000 = 105,500
-    // State Q2: 4000+1300+11000+300 = 16,600
-    // Total: 178,800
-    budget: 178800,
-    actual: 92450, // ~52% spent
-  },
-  Q3: {
-    // Executive Q3: 50000 = 50,000
-    // National Q3: 1000+5000+5000 = 11,000
-    // State Q3: 4000+4600+8000+1200 = 17,800
-    // Total: 78,800
-    budget: 78800,
-    actual: 25600, // ~32% spent
-  },
-  Q4: {
-    // Executive Q4: 7500+35000+38000 = 80,500
-    // National Q4: 5000+18000+30000+15000+1200 = 69,200
-    // State Q4: 10000+500+10000 = 20,500
-    // Total: 170,200
-    budget: 170200,
-    actual: 45200, // ~27% spent
-  },
-  TBD: {
-    // National TBD: 25000+48000 = 73,000
-    // State TBD: 60000 = 60,000
-    // Customer TBD: 150000 = 150,000
-    // Total: 283,000
-    budget: 283000,
-    actual: 39000, // ~14% allocated
-  },
-};
-
-// Budget categories from seed data
-const mockCategories = [
-  { name: 'Spare Funds', budget: 30000, actual: 8500 },
-  { name: 'Exhibit Properties', budget: 15000, actual: 12200 },
-  { name: 'Swag', budget: 14000, actual: 7800 },
-  { name: 'Marketing Expenses', budget: 5000, actual: 2100 },
-  { name: 'Conference Cost Increase', budget: 50000, actual: 0 },
-];
-
-// ============================================
 // API HANDLER
 // ============================================
 
@@ -140,46 +56,61 @@ export async function GET() {
       );
     }
 
-    // TODO: Replace with real Supabase queries when connected
-    // const supabase = await createClient();
-    //
-    // const [eventsResult, categoriesResult, expensesResult] = await Promise.all([
-    //   supabase.from('events').select('*').is('deleted_at', null),
-    //   supabase.from('budget_categories').select('*').is('deleted_at', null),
-    //   supabase.from('expenses').select('*').is('deleted_at', null).eq('is_duplicate', false),
-    // ]);
+    // Get active (non-deleted) data
+    const activeEvents = mockEvents.filter(e => !e.deleted_at);
+    const activeCategories = mockCategories.filter(c => !c.deleted_at);
+    const activeExpenses = allExpenses.filter(e => !e.deleted_at);
 
-    // Calculate totals
-    const eventsBudget = Object.values(mockEventsByType).reduce((sum, e) => sum + e.budget, 0);
-    const eventsActual = Object.values(mockEventsByType).reduce((sum, e) => sum + e.actual, 0);
-    const categoriesBudget = mockCategories.reduce((sum, c) => sum + c.budget, 0);
-    const categoriesActual = mockCategories.reduce((sum, c) => sum + c.actual, 0);
+    // ---- By Event Type ----
+    const eventTypes: EventType[] = ['executive', 'national', 'state', 'regional', 'customer'];
+    const byEventType = eventTypes.map(type => {
+      const eventsOfType = activeEvents.filter(e => e.event_type === type);
+      const budget = eventsOfType.reduce((sum, e) => sum + e.budget_amount, 0);
+      const eventIds = new Set(eventsOfType.map(e => e.id));
+      const actual = activeExpenses
+        .filter(e => e.event_id && eventIds.has(e.event_id))
+        .reduce((sum, e) => sum + e.amount, 0);
+      return { type, budget, actual };
+    });
+
+    // ---- By Quarter ----
+    const quarters: QuarterType[] = ['Q1', 'Q2', 'Q3', 'Q4', 'TBD'];
+    const byQuarter = quarters.map(quarter => {
+      const eventsInQuarter = activeEvents.filter(e => e.quarter === quarter);
+      const budget = eventsInQuarter.reduce((sum, e) => sum + e.budget_amount, 0);
+      const eventIds = new Set(eventsInQuarter.map(e => e.id));
+      const actual = activeExpenses
+        .filter(e => e.event_id && eventIds.has(e.event_id))
+        .reduce((sum, e) => sum + e.amount, 0);
+      return { quarter, budget, actual };
+    });
+
+    // ---- By Category ----
+    const byCategory = activeCategories.map(cat => {
+      const actual = activeExpenses
+        .filter(e => e.category_id === cat.id)
+        .reduce((sum, e) => sum + e.amount, 0);
+      return { name: cat.name, budget: cat.budget_amount, actual };
+    });
+
+    // ---- Totals ----
+    const eventsBudget = byEventType.reduce((sum, e) => sum + e.budget, 0);
+    const eventsActual = byEventType.reduce((sum, e) => sum + e.actual, 0);
+    const categoriesBudget = byCategory.reduce((sum, c) => sum + c.budget, 0);
+    const categoriesActual = byCategory.reduce((sum, c) => sum + c.actual, 0);
 
     const totalBudget = eventsBudget + categoriesBudget;
     const totalActual = eventsActual + categoriesActual;
 
-    // Build response
     const summary: DashboardSummary = {
       total: {
         budget: totalBudget,
         actual: totalActual,
         remaining: totalBudget - totalActual,
       },
-      byEventType: [
-        { type: 'executive', ...mockEventsByType.executive },
-        { type: 'national', ...mockEventsByType.national },
-        { type: 'state', ...mockEventsByType.state },
-        { type: 'regional', ...mockEventsByType.regional },
-        { type: 'customer', ...mockEventsByType.customer },
-      ],
-      byQuarter: [
-        { quarter: 'Q1', ...mockByQuarter.Q1 },
-        { quarter: 'Q2', ...mockByQuarter.Q2 },
-        { quarter: 'Q3', ...mockByQuarter.Q3 },
-        { quarter: 'Q4', ...mockByQuarter.Q4 },
-        { quarter: 'TBD', ...mockByQuarter.TBD },
-      ],
-      byCategory: mockCategories,
+      byEventType,
+      byQuarter,
+      byCategory,
     };
 
     return NextResponse.json(summary);

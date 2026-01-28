@@ -107,22 +107,22 @@ function QuarterCard({ data }: { data: QuarterData }) {
         />
 
         {/* Stats */}
-        <div className="mt-3 pt-3 border-t border-wood-medium/15 space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="text-xs text-sepia">Spent</span>
-            <span className="font-medium text-xs tabular-nums text-ink-black">
+        <div className="mt-3 pt-3 border-t border-wood-medium/15 space-y-2 overflow-hidden">
+          <div className="flex justify-between items-center gap-2">
+            <span className="text-xs text-sepia shrink-0">Spent</span>
+            <span className="font-medium text-xs tabular-nums text-ink-black truncate">
               {formatCurrency(data.actual)}
             </span>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-xs text-sepia">Budget</span>
-            <span className="font-medium text-xs tabular-nums text-ink-black">
+          <div className="flex justify-between items-center gap-2">
+            <span className="text-xs text-sepia shrink-0">Budget</span>
+            <span className="font-medium text-xs tabular-nums text-ink-black truncate">
               {formatCurrency(data.budget)}
             </span>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-xs text-sepia">Remaining</span>
-            <span className={`font-medium text-xs tabular-nums ${getStatusColor()}`}>
+          <div className="flex justify-between items-center gap-2">
+            <span className="text-xs text-sepia shrink-0">Remaining</span>
+            <span className={`font-medium text-xs tabular-nums truncate ${getStatusColor()}`}>
               {formatCurrency(remaining)}
             </span>
           </div>
