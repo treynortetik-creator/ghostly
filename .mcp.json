@@ -1,16 +1,16 @@
 {
   "mcpServers": {
     "context7": {
-      "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@latest"]
+      "command": "bash",
+      "args": ["-l", "-c", "npx -y @upstash/context7-mcp@latest"]
     },
     "supabase": {
       "type": "http",
       "url": "https://mcp.supabase.com/mcp?project_ref=gvnpifkgjlugyphhkemc"
     },
     "railway": {
-      "command": "npx",
-      "args": ["-y", "@railway/mcp-server"]
+      "command": "bash",
+      "args": ["-l", "-c", "npx -y @railway/mcp-server"]
     }
   }
 }
