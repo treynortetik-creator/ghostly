@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { EventList } from '@/components/events/EventList';
 import { EventForm, EventFormData } from '@/components/events/EventForm';
-import type { EventWithTotals } from '@/lib/mock-data/events';
+import type { EventWithTotals } from '@/types/database';
 
 /* ============================================
    EVENTS LIST PAGE

@@ -6,8 +6,7 @@ import { AppShell } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
 import { ExpenseList } from '@/components/expenses/ExpenseList';
 import { ExpenseForm, ExpenseFormData } from '@/components/expenses/ExpenseForm';
-import type { Event, BudgetCategory } from '@/types/database';
-import type { ExpenseWithRelations } from '@/lib/mock-data/expenses';
+import type { Event, BudgetCategory, ExpenseWithRelations } from '@/types/database';
 
 /* ============================================
    EXPENSES LIST PAGE

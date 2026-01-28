@@ -3,7 +3,7 @@
 import { Filter, X, Search } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { ExpenseSource, Event, BudgetCategory } from '@/types/database';
-import { sourceTypeLabels } from '@/lib/mock-data/expenses';
+import { sourceTypeLabels } from '@/types/database';
 
 /* ============================================
    EXPENSE FILTERS COMPONENT

@@ -6,8 +6,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ExpenseCard } from './ExpenseCard';
 import { ExpenseFilters, ExpenseFilterPills, type ExpenseFiltersState } from './ExpenseFilters';
-import type { Event, BudgetCategory } from '@/types/database';
-import type { ExpenseWithRelations } from '@/lib/mock-data/expenses';
+import type { Event, BudgetCategory, ExpenseWithRelations } from '@/types/database';
 
 /* ============================================
    EXPENSE LIST COMPONENT

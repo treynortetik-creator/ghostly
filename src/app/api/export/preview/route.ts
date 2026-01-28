@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getEventsWithTotals } from '@/lib/mock-data/events';
-import { getCategoriesWithTotals } from '@/lib/mock-data/categories';
-import { getExpenses } from '@/lib/mock-data/expenses';
+import { createClient } from '@/lib/supabase/server';
 
 /* ============================================
    EXPORT PREVIEW API
@@ -64,6 +62,7 @@ function getDateRangeForScope(
 
 export async function GET(request: Request) {
   try {
+    const supabase = await createClient();
     const { searchParams } = new URL(request.url);
     const scope = (searchParams.get('scope') || 'year') as ExportScope;
     const fiscalYear = parseInt(searchParams.get('fiscal_year') || '2026', 10);
@@ -74,52 +73,100 @@ export async function GET(request: Request) {
 
     const dateRange = getDateRangeForScope(scope, fiscalYear, quarter, month, dateStart, dateEnd);
 
-    // Get all events with totals
-    const allEvents = getEventsWithTotals();
+    // Query events
+    let eventsQuery = supabase
+      .from('events')
+      .select('*')
+      .is('deleted_at', null);
 
-    // Filter events based on scope
-    let filteredEvents = allEvents;
     if (scope === 'quarter') {
-      filteredEvents = allEvents.filter(e => e.quarter === quarter);
+      eventsQuery = eventsQuery.eq('quarter', quarter);
     } else if (scope === 'month' || scope === 'custom') {
-      // Filter by date range - events that fall within the range
-      filteredEvents = allEvents.filter(e => {
-        if (!e.date_start) return false;
-        return e.date_start >= dateRange.start && e.date_start <= dateRange.end;
-      });
+      eventsQuery = eventsQuery
+        .gte('date_start', dateRange.start)
+        .lte('date_start', dateRange.end);
     }
 
-    // Get all categories with totals (not date-filtered, as they're yearly)
-    const allCategories = getCategoriesWithTotals();
+    const { data: events, error: eventsError } = await eventsQuery;
+    if (eventsError) throw eventsError;
 
-    // Get expenses within date range
-    const allExpenses = getExpenses({
-      date_start: dateRange.start,
-      date_end: dateRange.end,
-    });
+    // Query categories
+    const { data: categories, error: categoriesError } = await supabase
+      .from('budget_categories')
+      .select('*')
+      .is('deleted_at', null);
+    if (categoriesError) throw categoriesError;
+
+    // Query expenses within date range
+    const { data: expenses, error: expensesError } = await supabase
+      .from('expenses')
+      .select('*')
+      .is('deleted_at', null)
+      .gte('expense_date', dateRange.start)
+      .lte('expense_date', dateRange.end);
+    if (expensesError) throw expensesError;
+
+    // Get expense totals per event
+    const eventIds = (events || []).map(e => e.id);
+    const eventExpenseTotals: Record<string, { total: number; count: number }> = {};
+    for (const exp of expenses || []) {
+      if (exp.event_id && eventIds.includes(exp.event_id)) {
+        if (!eventExpenseTotals[exp.event_id]) {
+          eventExpenseTotals[exp.event_id] = { total: 0, count: 0 };
+        }
+        eventExpenseTotals[exp.event_id].total += exp.amount;
+        eventExpenseTotals[exp.event_id].count += 1;
+      }
+    }
+
+    // Get expense totals per category
+    const categoryIds = (categories || []).map(c => c.id);
+    const categoryExpenseTotals: Record<string, { total: number; count: number }> = {};
+    const { data: allCategoryExpenses } = await supabase
+      .from('expenses')
+      .select('category_id, amount')
+      .is('deleted_at', null)
+      .in('category_id', categoryIds.length > 0 ? categoryIds : ['__none__']);
+
+    for (const exp of allCategoryExpenses || []) {
+      if (exp.category_id) {
+        if (!categoryExpenseTotals[exp.category_id]) {
+          categoryExpenseTotals[exp.category_id] = { total: 0, count: 0 };
+        }
+        categoryExpenseTotals[exp.category_id].total += exp.amount;
+        categoryExpenseTotals[exp.category_id].count += 1;
+      }
+    }
 
     // Calculate totals
     const eventsTotals = {
-      count: filteredEvents.length,
-      totalBudget: filteredEvents.reduce((sum, e) => sum + e.budget_amount, 0),
-      totalActual: filteredEvents.reduce((sum, e) => sum + e.actual_spent, 0),
-      totalRemaining: filteredEvents.reduce((sum, e) => sum + e.remaining, 0),
+      count: (events || []).length,
+      totalBudget: (events || []).reduce((sum, e) => sum + (e.budget_amount || 0), 0),
+      totalActual: (events || []).reduce((sum, e) => sum + (eventExpenseTotals[e.id]?.total || 0), 0),
+      totalRemaining: (events || []).reduce((sum, e) => {
+        const spent = eventExpenseTotals[e.id]?.total || 0;
+        return sum + ((e.budget_amount || 0) - spent);
+      }, 0),
     };
 
     const categoriesTotals = {
-      count: allCategories.length,
-      totalBudget: allCategories.reduce((sum, c) => sum + c.budget_amount, 0),
-      totalActual: allCategories.reduce((sum, c) => sum + c.actual_spent, 0),
-      totalRemaining: allCategories.reduce((sum, c) => sum + c.remaining, 0),
+      count: (categories || []).length,
+      totalBudget: (categories || []).reduce((sum, c) => sum + (c.budget_amount || 0), 0),
+      totalActual: (categories || []).reduce((sum, c) => sum + (categoryExpenseTotals[c.id]?.total || 0), 0),
+      totalRemaining: (categories || []).reduce((sum, c) => {
+        const spent = categoryExpenseTotals[c.id]?.total || 0;
+        return sum + ((c.budget_amount || 0) - spent);
+      }, 0),
     };
 
+    const expensesList = expenses || [];
     const expensesTotals = {
-      count: allExpenses.length,
-      totalAmount: allExpenses.reduce((sum, e) => sum + e.amount, 0),
+      count: expensesList.length,
+      totalAmount: expensesList.reduce((sum, e) => sum + e.amount, 0),
       bySource: {
-        manual: allExpenses.filter(e => e.source_type === 'manual').length,
-        brex: allExpenses.filter(e => e.source_type === 'brex').length,
-        pdf: allExpenses.filter(e => e.source_type === 'pdf').length,
+        manual: expensesList.filter(e => e.source_type === 'manual').length,
+        brex: expensesList.filter(e => e.source_type === 'brex').length,
+        pdf: expensesList.filter(e => e.source_type === 'pdf').length,
       },
     };
 

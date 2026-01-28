@@ -20,8 +20,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card';
 import { BudgetProgress } from '@/components/ui/ProgressBar';
 import { CategoryForm, CategoryFormData } from '@/components/categories/CategoryForm';
-import type { Expense, FiscalYear } from '@/types/database';
-import type { CategoryWithTotals } from '@/lib/mock-data/categories';
+import type { Expense, FiscalYear, CategoryWithTotals } from '@/types/database';
 
 /* ============================================
    CATEGORY DETAIL PAGE

@@ -5,9 +5,8 @@ import Link from 'next/link';
 import { Calendar, MapPin, ChevronDown, ChevronRight, Receipt, Target } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
-import type { Expense } from '@/types/database';
-import type { EventWithTotals } from '@/lib/mock-data/events';
-import { eventTypeLabels } from '@/lib/mock-data/events';
+import type { Expense, EventWithTotals } from '@/types/database';
+import { eventTypeLabels } from '@/types/database';
 
 /* ============================================
    EVENT CARD COMPONENT

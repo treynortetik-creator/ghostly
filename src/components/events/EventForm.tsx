@@ -4,7 +4,7 @@ import { useState, FormEvent } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/Card';
 import type { Event, EventType, QuarterType } from '@/types/database';
-import { eventTypeLabels, quarterLabels } from '@/lib/mock-data/events';
+import { eventTypeLabels, quarterLabels } from '@/types/database';
 
 /* ============================================
    EVENT FORM COMPONENT

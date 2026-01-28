@@ -4,8 +4,7 @@ import { useState, useMemo } from 'react';
 import { Folder, AlertTriangle, Search } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { CategoryCard } from './CategoryCard';
-import type { Expense } from '@/types/database';
-import type { CategoryWithTotals } from '@/lib/mock-data/categories';
+import type { Expense, CategoryWithTotals } from '@/types/database';
 
 /* ============================================
    CATEGORY LIST COMPONENT

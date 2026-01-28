@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Calendar, Tag, FileText, CreditCard, PencilLine } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
-import type { ExpenseWithRelations } from '@/lib/mock-data/expenses';
+import type { ExpenseWithRelations } from '@/types/database';
 
 /* ============================================
    EXPENSE CARD COMPONENT

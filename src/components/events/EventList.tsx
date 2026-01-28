@@ -5,8 +5,7 @@ import { Calendar, AlertTriangle, Search } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { EventCard } from './EventCard';
 import { EventFilters, FilterPills } from './EventFilters';
-import type { EventType, QuarterType, Expense } from '@/types/database';
-import type { EventWithTotals } from '@/lib/mock-data/events';
+import type { EventType, QuarterType, Expense, EventWithTotals } from '@/types/database';
 
 /* ============================================
    EVENT LIST COMPONENT

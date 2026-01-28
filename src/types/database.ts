@@ -140,6 +140,54 @@ export interface ExpenseWithRelations extends Expense {
 }
 
 // ============================================
+// COMPUTED TYPES (with aggregated totals)
+// ============================================
+
+/**
+ * Event with calculated budget totals
+ */
+export interface EventWithTotals extends Event {
+  actual_spent: number;
+  remaining: number;
+  expense_count: number;
+}
+
+/**
+ * Category with calculated budget totals
+ */
+export interface CategoryWithTotals extends BudgetCategory {
+  actual_spent: number;
+  remaining: number;
+  expense_count: number;
+}
+
+// ============================================
+// DISPLAY LABELS
+// ============================================
+
+export const eventTypeLabels: Record<EventType, string> = {
+  executive: 'Executive',
+  national: 'National',
+  state: 'State',
+  regional: 'Regional',
+  customer: 'Customer',
+};
+
+export const quarterLabels: Record<QuarterType, string> = {
+  Q1: 'Q1 (Jan-Mar)',
+  Q2: 'Q2 (Apr-Jun)',
+  Q3: 'Q3 (Jul-Sep)',
+  Q4: 'Q4 (Oct-Dec)',
+  TBD: 'TBD',
+};
+
+export const sourceTypeLabels: Record<ExpenseSource, string> = {
+  manual: 'Manual Entry',
+  brex: 'Brex Import',
+  pdf: 'PDF Upload',
+};
+
+// ============================================
 // JSON TYPE FOR SUPABASE
 // ============================================
 

@@ -4,7 +4,7 @@ import { useState, FormEvent } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/Card';
 import type { Expense, ExpenseSource, Event, BudgetCategory } from '@/types/database';
-import { sourceTypeLabels } from '@/lib/mock-data/expenses';
+import { sourceTypeLabels } from '@/types/database';
 
 /* ============================================
    EXPENSE FORM COMPONENT

@@ -22,9 +22,8 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card';
 import { ProgressBar, BudgetProgress } from '@/components/ui/ProgressBar';
 import { EventForm, EventFormData } from '@/components/events/EventForm';
-import type { Expense, FiscalYear } from '@/types/database';
-import type { EventWithTotals } from '@/lib/mock-data/events';
-import { eventTypeLabels, quarterLabels } from '@/lib/mock-data/events';
+import type { Expense, FiscalYear, EventWithTotals } from '@/types/database';
+import { eventTypeLabels, quarterLabels } from '@/types/database';
 
 /* ============================================
    EVENT DETAIL PAGE

@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { ChevronDown, ChevronRight, Receipt, Folder } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
-import type { Expense } from '@/types/database';
-import type { CategoryWithTotals } from '@/lib/mock-data/categories';
+import type { Expense, CategoryWithTotals } from '@/types/database';
 
 /* ============================================
    CATEGORY CARD COMPONENT

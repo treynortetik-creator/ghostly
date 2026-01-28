@@ -7,7 +7,7 @@ import { AppShell } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
 import { CategoryList } from '@/components/categories/CategoryList';
 import { CategoryForm, CategoryFormData } from '@/components/categories/CategoryForm';
-import type { CategoryWithTotals } from '@/lib/mock-data/categories';
+import type { CategoryWithTotals } from '@/types/database';
 
 /* ============================================
    CATEGORIES LIST PAGE

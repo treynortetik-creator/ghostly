@@ -3,7 +3,7 @@
 import { Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { EventType, QuarterType } from '@/types/database';
-import { eventTypeLabels, quarterLabels } from '@/lib/mock-data/events';
+import { eventTypeLabels, quarterLabels } from '@/types/database';
 
 /* ============================================
    EVENT FILTERS COMPONENT
