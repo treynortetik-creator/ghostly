@@ -30,6 +30,12 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get('sort_by') || 'date'; // date, amount, vendor
     const sortOrder = searchParams.get('sort_order') || 'desc'; // asc, desc
 
+    // Parse pagination parameters
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+    const perPage = Math.min(200, Math.max(1, parseInt(searchParams.get('per_page') || '50', 10)));
+    const from = (page - 1) * perPage;
+    const to = from + perPage - 1;
+
     // Build filters object for meta response
     const filters: {
       event_id?: string;
@@ -81,7 +87,7 @@ export async function GET(request: NextRequest) {
     // Build query with joined relations
     let query = supabase
       .from('expenses')
-      .select('*, events(name), budget_categories(name)')
+      .select('*, events(name), budget_categories(name)', { count: 'exact' })
       .is('deleted_at', null);
 
     // Apply filters
@@ -138,8 +144,9 @@ export async function GET(request: NextRequest) {
     const ascending = sortOrder === 'asc';
 
     query = query.order(sortColumn, { ascending });
+    query = query.range(from, to);
 
-    const { data: rawExpenses, error } = await query;
+    const { data: rawExpenses, error, count: totalCount } = await query;
 
     if (error) {
       throw error;
@@ -159,14 +166,21 @@ export async function GET(request: NextRequest) {
 
     // Calculate totals
     const totalAmount = expenses.reduce((sum: number, e: any) => sum + e.amount, 0);
+    const total = totalCount ?? expenses.length;
 
     return NextResponse.json({
       expenses,
       meta: {
-        total: expenses.length,
+        total,
         total_amount: totalAmount,
         filters_applied: filters,
         sort: { by: sortBy, order: sortOrder },
+      },
+      pagination: {
+        page,
+        per_page: perPage,
+        total,
+        total_pages: Math.ceil(total / perPage),
       },
     });
   } catch (err) {

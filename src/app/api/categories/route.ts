@@ -34,6 +34,12 @@ export async function GET(request: NextRequest) {
     // Parse filter parameters
     const fiscalYearId = searchParams.get('fiscal_year_id');
 
+    // Parse pagination parameters
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+    const perPage = Math.min(200, Math.max(1, parseInt(searchParams.get('per_page') || '50', 10)));
+    const from = (page - 1) * perPage;
+    const to = from + perPage - 1;
+
     // Build filters object
     const filters: {
       fiscal_year_id?: string;
@@ -47,14 +53,14 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('budget_categories')
-      .select('*')
+      .select('*', { count: 'exact' })
       .is('deleted_at', null);
 
     if (filters.fiscal_year_id) query = query.eq('fiscal_year_id', filters.fiscal_year_id);
 
-    // Fetch categories and all category expense totals in parallel (avoids N+1)
+    // Fetch paginated categories and all category expense totals in parallel (avoids N+1)
     const [categoriesResult, expenseTotalsResult] = await Promise.all([
-      query.order('name', { ascending: true }),
+      query.order('name', { ascending: true }).range(from, to),
       supabase
         .from('expenses')
         .select('category_id, amount')
@@ -63,6 +69,8 @@ export async function GET(request: NextRequest) {
     ]);
 
     if (categoriesResult.error) throw categoriesResult.error;
+
+    const total = categoriesResult.count ?? 0;
 
     // Build expense totals map from single query
     const expenseByCategory = new Map<string, { total: number; count: number }>();
@@ -88,8 +96,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       categories,
       meta: {
-        total: categories.length,
+        total,
         filters_applied: filters,
+      },
+      pagination: {
+        page,
+        per_page: perPage,
+        total,
+        total_pages: Math.ceil(total / perPage),
       },
     });
   } catch (error) {

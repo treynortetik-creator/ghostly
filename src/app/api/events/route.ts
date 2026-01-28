@@ -47,6 +47,12 @@ export async function GET(request: NextRequest) {
     const quarter = searchParams.get('quarter') as QuarterType | null;
     const fiscalYearId = searchParams.get('fiscal_year_id');
 
+    // Parse pagination parameters
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+    const perPage = Math.min(200, Math.max(1, parseInt(searchParams.get('per_page') || '50', 10)));
+    const from = (page - 1) * perPage;
+    const to = from + perPage - 1;
+
     // Build filters object
     const filters: {
       event_type?: EventType;
@@ -68,16 +74,16 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('events')
-      .select('*')
+      .select('*', { count: 'exact' })
       .is('deleted_at', null);
 
     if (filters.event_type) query = query.eq('event_type', filters.event_type);
     if (filters.quarter) query = query.eq('quarter', filters.quarter);
     if (filters.fiscal_year_id) query = query.eq('fiscal_year_id', filters.fiscal_year_id);
 
-    // Fetch events and all event expense totals in parallel (avoids N+1)
+    // Fetch paginated events and all event expense totals in parallel (avoids N+1)
     const [eventsResult, expenseTotalsResult] = await Promise.all([
-      query.order('date_start', { ascending: true, nullsFirst: false }),
+      query.order('date_start', { ascending: true, nullsFirst: false }).range(from, to),
       supabase
         .from('expenses')
         .select('event_id, amount')
@@ -86,6 +92,8 @@ export async function GET(request: NextRequest) {
     ]);
 
     if (eventsResult.error) throw eventsResult.error;
+
+    const total = eventsResult.count ?? 0;
 
     // Build expense totals map from single query
     const expenseByEvent = new Map<string, { total: number; count: number }>();
@@ -122,8 +130,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       events,
       meta: {
-        total: events.length,
+        total,
         filters_applied: filters,
+      },
+      pagination: {
+        page,
+        per_page: perPage,
+        total,
+        total_pages: Math.ceil(total / perPage),
       },
     });
   } catch (err) {
