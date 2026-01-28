@@ -58,6 +58,12 @@ export async function GET(
       budget_amount: budgetAmount,
       expansion_goal: event.expansion_goal ?? 0,
       net_new_goal: event.net_new_goal ?? 0,
+      pipeline_generated: event.pipeline_generated ?? 0,
+      revenue_closed: event.revenue_closed ?? 0,
+      leads_generated: event.leads_generated ?? 0,
+      meetings_booked: event.meetings_booked ?? 0,
+      opportunities_created: event.opportunities_created ?? 0,
+      roi_notes: event.roi_notes ?? null,
       actual_spent: actualSpent,
       remaining: budgetAmount - actualSpent,
       expense_count: expenseList.length,
@@ -171,6 +177,12 @@ export async function PUT(
     if (body.approach_notes !== undefined) updateData.approach_notes = body.approach_notes;
     if (body.marketing_notes !== undefined) updateData.marketing_notes = body.marketing_notes;
     if (body.sales_notes !== undefined) updateData.sales_notes = body.sales_notes;
+    if (body.pipeline_generated !== undefined) updateData.pipeline_generated = parseFloat(body.pipeline_generated) || 0;
+    if (body.revenue_closed !== undefined) updateData.revenue_closed = parseFloat(body.revenue_closed) || 0;
+    if (body.leads_generated !== undefined) updateData.leads_generated = parseInt(body.leads_generated) || 0;
+    if (body.meetings_booked !== undefined) updateData.meetings_booked = parseInt(body.meetings_booked) || 0;
+    if (body.opportunities_created !== undefined) updateData.opportunities_created = parseInt(body.opportunities_created) || 0;
+    if (body.roi_notes !== undefined) updateData.roi_notes = body.roi_notes;
 
     const { data: updatedEvent, error: updateError } = await supabase
       .from('events')
@@ -198,6 +210,12 @@ export async function PUT(
       budget_amount: budgetAmount,
       expansion_goal: updatedEvent.expansion_goal ?? 0,
       net_new_goal: updatedEvent.net_new_goal ?? 0,
+      pipeline_generated: updatedEvent.pipeline_generated ?? 0,
+      revenue_closed: updatedEvent.revenue_closed ?? 0,
+      leads_generated: updatedEvent.leads_generated ?? 0,
+      meetings_booked: updatedEvent.meetings_booked ?? 0,
+      opportunities_created: updatedEvent.opportunities_created ?? 0,
+      roi_notes: updatedEvent.roi_notes ?? null,
       actual_spent: actualSpent,
       remaining: budgetAmount - actualSpent,
       expense_count: expenseList.length,

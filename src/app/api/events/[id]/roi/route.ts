@@ -1,0 +1,90 @@
+/**
+ * The Counting House - Event ROI API
+ *
+ * GET /api/events/[id]/roi - Get ROI summary with computed metrics
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { logError } from '@/lib/error-logger';
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const supabase = await createClient();
+
+    const { data: event, error: eventError } = await supabase
+      .from('events')
+      .select('*')
+      .eq('id', id)
+      .is('deleted_at', null)
+      .single();
+
+    if (eventError?.code === 'PGRST116' || !event) {
+      return NextResponse.json(
+        { error: 'Event not found' },
+        { status: 404 }
+      );
+    }
+
+    if (eventError) throw eventError;
+
+    // Get actual spent from expenses
+    const { data: expenses, error: expensesError } = await supabase
+      .from('expenses')
+      .select('amount')
+      .eq('event_id', id)
+      .is('deleted_at', null);
+
+    if (expensesError) throw expensesError;
+
+    const actualSpent = (expenses || []).reduce((sum, e) => sum + e.amount, 0);
+
+    const pipelineGenerated = event.pipeline_generated ?? 0;
+    const revenueClosed = event.revenue_closed ?? 0;
+    const leadsGenerated = event.leads_generated ?? 0;
+    const meetingsBooked = event.meetings_booked ?? 0;
+    const opportunitiesCreated = event.opportunities_created ?? 0;
+
+    // Compute ROI metrics (null when divisor is zero)
+    const roiRatio = actualSpent > 0
+      ? (revenueClosed - actualSpent) / actualSpent
+      : null;
+    const costPerLead = leadsGenerated > 0
+      ? actualSpent / leadsGenerated
+      : null;
+    const costPerMeeting = meetingsBooked > 0
+      ? actualSpent / meetingsBooked
+      : null;
+    const pipelineToSpendRatio = actualSpent > 0
+      ? pipelineGenerated / actualSpent
+      : null;
+
+    return NextResponse.json({
+      event_id: id,
+      event_name: event.name,
+      event_type: event.event_type,
+      actual_spent: actualSpent,
+      pipeline_generated: pipelineGenerated,
+      revenue_closed: revenueClosed,
+      leads_generated: leadsGenerated,
+      meetings_booked: meetingsBooked,
+      opportunities_created: opportunitiesCreated,
+      roi_notes: event.roi_notes ?? null,
+      roi_ratio: roiRatio,
+      cost_per_lead: costPerLead,
+      cost_per_meeting: costPerMeeting,
+      pipeline_to_spend_ratio: pipelineToSpendRatio,
+    });
+  } catch (error) {
+    console.error('Event ROI API error:', error);
+    logError('Failed to fetch event ROI', { error: error as Error, source: 'api/events/[id]/roi', context: { method: 'GET' } });
+    return NextResponse.json(
+      { error: 'Failed to fetch event ROI data' },
+      { status: 500 }
+    );
+  }
+}

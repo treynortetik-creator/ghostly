@@ -26,6 +26,12 @@ interface EventWithTotals {
   approach_notes: string | null;
   marketing_notes: string | null;
   sales_notes: string | null;
+  pipeline_generated: number;
+  revenue_closed: number;
+  leads_generated: number;
+  meetings_booked: number;
+  opportunities_created: number;
+  roi_notes: string | null;
   created_at: string | null;
   updated_at: string | null;
   deleted_at: string | null;
@@ -111,6 +117,12 @@ export async function GET(request: NextRequest) {
         budget_amount: event.budget_amount ?? 0,
         expansion_goal: event.expansion_goal ?? 0,
         net_new_goal: event.net_new_goal ?? 0,
+        pipeline_generated: event.pipeline_generated ?? 0,
+        revenue_closed: event.revenue_closed ?? 0,
+        leads_generated: event.leads_generated ?? 0,
+        meetings_booked: event.meetings_booked ?? 0,
+        opportunities_created: event.opportunities_created ?? 0,
+        roi_notes: event.roi_notes ?? null,
         actual_spent: stats.total,
         remaining: (event.budget_amount ?? 0) - stats.total,
         expense_count: stats.count,
@@ -236,6 +248,12 @@ export async function POST(request: NextRequest) {
       budget_amount: newEvent.budget_amount ?? 0,
       expansion_goal: newEvent.expansion_goal ?? 0,
       net_new_goal: newEvent.net_new_goal ?? 0,
+      pipeline_generated: newEvent.pipeline_generated ?? 0,
+      revenue_closed: newEvent.revenue_closed ?? 0,
+      leads_generated: newEvent.leads_generated ?? 0,
+      meetings_booked: newEvent.meetings_booked ?? 0,
+      opportunities_created: newEvent.opportunities_created ?? 0,
+      roi_notes: newEvent.roi_notes ?? null,
       actual_spent: 0,
       remaining: newEvent.budget_amount ?? 0,
       expense_count: 0,
