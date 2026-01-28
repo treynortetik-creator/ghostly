@@ -47,6 +47,18 @@ export interface ExpenseFormProps {
 
 const sourceTypes: ExpenseSource[] = ['manual', 'brex', 'pdf'];
 
+// Helper to sanitize currency input - only allows one decimal point
+const sanitizeCurrency = (value: string): string => {
+  // Remove all non-numeric except decimal points
+  const cleaned = value.replace(/[^0-9.]/g, '');
+  const parts = cleaned.split('.');
+  if (parts.length > 2) {
+    // Keep only first decimal point
+    return parts[0] + '.' + parts.slice(1).join('');
+  }
+  return cleaned;
+};
+
 export function ExpenseForm({
   expense,
   events,
@@ -194,7 +206,7 @@ export function ExpenseForm({
                     type="text"
                     id="amount"
                     value={formData.amount}
-                    onChange={(e) => handleChange('amount', e.target.value.replace(/[^0-9.]/g, ''))}
+                    onChange={(e) => handleChange('amount', sanitizeCurrency(e.target.value))}
                     className={`${inputClasses} pl-7`}
                     placeholder="0.00"
                     disabled={isLoading}

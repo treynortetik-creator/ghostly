@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { logError } from '@/lib/error-logger';
 
 // Dynamic import pdf-parse at runtime to avoid build-time issues
 // with canvas/DOMMatrix dependencies
@@ -348,8 +349,9 @@ export async function POST(request: NextRequest) {
       pageCount: pdfData.numpages,
       extracted: extractedData,
     });
-  } catch (error) {
-    console.error('PDF import error:', error);
+  } catch (err) {
+    console.error('PDF import error:', err);
+    logError('PDF import failed', { error: err as Error, source: 'import/pdf' });
     return NextResponse.json(
       { error: 'Failed to process PDF file' },
       { status: 500 }

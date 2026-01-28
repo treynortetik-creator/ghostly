@@ -7,6 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { logError } from '@/lib/error-logger';
 import type { EventType, QuarterType, EventInsert } from '@/types/database';
 import {
   mockEvents,
@@ -72,8 +73,9 @@ export async function GET(request: NextRequest) {
         filters_applied: filters,
       },
     });
-  } catch (error) {
-    console.error('Events API error:', error);
+  } catch (err) {
+    console.error('Events API error:', err);
+    logError('Failed to fetch events', { error: err as Error, source: 'api/events', context: { method: 'GET' } });
     return NextResponse.json(
       { error: 'Failed to fetch events' },
       { status: 500 }
@@ -159,8 +161,9 @@ export async function POST(request: NextRequest) {
     // mockEvents.push(newEvent); // Not persisting in mock
 
     return NextResponse.json(newEvent, { status: 201 });
-  } catch (error) {
-    console.error('Create event error:', error);
+  } catch (err) {
+    console.error('Create event error:', err);
+    logError('Failed to create event', { error: err as Error, source: 'api/events', context: { method: 'POST' } });
     return NextResponse.json(
       { error: 'Failed to create event' },
       { status: 500 }

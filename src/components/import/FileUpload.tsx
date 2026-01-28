@@ -129,12 +129,22 @@ export function FileUpload({
     <div className={cn('space-y-4', className)}>
       {/* Drop Zone */}
       <div
+        role="button"
+        tabIndex={0}
+        aria-label="Click or press Enter to select a CSV file"
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            fileInputRef.current?.click();
+          }
+        }}
         className={cn(
           'relative border-2 border-dashed rounded-lg p-8 transition-all duration-200',
           'bg-parchment hover:bg-parchment-dark cursor-pointer',
+          'focus:outline-none focus:ring-2 focus:ring-ink-gold focus:ring-offset-2',
           isDragging
             ? 'border-ink-gold bg-ink-gold/5 scale-[1.01]'
             : 'border-wood-medium/40 hover:border-wood-medium',
@@ -217,6 +227,7 @@ export function FileUpload({
               }}
               className="p-1 text-sepia hover:text-ink-red transition-colors"
               disabled={isLoading}
+              aria-label="Remove selected file"
             >
               <X className="w-4 h-4" />
             </button>

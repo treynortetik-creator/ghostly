@@ -388,6 +388,7 @@ export default function EventDetailPage({ params }: PageProps) {
                   variant="secondary"
                   size="sm"
                   leftIcon={<Plus className="w-4 h-4" />}
+                  onClick={() => router.push(`/expenses?event_id=${event.id}`)}
                 >
                   Add Expense
                 </Button>

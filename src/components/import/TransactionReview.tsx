@@ -355,6 +355,7 @@ export function TransactionReview({
                                 : 'hover:bg-ink-green/10 text-sepia hover:text-ink-green'
                             )}
                             title="Accept"
+                            aria-label="Accept transaction"
                           >
                             <CheckCircle className="w-4 h-4" />
                           </button>
@@ -367,6 +368,7 @@ export function TransactionReview({
                                 : 'hover:bg-sepia/10 text-sepia/50 hover:text-sepia'
                             )}
                             title="Skip"
+                            aria-label="Skip transaction"
                           >
                             <XCircle className="w-4 h-4" />
                           </button>
@@ -380,6 +382,7 @@ export function TransactionReview({
                                   : 'hover:bg-ink-gold/10 text-sepia/50 hover:text-ink-gold'
                               )}
                               title="Replace existing"
+                              aria-label="Replace existing expense"
                             >
                               <ArrowRight className="w-4 h-4" />
                             </button>

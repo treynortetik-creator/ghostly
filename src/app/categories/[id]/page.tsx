@@ -340,6 +340,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
                   variant="secondary"
                   size="sm"
                   leftIcon={<Plus className="w-4 h-4" />}
+                  onClick={() => router.push(`/expenses?category_id=${category.id}`)}
                 >
                   Add Expense
                 </Button>

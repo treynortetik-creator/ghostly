@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { logError } from '@/lib/error-logger';
 import {
   categorizeTransactions,
   type AssignmentTarget,
@@ -266,6 +267,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate file size (10MB max)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      return NextResponse.json(
+        { error: 'File too large. Maximum size is 10MB.' },
+        { status: 400 }
+      );
+    }
+
     // Validate file type
     if (!file.name.toLowerCase().endsWith('.csv')) {
       return NextResponse.json(
@@ -403,8 +413,9 @@ export async function POST(request: NextRequest) {
         quarter: t.quarter,
       })),
     });
-  } catch (error) {
-    console.error('Brex import error:', error);
+  } catch (err) {
+    console.error('Brex import error:', err);
+    logError('Brex import failed', { error: err as Error, source: 'import/brex' });
     return NextResponse.json(
       { error: 'Failed to process import' },
       { status: 500 }

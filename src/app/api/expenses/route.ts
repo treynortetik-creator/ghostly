@@ -7,6 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { logError } from '@/lib/error-logger';
 import type { ExpenseSource } from '@/types/database';
 import {
   getExpenses,
@@ -104,8 +105,9 @@ export async function GET(request: NextRequest) {
         sort: { by: sortBy, order: sortOrder },
       },
     });
-  } catch (error) {
-    console.error('Expenses API error:', error);
+  } catch (err) {
+    console.error('Expenses API error:', err);
+    logError('Failed to fetch expenses', { error: err as Error, source: 'api/expenses', context: { method: 'GET' } });
     return NextResponse.json(
       { error: 'Failed to fetch expenses' },
       { status: 500 }
@@ -234,8 +236,9 @@ export async function POST(request: NextRequest) {
     // allExpenses.push(newExpense); // Not persisting in mock
 
     return NextResponse.json(newExpense, { status: 201 });
-  } catch (error) {
-    console.error('Create expense error:', error);
+  } catch (err) {
+    console.error('Create expense error:', err);
+    logError('Failed to create expense', { error: err as Error, source: 'api/expenses', context: { method: 'POST' } });
     return NextResponse.json(
       { error: 'Failed to create expense' },
       { status: 500 }

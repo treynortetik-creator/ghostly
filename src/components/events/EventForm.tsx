@@ -45,6 +45,18 @@ export interface EventFormProps {
 const eventTypes: EventType[] = ['executive', 'national', 'state', 'regional', 'customer'];
 const quarters: QuarterType[] = ['Q1', 'Q2', 'Q3', 'Q4', 'TBD'];
 
+// Helper to sanitize currency input - only allows one decimal point
+const sanitizeCurrency = (value: string): string => {
+  // Remove all non-numeric except decimal points
+  const cleaned = value.replace(/[^0-9.]/g, '');
+  const parts = cleaned.split('.');
+  if (parts.length > 2) {
+    // Keep only first decimal point
+    return parts[0] + '.' + parts.slice(1).join('');
+  }
+  return cleaned;
+};
+
 export function EventForm({
   event,
   onSubmit,
@@ -284,7 +296,7 @@ export function EventForm({
                     type="text"
                     id="budget_amount"
                     value={formData.budget_amount}
-                    onChange={(e) => handleChange('budget_amount', e.target.value.replace(/[^0-9.]/g, ''))}
+                    onChange={(e) => handleChange('budget_amount', sanitizeCurrency(e.target.value))}
                     className={`${inputClasses} pl-7`}
                     placeholder="0.00"
                     disabled={isLoading}

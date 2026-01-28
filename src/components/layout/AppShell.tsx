@@ -10,6 +10,7 @@ import {
   Upload,
   Download,
   Settings,
+  Shield,
   LogOut,
   BookOpen,
   Menu,
@@ -31,6 +32,7 @@ const navItems: NavItem[] = [
   { name: 'Import', href: '/import', icon: Upload },
   { name: 'Export', href: '/export', icon: Download },
   { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'Admin', href: '/admin', icon: Shield },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -117,6 +119,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden flex items-center justify-center w-10 h-10 rounded-md
                 text-parchment/80 hover:bg-wood-medium/50 transition-colors"
+              aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? (
                 <X className="w-5 h-5" />

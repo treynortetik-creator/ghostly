@@ -7,6 +7,7 @@
  */
 
 import { NextResponse } from 'next/server';
+import { logError } from '@/lib/error-logger';
 import { getSession } from '@/lib/auth';
 import type { EventType, QuarterType } from '@/types/database';
 
@@ -182,8 +183,9 @@ export async function GET() {
     };
 
     return NextResponse.json(summary);
-  } catch (error) {
-    console.error('Dashboard summary error:', error);
+  } catch (err) {
+    console.error('Dashboard summary error:', err);
+    logError('Failed to fetch dashboard summary', { error: err as Error, source: 'api/dashboard', context: { method: 'GET' } });
     return NextResponse.json(
       { error: 'Failed to fetch dashboard summary' },
       { status: 500 }
