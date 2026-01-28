@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
     // Parse filter parameters
     const eventId = searchParams.get('event_id');
     const categoryId = searchParams.get('category_id');
+    const fiscalYearId = searchParams.get('fiscal_year_id');
     const dateStart = searchParams.get('date_start');
     const dateEnd = searchParams.get('date_end');
     const vendor = searchParams.get('vendor');
@@ -33,6 +34,7 @@ export async function GET(request: NextRequest) {
     const filters: {
       event_id?: string;
       category_id?: string;
+      fiscal_year_id?: string;
       date_start?: string;
       date_end?: string;
       vendor?: string;
@@ -44,6 +46,9 @@ export async function GET(request: NextRequest) {
     }
     if (categoryId) {
       filters.category_id = categoryId;
+    }
+    if (fiscalYearId) {
+      filters.fiscal_year_id = fiscalYearId;
     }
     if (dateStart) {
       filters.date_start = dateStart;
@@ -60,6 +65,19 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createClient();
 
+    // If fiscal year filter is specified, look up valid event/category IDs
+    let fiscalEventIds: Set<string> | null = null;
+    let fiscalCategoryIds: Set<string> | null = null;
+
+    if (filters.fiscal_year_id) {
+      const [{ data: fyEvents }, { data: fyCategories }] = await Promise.all([
+        supabase.from('events').select('id').eq('fiscal_year_id', filters.fiscal_year_id).is('deleted_at', null),
+        supabase.from('budget_categories').select('id').eq('fiscal_year_id', filters.fiscal_year_id).is('deleted_at', null),
+      ]);
+      fiscalEventIds = new Set((fyEvents ?? []).map(e => e.id));
+      fiscalCategoryIds = new Set((fyCategories ?? []).map(c => c.id));
+    }
+
     // Build query with joined relations
     let query = supabase
       .from('expenses')
@@ -73,6 +91,28 @@ export async function GET(request: NextRequest) {
     if (filters.category_id) {
       query = query.eq('category_id', filters.category_id);
     }
+
+    // Apply fiscal year filter via event/category ID lists
+    if (fiscalEventIds && fiscalCategoryIds) {
+      const allIds = [...fiscalEventIds, ...fiscalCategoryIds];
+      if (allIds.length === 0) {
+        // No events or categories in this fiscal year — return empty
+        return NextResponse.json({
+          expenses: [],
+          meta: {
+            total: 0,
+            total_amount: 0,
+            filters_applied: filters,
+            sort: { by: sortBy, order: sortOrder },
+          },
+        });
+      }
+      // Filter: event_id in fiscal events OR category_id in fiscal categories
+      query = query.or(
+        `event_id.in.(${[...fiscalEventIds].join(',')}),category_id.in.(${[...fiscalCategoryIds].join(',')})`
+      );
+    }
+
     if (filters.date_start) {
       query = query.gte('expense_date', filters.date_start);
     }
