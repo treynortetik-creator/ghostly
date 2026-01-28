@@ -173,15 +173,20 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
 
+    // Coerce empty strings to null for nullable typed columns (uuid, date)
+    const fiscalYearId = body.fiscal_year_id?.trim() || null;
+    const dateStart = body.date_start?.trim() || null;
+    const dateEnd = body.date_end?.trim() || null;
+
     const { data: newEvent, error: insertError } = await supabase
       .from('events')
       .insert({
         name: body.name,
         event_type: body.event_type as EventType,
         quarter: body.quarter as QuarterType,
-        fiscal_year_id: body.fiscal_year_id || null,
-        date_start: body.date_start || null,
-        date_end: body.date_end || null,
+        fiscal_year_id: fiscalYearId,
+        date_start: dateStart,
+        date_end: dateEnd,
         location: body.location || null,
         budget_amount: budgetAmount,
         expansion_goal: parseInt(body.expansion_goal) || 0,

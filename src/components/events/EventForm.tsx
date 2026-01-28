@@ -68,7 +68,7 @@ export function EventForm({
     name: event?.name || '',
     event_type: event?.event_type || 'national',
     quarter: event?.quarter || 'TBD',
-    fiscal_year_id: event?.fiscal_year_id || 'fy-2026-0001',
+    fiscal_year_id: event?.fiscal_year_id || '',
     date_start: event?.date_start || '',
     date_end: event?.date_end || '',
     location: event?.location || '',

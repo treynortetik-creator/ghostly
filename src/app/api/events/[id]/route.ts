@@ -153,9 +153,9 @@ export async function PUT(
     if (body.name !== undefined) updateData.name = body.name;
     if (body.event_type !== undefined) updateData.event_type = body.event_type as EventType;
     if (body.quarter !== undefined) updateData.quarter = body.quarter as QuarterType;
-    if (body.fiscal_year_id !== undefined) updateData.fiscal_year_id = body.fiscal_year_id;
-    if (body.date_start !== undefined) updateData.date_start = body.date_start;
-    if (body.date_end !== undefined) updateData.date_end = body.date_end;
+    if (body.fiscal_year_id !== undefined) updateData.fiscal_year_id = body.fiscal_year_id?.trim() || null;
+    if (body.date_start !== undefined) updateData.date_start = body.date_start?.trim() || null;
+    if (body.date_end !== undefined) updateData.date_end = body.date_end?.trim() || null;
     if (body.location !== undefined) updateData.location = body.location;
     if (body.budget_amount !== undefined) updateData.budget_amount = parseFloat(body.budget_amount);
     if (body.expansion_goal !== undefined) updateData.expansion_goal = parseInt(body.expansion_goal);
