@@ -23,28 +23,20 @@ interface PDFParseResult {
 }
 
 async function parsePDF(buffer: Buffer): Promise<PDFParseResult> {
-  // Polyfill DOMMatrix for Node.js - pdfjs-dist (used by pdf-parse) expects it
-  if (typeof globalThis.DOMMatrix === 'undefined') {
-    // Minimal DOMMatrix stub sufficient for pdf-parse text extraction
-    // @ts-expect-error -- intentional lightweight polyfill for server-side
-    globalThis.DOMMatrix = class DOMMatrix {
-      a = 1; b = 0; c = 0; d = 1; e = 0; f = 0;
-      m11 = 1; m12 = 0; m13 = 0; m14 = 0;
-      m21 = 0; m22 = 1; m23 = 0; m24 = 0;
-      m31 = 0; m32 = 0; m33 = 1; m34 = 0;
-      m41 = 0; m42 = 0; m43 = 0; m44 = 1;
-      is2D = true; isIdentity = true;
-      inverse() { return new DOMMatrix(); }
-      multiply() { return new DOMMatrix(); }
-      translate() { return new DOMMatrix(); }
-      scale() { return new DOMMatrix(); }
-      rotate() { return new DOMMatrix(); }
-      transformPoint(p: Record<string, number> = {}) { return { x: p.x || 0, y: p.y || 0, z: p.z || 0, w: p.w || 1 }; }
-    };
-  }
+  // pdf-parse v2 exports a PDFParse class (not a function like v1)
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pdfParse = require('pdf-parse');
-  return pdfParse(buffer);
+  const { PDFParse } = require('pdf-parse');
+  const parser = new PDFParse({ verbosity: 0, data: buffer });
+  const [textResult, infoResult] = await Promise.all([
+    parser.getText(),
+    parser.getInfo(),
+  ]);
+  await parser.destroy();
+  return {
+    text: textResult.text,
+    numpages: textResult.total,
+    info: infoResult.info || {},
+  };
 }
 
 // ============================================
