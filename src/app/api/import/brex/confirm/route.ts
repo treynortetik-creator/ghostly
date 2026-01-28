@@ -60,6 +60,10 @@ export async function POST(request: NextRequest) {
     // Validate all transactions before processing
     const validationErrors: string[] = [];
 
+    // Collect all referenced event and category IDs for batch validation
+    const referencedEventIds = new Set<string>();
+    const referencedCategoryIds = new Set<string>();
+
     for (const txn of transactions) {
       if (!txn.id || !txn.date || txn.amount === undefined || !txn.vendor) {
         validationErrors.push(`Transaction ${txn.id || 'unknown'}: Missing required fields`);
@@ -72,29 +76,37 @@ export async function POST(request: NextRequest) {
       }
 
       if (txn.assignmentType === 'event') {
-        const { data: event } = await supabase
-          .from('events')
-          .select('id')
-          .eq('id', txn.assignmentId)
-          .is('deleted_at', null)
-          .single();
-        if (!event) {
-          validationErrors.push(`Transaction ${txn.id}: Event ${txn.assignmentId} not found`);
-        }
+        referencedEventIds.add(txn.assignmentId);
       } else if (txn.assignmentType === 'category') {
-        const { data: category } = await supabase
-          .from('budget_categories')
-          .select('id')
-          .eq('id', txn.assignmentId)
-          .is('deleted_at', null)
-          .single();
-        if (!category) {
-          validationErrors.push(`Transaction ${txn.id}: Category ${txn.assignmentId} not found`);
-        }
+        referencedCategoryIds.add(txn.assignmentId);
       }
 
       if (txn.status === 'replace' && !txn.replaceExpenseId) {
         validationErrors.push(`Transaction ${txn.id}: Replace action requires replaceExpenseId`);
+      }
+    }
+
+    // Batch fetch all referenced events and categories (2 queries instead of N)
+    const [{ data: validEvents }, { data: validCategories }] = await Promise.all([
+      referencedEventIds.size > 0
+        ? supabase.from('events').select('id').in('id', [...referencedEventIds]).is('deleted_at', null)
+        : Promise.resolve({ data: [] as { id: string }[] }),
+      referencedCategoryIds.size > 0
+        ? supabase.from('budget_categories').select('id').in('id', [...referencedCategoryIds]).is('deleted_at', null)
+        : Promise.resolve({ data: [] as { id: string }[] }),
+    ]);
+
+    const validEventIdSet = new Set((validEvents ?? []).map(e => e.id));
+    const validCategoryIdSet = new Set((validCategories ?? []).map(c => c.id));
+
+    // Check each transaction's assignment against the batch results
+    for (const txn of transactions) {
+      if (!txn.assignmentId || !txn.assignmentType) continue;
+
+      if (txn.assignmentType === 'event' && !validEventIdSet.has(txn.assignmentId)) {
+        validationErrors.push(`Transaction ${txn.id}: Event ${txn.assignmentId} not found`);
+      } else if (txn.assignmentType === 'category' && !validCategoryIdSet.has(txn.assignmentId)) {
+        validationErrors.push(`Transaction ${txn.id}: Category ${txn.assignmentId} not found`);
       }
     }
 
