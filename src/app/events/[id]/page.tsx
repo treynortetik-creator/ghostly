@@ -16,10 +16,15 @@ import {
   RefreshCw,
   FileText,
   DollarSign,
+  TrendingUp,
+  Users,
+  Handshake,
+  Briefcase,
+  Save,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter, StatCard } from '@/components/ui/Card';
 import { ProgressBar, BudgetProgress } from '@/components/ui/ProgressBar';
 import { EventForm, EventFormData } from '@/components/events/EventForm';
 import type { Expense, FiscalYear, EventWithTotals } from '@/types/database';
@@ -65,6 +70,17 @@ export default function EventDetailPage({ params }: PageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [activeTab, setActiveTab] = useState<'details' | 'roi'>('details');
+  const [isEditingROI, setIsEditingROI] = useState(false);
+  const [isSavingROI, setIsSavingROI] = useState(false);
+  const [roiForm, setRoiForm] = useState({
+    pipeline_generated: 0,
+    revenue_closed: 0,
+    leads_generated: 0,
+    meetings_booked: 0,
+    opportunities_created: 0,
+    roi_notes: '',
+  });
 
   // Fetch event details
   const fetchEvent = async () => {
@@ -92,6 +108,43 @@ export default function EventDetailPage({ params }: PageProps) {
   useEffect(() => {
     fetchEvent();
   }, [id]);
+
+  // Sync ROI form when event loads
+  useEffect(() => {
+    if (event) {
+      setRoiForm({
+        pipeline_generated: event.pipeline_generated ?? 0,
+        revenue_closed: event.revenue_closed ?? 0,
+        leads_generated: event.leads_generated ?? 0,
+        meetings_booked: event.meetings_booked ?? 0,
+        opportunities_created: event.opportunities_created ?? 0,
+        roi_notes: event.roi_notes ?? '',
+      });
+    }
+  }, [event]);
+
+  // Handle save ROI data
+  const handleSaveROI = async () => {
+    setIsSavingROI(true);
+    try {
+      const response = await fetch(`/api/events/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(roiForm),
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Failed to update ROI data');
+      }
+      const updatedEvent = await response.json();
+      setEvent(updatedEvent);
+      setIsEditingROI(false);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to save ROI data');
+    } finally {
+      setIsSavingROI(false);
+    }
+  };
 
   // Handle update event
   const handleUpdateEvent = async (formData: EventFormData) => {
@@ -168,6 +221,42 @@ export default function EventDetailPage({ params }: PageProps) {
       return `${start} - ${end}`;
     }
     return start;
+  };
+
+  // Compute ROI metrics
+  const computeROIMetrics = () => {
+    if (!event) return null;
+    const spent = event.actual_spent;
+    const revenue = event.revenue_closed ?? 0;
+    const pipeline = event.pipeline_generated ?? 0;
+    const leads = event.leads_generated ?? 0;
+    const meetings = event.meetings_booked ?? 0;
+
+    return {
+      roi_ratio: spent > 0 ? (revenue - spent) / spent : null,
+      cost_per_lead: leads > 0 ? spent / leads : null,
+      cost_per_meeting: meetings > 0 ? spent / meetings : null,
+      pipeline_to_spend_ratio: spent > 0 ? pipeline / spent : null,
+    };
+  };
+
+  const roiMetrics = event ? computeROIMetrics() : null;
+
+  const roiColor = (value: number | null) => {
+    if (value === null) return 'neutral' as const;
+    if (value > 0.05) return 'positive' as const;
+    if (value < -0.05) return 'negative' as const;
+    return 'neutral' as const;
+  };
+
+  const formatPercent = (value: number | null) => {
+    if (value === null) return 'N/A';
+    return `${(value * 100).toFixed(1)}%`;
+  };
+
+  const formatRatio = (value: number | null) => {
+    if (value === null) return 'N/A';
+    return `${value.toFixed(2)}x`;
   };
 
   // Loading state
@@ -349,7 +438,220 @@ export default function EventDetailPage({ params }: PageProps) {
         </Card>
       )}
 
+      {/* Tab Navigation */}
+      <div className="flex gap-1 mb-6 border-b border-wood-medium/20">
+        <button
+          onClick={() => setActiveTab('details')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === 'details'
+              ? 'border-ink-gold text-ink-gold'
+              : 'border-transparent text-sepia hover:text-wood-dark hover:border-wood-medium/40'
+          }`}
+        >
+          <DollarSign className="w-4 h-4 inline mr-1.5 -mt-0.5" />
+          Budget &amp; Details
+        </button>
+        <button
+          onClick={() => setActiveTab('roi')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === 'roi'
+              ? 'border-ink-gold text-ink-gold'
+              : 'border-transparent text-sepia hover:text-wood-dark hover:border-wood-medium/40'
+          }`}
+        >
+          <TrendingUp className="w-4 h-4 inline mr-1.5 -mt-0.5" />
+          ROI Tracking
+        </button>
+      </div>
+
+      {/* ROI Tab */}
+      {activeTab === 'roi' && (
+        <div className="space-y-6">
+          {/* Computed ROI Metrics */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <StatCard
+              title="ROI Ratio"
+              value={formatPercent(roiMetrics?.roi_ratio ?? null)}
+              subtitle={roiMetrics?.roi_ratio !== null ? (roiMetrics!.roi_ratio > 0 ? 'Positive return' : roiMetrics!.roi_ratio < 0 ? 'Negative return' : 'Break-even') : 'No spend data'}
+              trend={roiColor(roiMetrics?.roi_ratio ?? null)}
+              icon={<TrendingUp className="w-5 h-5" />}
+            />
+            <StatCard
+              title="Cost per Lead"
+              value={roiMetrics?.cost_per_lead !== null ? formatCurrency(roiMetrics!.cost_per_lead) : 'N/A'}
+              subtitle={`${event.leads_generated ?? 0} leads captured`}
+              icon={<Users className="w-5 h-5" />}
+            />
+            <StatCard
+              title="Cost per Meeting"
+              value={roiMetrics?.cost_per_meeting !== null ? formatCurrency(roiMetrics!.cost_per_meeting) : 'N/A'}
+              subtitle={`${event.meetings_booked ?? 0} meetings booked`}
+              icon={<Handshake className="w-5 h-5" />}
+            />
+            <StatCard
+              title="Pipeline : Spend"
+              value={formatRatio(roiMetrics?.pipeline_to_spend_ratio ?? null)}
+              subtitle={`${formatCurrency(event.pipeline_generated ?? 0)} pipeline`}
+              trend={roiColor((roiMetrics?.pipeline_to_spend_ratio ?? 0) - 1)}
+              icon={<Briefcase className="w-5 h-5" />}
+            />
+          </div>
+
+          {/* ROI Input Fields */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-ink-gold" />
+                  ROI Data
+                </CardTitle>
+                {!isEditingROI ? (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setIsEditingROI(true)}
+                    leftIcon={<Edit className="w-4 h-4" />}
+                  >
+                    Edit
+                  </Button>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setIsEditingROI(false);
+                        if (event) {
+                          setRoiForm({
+                            pipeline_generated: event.pipeline_generated ?? 0,
+                            revenue_closed: event.revenue_closed ?? 0,
+                            leads_generated: event.leads_generated ?? 0,
+                            meetings_booked: event.meetings_booked ?? 0,
+                            opportunities_created: event.opportunities_created ?? 0,
+                            roi_notes: event.roi_notes ?? '',
+                          });
+                        }
+                      }}
+                      disabled={isSavingROI}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="gold"
+                      size="sm"
+                      onClick={handleSaveROI}
+                      isLoading={isSavingROI}
+                      leftIcon={<Save className="w-4 h-4" />}
+                    >
+                      Save
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-wood-dark mb-1">Pipeline Generated</label>
+                  {isEditingROI ? (
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={roiForm.pipeline_generated}
+                      onChange={(e) => setRoiForm(f => ({ ...f, pipeline_generated: parseFloat(e.target.value) || 0 }))}
+                      className="w-full px-3 py-2 bg-parchment border border-wood-medium/50 rounded-lg text-ink-black focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold"
+                    />
+                  ) : (
+                    <p className="font-serif text-lg font-semibold text-ink-black">{formatCurrency(event.pipeline_generated ?? 0)}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-wood-dark mb-1">Revenue Closed</label>
+                  {isEditingROI ? (
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={roiForm.revenue_closed}
+                      onChange={(e) => setRoiForm(f => ({ ...f, revenue_closed: parseFloat(e.target.value) || 0 }))}
+                      className="w-full px-3 py-2 bg-parchment border border-wood-medium/50 rounded-lg text-ink-black focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold"
+                    />
+                  ) : (
+                    <p className="font-serif text-lg font-semibold text-ink-black">{formatCurrency(event.revenue_closed ?? 0)}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-wood-dark mb-1">Leads Generated</label>
+                  {isEditingROI ? (
+                    <input
+                      type="number"
+                      min="0"
+                      value={roiForm.leads_generated}
+                      onChange={(e) => setRoiForm(f => ({ ...f, leads_generated: parseInt(e.target.value) || 0 }))}
+                      className="w-full px-3 py-2 bg-parchment border border-wood-medium/50 rounded-lg text-ink-black focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold"
+                    />
+                  ) : (
+                    <p className="font-serif text-lg font-semibold text-ink-black">{event.leads_generated ?? 0}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-wood-dark mb-1">Meetings Booked</label>
+                  {isEditingROI ? (
+                    <input
+                      type="number"
+                      min="0"
+                      value={roiForm.meetings_booked}
+                      onChange={(e) => setRoiForm(f => ({ ...f, meetings_booked: parseInt(e.target.value) || 0 }))}
+                      className="w-full px-3 py-2 bg-parchment border border-wood-medium/50 rounded-lg text-ink-black focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold"
+                    />
+                  ) : (
+                    <p className="font-serif text-lg font-semibold text-ink-black">{event.meetings_booked ?? 0}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-wood-dark mb-1">Opportunities Created</label>
+                  {isEditingROI ? (
+                    <input
+                      type="number"
+                      min="0"
+                      value={roiForm.opportunities_created}
+                      onChange={(e) => setRoiForm(f => ({ ...f, opportunities_created: parseInt(e.target.value) || 0 }))}
+                      className="w-full px-3 py-2 bg-parchment border border-wood-medium/50 rounded-lg text-ink-black focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold"
+                    />
+                  ) : (
+                    <p className="font-serif text-lg font-semibold text-ink-black">{event.opportunities_created ?? 0}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-wood-dark mb-1">Actual Spent</label>
+                  <p className="font-serif text-lg font-semibold text-sepia">{formatCurrency(event.actual_spent)}</p>
+                  <p className="text-xs text-sepia/70 mt-0.5">From expenses (read-only)</p>
+                </div>
+              </div>
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-wood-dark mb-1">ROI Notes</label>
+                {isEditingROI ? (
+                  <textarea
+                    value={roiForm.roi_notes}
+                    onChange={(e) => setRoiForm(f => ({ ...f, roi_notes: e.target.value }))}
+                    rows={3}
+                    className="w-full px-3 py-2 bg-parchment border border-wood-medium/50 rounded-lg text-ink-black focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold"
+                    placeholder="Add context about ROI attribution, pipeline sources, etc."
+                  />
+                ) : (
+                  <p className="text-sm text-sepia whitespace-pre-wrap">
+                    {event.roi_notes || 'No ROI notes yet.'}
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Main Content Grid */}
+      {activeTab === 'details' && (
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Left Column - Budget and Details */}
         <div className="xl:col-span-2 space-y-6">
@@ -565,6 +867,7 @@ export default function EventDetailPage({ params }: PageProps) {
           </Card>
         </div>
       </div>
+      )}
     </AppShell>
   );
 }
