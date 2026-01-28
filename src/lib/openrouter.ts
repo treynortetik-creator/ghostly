@@ -138,7 +138,7 @@ export async function getDefaultModel(): Promise<string> {
 /**
  * Make a chat completion request to OpenRouter
  */
-async function chatCompletion(
+export async function chatCompletion(
   model: string,
   messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>,
   options?: {

@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logError } from '@/lib/error-logger';
 import { createClient } from '@/lib/supabase/server';
 import {
+  chatCompletion,
   getCustomPrompt,
   buildPdfExtractionPrompt,
   type AssignmentTarget,
@@ -401,40 +402,20 @@ export async function POST(request: NextRequest) {
           .from('app_settings').select('value').eq('key', 'app_config').single();
         const model = (configRow?.value as Record<string, unknown>)?.openrouter_model as string || 'anthropic/claude-3-haiku';
 
-        // Call OpenRouter directly (chatCompletion is not exported)
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-            'Content-Type': 'application/json',
-            'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-            'X-Title': 'The Counting House',
-          },
-          body: JSON.stringify({
-            model,
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: `Extract data from this invoice text:\n\n${text.substring(0, 4000)}` },
-            ],
-            temperature: 0.3,
-            max_tokens: 2000,
-          }),
-        });
+        const response = await chatCompletion(model, [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `Extract data from this invoice text:\n\n${text.substring(0, 4000)}` },
+        ]);
 
-        if (response.ok) {
-          const data = await response.json();
-          let content = data.choices?.[0]?.message?.content || '';
+        // Clean up response (remove markdown if present)
+        let content = response.content.trim();
+        if (content.startsWith('```json')) content = content.slice(7);
+        if (content.startsWith('```')) content = content.slice(3);
+        if (content.endsWith('```')) content = content.slice(0, -3);
+        content = content.trim();
 
-          // Clean up response (remove markdown if present)
-          content = content.trim();
-          if (content.startsWith('```json')) content = content.slice(7);
-          if (content.startsWith('```')) content = content.slice(3);
-          if (content.endsWith('```')) content = content.slice(0, -3);
-          content = content.trim();
-
-          const parsed = JSON.parse(content);
-          aiExtraction = parsed as AiExtractionResult;
-        }
+        const parsed = JSON.parse(content);
+        aiExtraction = parsed as AiExtractionResult;
       } catch (err) {
         console.error('AI extraction failed, falling back to regex:', err);
         // Continue with regex fallback
