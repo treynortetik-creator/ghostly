@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getEventsWithTotals } from '@/lib/mock-data/events';
-import { getCategoriesWithTotals } from '@/lib/mock-data/categories';
-import { getExpenses } from '@/lib/mock-data/expenses';
+import { createClient } from '@/lib/supabase/server';
 
 /* ============================================
    CSV EXPORT API
@@ -88,20 +86,81 @@ export async function GET(request: Request) {
 
     const dateRange = getDateRangeForScope(scope, fiscalYear, quarter, month, dateStart, dateEnd);
 
-    // Get all data
-    const allEvents = getEventsWithTotals();
-    const allCategories = getCategoriesWithTotals();
-    const allExpenses = getExpenses({
-      date_start: dateRange.start,
-      date_end: dateRange.end,
+    const supabase = await createClient();
+
+    // Fetch all data from Supabase in parallel
+    const [
+      { data: rawEvents, error: eventsErr },
+      { data: rawCategories, error: catsErr },
+      { data: rawExpenses, error: expErr },
+    ] = await Promise.all([
+      supabase.from('events').select('*').is('deleted_at', null),
+      supabase.from('budget_categories').select('*').is('deleted_at', null),
+      supabase
+        .from('expenses')
+        .select('*, events(name), budget_categories(name)')
+        .is('deleted_at', null)
+        .gte('expense_date', dateRange.start)
+        .lte('expense_date', dateRange.end),
+    ]);
+
+    if (eventsErr || catsErr || expErr) throw eventsErr || catsErr || expErr;
+
+    const allExpenses = (rawExpenses || []).map(e => {
+      const { events: eventRel, budget_categories: catRel, ...rest } = e as any;
+      return {
+        ...rest,
+        target_type: rest.event_id ? 'event' : 'category',
+        target_name: eventRel?.name || catRel?.name || 'Unknown',
+      };
+    });
+
+    // Build expense totals by event_id and category_id
+    const expenseByEvent = new Map<string, { total: number; count: number }>();
+    const expenseByCategory = new Map<string, { total: number; count: number }>();
+    for (const exp of rawExpenses || []) {
+      if (exp.event_id) {
+        const prev = expenseByEvent.get(exp.event_id) || { total: 0, count: 0 };
+        expenseByEvent.set(exp.event_id, { total: prev.total + exp.amount, count: prev.count + 1 });
+      }
+      if (exp.category_id) {
+        const prev = expenseByCategory.get(exp.category_id) || { total: 0, count: 0 };
+        expenseByCategory.set(exp.category_id, { total: prev.total + exp.amount, count: prev.count + 1 });
+      }
+    }
+
+    // Compute events with totals
+    const allEventsWithTotals = (rawEvents || []).map(event => {
+      const stats = expenseByEvent.get(event.id) || { total: 0, count: 0 };
+      const budgetAmount = event.budget_amount ?? 0;
+      return {
+        ...event,
+        budget_amount: budgetAmount,
+        actual_spent: stats.total,
+        remaining: budgetAmount - stats.total,
+        expense_count: stats.count,
+      };
+    });
+
+    // Compute categories with totals
+    const allCategories = (rawCategories || []).map(cat => {
+      const stats = expenseByCategory.get(cat.id) || { total: 0, count: 0 };
+      const budgetAmount = cat.budget_amount ?? 0;
+      return {
+        ...cat,
+        budget_amount: budgetAmount,
+        actual_spent: stats.total,
+        remaining: budgetAmount - stats.total,
+        expense_count: stats.count,
+      };
     });
 
     // Filter events based on scope
-    let filteredEvents = allEvents;
+    let filteredEvents = allEventsWithTotals;
     if (scope === 'quarter') {
-      filteredEvents = allEvents.filter(e => e.quarter === quarter);
+      filteredEvents = allEventsWithTotals.filter(e => e.quarter === quarter);
     } else if (scope === 'month' || scope === 'custom') {
-      filteredEvents = allEvents.filter(e => {
+      filteredEvents = allEventsWithTotals.filter(e => {
         if (!e.date_start) return false;
         return e.date_start >= dateRange.start && e.date_start <= dateRange.end;
       });
