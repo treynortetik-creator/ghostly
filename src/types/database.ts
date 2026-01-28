@@ -54,6 +54,12 @@ export interface Event {
   approach_notes: string | null;
   marketing_notes: string | null;
   sales_notes: string | null;
+  pipeline_generated: number;
+  revenue_closed: number;
+  leads_generated: number;
+  meetings_booked: number;
+  opportunities_created: number;
+  roi_notes: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -159,6 +165,23 @@ export interface CategoryWithTotals extends BudgetCategory {
   actual_spent: number;
   remaining: number;
   expense_count: number;
+}
+
+/**
+ * Computed ROI metrics for an event
+ */
+export interface EventROIMetrics {
+  pipeline_generated: number;
+  revenue_closed: number;
+  leads_generated: number;
+  meetings_booked: number;
+  opportunities_created: number;
+  roi_notes: string | null;
+  actual_spent: number;
+  roi_ratio: number | null;
+  cost_per_lead: number | null;
+  cost_per_meeting: number | null;
+  pipeline_to_spend_ratio: number | null;
 }
 
 // ============================================
@@ -268,6 +291,12 @@ export interface Database {
           approach_notes: string | null;
           marketing_notes: string | null;
           sales_notes: string | null;
+          pipeline_generated: number | null;
+          revenue_closed: number | null;
+          leads_generated: number | null;
+          meetings_booked: number | null;
+          opportunities_created: number | null;
+          roi_notes: string | null;
           created_at: string | null;
           updated_at: string | null;
           deleted_at: string | null;
@@ -287,6 +316,12 @@ export interface Database {
           approach_notes?: string | null;
           marketing_notes?: string | null;
           sales_notes?: string | null;
+          pipeline_generated?: number | null;
+          revenue_closed?: number | null;
+          leads_generated?: number | null;
+          meetings_booked?: number | null;
+          opportunities_created?: number | null;
+          roi_notes?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
           deleted_at?: string | null;
@@ -306,6 +341,12 @@ export interface Database {
           approach_notes?: string | null;
           marketing_notes?: string | null;
           sales_notes?: string | null;
+          pipeline_generated?: number | null;
+          revenue_closed?: number | null;
+          leads_generated?: number | null;
+          meetings_booked?: number | null;
+          opportunities_created?: number | null;
+          roi_notes?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
           deleted_at?: string | null;
