@@ -1,8 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyCredentials, createToken, setAuthCookie } from '@/lib/auth';
 
+// In-memory rate limiting: IP -> { count, resetTime }
+const loginAttempts = new Map<string, { count: number; resetTime: number }>();
+
+const MAX_ATTEMPTS = 5;
+const WINDOW_MS = 60 * 1000; // 1 minute
+const CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+
+// Periodically clean up stale entries
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of loginAttempts) {
+    if (now > entry.resetTime) {
+      loginAttempts.delete(ip);
+    }
+  }
+}, CLEANUP_INTERVAL_MS);
+
+function getClientIp(request: NextRequest): string {
+  return (
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    'unknown'
+  );
+}
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = loginAttempts.get(ip);
+
+  if (!entry || now > entry.resetTime) {
+    loginAttempts.set(ip, { count: 1, resetTime: now + WINDOW_MS });
+    return false;
+  }
+
+  entry.count++;
+  return entry.count > MAX_ATTEMPTS;
+}
+
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+
+    if (isRateLimited(ip)) {
+      return NextResponse.json(
+        { error: 'Too many login attempts. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const { username, password } = body;
 
