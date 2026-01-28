@@ -168,11 +168,15 @@ export default function ExpensesPage() {
     }
   };
 
-  // Handle delete expense
+  // Handle delete expense (optimistic UI)
   const handleDeleteExpense = async (expense: ExpenseWithRelations) => {
     if (!confirm(`Are you sure you wish to delete this expense from ${expense.vendor || 'Unknown Vendor'}?`)) {
       return;
     }
+
+    // Optimistic: save previous state and remove immediately
+    const previousExpenses = expenses;
+    setExpenses(prev => prev.filter(e => e.id !== expense.id));
 
     try {
       const response = await fetch(`/api/expenses/${expense.id}`, {
@@ -183,15 +187,14 @@ export default function ExpensesPage() {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to delete expense');
       }
-
-      // Remove from local state
-      setExpenses(prev => prev.filter(e => e.id !== expense.id));
     } catch (err) {
+      // Rollback on failure
+      setExpenses(previousExpenses);
       alert(err instanceof Error ? err.message : 'Failed to delete expense');
     }
   };
 
-  // Handle bulk delete expenses
+  // Handle bulk delete expenses (optimistic UI)
   const handleBulkDeleteExpenses = async (expensesToDelete: ExpenseWithRelations[]) => {
     if (expensesToDelete.length === 0) return;
 
@@ -203,6 +206,11 @@ export default function ExpensesPage() {
       return;
     }
 
+    // Optimistic: save previous state and remove immediately
+    const previousExpenses = expenses;
+    const deleteIds = new Set(expensesToDelete.map(e => e.id));
+    setExpenses(prev => prev.filter(e => !deleteIds.has(e.id)));
+
     try {
       // Delete all selected expenses
       const deletePromises = expensesToDelete.map(expense =>
@@ -213,18 +221,14 @@ export default function ExpensesPage() {
       const failedCount = results.filter(r => !r.ok).length;
 
       if (failedCount > 0) {
-        alert(`Failed to delete ${failedCount} expense(s). Please try again.`);
+        // Rollback: restore previous state since some failed
+        setExpenses(previousExpenses);
+        alert(`Failed to delete ${failedCount} expense(s). Changes have been reverted.`);
       }
-
-      // Remove successfully deleted from local state
-      const deletedIds = new Set(
-        expensesToDelete
-          .filter((_, index) => results[index].ok)
-          .map(e => e.id)
-      );
-      setExpenses(prev => prev.filter(e => !deletedIds.has(e.id)));
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete expenses');
+      // Rollback on failure
+      setExpenses(previousExpenses);
+      alert(err instanceof Error ? err.message : 'Failed to delete expenses. Changes have been reverted.');
     }
   };
 
