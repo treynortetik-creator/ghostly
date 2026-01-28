@@ -11,10 +11,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { EventType, QuarterType } from '@/types/database';
 import {
   getEventById,
-  getEventWithTotals,
-  getExpensesByEventId,
   mockFiscalYear,
 } from '@/lib/mock-data/events';
+import { allExpenses } from '@/lib/mock-data/expenses';
 
 // ============================================
 // GET /api/events/[id]
@@ -45,8 +44,16 @@ export async function GET(
       );
     }
 
-    const eventWithTotals = getEventWithTotals(event);
-    const expenses = getExpensesByEventId(id);
+    // Read expenses from consolidated allExpenses (where deletions happen)
+    const expenses = allExpenses.filter(e => e.event_id === id && !e.deleted_at);
+    const actualSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
+
+    const eventWithTotals = {
+      ...event,
+      actual_spent: actualSpent,
+      remaining: event.budget_amount - actualSpent,
+      expense_count: expenses.length,
+    };
 
     return NextResponse.json({
       event: eventWithTotals,
@@ -139,7 +146,15 @@ export async function PUT(
       updated_at: now,
     };
 
-    const eventWithTotals = getEventWithTotals(updatedEvent);
+    const expenses = allExpenses.filter(e => e.event_id === id && !e.deleted_at);
+    const actualSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
+
+    const eventWithTotals = {
+      ...updatedEvent,
+      actual_spent: actualSpent,
+      remaining: updatedEvent.budget_amount - actualSpent,
+      expense_count: expenses.length,
+    };
 
     return NextResponse.json(eventWithTotals);
   } catch (error) {

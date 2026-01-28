@@ -9,10 +9,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   mockCategories,
-  getCategoriesWithTotals,
+  getCategories,
   type CategoryWithTotals,
 } from '@/lib/mock-data/categories';
 import { mockFiscalYear } from '@/lib/mock-data/events';
+import { allExpenses } from '@/lib/mock-data/expenses';
 
 // ============================================
 // GET /api/categories
@@ -40,7 +41,18 @@ export async function GET(request: NextRequest) {
     // if (filters.fiscal_year_id) query = query.eq('fiscal_year_id', filters.fiscal_year_id);
     // const { data, error } = await query.order('name', { ascending: true });
 
-    const categories = getCategoriesWithTotals(filters);
+    // Use getCategories for filtering, then compute totals from consolidated allExpenses
+    const filteredCategories = getCategories(filters);
+    const categories: CategoryWithTotals[] = filteredCategories.map(category => {
+      const catExpenses = allExpenses.filter(e => e.category_id === category.id && !e.deleted_at);
+      const actualSpent = catExpenses.reduce((sum, e) => sum + e.amount, 0);
+      return {
+        ...category,
+        actual_spent: actualSpent,
+        remaining: category.budget_amount - actualSpent,
+        expense_count: catExpenses.length,
+      };
+    });
 
     // Sort by name alphabetically
     categories.sort((a, b) => a.name.localeCompare(b.name));

@@ -12,9 +12,10 @@ import type { EventType, QuarterType, EventInsert } from '@/types/database';
 import {
   mockEvents,
   mockFiscalYear,
-  getEventsWithTotals,
+  getEvents,
   type EventWithTotals,
 } from '@/lib/mock-data/events';
+import { allExpenses } from '@/lib/mock-data/expenses';
 
 // ============================================
 // GET /api/events
@@ -54,7 +55,18 @@ export async function GET(request: NextRequest) {
     // if (filters.fiscal_year_id) query = query.eq('fiscal_year_id', filters.fiscal_year_id);
     // const { data, error } = await query.order('date_start', { ascending: true });
 
-    const events = getEventsWithTotals(filters);
+    // Use getEvents for filtering, then compute totals from consolidated allExpenses
+    const filteredEvents = getEvents(filters);
+    const events: EventWithTotals[] = filteredEvents.map(event => {
+      const eventExpenses = allExpenses.filter(e => e.event_id === event.id && !e.deleted_at);
+      const actualSpent = eventExpenses.reduce((sum, e) => sum + e.amount, 0);
+      return {
+        ...event,
+        actual_spent: actualSpent,
+        remaining: event.budget_amount - actualSpent,
+        expense_count: eventExpenses.length,
+      };
+    });
 
     // Sort by date_start (null dates at end), then by name
     events.sort((a, b) => {

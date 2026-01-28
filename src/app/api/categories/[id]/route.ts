@@ -10,11 +10,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getCategoryById,
-  getCategoryWithTotals,
-  getExpensesByCategoryId,
   mockCategories,
 } from '@/lib/mock-data/categories';
 import { mockFiscalYear } from '@/lib/mock-data/events';
+import { allExpenses } from '@/lib/mock-data/expenses';
 
 // ============================================
 // GET /api/categories/[id]
@@ -45,8 +44,16 @@ export async function GET(
       );
     }
 
-    const categoryWithTotals = getCategoryWithTotals(category);
-    const expenses = getExpensesByCategoryId(id);
+    // Read expenses from consolidated allExpenses (where deletions happen)
+    const expenses = allExpenses.filter(e => e.category_id === id && !e.deleted_at);
+    const actualSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
+
+    const categoryWithTotals = {
+      ...category,
+      actual_spent: actualSpent,
+      remaining: category.budget_amount - actualSpent,
+      expense_count: expenses.length,
+    };
 
     return NextResponse.json({
       category: categoryWithTotals,
@@ -127,7 +134,15 @@ export async function PUT(
       updated_at: now,
     };
 
-    const categoryWithTotals = getCategoryWithTotals(updatedCategory);
+    const expenses = allExpenses.filter(e => e.category_id === id && !e.deleted_at);
+    const actualSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
+
+    const categoryWithTotals = {
+      ...updatedCategory,
+      actual_spent: actualSpent,
+      remaining: updatedCategory.budget_amount - actualSpent,
+      expense_count: expenses.length,
+    };
 
     return NextResponse.json(categoryWithTotals);
   } catch (error) {
