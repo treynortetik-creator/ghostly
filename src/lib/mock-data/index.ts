@@ -6,3 +6,4 @@
 export * from './events';
 export * from './categories';
 export * from './expenses';
+export * from './settings';
