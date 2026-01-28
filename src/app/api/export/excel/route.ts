@@ -158,7 +158,7 @@ export async function GET(request: Request) {
     // ============================================
     // EVENTS WORKSHEET
     // ============================================
-    const eventsData = [
+    const eventsData: (string | number)[][] = [
       ['Event Name', 'Event Type', 'Quarter', 'Start Date', 'End Date', 'Location', 'Budget', 'Actual Spent', 'Remaining', 'Expense Count'],
     ];
 
@@ -213,7 +213,7 @@ export async function GET(request: Request) {
     // ============================================
     // CATEGORIES WORKSHEET
     // ============================================
-    const categoriesData = [
+    const categoriesData: (string | number)[][] = [
       ['Category Name', 'Description', 'Budget', 'Actual Spent', 'Remaining', 'Expense Count'],
     ];
 
@@ -256,7 +256,7 @@ export async function GET(request: Request) {
     // ============================================
     // EXPENSES WORKSHEET
     // ============================================
-    const expensesData = [
+    const expensesData: (string | number)[][] = [
       ['Date', 'Vendor', 'Amount', 'Target Name', 'Target Type', 'Source', 'Memo', 'Source Reference'],
     ];
 

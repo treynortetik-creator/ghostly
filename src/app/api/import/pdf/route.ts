@@ -6,7 +6,20 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import pdf from 'pdf-parse';
+
+// Dynamic import pdf-parse at runtime to avoid build-time issues
+// with canvas/DOMMatrix dependencies
+interface PDFParseResult {
+  text: string;
+  numpages: number;
+  info: Record<string, unknown>;
+}
+
+async function parsePDF(buffer: Buffer): Promise<PDFParseResult> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const pdfParse = require('pdf-parse');
+  return pdfParse(buffer);
+}
 
 // ============================================
 // TYPES
@@ -307,7 +320,7 @@ export async function POST(request: NextRequest) {
     // Parse PDF
     let pdfData;
     try {
-      pdfData = await pdf(buffer);
+      pdfData = await parsePDF(buffer);
     } catch (error) {
       console.error('PDF parse error:', error);
       return NextResponse.json(
