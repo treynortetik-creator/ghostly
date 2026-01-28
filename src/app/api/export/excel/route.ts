@@ -225,7 +225,7 @@ export async function GET(request: Request) {
       eventsData.push([
         event.name,
         event.event_type,
-        event.quarter,
+        event.quarter || '',
         event.date_start || '',
         event.date_end || '',
         event.location || '',
