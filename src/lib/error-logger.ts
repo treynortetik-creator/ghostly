@@ -1,6 +1,11 @@
 /**
  * Error Logger - Centralized error tracking for The Counting House
+ *
+ * Logs errors to both Supabase (persistent) and console (Railway logs).
+ * Falls back to in-memory storage if Supabase write fails.
  */
+
+import { createClient } from '@/lib/supabase/server';
 
 export interface ErrorLogEntry {
   id: string;
@@ -14,7 +19,7 @@ export interface ErrorLogEntry {
   url?: string;
 }
 
-// In-memory store (in production, would use database)
+// In-memory fallback store
 const errorLogs: ErrorLogEntry[] = [];
 const MAX_LOGS = 500;
 
@@ -41,19 +46,37 @@ export function logError(
     url: options.url,
   };
 
+  // Keep in-memory copy
   errorLogs.unshift(entry);
-
-  // Keep only last MAX_LOGS entries
   if (errorLogs.length > MAX_LOGS) {
     errorLogs.length = MAX_LOGS;
   }
 
-  // Also log to console in development
-  if (process.env.NODE_ENV === 'development') {
-    console.error(`[${entry.level.toUpperCase()}] ${entry.source}: ${message}`, options.context || '');
-  }
+  // Always log to console for Railway logs
+  console.error(`[${entry.level.toUpperCase()}] ${entry.source}: ${message}`, options.context || '');
+
+  // Write to Supabase asynchronously (fire-and-forget)
+  persistToSupabase(entry).catch((err) => {
+    console.error('Failed to persist error log to Supabase:', err);
+  });
 
   return entry;
+}
+
+async function persistToSupabase(entry: ErrorLogEntry): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.from('error_logs').insert({
+    level: entry.level,
+    message: entry.message,
+    stack: entry.stack || null,
+    context: entry.context || null,
+    source: entry.source,
+    user_id: entry.userId || null,
+    url: entry.url || null,
+  });
+  if (error) {
+    throw error;
+  }
 }
 
 export function getErrorLogs(options?: {
