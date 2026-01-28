@@ -104,9 +104,8 @@ AUTH_USERNAME=treynor
 AUTH_PASSWORD=<secure-password>
 JWT_SECRET=<random-32-char-string>
 
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=xxx
+# Supabase (server-side only, no client-side exposure)
+SUPABASE_URL=https://xxx.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=xxx
 
 # OpenRouter (for AI categorization)
