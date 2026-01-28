@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     if (dateEnd) {
       filters.date_end = dateEnd;
     }
-    if (vendor) {
+    if (vendor && vendor.length <= 200) {
       filters.vendor = vendor;
     }
     if (sourceType && ['manual', 'brex', 'pdf'].includes(sourceType)) {
@@ -80,7 +80,9 @@ export async function GET(request: NextRequest) {
       query = query.lte('expense_date', filters.date_end);
     }
     if (filters.vendor) {
-      query = query.ilike('vendor', `%${filters.vendor}%`);
+      // Escape LIKE special characters to prevent wildcard injection
+      const escapedVendor = filters.vendor.replace(/[%_\\]/g, '\\$&');
+      query = query.ilike('vendor', `%${escapedVendor}%`);
     }
     if (filters.source_type) {
       query = query.eq('source_type', filters.source_type);
@@ -154,6 +156,20 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+    }
+
+    // Validate input lengths
+    if (body.vendor && String(body.vendor).length > 200) {
+      return NextResponse.json(
+        { error: 'Vendor name must be 200 characters or fewer' },
+        { status: 400 }
+      );
+    }
+    if (body.memo && String(body.memo).length > 2000) {
+      return NextResponse.json(
+        { error: 'Memo must be 2000 characters or fewer' },
+        { status: 400 }
+      );
     }
 
     // Validate XOR constraint: must have either event_id OR category_id, but not both and not neither

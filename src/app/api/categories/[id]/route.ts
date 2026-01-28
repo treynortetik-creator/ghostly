@@ -126,12 +126,21 @@ export async function PUT(
       }
     }
 
+    // Validate name length if provided
+    if (body.name !== undefined && String(body.name).length > 200) {
+      return NextResponse.json(
+        { error: 'Category name must be 200 characters or fewer' },
+        { status: 400 }
+      );
+    }
+
     // Check for duplicate name if name is being changed
     if (body.name && body.name.toLowerCase() !== existingCategory.name.toLowerCase()) {
+      const escapedName = String(body.name).replace(/[%_\\]/g, '\\$&');
       const { data: duplicateCategory } = await supabase
         .from('budget_categories')
         .select('id')
-        .ilike('name', body.name)
+        .ilike('name', escapedName)
         .is('deleted_at', null)
         .neq('id', id)
         .limit(1)

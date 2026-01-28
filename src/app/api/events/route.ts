@@ -155,6 +155,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Validate input lengths
+    if (String(body.name).length > 200) {
+      return NextResponse.json(
+        { error: 'Event name must be 200 characters or fewer' },
+        { status: 400 }
+      );
+    }
+
     // Validate event_type
     if (!['executive', 'national', 'state', 'regional', 'customer'].includes(body.event_type)) {
       return NextResponse.json(

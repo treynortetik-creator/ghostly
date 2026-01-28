@@ -118,6 +118,14 @@ export async function PUT(
 
     if (findError) throw findError;
 
+    // Validate name length if provided
+    if (body.name !== undefined && String(body.name).length > 200) {
+      return NextResponse.json(
+        { error: 'Event name must be 200 characters or fewer' },
+        { status: 400 }
+      );
+    }
+
     // Validate event_type if provided
     if (body.event_type && !['executive', 'national', 'state', 'regional', 'customer'].includes(body.event_type)) {
       return NextResponse.json(

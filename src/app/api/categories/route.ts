@@ -120,6 +120,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Validate input lengths
+    if (String(body.name).length > 200) {
+      return NextResponse.json(
+        { error: 'Category name must be 200 characters or fewer' },
+        { status: 400 }
+      );
+    }
+
     // Validate budget_amount is a positive number
     const budgetAmount = parseFloat(body.budget_amount);
     if (isNaN(budgetAmount) || budgetAmount < 0) {
@@ -131,11 +139,12 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
 
-    // Check for duplicate name
+    // Check for duplicate name (escape LIKE special characters)
+    const escapedName = String(body.name).replace(/[%_\\]/g, '\\$&');
     const { data: existing } = await supabase
       .from('budget_categories')
       .select('id')
-      .ilike('name', body.name)
+      .ilike('name', escapedName)
       .is('deleted_at', null);
 
     if (existing && existing.length > 0) {
