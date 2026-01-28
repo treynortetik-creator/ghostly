@@ -23,20 +23,9 @@ interface PDFParseResult {
 }
 
 async function parsePDF(buffer: Buffer): Promise<PDFParseResult> {
-  // pdf-parse v2 exports a PDFParse class (not a function like v1)
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { PDFParse } = require('pdf-parse');
-  const parser = new PDFParse({ verbosity: 0, data: buffer });
-  const [textResult, infoResult] = await Promise.all([
-    parser.getText(),
-    parser.getInfo(),
-  ]);
-  await parser.destroy();
-  return {
-    text: textResult.text,
-    numpages: textResult.total,
-    info: infoResult.info || {},
-  };
+  const pdfParse = require('pdf-parse');
+  return pdfParse(buffer);
 }
 
 // ============================================
