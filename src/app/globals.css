@@ -3,40 +3,69 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================
+   THE COUNTING HOUSE - Victorian Theme System
+   ============================================
+   A refined ledger aesthetic inspired by 1850s
+   British counting houses and bookkeepers' offices.
+   ============================================ */
+
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Typography */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
+  --font-serif: var(--font-playfair);
+
+  /* Victorian Color Palette */
+  --color-wood-dark: var(--wood-dark);
+  --color-wood-medium: var(--wood-medium);
+  --color-wood-light: var(--wood-light);
+  --color-parchment: var(--parchment);
+  --color-parchment-dark: var(--parchment-dark);
+  --color-ink-black: var(--ink-black);
+  --color-ink-green: var(--ink-green);
+  --color-ink-red: var(--ink-red);
+  --color-ink-gold: var(--ink-gold);
+  --color-sepia: var(--sepia);
+
+  /* Shadcn Mappings */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
   --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Chart colors mapped to Victorian palette */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Sidebar */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Border Radius */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -47,79 +76,370 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  /* Border Radius - slightly rounded for aged elegance */
+  --radius: 0.375rem;
+
+  /* ========================================
+     VICTORIAN COLOR PALETTE
+     ======================================== */
+
+  /* Wood Tones - Mahogany furniture */
+  --wood-dark: #3d2314;      /* Dark mahogany - headers, nav */
+  --wood-medium: #5c3d2e;    /* Medium wood - borders, accents */
+  --wood-light: #8b6914;     /* Light wood/brass - highlights */
+
+  /* Parchment - Aged paper backgrounds */
+  --parchment: #f5f0e1;      /* Aged paper - main background */
+  --parchment-dark: #ebe3d1; /* Darker parchment - cards */
+  --parchment-darker: #ddd5c3; /* Even darker - hover states */
+
+  /* Ink Colors - Period-accurate ledger inks */
+  --ink-black: #2c2416;      /* Aged iron gall ink - primary text */
+  --ink-green: #1a472a;      /* Ledger green - positive/under budget */
+  --ink-red: #8b2500;        /* Ledger red - negative/over budget */
+  --ink-gold: #b8860b;       /* Gold ink - accents, totals */
+  --sepia: #704214;          /* Sepia - secondary text */
+
+  /* Semantic mappings to Victorian palette */
+  --background: #f5f0e1;
+  --foreground: #2c2416;
+  --card: #ebe3d1;
+  --card-foreground: #2c2416;
+  --popover: #ebe3d1;
+  --popover-foreground: #2c2416;
+  --primary: #3d2314;
+  --primary-foreground: #f5f0e1;
+  --secondary: #ddd5c3;
+  --secondary-foreground: #3d2314;
+  --muted: #ddd5c3;
+  --muted-foreground: #704214;
+  --accent: #b8860b;
+  --accent-foreground: #2c2416;
+  --destructive: #8b2500;
+  --border: #5c3d2e;
+  --input: #5c3d2e;
+  --ring: #b8860b;
+
+  /* Chart colors - Victorian-appropriate */
+  --chart-1: #1a472a; /* Ledger green */
+  --chart-2: #b8860b; /* Gold */
+  --chart-3: #5c3d2e; /* Wood medium */
+  --chart-4: #704214; /* Sepia */
+  --chart-5: #8b2500; /* Ledger red */
+
+  /* Sidebar - Wood tones */
+  --sidebar: #3d2314;
+  --sidebar-foreground: #f5f0e1;
+  --sidebar-primary: #b8860b;
+  --sidebar-primary-foreground: #2c2416;
+  --sidebar-accent: #5c3d2e;
+  --sidebar-accent-foreground: #f5f0e1;
+  --sidebar-border: #5c3d2e;
+  --sidebar-ring: #b8860b;
 }
 
-.dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
-}
+/* ========================================
+   BASE STYLES
+   ======================================== */
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Subtle paper texture via layered gradients */
+  .paper-texture {
+    background-color: var(--parchment);
+    background-image:
+      /* Fine grain noise simulation */
+      radial-gradient(ellipse at 20% 30%, rgba(139, 105, 20, 0.03) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(112, 66, 20, 0.03) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(92, 61, 46, 0.02) 0%, transparent 70%),
+      /* Subtle aged paper variation */
+      linear-gradient(180deg,
+        rgba(255, 255, 255, 0.02) 0%,
+        transparent 20%,
+        transparent 80%,
+        rgba(0, 0, 0, 0.02) 100%
+      );
+  }
+
+  /* Typography refinements */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif), Georgia, 'Times New Roman', serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--wood-dark);
+  }
+
+  /* Tabular figures for numbers in data contexts */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Slashed zero for financial clarity */
+  .financial-nums {
+    font-variant-numeric: tabular-nums slashed-zero;
+    font-family: var(--font-mono), monospace;
+  }
+}
+
+/* ========================================
+   DECORATIVE ELEMENTS
+   ======================================== */
+
+/* Victorian flourish - horizontal rule */
+.flourish {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--wood-medium);
+}
+
+.flourish::before,
+.flourish::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--wood-medium) 20%,
+    var(--wood-medium) 80%,
+    transparent
+  );
+}
+
+/* Corner flourish for cards */
+.corner-flourish {
+  position: relative;
+}
+
+.corner-flourish::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 20px;
+  height: 20px;
+  border-top: 2px solid var(--wood-medium);
+  border-left: 2px solid var(--wood-medium);
+  border-top-left-radius: 4px;
+  opacity: 0.6;
+}
+
+.corner-flourish::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 20px;
+  height: 20px;
+  border-bottom: 2px solid var(--wood-medium);
+  border-right: 2px solid var(--wood-medium);
+  border-bottom-right-radius: 4px;
+  opacity: 0.6;
+}
+
+/* Ledger line pattern */
+.ledger-lines {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1.5rem,
+    rgba(92, 61, 46, 0.08) 1.5rem,
+    rgba(92, 61, 46, 0.08) calc(1.5rem + 1px)
+  );
+}
+
+/* Ink well shadow - deep shadow for nav/headers */
+.ink-shadow {
+  box-shadow:
+    0 4px 6px -1px rgba(44, 36, 22, 0.15),
+    0 2px 4px -2px rgba(44, 36, 22, 0.1),
+    inset 0 -1px 0 rgba(139, 105, 20, 0.1);
+}
+
+/* Parchment card shadow - stacked paper effect */
+.parchment-shadow {
+  box-shadow:
+    0 1px 2px rgba(44, 36, 22, 0.08),
+    0 2px 4px rgba(44, 36, 22, 0.06),
+    0 4px 8px rgba(44, 36, 22, 0.04),
+    0 0 0 1px rgba(92, 61, 46, 0.1);
+}
+
+/* Pressed/inset effect for inputs */
+.inset-shadow {
+  box-shadow:
+    inset 0 1px 2px rgba(44, 36, 22, 0.1),
+    inset 0 0 0 1px rgba(92, 61, 46, 0.15);
+}
+
+/* ========================================
+   ANIMATIONS - Subtle, Period-Appropriate
+   ======================================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pageFlip {
+  0% {
+    transform: rotateY(-3deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: rotateY(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes inkFade {
+  from {
+    opacity: 0;
+    filter: blur(1px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-page-flip {
+  animation: pageFlip 0.4s ease-out forwards;
+}
+
+.animate-ink-fade {
+  animation: inkFade 0.5s ease-out forwards;
+}
+
+/* Stagger children animation */
+.stagger-children > * {
+  opacity: 0;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 50ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 100ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 150ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 250ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 350ms; }
+
+/* ========================================
+   SCROLLBAR STYLING
+   ======================================== */
+
+/* Webkit scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--parchment-dark);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--wood-medium);
+  border-radius: 4px;
+  border: 2px solid var(--parchment-dark);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--wood-dark);
+}
+
+/* Firefox scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--wood-medium) var(--parchment-dark);
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+/* Text colors */
+.text-positive { color: var(--ink-green); }
+.text-negative { color: var(--ink-red); }
+.text-accent { color: var(--ink-gold); }
+.text-muted { color: var(--sepia); }
+
+/* Background colors */
+.bg-positive { background-color: var(--ink-green); }
+.bg-negative { background-color: var(--ink-red); }
+.bg-accent { background-color: var(--ink-gold); }
+
+/* Semi-transparent variants */
+.bg-positive-subtle { background-color: rgba(26, 71, 42, 0.1); }
+.bg-negative-subtle { background-color: rgba(139, 37, 0, 0.1); }
+.bg-accent-subtle { background-color: rgba(184, 134, 11, 0.1); }
+
+/* Focus states */
+.focus-ring {
+  @apply outline-none ring-2 ring-ink-gold ring-offset-2 ring-offset-parchment;
+}
+
+/* ========================================
+   FORM ELEMENTS
+   ======================================== */
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="search"],
+textarea,
+select {
+  @apply bg-parchment border border-wood-medium/50 rounded-md;
+  @apply text-ink-black placeholder:text-sepia/60;
+  @apply transition-all duration-200;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  @apply border-ink-gold ring-2 ring-ink-gold/20 outline-none;
+}
+
+/* ========================================
+   SELECTION STYLING
+   ======================================== */
+
+::selection {
+  background-color: rgba(184, 134, 11, 0.25);
+  color: var(--ink-black);
+}
+
+::-moz-selection {
+  background-color: rgba(184, 134, 11, 0.25);
+  color: var(--ink-black);
 }
