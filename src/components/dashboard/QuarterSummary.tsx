@@ -107,24 +107,24 @@ function QuarterCard({ data }: { data: QuarterData }) {
         />
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-wood-medium/15 text-center">
-          <div>
-            <p className="text-xs text-sepia">Spent</p>
-            <p className="font-medium text-sm tabular-nums text-ink-black">
+        <div className="mt-3 pt-3 border-t border-wood-medium/15 space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-xs text-sepia">Spent</span>
+            <span className="font-medium text-xs tabular-nums text-ink-black">
               {formatCurrency(data.actual)}
-            </p>
+            </span>
           </div>
-          <div>
-            <p className="text-xs text-sepia">Budget</p>
-            <p className="font-medium text-sm tabular-nums text-ink-black">
+          <div className="flex justify-between items-center">
+            <span className="text-xs text-sepia">Budget</span>
+            <span className="font-medium text-xs tabular-nums text-ink-black">
               {formatCurrency(data.budget)}
-            </p>
+            </span>
           </div>
-          <div>
-            <p className="text-xs text-sepia">Remaining</p>
-            <p className={`font-medium text-sm tabular-nums ${getStatusColor()}`}>
+          <div className="flex justify-between items-center">
+            <span className="text-xs text-sepia">Remaining</span>
+            <span className={`font-medium text-xs tabular-nums ${getStatusColor()}`}>
               {formatCurrency(remaining)}
-            </p>
+            </span>
           </div>
         </div>
       </div>
@@ -180,7 +180,7 @@ export function QuarterSummary({ data, className }: QuarterSummaryProps) {
       </CardHeader>
       <CardContent>
         {/* Fiscal Quarters Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
           {fiscalQuarters.map((quarter) => (
             <QuarterCard key={quarter.quarter} data={quarter} />
           ))}

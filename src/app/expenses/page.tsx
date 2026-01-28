@@ -192,6 +192,43 @@ export default function ExpensesPage() {
     }
   };
 
+  // Handle bulk delete expenses
+  const handleBulkDeleteExpenses = async (expensesToDelete: ExpenseWithRelations[]) => {
+    if (expensesToDelete.length === 0) return;
+
+    const confirmMsg = expensesToDelete.length === 1
+      ? `Are you sure you wish to delete this expense?`
+      : `Are you sure you wish to delete ${expensesToDelete.length} expenses?`;
+
+    if (!confirm(confirmMsg)) {
+      return;
+    }
+
+    try {
+      // Delete all selected expenses
+      const deletePromises = expensesToDelete.map(expense =>
+        fetch(`/api/expenses/${expense.id}`, { method: 'DELETE' })
+      );
+
+      const results = await Promise.all(deletePromises);
+      const failedCount = results.filter(r => !r.ok).length;
+
+      if (failedCount > 0) {
+        alert(`Failed to delete ${failedCount} expense(s). Please try again.`);
+      }
+
+      // Remove successfully deleted from local state
+      const deletedIds = new Set(
+        expensesToDelete
+          .filter((_, index) => results[index].ok)
+          .map(e => e.id)
+      );
+      setExpenses(prev => prev.filter(e => !deletedIds.has(e.id)));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete expenses');
+    }
+  };
+
   // Format date for header
   const today = new Date();
   const formattedDate = today.toLocaleDateString('en-US', {
@@ -277,6 +314,7 @@ export default function ExpensesPage() {
         showFilters={true}
         onEdit={handleEditExpense}
         onDelete={handleDeleteExpense}
+        onBulkDelete={handleBulkDeleteExpenses}
       />
 
       {/* Footer Info */}

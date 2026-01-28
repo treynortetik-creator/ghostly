@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Settings, Save, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
+import { Settings, Save, RefreshCw, CheckCircle, AlertCircle, DollarSign, Calendar, FolderOpen } from 'lucide-react';
 import { AppShell } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card';
 import { FiscalYearSelector, ModelSelector } from '@/components/settings';
 import type { FiscalYear } from '@/types/database';
 
@@ -26,6 +27,14 @@ interface SettingsApiResponse {
   fiscal_year: FiscalYear | null;
 }
 
+interface BudgetSummary {
+  eventsBudget: number;
+  eventsCount: number;
+  categoriesBudget: number;
+  categoriesCount: number;
+  totalBudget: number;
+}
+
 export default function SettingsPage() {
   // Settings state
   const [settings, setSettings] = useState<SettingsData>({
@@ -33,6 +42,7 @@ export default function SettingsPage() {
     openrouter_model: 'anthropic/claude-3-haiku',
   });
   const [originalSettings, setOriginalSettings] = useState<SettingsData | null>(null);
+  const [budgetSummary, setBudgetSummary] = useState<BudgetSummary | null>(null);
 
   // UI state
   const [isLoading, setIsLoading] = useState(true);
@@ -46,23 +56,46 @@ export default function SettingsPage() {
     settings.openrouter_model !== originalSettings.openrouter_model
   );
 
-  // Fetch current settings
+  // Fetch current settings and budget summary
   const fetchSettings = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     setSuccessMessage(null);
 
     try {
-      const response = await fetch('/api/settings');
-      if (!response.ok) throw new Error('Failed to fetch settings');
+      // Fetch settings, events, and categories in parallel
+      const [settingsRes, eventsRes, categoriesRes] = await Promise.all([
+        fetch('/api/settings'),
+        fetch('/api/events'),
+        fetch('/api/categories'),
+      ]);
 
-      const data: SettingsApiResponse = await response.json();
+      if (!settingsRes.ok) throw new Error('Failed to fetch settings');
+
+      const data: SettingsApiResponse = await settingsRes.json();
       const fetchedSettings = {
         fiscal_year_id: data.settings.fiscal_year_id,
         openrouter_model: data.settings.openrouter_model,
       };
       setSettings(fetchedSettings);
       setOriginalSettings(fetchedSettings);
+
+      // Calculate budget summary
+      if (eventsRes.ok && categoriesRes.ok) {
+        const eventsData = await eventsRes.json();
+        const categoriesData = await categoriesRes.json();
+
+        const eventsBudget = eventsData.events?.reduce((sum: number, e: { budget_amount: number }) => sum + (e.budget_amount || 0), 0) || 0;
+        const categoriesBudget = categoriesData.categories?.reduce((sum: number, c: { budget_amount: number }) => sum + (c.budget_amount || 0), 0) || 0;
+
+        setBudgetSummary({
+          eventsBudget,
+          eventsCount: eventsData.events?.length || 0,
+          categoriesBudget,
+          categoriesCount: categoriesData.categories?.length || 0,
+          totalBudget: eventsBudget + categoriesBudget,
+        });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load settings');
     } finally {
@@ -199,6 +232,93 @@ export default function SettingsPage() {
               disabled={isSaving}
             />
           </div>
+
+          {/* Budget Overview */}
+          {budgetSummary && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-md bg-ink-gold/10 text-ink-gold">
+                    <DollarSign className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <CardTitle>Budget Overview</CardTitle>
+                    <CardDescription>
+                      Total budget is the sum of all event and category budgets
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Total Budget Display */}
+                <div className="p-4 rounded-lg bg-ink-gold/5 border border-ink-gold/20">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-sepia">Total Annual Budget</span>
+                    <span className="text-2xl font-serif font-bold text-ink-gold">
+                      {budgetSummary.totalBudget.toLocaleString('en-US', {
+                        style: 'currency',
+                        currency: 'USD',
+                        minimumFractionDigits: 0,
+                      })}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Budget Breakdown */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Events Budget */}
+                  <div className="p-4 rounded-lg border border-wood-medium/20 bg-parchment">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Calendar className="w-4 h-4 text-ink-gold" />
+                      <span className="text-sm font-medium text-wood-dark">Events Budget</span>
+                    </div>
+                    <p className="text-xl font-serif font-semibold text-wood-dark">
+                      {budgetSummary.eventsBudget.toLocaleString('en-US', {
+                        style: 'currency',
+                        currency: 'USD',
+                        minimumFractionDigits: 0,
+                      })}
+                    </p>
+                    <p className="text-xs text-sepia mt-1">
+                      Across {budgetSummary.eventsCount} event{budgetSummary.eventsCount !== 1 ? 's' : ''}
+                    </p>
+                    <Link href="/events">
+                      <Button variant="ghost" size="sm" className="mt-3 w-full">
+                        Edit Event Budgets →
+                      </Button>
+                    </Link>
+                  </div>
+
+                  {/* Categories Budget */}
+                  <div className="p-4 rounded-lg border border-wood-medium/20 bg-parchment">
+                    <div className="flex items-center gap-2 mb-2">
+                      <FolderOpen className="w-4 h-4 text-ink-green" />
+                      <span className="text-sm font-medium text-wood-dark">Categories Budget</span>
+                    </div>
+                    <p className="text-xl font-serif font-semibold text-wood-dark">
+                      {budgetSummary.categoriesBudget.toLocaleString('en-US', {
+                        style: 'currency',
+                        currency: 'USD',
+                        minimumFractionDigits: 0,
+                      })}
+                    </p>
+                    <p className="text-xs text-sepia mt-1">
+                      Across {budgetSummary.categoriesCount} categor{budgetSummary.categoriesCount !== 1 ? 'ies' : 'y'}
+                    </p>
+                    <Link href="/categories">
+                      <Button variant="ghost" size="sm" className="mt-3 w-full">
+                        Edit Category Budgets →
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+
+                <p className="text-xs text-sepia/70 italic text-center pt-2">
+                  To adjust the total budget, edit individual event or category budgets using the links above.
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Save Actions */}
           <Card>

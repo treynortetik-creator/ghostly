@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Receipt, AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Receipt, AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { ExpenseCard } from './ExpenseCard';
 import { ExpenseFilters, ExpenseFilterPills, type ExpenseFiltersState } from './ExpenseFilters';
 import type { Event, BudgetCategory } from '@/types/database';
@@ -12,11 +13,12 @@ import type { ExpenseWithRelations } from '@/lib/mock-data/expenses';
    EXPENSE LIST COMPONENT
    ============================================
    Victorian-styled list of expenses with filtering,
-   search, sorting, and grouped display options.
+   search, sorting, pagination, and bulk actions.
    ============================================ */
 
 export type SortField = 'date' | 'amount' | 'vendor';
 export type SortOrder = 'asc' | 'desc';
+export type PageSize = 25 | 50 | 100;
 
 export interface ExpenseListProps {
   /** List of expenses to display */
@@ -35,6 +37,8 @@ export interface ExpenseListProps {
   onEdit?: (expense: ExpenseWithRelations) => void;
   /** Callback when delete is clicked */
   onDelete?: (expense: ExpenseWithRelations) => void;
+  /** Callback for bulk delete */
+  onBulkDelete?: (expenses: ExpenseWithRelations[]) => void;
 }
 
 const initialFilters: ExpenseFiltersState = {
@@ -55,10 +59,18 @@ export function ExpenseList({
   showFilters = true,
   onEdit,
   onDelete,
+  onBulkDelete,
 }: ExpenseListProps) {
   const [filters, setFilters] = useState<ExpenseFiltersState>(initialFilters);
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState<PageSize>(25);
+
+  // Selection state for bulk actions
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Filter expenses
   const filteredExpenses = useMemo(() => {
@@ -123,6 +135,58 @@ export function ExpenseList({
 
     return sorted;
   }, [filteredExpenses, sortField, sortOrder]);
+
+  // Paginated expenses
+  const paginatedExpenses = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return sortedExpenses.slice(startIndex, startIndex + pageSize);
+  }, [sortedExpenses, currentPage, pageSize]);
+
+  // Pagination info
+  const totalPages = Math.ceil(sortedExpenses.length / pageSize);
+  const startItem = sortedExpenses.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const endItem = Math.min(currentPage * pageSize, sortedExpenses.length);
+
+  // Reset to page 1 when filters or sorting changes
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [filters, sortField, sortOrder, pageSize]);
+
+  // Selection handlers
+  const handleSelectAll = () => {
+    if (selectedIds.size === paginatedExpenses.length) {
+      // Deselect all on current page
+      setSelectedIds(new Set());
+    } else {
+      // Select all on current page
+      setSelectedIds(new Set(paginatedExpenses.map(e => e.id)));
+    }
+  };
+
+  const handleSelectOne = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedIds.size === 0) return;
+
+    const selectedExpenses = expenses.filter(e => selectedIds.has(e.id));
+    if (onBulkDelete) {
+      onBulkDelete(selectedExpenses);
+    }
+    setSelectedIds(new Set());
+  };
+
+  // Clear selection when expenses change
+  useMemo(() => {
+    setSelectedIds(new Set());
+  }, [expenses]);
 
   // Handle filter changes
   const handleFiltersChange = (newFilters: ExpenseFiltersState) => {
@@ -238,13 +302,46 @@ export function ExpenseList({
       {/* Summary stats and sort controls */}
       <div className="flex flex-wrap items-center justify-between gap-4 py-3 px-4 bg-parchment-dark rounded-lg border border-wood-medium/20">
         <div className="flex flex-wrap items-center gap-4">
-          <span className="text-sm text-sepia">
-            <span className="font-semibold text-wood-dark">{totals.count}</span> expense{totals.count !== 1 ? 's' : ''}
-          </span>
-          <span className="text-wood-medium/30">|</span>
-          <span className="text-sm text-sepia">
-            Total: <span className="font-semibold tabular-nums text-wood-dark">{formatCurrency(totals.amount)}</span>
-          </span>
+          {/* Select all checkbox */}
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={paginatedExpenses.length > 0 && selectedIds.size === paginatedExpenses.length}
+              onChange={handleSelectAll}
+              className="w-4 h-4 rounded border-wood-medium/40 text-ink-gold focus:ring-ink-gold/50"
+            />
+            <span className="text-sm text-sepia">Select all</span>
+          </label>
+
+          {selectedIds.size > 0 && (
+            <>
+              <span className="text-wood-medium/30">|</span>
+              <span className="text-sm text-ink-gold font-medium">
+                {selectedIds.size} selected
+              </span>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleBulkDelete}
+                leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+              >
+                Delete Selected
+              </Button>
+            </>
+          )}
+
+          {selectedIds.size === 0 && (
+            <>
+              <span className="text-wood-medium/30">|</span>
+              <span className="text-sm text-sepia">
+                <span className="font-semibold text-wood-dark">{totals.count}</span> expense{totals.count !== 1 ? 's' : ''}
+              </span>
+              <span className="text-wood-medium/30">|</span>
+              <span className="text-sm text-sepia">
+                Total: <span className="font-semibold tabular-nums text-wood-dark">{formatCurrency(totals.amount)}</span>
+              </span>
+            </>
+          )}
         </div>
 
         {/* Sort controls */}
@@ -305,14 +402,82 @@ export function ExpenseList({
         </Card>
       ) : (
         <div className="space-y-3">
-          {sortedExpenses.map(expense => (
-            <ExpenseCard
-              key={expense.id}
-              expense={expense}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
+          {paginatedExpenses.map(expense => (
+            <div key={expense.id} className="flex items-start gap-3">
+              {/* Checkbox */}
+              <div className="pt-4">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(expense.id)}
+                  onChange={() => handleSelectOne(expense.id)}
+                  className="w-4 h-4 rounded border-wood-medium/40 text-ink-gold focus:ring-ink-gold/50 cursor-pointer"
+                />
+              </div>
+              {/* Expense card */}
+              <div className="flex-1">
+                <ExpenseCard
+                  expense={expense}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                />
+              </div>
+            </div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {sortedExpenses.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-4 py-4 px-4 mt-4 bg-parchment-dark rounded-lg border border-wood-medium/20">
+          {/* Page size selector */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-sepia">Show:</span>
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value) as PageSize);
+                setCurrentPage(1);
+              }}
+              className="px-2 py-1 text-sm rounded border border-wood-medium/30 bg-parchment text-wood-dark focus:ring-ink-gold/50 focus:border-ink-gold"
+            >
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+            <span className="text-sm text-sepia">per page</span>
+          </div>
+
+          {/* Page info */}
+          <span className="text-sm text-sepia">
+            Showing <span className="font-semibold text-wood-dark">{startItem}-{endItem}</span> of{' '}
+            <span className="font-semibold text-wood-dark">{sortedExpenses.length}</span>
+          </span>
+
+          {/* Page navigation */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Previous
+            </Button>
+            <span className="text-sm text-sepia px-2">
+              Page <span className="font-semibold text-wood-dark">{currentPage}</span> of{' '}
+              <span className="font-semibold text-wood-dark">{totalPages}</span>
+            </span>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Next
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       )}
     </div>

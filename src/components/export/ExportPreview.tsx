@@ -150,55 +150,58 @@ export function ExportPreview({
           <h4 className="text-sm font-serif font-semibold text-wood-dark mb-3">
             Grand Totals
           </h4>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <p className="text-xs text-sepia/70">Total Budget</p>
-              <p className="font-serif font-semibold text-lg text-wood-dark">
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-sepia/70">Total Budget</span>
+              <span className="font-serif font-semibold text-base text-wood-dark">
                 {formatCurrency(grandTotalBudget)}
-              </p>
+              </span>
             </div>
-            <div>
-              <p className="text-xs text-sepia/70">Total Spent</p>
-              <p className="font-serif font-semibold text-lg text-ink-red">
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-sepia/70">Total Spent</span>
+              <span className="font-serif font-semibold text-base text-ink-red">
                 {formatCurrency(grandTotalActual)}
-              </p>
+              </span>
             </div>
-            <div>
-              <p className="text-xs text-sepia/70">Remaining</p>
-              <p className={`font-serif font-semibold text-lg ${grandTotalRemaining >= 0 ? 'text-ink-green' : 'text-ink-red'}`}>
-                {formatCurrency(grandTotalRemaining)}
-                <span className="text-xs font-normal ml-1">({remainingPercent}%)</span>
-              </p>
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-sepia/70">Remaining</span>
+              <span className={`font-serif font-semibold text-base ${grandTotalRemaining >= 0 ? 'text-ink-green' : 'text-ink-red'}`}>
+                {formatCurrency(grandTotalRemaining)} <span className="text-xs font-normal">({remainingPercent}%)</span>
+              </span>
             </div>
           </div>
         </div>
 
         {/* Section Previews */}
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4">
           {/* Events */}
-          <div className="p-4 rounded-lg border border-wood-medium/20 bg-parchment">
-            <div className="flex items-start justify-between">
-              <div className="p-2 rounded-lg bg-ink-gold/10">
-                <Calendar className="w-4 h-4 text-ink-gold" />
+          <div className="p-3 rounded-lg border border-wood-medium/20 bg-parchment">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-ink-gold/10">
+                  <Calendar className="w-3.5 h-3.5 text-ink-gold" />
+                </div>
+                {getTrendIcon(data.events.totalRemaining, data.events.totalBudget)}
               </div>
-              {getTrendIcon(data.events.totalRemaining, data.events.totalBudget)}
+              <div className="text-right">
+                <h5 className="font-medium text-wood-dark text-sm">Events</h5>
+                <p className="text-lg font-serif font-bold text-ink-gold">
+                  {data.events.count}
+                </p>
+              </div>
             </div>
-            <h5 className="mt-3 font-medium text-wood-dark">Events</h5>
-            <p className="text-2xl font-serif font-bold text-ink-gold mt-1">
-              {data.events.count}
-            </p>
-            <div className="mt-3 pt-3 border-t border-wood-medium/20 space-y-1">
-              <div className="flex justify-between text-xs">
-                <span className="text-sepia/70">Budget</span>
-                <span className="text-sepia">{formatCurrency(data.events.totalBudget)}</span>
+            <div className="mt-2 pt-2 border-t border-wood-medium/20 grid grid-cols-3 gap-2 text-xs">
+              <div>
+                <span className="text-sepia/70 block">Budget</span>
+                <span className="text-sepia font-medium">{formatCurrency(data.events.totalBudget)}</span>
               </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-sepia/70">Spent</span>
-                <span className="text-ink-red">{formatCurrency(data.events.totalActual)}</span>
+              <div>
+                <span className="text-sepia/70 block">Spent</span>
+                <span className="text-ink-red font-medium">{formatCurrency(data.events.totalActual)}</span>
               </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-sepia/70">Remaining</span>
-                <span className={data.events.totalRemaining >= 0 ? 'text-ink-green' : 'text-ink-red'}>
+              <div>
+                <span className="text-sepia/70 block">Remaining</span>
+                <span className={`font-medium ${data.events.totalRemaining >= 0 ? 'text-ink-green' : 'text-ink-red'}`}>
                   {formatCurrency(data.events.totalRemaining)}
                 </span>
               </div>
@@ -206,29 +209,33 @@ export function ExportPreview({
           </div>
 
           {/* Categories */}
-          <div className="p-4 rounded-lg border border-wood-medium/20 bg-parchment">
-            <div className="flex items-start justify-between">
-              <div className="p-2 rounded-lg bg-ink-green/10">
-                <FolderOpen className="w-4 h-4 text-ink-green" />
+          <div className="p-3 rounded-lg border border-wood-medium/20 bg-parchment">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-ink-green/10">
+                  <FolderOpen className="w-3.5 h-3.5 text-ink-green" />
+                </div>
+                {getTrendIcon(data.categories.totalRemaining, data.categories.totalBudget)}
               </div>
-              {getTrendIcon(data.categories.totalRemaining, data.categories.totalBudget)}
+              <div className="text-right">
+                <h5 className="font-medium text-wood-dark text-sm">Categories</h5>
+                <p className="text-lg font-serif font-bold text-ink-green">
+                  {data.categories.count}
+                </p>
+              </div>
             </div>
-            <h5 className="mt-3 font-medium text-wood-dark">Categories</h5>
-            <p className="text-2xl font-serif font-bold text-ink-green mt-1">
-              {data.categories.count}
-            </p>
-            <div className="mt-3 pt-3 border-t border-wood-medium/20 space-y-1">
-              <div className="flex justify-between text-xs">
-                <span className="text-sepia/70">Budget</span>
-                <span className="text-sepia">{formatCurrency(data.categories.totalBudget)}</span>
+            <div className="mt-2 pt-2 border-t border-wood-medium/20 grid grid-cols-3 gap-2 text-xs">
+              <div>
+                <span className="text-sepia/70 block">Budget</span>
+                <span className="text-sepia font-medium">{formatCurrency(data.categories.totalBudget)}</span>
               </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-sepia/70">Spent</span>
-                <span className="text-ink-red">{formatCurrency(data.categories.totalActual)}</span>
+              <div>
+                <span className="text-sepia/70 block">Spent</span>
+                <span className="text-ink-red font-medium">{formatCurrency(data.categories.totalActual)}</span>
               </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-sepia/70">Remaining</span>
-                <span className={data.categories.totalRemaining >= 0 ? 'text-ink-green' : 'text-ink-red'}>
+              <div>
+                <span className="text-sepia/70 block">Remaining</span>
+                <span className={`font-medium ${data.categories.totalRemaining >= 0 ? 'text-ink-green' : 'text-ink-red'}`}>
                   {formatCurrency(data.categories.totalRemaining)}
                 </span>
               </div>
@@ -236,30 +243,32 @@ export function ExportPreview({
           </div>
 
           {/* Expenses */}
-          <div className="p-4 rounded-lg border border-wood-medium/20 bg-parchment">
-            <div className="flex items-start justify-between">
-              <div className="p-2 rounded-lg bg-sepia/10">
-                <Receipt className="w-4 h-4 text-sepia" />
+          <div className="p-3 rounded-lg border border-wood-medium/20 bg-parchment">
+            <div className="flex items-center justify-between">
+              <div className="p-1.5 rounded-lg bg-sepia/10">
+                <Receipt className="w-3.5 h-3.5 text-sepia" />
+              </div>
+              <div className="text-right">
+                <h5 className="font-medium text-wood-dark text-sm">Expenses</h5>
+                <p className="text-lg font-serif font-bold text-sepia">
+                  {data.expenses.count}
+                </p>
               </div>
             </div>
-            <h5 className="mt-3 font-medium text-wood-dark">Expenses</h5>
-            <p className="text-2xl font-serif font-bold text-sepia mt-1">
-              {data.expenses.count}
-            </p>
-            <div className="mt-3 pt-3 border-t border-wood-medium/20 space-y-1">
-              <div className="flex justify-between text-xs">
+            <div className="mt-2 pt-2 border-t border-wood-medium/20 space-y-1 text-xs">
+              <div className="flex justify-between">
                 <span className="text-sepia/70">Total Amount</span>
-                <span className="text-sepia">{formatCurrency(data.expenses.totalAmount)}</span>
+                <span className="text-sepia font-medium">{formatCurrency(data.expenses.totalAmount)}</span>
               </div>
-              <div className="flex justify-between text-xs">
+              <div className="flex justify-between">
                 <span className="text-sepia/70">Manual entries</span>
                 <span className="text-sepia">{data.expenses.bySource.manual}</span>
               </div>
-              <div className="flex justify-between text-xs">
+              <div className="flex justify-between">
                 <span className="text-sepia/70">Brex imports</span>
                 <span className="text-sepia">{data.expenses.bySource.brex}</span>
               </div>
-              <div className="flex justify-between text-xs">
+              <div className="flex justify-between">
                 <span className="text-sepia/70">PDF uploads</span>
                 <span className="text-sepia">{data.expenses.bySource.pdf}</span>
               </div>
