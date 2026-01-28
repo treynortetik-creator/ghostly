@@ -6,6 +6,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import type { Json } from '@/types/database';
 
 export interface ErrorLogEntry {
   id: string;
@@ -69,7 +70,7 @@ async function persistToSupabase(entry: ErrorLogEntry): Promise<void> {
     level: entry.level,
     message: entry.message,
     stack: entry.stack || null,
-    context: entry.context || null,
+    context: (entry.context ?? null) as Json,
     source: entry.source,
     user_id: entry.userId || null,
     url: entry.url || null,

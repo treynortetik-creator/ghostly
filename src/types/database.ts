@@ -345,6 +345,42 @@ export interface Database {
         };
         Relationships: [];
       };
+      error_logs: {
+        Row: {
+          id: string;
+          level: string;
+          message: string;
+          stack: string | null;
+          context: Json | null;
+          source: string;
+          user_id: string | null;
+          url: string | null;
+          created_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          level?: string;
+          message: string;
+          stack?: string | null;
+          context?: Json | null;
+          source?: string;
+          user_id?: string | null;
+          url?: string | null;
+          created_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          level?: string;
+          message?: string;
+          stack?: string | null;
+          context?: Json | null;
+          source?: string;
+          user_id?: string | null;
+          url?: string | null;
+          created_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
