@@ -56,7 +56,7 @@ export function CategoryForm({
     name: category?.name || '',
     budget_amount: category?.budget_amount?.toString() || '',
     description: category?.description || '',
-    fiscal_year_id: category?.fiscal_year_id || 'fy-2026-0001',
+    fiscal_year_id: category?.fiscal_year_id || '',
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof CategoryFormData, string>>>({});
