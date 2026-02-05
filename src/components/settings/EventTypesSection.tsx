@@ -151,7 +151,13 @@ export function EventTypesSection({ fiscalYearId, disabled = false }: EventTypes
 
   // Close menu when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => setOpenMenu(null);
+    const handleClickOutside = (e: MouseEvent) => {
+      // Only close if clicking outside the menu
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-menu-container]')) {
+        setOpenMenu(null);
+      }
+    };
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
@@ -250,7 +256,7 @@ export function EventTypesSection({ fiscalYearId, disabled = false }: EventTypes
                   </p>
                 </div>
 
-                <div className="relative">
+                <div className="relative" data-menu-container>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -268,7 +274,7 @@ export function EventTypesSection({ fiscalYearId, disabled = false }: EventTypes
                   {openMenu === et.id && (
                     <div
                       role="menu"
-                      className="absolute right-0 top-full mt-1 w-36 bg-parchment border border-wood-medium/20 rounded-lg shadow-lg z-10"
+                      className="absolute right-0 top-full mt-1 w-36 bg-parchment border border-wood-medium/20 rounded-lg shadow-lg z-50"
                     >
                       <button
                         role="menuitem"
@@ -276,7 +282,7 @@ export function EventTypesSection({ fiscalYearId, disabled = false }: EventTypes
                           setEditingType(et);
                           setOpenMenu(null);
                         }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-wood-dark hover:bg-parchment transition-colors"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-wood-dark hover:bg-wood-light/30 rounded-t-lg transition-colors"
                       >
                         <Pencil className="w-4 h-4" />
                         Edit
@@ -284,7 +290,7 @@ export function EventTypesSection({ fiscalYearId, disabled = false }: EventTypes
                       <button
                         role="menuitem"
                         onClick={() => handleArchive(et.id)}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink-red hover:bg-ink-red/5 transition-colors"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink-red hover:bg-ink-red/10 rounded-b-lg transition-colors"
                       >
                         <Archive className="w-4 h-4" />
                         Archive
