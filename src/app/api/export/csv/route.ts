@@ -94,7 +94,7 @@ export async function GET(request: Request) {
       { data: rawCategories, error: catsErr },
       { data: rawExpenses, error: expErr },
     ] = await Promise.all([
-      supabase.from('events').select('*').is('deleted_at', null),
+      supabase.from('events').select('*, event_types(*)').is('deleted_at', null),
       supabase.from('budget_categories').select('*').is('deleted_at', null),
       supabase
         .from('expenses')
@@ -180,9 +180,10 @@ export async function GET(request: Request) {
     lines.push('"=== EVENTS SUMMARY ==="');
     lines.push('"Event Name","Event Type","Quarter","Budget","Actual Spent","Remaining","Location"');
     for (const event of filteredEvents) {
+      const eventTypeName = (event as any).event_types?.name || event.event_type;
       lines.push([
         escapeCSVValue(event.name),
-        escapeCSVValue(event.event_type),
+        escapeCSVValue(eventTypeName),
         escapeCSVValue(event.quarter),
         formatCurrency(event.budget_amount),
         formatCurrency(event.actual_spent),
