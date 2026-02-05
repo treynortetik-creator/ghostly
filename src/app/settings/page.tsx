@@ -6,7 +6,7 @@ import { Settings, Save, RefreshCw, CheckCircle, AlertCircle, DollarSign, Calend
 import { AppShell } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card';
-import { FiscalYearSelector, ModelSelector, PromptEditor } from '@/components/settings';
+import { FiscalYearSelector, ModelSelector, PromptEditor, EventTypesSection } from '@/components/settings';
 import { DEFAULT_CSV_PROMPT, DEFAULT_PDF_PROMPT } from '@/lib/openrouter';
 import type { FiscalYear } from '@/types/database';
 
@@ -295,6 +295,14 @@ export default function SettingsPage() {
               disabled={isSaving}
             />
           </div>
+
+          {/* Event Type Budgets */}
+          {settings.fiscal_year_id && (
+            <EventTypesSection
+              fiscalYearId={settings.fiscal_year_id}
+              disabled={isSaving}
+            />
+          )}
 
           {/* Budget Overview */}
           {budgetSummary && (() => {
