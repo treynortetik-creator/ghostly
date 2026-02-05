@@ -190,9 +190,10 @@ export interface ExpenseWithRelations extends Expense {
 // ============================================
 
 /**
- * Event with calculated budget totals
+ * Event with calculated budget totals and event type record
  */
 export interface EventWithTotals extends Event {
+  event_type_record: EventTypeRecord | null;
   actual_spent: number;
   remaining: number;
   expense_count: number;

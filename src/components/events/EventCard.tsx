@@ -6,7 +6,6 @@ import { Calendar, MapPin, ChevronDown, ChevronRight, Receipt, Target } from 'lu
 import { Card, CardContent } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import type { Expense, EventWithTotals } from '@/types/database';
-import { eventTypeLabels } from '@/types/database';
 
 /* ============================================
    EVENT CARD COMPONENT
@@ -118,14 +117,16 @@ export function EventCard({
                     <h3 className="font-serif font-semibold text-wood-dark truncate">
                       {event.name}
                     </h3>
-                    <span
-                      className={`
-                        inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border
-                        ${typeColorClasses[event.event_type]}
-                      `}
-                    >
-                      {eventTypeLabels[event.event_type]}
-                    </span>
+                    {event.event_type_record && (
+                      <span
+                        className={`
+                          inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border
+                          ${typeColorClasses[event.event_type] || 'bg-sepia/15 text-sepia border-sepia/30'}
+                        `}
+                      >
+                        {event.event_type_record.name}
+                      </span>
+                    )}
                     <span className="text-xs font-medium text-sepia bg-parchment-dark px-2 py-0.5 rounded border border-wood-medium/20">
                       {event.quarter}
                     </span>
