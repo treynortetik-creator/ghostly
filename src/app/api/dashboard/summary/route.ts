@@ -8,7 +8,7 @@
 
 import { NextResponse } from 'next/server';
 import { logError } from '@/lib/error-logger';
-import type { EventType, QuarterType } from '@/types/database';
+import type { QuarterType } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
 
 // ============================================
@@ -23,9 +23,11 @@ export interface DashboardSummary {
     remaining: number;
   };
   byEventType: {
-    type: EventType;
+    id: string;
+    type: string;
     budget: number;
     actual: number;
+    description: string | null;
   }[];
   byQuarter: {
     quarter: QuarterType;
@@ -100,13 +102,22 @@ export async function GET() {
       { data: activeEvents, error: eventsErr },
       { data: activeCategories, error: catsErr },
       { data: activeExpenses, error: expErr },
+      { data: eventTypesData, error: eventTypesErr },
     ] = await Promise.all([
       eventsQuery,
       categoriesQuery,
       supabase.from('expenses').select('*').is('deleted_at', null),
+      fiscalYearId
+        ? supabase
+            .from('event_types')
+            .select('*')
+            .eq('fiscal_year_id', fiscalYearId)
+            .eq('is_archived', false)
+            .order('display_order')
+        : Promise.resolve({ data: [], error: null }),
     ]);
 
-    if (eventsErr || catsErr || expErr) throw eventsErr || catsErr || expErr;
+    if (eventsErr || catsErr || expErr || eventTypesErr) throw eventsErr || catsErr || expErr || eventTypesErr;
 
     // Build sets of valid event/category IDs for expense filtering
     const validEventIds = new Set((activeEvents ?? []).map(e => e.id));
@@ -119,15 +130,19 @@ export async function GET() {
     );
 
     // ---- By Event Type ----
-    const eventTypes: EventType[] = ['executive', 'national', 'state', 'regional', 'customer'];
-    const byEventType = eventTypes.map(type => {
-      const eventsOfType = (activeEvents ?? []).filter(e => e.event_type === type);
-      const budget = eventsOfType.reduce((sum, e) => sum + (e.budget_amount ?? 0), 0);
+    const byEventType = (eventTypesData || []).map(et => {
+      const eventsOfType = (activeEvents ?? []).filter(e => e.event_type_id === et.id);
       const eventIds = new Set(eventsOfType.map(e => e.id));
       const actual = scopedExpenses
         .filter(e => e.event_id && eventIds.has(e.event_id))
         .reduce((sum, e) => sum + e.amount, 0);
-      return { type, budget, actual };
+      return {
+        id: et.id,
+        type: et.name,
+        budget: et.budget_amount ?? 0,
+        actual,
+        description: et.description,
+      };
     });
 
     // ---- By Quarter ----

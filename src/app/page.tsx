@@ -5,7 +5,7 @@ import { AppShell } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, BudgetProgress } from '@/components/ui';
 import { BudgetOverviewCard, EventTypeSummary, QuarterSummary } from '@/components/dashboard';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
-import type { EventType, QuarterType } from '@/types/database';
+import type { QuarterType } from '@/types/database';
 
 /* ============================================
    DASHBOARD PAGE - THE LEDGER
@@ -26,9 +26,11 @@ interface DashboardSummary {
     remaining: number;
   };
   byEventType: {
-    type: EventType;
+    id: string;
+    type: string;
     budget: number;
     actual: number;
+    description: string | null;
   }[];
   byQuarter: {
     quarter: QuarterType;

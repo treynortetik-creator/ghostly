@@ -1,8 +1,7 @@
 'use client';
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, ProgressBar } from '@/components/ui';
-import { Crown, Building2, MapPin, Map, Users } from 'lucide-react';
-import type { EventType } from '@/types/database';
+import { Crown, Building2, MapPin, Map, Users, CalendarDays } from 'lucide-react';
 
 /* ============================================
    EVENT TYPE SUMMARY
@@ -12,9 +11,11 @@ import type { EventType } from '@/types/database';
    ============================================ */
 
 export interface EventTypeData {
-  type: EventType;
+  id: string;
+  type: string;
   budget: number;
   actual: number;
+  description: string | null;
 }
 
 export interface EventTypeSummaryProps {
@@ -22,41 +23,23 @@ export interface EventTypeSummaryProps {
   className?: string;
 }
 
-// Event type display configuration
-const eventTypeConfig: Record<
-  EventType,
-  { label: string; icon: React.ComponentType<{ className?: string }>; description: string }
-> = {
-  executive: {
-    label: 'Executive',
-    icon: Crown,
-    description: 'C-suite conferences and leadership events',
-  },
-  national: {
-    label: 'National',
-    icon: Building2,
-    description: 'Industry-wide conferences and associations',
-  },
-  state: {
-    label: 'State',
-    icon: MapPin,
-    description: 'State-level associations and regional events',
-  },
-  regional: {
-    label: 'Regional',
-    icon: Map,
-    description: 'Multi-state regional gatherings',
-  },
-  customer: {
-    label: 'Customer',
-    icon: Users,
-    description: 'Customer appreciation and engagement events',
-  },
+// Legacy event type icon mapping (for backward compatibility with common names)
+const eventTypeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  executive: Crown,
+  national: Building2,
+  state: MapPin,
+  regional: Map,
+  customer: Users,
 };
 
+// Event type icon component - renders the appropriate icon based on type name
+function EventTypeIcon({ typeName, className }: { typeName: string; className?: string }) {
+  const normalizedName = typeName.toLowerCase();
+  const IconComponent = eventTypeIcons[normalizedName] || CalendarDays;
+  return <IconComponent className={className} />;
+}
+
 function EventTypeRow({ data }: { data: EventTypeData }) {
-  const config = eventTypeConfig[data.type];
-  const Icon = config.icon;
   const percentage = data.budget > 0 ? (data.actual / data.budget) * 100 : 0;
   const remaining = data.budget - data.actual;
   const isOverBudget = data.actual > data.budget;
@@ -87,11 +70,13 @@ function EventTypeRow({ data }: { data: EventTypeData }) {
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-md bg-wood-medium/10 text-wood-medium">
-            <Icon className="w-5 h-5" />
+            <EventTypeIcon typeName={data.type} className="w-5 h-5" />
           </div>
           <div>
-            <h4 className="font-semibold text-ink-black">{config.label} Events</h4>
-            <p className="text-xs text-sepia">{config.description}</p>
+            <h4 className="font-semibold text-ink-black">{data.type} Events</h4>
+            {data.description && (
+              <p className="text-xs text-sepia">{data.description}</p>
+            )}
           </div>
         </div>
         <div className={`text-right ${getStatusColor()}`}>
@@ -167,7 +152,7 @@ export function EventTypeSummary({ data, className }: EventTypeSummaryProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         {activeEventTypes.map((eventType) => (
-          <EventTypeRow key={eventType.type} data={eventType} />
+          <EventTypeRow key={eventType.id} data={eventType} />
         ))}
       </CardContent>
     </Card>
