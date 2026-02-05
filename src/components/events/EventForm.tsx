@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/Card';
-import type { Event, EventType, QuarterType } from '@/types/database';
-import { eventTypeLabels, quarterLabels } from '@/types/database';
+import type { Event, QuarterType, EventTypeRecord } from '@/types/database';
+import { quarterLabels } from '@/types/database';
 
 /* ============================================
    EVENT FORM COMPONENT
@@ -15,7 +15,7 @@ import { eventTypeLabels, quarterLabels } from '@/types/database';
 
 export interface EventFormData {
   name: string;
-  event_type: EventType;
+  event_type_id: string;
   quarter: QuarterType;
   fiscal_year_id: string;
   date_start: string;
@@ -42,7 +42,6 @@ export interface EventFormProps {
   mode?: 'create' | 'edit';
 }
 
-const eventTypes: EventType[] = ['executive', 'national', 'state', 'regional', 'customer'];
 const quarters: QuarterType[] = ['Q1', 'Q2', 'Q3', 'Q4', 'TBD'];
 
 // Helper to sanitize currency input - only allows one decimal point
@@ -64,9 +63,12 @@ export function EventForm({
   isLoading = false,
   mode = 'create',
 }: EventFormProps) {
+  const [eventTypes, setEventTypes] = useState<EventTypeRecord[]>([]);
+  const [loadingTypes, setLoadingTypes] = useState(true);
+
   const [formData, setFormData] = useState<EventFormData>({
     name: event?.name || '',
-    event_type: event?.event_type || 'national',
+    event_type_id: event?.event_type_id || '',
     quarter: event?.quarter || 'TBD',
     fiscal_year_id: event?.fiscal_year_id || '',
     date_start: event?.date_start || '',
@@ -81,6 +83,35 @@ export function EventForm({
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof EventFormData, string>>>({});
+
+  useEffect(() => {
+    const fetchEventTypes = async () => {
+      try {
+        // Get fiscal year from form or fetch current settings
+        let fyId = formData.fiscal_year_id;
+        if (!fyId) {
+          const settingsRes = await fetch('/api/settings');
+          if (settingsRes.ok) {
+            const settingsData = await settingsRes.json();
+            fyId = settingsData.settings?.fiscal_year_id;
+          }
+        }
+
+        if (fyId) {
+          const res = await fetch(`/api/event-types?fiscal_year_id=${fyId}`);
+          if (res.ok) {
+            const data = await res.json();
+            setEventTypes(data.event_types || []);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load event types:', err);
+      } finally {
+        setLoadingTypes(false);
+      }
+    };
+    fetchEventTypes();
+  }, [formData.fiscal_year_id]);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof EventFormData, string>> = {};
@@ -192,19 +223,20 @@ export function EventForm({
             {/* Event Type and Quarter */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="event_type" className={labelClasses}>
+                <label htmlFor="event_type_id" className={labelClasses}>
                   Event Type <span className="text-ink-red">*</span>
                 </label>
                 <select
-                  id="event_type"
-                  value={formData.event_type}
-                  onChange={(e) => handleChange('event_type', e.target.value)}
+                  id="event_type_id"
+                  value={formData.event_type_id}
+                  onChange={(e) => handleChange('event_type_id', e.target.value)}
                   className={inputClasses}
-                  disabled={isLoading}
+                  disabled={isLoading || loadingTypes}
                 >
+                  <option value="">Select event type...</option>
                   {eventTypes.map(type => (
-                    <option key={type} value={type}>
-                      {eventTypeLabels[type]}
+                    <option key={type.id} value={type.id}>
+                      {type.name}
                     </option>
                   ))}
                 </select>
