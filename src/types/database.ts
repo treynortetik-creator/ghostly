@@ -867,6 +867,48 @@ export interface Database {
         };
         Relationships: [];
       };
+      api_keys: {
+        Row: {
+          id: string;
+          key_hash: string;
+          agent_name: string;
+          label: string | null;
+          permissions: string[];
+          is_active: boolean;
+          last_used_at: string | null;
+          expires_at: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+          revoked_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          key_hash: string;
+          agent_name: string;
+          label?: string | null;
+          permissions?: string[];
+          is_active?: boolean;
+          last_used_at?: string | null;
+          expires_at?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+          revoked_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          key_hash?: string;
+          agent_name?: string;
+          label?: string | null;
+          permissions?: string[];
+          is_active?: boolean;
+          last_used_at?: string | null;
+          expires_at?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+          revoked_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

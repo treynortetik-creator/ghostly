@@ -1,6 +1,7 @@
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 import { timingSafeEqual } from 'crypto';
 import { cookies } from 'next/headers';
+import { createHash, randomBytes } from 'crypto';
 
 // Cookie name for the auth token
 const AUTH_COOKIE_NAME = 'counting-house-token';
@@ -10,6 +11,27 @@ const TOKEN_EXPIRATION = '24h';
 
 interface TokenPayload extends JWTPayload {
   username: string;
+}
+
+export interface ApiKeyRecord {
+  id: string;
+  key_hash: string;
+  agent_name: string;
+  label: string | null;
+  permissions: string[];
+  is_active: boolean;
+  last_used_at: string | null;
+  expires_at: string | null;
+  created_at: string;
+  updated_at: string;
+  revoked_at: string | null;
+}
+
+export interface ApiKeyAuthResult {
+  authenticated: boolean;
+  apiKey?: ApiKeyRecord;
+  error?: string;
+  errorCode?: string;
 }
 
 /**
@@ -133,3 +155,84 @@ export async function clearAuthCookie(): Promise<void> {
  * Export the cookie name for use in middleware
  */
 export { AUTH_COOKIE_NAME };
+
+// ============================================
+// API Key Authentication
+// ============================================
+
+/**
+ * Hash an API key with SHA-256 for storage/lookup
+ */
+export function hashApiKey(rawKey: string): string {
+  return createHash('sha256').update(rawKey).digest('hex');
+}
+
+/**
+ * Generate a new API key in the format sk_{agent}_{env}_{random32}
+ */
+export function generateApiKey(agentName: string, environment: string = 'live'): string {
+  const random = randomBytes(24).toString('base64url'); // ~32 chars
+  return `sk_${agentName}_${environment}_${random}`;
+}
+
+/**
+ * Validate an API key against the database.
+ * Uses the Supabase REST API directly (works in both Node and Edge runtimes).
+ */
+export async function validateApiKey(rawKey: string): Promise<ApiKeyAuthResult> {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    return { authenticated: false, error: 'Server configuration error', errorCode: 'INTERNAL_ERROR' };
+  }
+
+  const keyHash = hashApiKey(rawKey);
+
+  // Query the api_keys table via Supabase REST API
+  const url = `${supabaseUrl}/rest/v1/api_keys?key_hash=eq.${keyHash}&revoked_at=is.null&is_active=eq.true&select=*`;
+  const res = await fetch(url, {
+    headers: {
+      'apikey': supabaseServiceKey,
+      'Authorization': `Bearer ${supabaseServiceKey}`,
+    },
+  });
+
+  if (!res.ok) {
+    return { authenticated: false, error: 'Internal server error', errorCode: 'INTERNAL_ERROR' };
+  }
+
+  const rows: ApiKeyRecord[] = await res.json();
+
+  if (rows.length === 0) {
+    return { authenticated: false, error: 'Invalid or missing API key', errorCode: 'AUTH_INVALID_KEY' };
+  }
+
+  const apiKey = rows[0];
+
+  // Check expiration
+  if (apiKey.expires_at && new Date(apiKey.expires_at) < new Date()) {
+    return { authenticated: false, error: 'API key has expired', errorCode: 'AUTH_KEY_EXPIRED' };
+  }
+
+  // Update last_used_at (fire and forget)
+  fetch(`${supabaseUrl}/rest/v1/api_keys?id=eq.${apiKey.id}`, {
+    method: 'PATCH',
+    headers: {
+      'apikey': supabaseServiceKey,
+      'Authorization': `Bearer ${supabaseServiceKey}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal',
+    },
+    body: JSON.stringify({ last_used_at: new Date().toISOString() }),
+  }).catch(() => { /* non-critical */ });
+
+  return { authenticated: true, apiKey };
+}
+
+/**
+ * Check if an API key has the required permission scope
+ */
+export function apiKeyHasPermission(apiKey: ApiKeyRecord, requiredScope: string): boolean {
+  return apiKey.permissions.includes(requiredScope);
+}
