@@ -17,6 +17,8 @@ export type QuarterType = 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'TBD';
 
 export type ExpenseSource = 'brex' | 'pdf' | 'manual';
 
+export type ChecklistPhase = 'pre_event' | 'day_of' | 'post_event';
+
 // ============================================
 // TABLE INTERFACES
 // ============================================
@@ -129,6 +131,82 @@ export interface Expense {
   deleted_at: string | null;
 }
 
+/**
+ * Team member record
+ */
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  default_role: string | null;
+  is_active: boolean;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+/**
+ * Event team assignment (join table)
+ */
+export interface EventTeamAssignment {
+  id: string;
+  event_id: string;
+  team_member_id: string;
+  event_role: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Checklist template (reusable across events)
+ */
+export interface ChecklistTemplate {
+  id: string;
+  name: string;
+  event_type: string | null;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+/**
+ * Checklist template item
+ */
+export interface ChecklistTemplateItem {
+  id: string;
+  template_id: string;
+  title: string;
+  description: string | null;
+  phase: ChecklistPhase;
+  default_assignee_role: string | null;
+  days_offset: number | null;
+  sort_order: number;
+  created_at: string;
+}
+
+/**
+ * Event checklist item (instance from template)
+ */
+export interface EventChecklistItem {
+  id: string;
+  event_id: string;
+  template_item_id: string | null;
+  title: string;
+  description: string | null;
+  phase: ChecklistPhase;
+  assignee_id: string | null;
+  due_date: string | null;
+  completed_at: string | null;
+  completed_by: string | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
 // ============================================
 // INSERT/UPDATE TYPES (without auto-generated fields)
 // ============================================
@@ -149,6 +227,20 @@ export type BudgetCategoryUpdate = Partial<Omit<BudgetCategory, 'id' | 'created_
 
 export type ExpenseInsert = Omit<Expense, 'id' | 'created_at' | 'updated_at'>;
 export type ExpenseUpdate = Partial<Omit<Expense, 'id' | 'created_at'>>;
+
+export type TeamMemberInsert = Omit<TeamMember, 'id' | 'created_at' | 'updated_at'>;
+export type TeamMemberUpdate = Partial<Omit<TeamMember, 'id' | 'created_at'>>;
+
+export type EventTeamAssignmentInsert = Omit<EventTeamAssignment, 'id' | 'created_at' | 'updated_at'>;
+export type EventTeamAssignmentUpdate = Partial<Omit<EventTeamAssignment, 'id' | 'created_at'>>;
+
+export type ChecklistTemplateInsert = Omit<ChecklistTemplate, 'id' | 'created_at' | 'updated_at'>;
+export type ChecklistTemplateUpdate = Partial<Omit<ChecklistTemplate, 'id' | 'created_at'>>;
+
+export type ChecklistTemplateItemInsert = Omit<ChecklistTemplateItem, 'id' | 'created_at'>;
+
+export type EventChecklistItemInsert = Omit<EventChecklistItem, 'id' | 'created_at' | 'updated_at'>;
+export type EventChecklistItemUpdate = Partial<Omit<EventChecklistItem, 'id' | 'created_at'>>;
 
 // ============================================
 // EXTENDED TYPES (with relations)
@@ -183,6 +275,28 @@ export interface ExpenseWithRelations extends Expense {
   category_name: string | null;
   target_type: 'event' | 'category';
   target_name: string;
+}
+
+/**
+ * Event team assignment with member details
+ */
+export interface EventTeamAssignmentWithMember extends EventTeamAssignment {
+  team_member: TeamMember;
+}
+
+/**
+ * Event checklist item with assignee details
+ */
+export interface EventChecklistItemWithAssignee extends EventChecklistItem {
+  assignee: TeamMember | null;
+}
+
+/**
+ * Checklist template with items
+ */
+export interface ChecklistTemplateWithItems extends ChecklistTemplate {
+  items: ChecklistTemplateItem[];
+  item_count: number;
 }
 
 // ============================================
@@ -253,6 +367,12 @@ export const sourceTypeLabels: Record<ExpenseSource, string> = {
   manual: 'Manual Entry',
   brex: 'Brex Import',
   pdf: 'PDF Upload',
+};
+
+export const checklistPhaseLabels: Record<ChecklistPhase, string> = {
+  pre_event: 'Before the Affair',
+  day_of: 'The Day Itself',
+  post_event: 'After the Affair',
 };
 
 // ============================================
@@ -564,6 +684,189 @@ export interface Database {
         };
         Relationships: [];
       };
+      team_members: {
+        Row: {
+          id: string;
+          name: string;
+          email: string | null;
+          phone: string | null;
+          default_role: string | null;
+          is_active: boolean;
+          notes: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          email?: string | null;
+          phone?: string | null;
+          default_role?: string | null;
+          is_active?: boolean;
+          notes?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          email?: string | null;
+          phone?: string | null;
+          default_role?: string | null;
+          is_active?: boolean;
+          notes?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Relationships: [];
+      };
+      event_team_assignments: {
+        Row: {
+          id: string;
+          event_id: string;
+          team_member_id: string;
+          event_role: string | null;
+          notes: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          team_member_id: string;
+          event_role?: string | null;
+          notes?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          team_member_id?: string;
+          event_role?: string | null;
+          notes?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+      checklist_templates: {
+        Row: {
+          id: string;
+          name: string;
+          event_type: string | null;
+          is_default: boolean;
+          created_at: string | null;
+          updated_at: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          event_type?: string | null;
+          is_default?: boolean;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          event_type?: string | null;
+          is_default?: boolean;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Relationships: [];
+      };
+      checklist_template_items: {
+        Row: {
+          id: string;
+          template_id: string;
+          title: string;
+          description: string | null;
+          phase: ChecklistPhase;
+          default_assignee_role: string | null;
+          days_offset: number | null;
+          sort_order: number;
+          created_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          template_id: string;
+          title: string;
+          description?: string | null;
+          phase: ChecklistPhase;
+          default_assignee_role?: string | null;
+          days_offset?: number | null;
+          sort_order?: number;
+          created_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          template_id?: string;
+          title?: string;
+          description?: string | null;
+          phase?: ChecklistPhase;
+          default_assignee_role?: string | null;
+          days_offset?: number | null;
+          sort_order?: number;
+          created_at?: string | null;
+        };
+        Relationships: [];
+      };
+      event_checklist_items: {
+        Row: {
+          id: string;
+          event_id: string;
+          template_item_id: string | null;
+          title: string;
+          description: string | null;
+          phase: ChecklistPhase;
+          assignee_id: string | null;
+          due_date: string | null;
+          completed_at: string | null;
+          completed_by: string | null;
+          sort_order: number;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          template_item_id?: string | null;
+          title: string;
+          description?: string | null;
+          phase: ChecklistPhase;
+          assignee_id?: string | null;
+          due_date?: string | null;
+          completed_at?: string | null;
+          completed_by?: string | null;
+          sort_order?: number;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          template_item_id?: string | null;
+          title?: string;
+          description?: string | null;
+          phase?: ChecklistPhase;
+          assignee_id?: string | null;
+          due_date?: string | null;
+          completed_at?: string | null;
+          completed_by?: string | null;
+          sort_order?: number;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -575,6 +878,7 @@ export interface Database {
       event_type: EventType;
       quarter_type: QuarterType;
       expense_source: ExpenseSource;
+      checklist_phase: ChecklistPhase;
     };
     CompositeTypes: {
       [_ in never]: never;

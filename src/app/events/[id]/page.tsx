@@ -27,6 +27,8 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter, StatCard } from '@/components/ui/Card';
 import { ProgressBar, BudgetProgress } from '@/components/ui/ProgressBar';
 import { EventForm, EventFormData } from '@/components/events/EventForm';
+import { EventTeamTab } from '@/components/events/EventTeamTab';
+import { EventChecklistTab } from '@/components/events/EventChecklistTab';
 import type { Expense, FiscalYear, EventWithTotals } from '@/types/database';
 import { eventTypeLabels, quarterLabels } from '@/types/database';
 
@@ -70,7 +72,7 @@ export default function EventDetailPage({ params }: PageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [activeTab, setActiveTab] = useState<'details' | 'roi'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'team' | 'checklist' | 'roi'>('details');
   const [isEditingROI, setIsEditingROI] = useState(false);
   const [isSavingROI, setIsSavingROI] = useState(false);
   const [roiForm, setRoiForm] = useState({
@@ -452,6 +454,28 @@ export default function EventDetailPage({ params }: PageProps) {
           Budget &amp; Details
         </button>
         <button
+          onClick={() => setActiveTab('team')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === 'team'
+              ? 'border-ink-gold text-ink-gold'
+              : 'border-transparent text-sepia hover:text-wood-dark hover:border-wood-medium/40'
+          }`}
+        >
+          <Users className="w-4 h-4 inline mr-1.5 -mt-0.5" />
+          Team
+        </button>
+        <button
+          onClick={() => setActiveTab('checklist')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === 'checklist'
+              ? 'border-ink-gold text-ink-gold'
+              : 'border-transparent text-sepia hover:text-wood-dark hover:border-wood-medium/40'
+          }`}
+        >
+          <FileText className="w-4 h-4 inline mr-1.5 -mt-0.5" />
+          Checklist
+        </button>
+        <button
           onClick={() => setActiveTab('roi')}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
             activeTab === 'roi'
@@ -463,6 +487,16 @@ export default function EventDetailPage({ params }: PageProps) {
           ROI Tracking
         </button>
       </div>
+
+      {/* Team Tab */}
+      {activeTab === 'team' && (
+        <EventTeamTab eventId={id} />
+      )}
+
+      {/* Checklist Tab */}
+      {activeTab === 'checklist' && (
+        <EventChecklistTab eventId={id} />
+      )}
 
       {/* ROI Tab */}
       {activeTab === 'roi' && (

@@ -16,6 +16,7 @@ import {
   BookOpen,
   Menu,
   X,
+  Users,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -30,6 +31,7 @@ const navItems: NavItem[] = [
   { name: 'Events', href: '/events', icon: Calendar },
   { name: 'Categories', href: '/categories', icon: FolderOpen },
   { name: 'Expenses', href: '/expenses', icon: Receipt },
+  { name: 'Team', href: '/team', icon: Users },
   { name: 'ROI', href: '/roi', icon: TrendingUp },
   { name: 'Import', href: '/import', icon: Upload },
   { name: 'Export', href: '/export', icon: Download },
