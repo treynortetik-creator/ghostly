@@ -312,19 +312,30 @@ export async function POST(request: NextRequest) {
       { data: categories },
     ] = await Promise.all([
       supabase.from('expenses').select('id, amount, expense_date, vendor').is('deleted_at', null),
-      supabase.from('events').select('id, name, event_type, quarter').is('deleted_at', null),
+      supabase.from('events').select('id, name, event_type_id, quarter, event_types(name)').is('deleted_at', null),
       supabase.from('budget_categories').select('id, name, description').is('deleted_at', null),
     ]);
 
     // Build assignment targets
     const targets: AssignmentTarget[] = [
-      ...(events || []).map(e => ({
-        id: e.id,
-        name: e.name,
-        type: 'event' as const,
-        eventType: e.event_type,
-        quarter: e.quarter || undefined,
-      })),
+      ...(events || []).map(e => {
+        // Handle joined event_types - can be object or array depending on Supabase version
+        // Use unknown cast first to handle type system before migration is applied
+        const eventTypeData = e.event_types as unknown;
+        let eventTypeName: string | undefined;
+        if (Array.isArray(eventTypeData)) {
+          eventTypeName = (eventTypeData[0] as { name?: string } | undefined)?.name;
+        } else if (eventTypeData && typeof eventTypeData === 'object') {
+          eventTypeName = (eventTypeData as { name?: string }).name;
+        }
+        return {
+          id: e.id,
+          name: e.name,
+          type: 'event' as const,
+          eventType: eventTypeName || undefined,
+          quarter: e.quarter || undefined,
+        };
+      }),
       ...(categories || []).map(c => ({
         id: c.id,
         name: c.name,
