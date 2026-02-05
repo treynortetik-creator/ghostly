@@ -9,7 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import type { EventType, QuarterType } from '@/types/database';
+import type { EventType, QuarterType, EventTypeRecord } from '@/types/database';
 
 // ============================================
 // GET /api/events/[id]
@@ -25,7 +25,7 @@ export async function GET(
 
     const { data: event, error: eventError } = await supabase
       .from('events')
-      .select('*')
+      .select('*, event_types(*)')
       .eq('id', id)
       .is('deleted_at', null)
       .single();
@@ -53,8 +53,12 @@ export async function GET(
     const actualSpent = expenseList.reduce((sum, e) => sum + e.amount, 0);
     const budgetAmount = event.budget_amount ?? 0;
 
+    // Extract event_types join result and rename to event_type_record
+    const { event_types, ...eventData } = event as typeof event & { event_types: EventTypeRecord | null };
+
     const eventWithTotals = {
-      ...event,
+      ...eventData,
+      event_type_record: event_types ?? null,
       budget_amount: budgetAmount,
       expansion_goal: event.expansion_goal ?? 0,
       net_new_goal: event.net_new_goal ?? 0,
@@ -159,13 +163,38 @@ export async function PUT(
       }
     }
 
+    // Validate and lookup event_type_id if provided
+    let eventTypeRecord: EventTypeRecord | null = null;
+    if (body.event_type_id !== undefined && body.event_type_id !== null && body.event_type_id !== '') {
+      const { data: eventType, error: eventTypeError } = await supabase
+        .from('event_types')
+        .select('*')
+        .eq('id', body.event_type_id)
+        .single();
+
+      if (eventTypeError || !eventType) {
+        return NextResponse.json(
+          { error: 'Invalid event_type_id. Event type not found.' },
+          { status: 400 }
+        );
+      }
+      eventTypeRecord = eventType as EventTypeRecord;
+    }
+
     // Build update payload
     const updateData: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     };
 
     if (body.name !== undefined) updateData.name = body.name;
-    if (body.event_type !== undefined) updateData.event_type = body.event_type as EventType;
+    // If event_type_id is provided, update both event_type_id and event_type for backward compatibility
+    if (eventTypeRecord) {
+      updateData.event_type_id = body.event_type_id;
+      updateData.event_type = eventTypeRecord.name.toLowerCase() as EventType;
+    } else if (body.event_type !== undefined) {
+      // Legacy: direct event_type update (deprecated)
+      updateData.event_type = body.event_type as EventType;
+    }
     if (body.quarter !== undefined) updateData.quarter = body.quarter as QuarterType;
     if (body.fiscal_year_id !== undefined) updateData.fiscal_year_id = body.fiscal_year_id?.trim() || null;
     if (body.date_start !== undefined) updateData.date_start = body.date_start?.trim() || null;
@@ -189,7 +218,7 @@ export async function PUT(
       .update(updateData)
       .eq('id', id)
       .is('deleted_at', null)
-      .select()
+      .select('*, event_types(*)')
       .single();
 
     if (updateError) throw updateError;
@@ -205,8 +234,12 @@ export async function PUT(
     const actualSpent = expenseList.reduce((sum, e) => sum + e.amount, 0);
     const budgetAmount = updatedEvent.budget_amount ?? 0;
 
+    // Extract event_types join result and rename to event_type_record
+    const { event_types: updatedEventTypes, ...updatedEventData } = updatedEvent as typeof updatedEvent & { event_types: EventTypeRecord | null };
+
     const eventWithTotals = {
-      ...updatedEvent,
+      ...updatedEventData,
+      event_type_record: updatedEventTypes ?? null,
       budget_amount: budgetAmount,
       expansion_goal: updatedEvent.expansion_goal ?? 0,
       net_new_goal: updatedEvent.net_new_goal ?? 0,
