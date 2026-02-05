@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Calendar, AlertTriangle, Search } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { EventCard } from './EventCard';
 import { EventFilters, FilterPills } from './EventFilters';
-import type { EventType, QuarterType, Expense, EventWithTotals } from '@/types/database';
+import type { QuarterType, Expense, EventWithTotals, EventTypeRecord } from '@/types/database';
 
 /* ============================================
    EVENT LIST COMPONENT
@@ -26,7 +26,7 @@ export interface EventListProps {
   /** Error message to display */
   error?: string | null;
   /** Called when filters change */
-  onFiltersChange?: (filters: { type: EventType | 'all'; quarter: QuarterType | 'all' }) => void;
+  onFiltersChange?: (filters: { typeId: string | 'all'; quarter: QuarterType | 'all' }) => void;
   /** Show search input */
   showSearch?: boolean;
   /** Group events by quarter */
@@ -43,17 +43,48 @@ export function EventList({
   showSearch = true,
   groupByQuarter = false,
 }: EventListProps) {
-  const [selectedType, setSelectedType] = useState<EventType | 'all'>('all');
+  const [selectedTypeId, setSelectedTypeId] = useState<string | 'all'>('all');
   const [selectedQuarter, setSelectedQuarter] = useState<QuarterType | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [eventTypes, setEventTypes] = useState<EventTypeRecord[]>([]);
+
+  // Fetch event types for display in pills
+  useEffect(() => {
+    const fetchEventTypes = async () => {
+      try {
+        const settingsRes = await fetch('/api/settings');
+        let fyId: string | undefined;
+        if (settingsRes.ok) {
+          const settingsData = await settingsRes.json();
+          fyId = settingsData.settings?.fiscal_year_id;
+        }
+
+        if (fyId) {
+          const res = await fetch(`/api/event-types?fiscal_year_id=${fyId}`);
+          if (res.ok) {
+            const data = await res.json();
+            setEventTypes(data.event_types || []);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load event types:', err);
+      }
+    };
+    fetchEventTypes();
+  }, []);
+
+  // Get the selected event type name for display in pills
+  const selectedTypeName = selectedTypeId !== 'all'
+    ? eventTypes.find(t => t.id === selectedTypeId)?.name || null
+    : null;
 
   // Filter events
   const filteredEvents = useMemo(() => {
     let filtered = events;
 
-    // Apply type filter
-    if (selectedType !== 'all') {
-      filtered = filtered.filter(e => e.event_type === selectedType);
+    // Apply type filter by event_type_id
+    if (selectedTypeId !== 'all') {
+      filtered = filtered.filter(e => e.event_type_id === selectedTypeId);
     }
 
     // Apply quarter filter
@@ -66,13 +97,12 @@ export function EventList({
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(e =>
         e.name.toLowerCase().includes(query) ||
-        e.location?.toLowerCase().includes(query) ||
-        e.event_type.toLowerCase().includes(query)
+        e.location?.toLowerCase().includes(query)
       );
     }
 
     return filtered;
-  }, [events, selectedType, selectedQuarter, searchQuery]);
+  }, [events, selectedTypeId, selectedQuarter, searchQuery]);
 
   // Group events by quarter if needed
   const groupedEvents = useMemo(() => {
@@ -95,26 +125,26 @@ export function EventList({
 
   // Count active filters
   const activeFilterCount = [
-    selectedType !== 'all',
+    selectedTypeId !== 'all',
     selectedQuarter !== 'all',
   ].filter(Boolean).length;
 
   // Handle filter changes
-  const handleTypeChange = (type: EventType | 'all') => {
-    setSelectedType(type);
-    onFiltersChange?.({ type, quarter: selectedQuarter });
+  const handleTypeChange = (typeId: string | 'all') => {
+    setSelectedTypeId(typeId);
+    onFiltersChange?.({ typeId, quarter: selectedQuarter });
   };
 
   const handleQuarterChange = (quarter: QuarterType | 'all') => {
     setSelectedQuarter(quarter);
-    onFiltersChange?.({ type: selectedType, quarter });
+    onFiltersChange?.({ typeId: selectedTypeId, quarter });
   };
 
   const handleClearFilters = () => {
-    setSelectedType('all');
+    setSelectedTypeId('all');
     setSelectedQuarter('all');
     setSearchQuery('');
-    onFiltersChange?.({ type: 'all', quarter: 'all' });
+    onFiltersChange?.({ typeId: 'all', quarter: 'all' });
   };
 
   // Calculate totals
@@ -172,7 +202,7 @@ export function EventList({
       {/* Filters and Search */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <EventFilters
-          selectedType={selectedType}
+          selectedTypeId={selectedTypeId}
           selectedQuarter={selectedQuarter}
           onTypeChange={handleTypeChange}
           onQuarterChange={handleQuarterChange}
@@ -202,7 +232,8 @@ export function EventList({
 
       {/* Active filter pills */}
       <FilterPills
-        selectedType={selectedType}
+        selectedTypeId={selectedTypeId}
+        selectedTypeName={selectedTypeName}
         selectedQuarter={selectedQuarter}
         onRemoveType={() => handleTypeChange('all')}
         onRemoveQuarter={() => handleQuarterChange('all')}

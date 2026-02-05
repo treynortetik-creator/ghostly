@@ -1,9 +1,9 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import type { EventType, QuarterType } from '@/types/database';
-import { eventTypeLabels, quarterLabels } from '@/types/database';
+import type { QuarterType, EventTypeRecord } from '@/types/database';
 
 /* ============================================
    EVENT FILTERS COMPONENT
@@ -13,12 +13,12 @@ import { eventTypeLabels, quarterLabels } from '@/types/database';
    ============================================ */
 
 export interface EventFiltersProps {
-  /** Currently selected event type filter */
-  selectedType: EventType | 'all';
+  /** Currently selected event type ID filter */
+  selectedTypeId: string | 'all';
   /** Currently selected quarter filter */
   selectedQuarter: QuarterType | 'all';
   /** Called when event type filter changes */
-  onTypeChange: (type: EventType | 'all') => void;
+  onTypeChange: (typeId: string | 'all') => void;
   /** Called when quarter filter changes */
   onQuarterChange: (quarter: QuarterType | 'all') => void;
   /** Called when filters are cleared */
@@ -27,17 +27,46 @@ export interface EventFiltersProps {
   activeFilterCount?: number;
 }
 
-const eventTypes: EventType[] = ['executive', 'national', 'state', 'regional', 'customer'];
 const quarters: QuarterType[] = ['Q1', 'Q2', 'Q3', 'Q4', 'TBD'];
 
 export function EventFilters({
-  selectedType,
+  selectedTypeId,
   selectedQuarter,
   onTypeChange,
   onQuarterChange,
   onClearFilters,
   activeFilterCount = 0,
 }: EventFiltersProps) {
+  const [eventTypes, setEventTypes] = useState<EventTypeRecord[]>([]);
+  const [loadingTypes, setLoadingTypes] = useState(true);
+
+  useEffect(() => {
+    const fetchEventTypes = async () => {
+      try {
+        // Fetch current fiscal year from settings
+        const settingsRes = await fetch('/api/settings');
+        let fyId: string | undefined;
+        if (settingsRes.ok) {
+          const settingsData = await settingsRes.json();
+          fyId = settingsData.settings?.fiscal_year_id;
+        }
+
+        if (fyId) {
+          const res = await fetch(`/api/event-types?fiscal_year_id=${fyId}`);
+          if (res.ok) {
+            const data = await res.json();
+            setEventTypes(data.event_types || []);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load event types:', err);
+      } finally {
+        setLoadingTypes(false);
+      }
+    };
+    fetchEventTypes();
+  }, []);
+
   const selectClasses = `
     px-3 py-2 rounded-md
     bg-parchment border border-wood-medium/40
@@ -53,7 +82,12 @@ export function EventFilters({
     pr-8
   `;
 
-  const hasActiveFilters = selectedType !== 'all' || selectedQuarter !== 'all';
+  const hasActiveFilters = selectedTypeId !== 'all' || selectedQuarter !== 'all';
+
+  // Get the selected event type name for display
+  const selectedTypeName = selectedTypeId !== 'all'
+    ? eventTypes.find(t => t.id === selectedTypeId)?.name || 'Unknown'
+    : null;
 
   return (
     <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
@@ -72,14 +106,15 @@ export function EventFilters({
           </label>
           <select
             id="filter-type"
-            value={selectedType}
-            onChange={(e) => onTypeChange(e.target.value as EventType | 'all')}
+            value={selectedTypeId}
+            onChange={(e) => onTypeChange(e.target.value)}
             className={selectClasses}
+            disabled={loadingTypes}
           >
-            <option value="all">All Types</option>
+            <option value="all">{loadingTypes ? 'Loading...' : 'All Types'}</option>
             {eventTypes.map(type => (
-              <option key={type} value={type}>
-                {eventTypeLabels[type]}
+              <option key={type.id} value={type.id}>
+                {type.name}
               </option>
             ))}
           </select>
@@ -134,31 +169,33 @@ export function EventFilters({
    ============================================ */
 
 export interface FilterPillsProps {
-  selectedType: EventType | 'all';
+  selectedTypeId: string | 'all';
+  selectedTypeName: string | null;
   selectedQuarter: QuarterType | 'all';
   onRemoveType: () => void;
   onRemoveQuarter: () => void;
 }
 
 export function FilterPills({
-  selectedType,
+  selectedTypeId,
+  selectedTypeName,
   selectedQuarter,
   onRemoveType,
   onRemoveQuarter,
 }: FilterPillsProps) {
-  if (selectedType === 'all' && selectedQuarter === 'all') {
+  if (selectedTypeId === 'all' && selectedQuarter === 'all') {
     return null;
   }
 
   return (
     <div className="flex flex-wrap gap-2 mt-3">
-      {selectedType !== 'all' && (
+      {selectedTypeId !== 'all' && selectedTypeName && (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-wood-medium/10 text-sm text-wood-dark border border-wood-medium/20">
-          Type: {eventTypeLabels[selectedType]}
+          Type: {selectedTypeName}
           <button
             onClick={onRemoveType}
             className="ml-0.5 p-0.5 rounded-full hover:bg-wood-medium/20 transition-colors"
-            aria-label={`Remove ${eventTypeLabels[selectedType]} filter`}
+            aria-label={`Remove ${selectedTypeName} filter`}
           >
             <X className="w-3 h-3" />
           </button>
