@@ -7,12 +7,15 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logError } from '@/lib/error-logger';
-import type { EventType } from '@/types/database';
+import type { EventType, EventTypeRecord } from '@/types/database';
 
 interface EventROIRow {
   id: string;
   name: string;
+  /** @deprecated Use event_type_id and event_type_record instead */
   event_type: EventType;
+  event_type_id: string | null;
+  event_type_record: EventTypeRecord | null;
   pipeline_generated: number;
   revenue_closed: number;
   leads_generated: number;
@@ -26,10 +29,10 @@ export async function GET() {
   try {
     const supabase = await createClient();
 
-    // Fetch all non-deleted events
+    // Fetch all non-deleted events with event_types join
     const { data: events, error: eventsError } = await supabase
       .from('events')
-      .select('*')
+      .select('*, event_types(*)')
       .is('deleted_at', null);
 
     if (eventsError) throw eventsError;
@@ -59,15 +62,20 @@ export async function GET() {
         ? (revenueClosed - actualSpent) / actualSpent
         : null;
 
+      // Extract event_types join result and rename to event_type_record
+      const { event_types, ...eventData } = event as typeof event & { event_types: EventTypeRecord | null };
+
       return {
-        id: event.id,
-        name: event.name,
-        event_type: event.event_type,
-        pipeline_generated: event.pipeline_generated ?? 0,
+        id: eventData.id,
+        name: eventData.name,
+        event_type: eventData.event_type,
+        event_type_id: eventData.event_type_id ?? null,
+        event_type_record: event_types ?? null,
+        pipeline_generated: eventData.pipeline_generated ?? 0,
         revenue_closed: revenueClosed,
-        leads_generated: event.leads_generated ?? 0,
-        meetings_booked: event.meetings_booked ?? 0,
-        opportunities_created: event.opportunities_created ?? 0,
+        leads_generated: eventData.leads_generated ?? 0,
+        meetings_booked: eventData.meetings_booked ?? 0,
+        opportunities_created: eventData.opportunities_created ?? 0,
         actual_spent: actualSpent,
         roi_ratio: roiRatio,
       };

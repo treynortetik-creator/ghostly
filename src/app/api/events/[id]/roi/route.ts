@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logError } from '@/lib/error-logger';
+import type { EventTypeRecord } from '@/types/database';
 
 export async function GET(
   request: NextRequest,
@@ -18,7 +19,7 @@ export async function GET(
 
     const { data: event, error: eventError } = await supabase
       .from('events')
-      .select('*')
+      .select('*, event_types(*)')
       .eq('id', id)
       .is('deleted_at', null)
       .single();
@@ -63,17 +64,22 @@ export async function GET(
       ? pipelineGenerated / actualSpent
       : null;
 
+    // Extract event_types join result and rename to event_type_record
+    const { event_types, ...eventData } = event as typeof event & { event_types: EventTypeRecord | null };
+
     return NextResponse.json({
       event_id: id,
-      event_name: event.name,
-      event_type: event.event_type,
+      event_name: eventData.name,
+      event_type: eventData.event_type,
+      event_type_id: eventData.event_type_id ?? null,
+      event_type_record: event_types ?? null,
       actual_spent: actualSpent,
       pipeline_generated: pipelineGenerated,
       revenue_closed: revenueClosed,
       leads_generated: leadsGenerated,
       meetings_booked: meetingsBooked,
       opportunities_created: opportunitiesCreated,
-      roi_notes: event.roi_notes ?? null,
+      roi_notes: eventData.roi_notes ?? null,
       roi_ratio: roiRatio,
       cost_per_lead: costPerLead,
       cost_per_meeting: costPerMeeting,
