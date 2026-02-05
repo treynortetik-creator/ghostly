@@ -9,12 +9,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logError } from '@/lib/error-logger';
-import type { EventType, QuarterType } from '@/types/database';
+import type { EventType, QuarterType, EventTypeRecord } from '@/types/database';
 
 interface EventWithTotals {
   id: string;
   name: string;
+  /** @deprecated Use event_type_id and event_type_record instead */
   event_type: EventType;
+  event_type_id: string | null;
+  event_type_record: EventTypeRecord | null;
   quarter: QuarterType | null;
   fiscal_year_id: string | null;
   date_start: string | null;
@@ -49,7 +52,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
 
     // Parse filter parameters
-    const eventType = searchParams.get('type') as EventType | null;
+    const eventTypeId = searchParams.get('event_type_id');
     const quarter = searchParams.get('quarter') as QuarterType | null;
     const fiscalYearId = searchParams.get('fiscal_year_id');
 
@@ -61,13 +64,13 @@ export async function GET(request: NextRequest) {
 
     // Build filters object
     const filters: {
-      event_type?: EventType;
+      event_type_id?: string;
       quarter?: QuarterType;
       fiscal_year_id?: string;
     } = {};
 
-    if (eventType && ['executive', 'national', 'state', 'regional', 'customer'].includes(eventType)) {
-      filters.event_type = eventType;
+    if (eventTypeId) {
+      filters.event_type_id = eventTypeId;
     }
     if (quarter && ['Q1', 'Q2', 'Q3', 'Q4', 'TBD'].includes(quarter)) {
       filters.quarter = quarter;
@@ -80,10 +83,10 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('events')
-      .select('*', { count: 'exact' })
+      .select('*, event_types(*)', { count: 'exact' })
       .is('deleted_at', null);
 
-    if (filters.event_type) query = query.eq('event_type', filters.event_type);
+    if (filters.event_type_id) query = query.eq('event_type_id', filters.event_type_id);
     if (filters.quarter) query = query.eq('quarter', filters.quarter);
     if (filters.fiscal_year_id) query = query.eq('fiscal_year_id', filters.fiscal_year_id);
 
@@ -112,8 +115,11 @@ export async function GET(request: NextRequest) {
 
     const events: EventWithTotals[] = (eventsResult.data || []).map(event => {
       const stats = expenseByEvent.get(event.id) || { total: 0, count: 0 };
+      // Extract event_types join result and rename to event_type_record
+      const { event_types, ...eventData } = event as typeof event & { event_types: EventTypeRecord | null };
       return {
-        ...event,
+        ...eventData,
+        event_type_record: event_types ?? null,
         budget_amount: event.budget_amount ?? 0,
         expansion_goal: event.expansion_goal ?? 0,
         net_new_goal: event.net_new_goal ?? 0,
@@ -171,7 +177,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Validate required fields
-    const requiredFields = ['name', 'event_type', 'quarter', 'budget_amount'];
+    const requiredFields = ['name', 'event_type_id', 'quarter', 'budget_amount'];
     for (const field of requiredFields) {
       if (body[field] === undefined || body[field] === null || body[field] === '') {
         return NextResponse.json(
@@ -185,14 +191,6 @@ export async function POST(request: NextRequest) {
     if (String(body.name).length > 200) {
       return NextResponse.json(
         { error: 'Event name must be 200 characters or fewer' },
-        { status: 400 }
-      );
-    }
-
-    // Validate event_type
-    if (!['executive', 'national', 'state', 'regional', 'customer'].includes(body.event_type)) {
-      return NextResponse.json(
-        { error: 'Invalid event_type. Must be one of: executive, national, state, regional, customer' },
         { status: 400 }
       );
     }
@@ -216,6 +214,20 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
 
+    // Validate that event_type_id exists in event_types table
+    const { data: eventType, error: eventTypeError } = await supabase
+      .from('event_types')
+      .select('id, name')
+      .eq('id', body.event_type_id)
+      .single();
+
+    if (eventTypeError || !eventType) {
+      return NextResponse.json(
+        { error: 'Invalid event_type_id. Event type not found.' },
+        { status: 400 }
+      );
+    }
+
     // Coerce empty strings to null for nullable typed columns (uuid, date)
     const fiscalYearId = body.fiscal_year_id?.trim() || null;
     const dateStart = body.date_start?.trim() || null;
@@ -225,7 +237,9 @@ export async function POST(request: NextRequest) {
       .from('events')
       .insert({
         name: body.name,
-        event_type: body.event_type as EventType,
+        // Set event_type from event_types.name for backward compatibility
+        event_type: eventType.name.toLowerCase() as EventType,
+        event_type_id: body.event_type_id,
         quarter: body.quarter as QuarterType,
         fiscal_year_id: fiscalYearId,
         date_start: dateStart,
@@ -238,13 +252,17 @@ export async function POST(request: NextRequest) {
         marketing_notes: body.marketing_notes || null,
         sales_notes: body.sales_notes || null,
       })
-      .select()
+      .select('*, event_types(*)')
       .single();
 
     if (insertError) throw insertError;
 
+    // Extract event_types join result and rename to event_type_record
+    const { event_types, ...eventData } = newEvent as typeof newEvent & { event_types: EventTypeRecord | null };
+
     return NextResponse.json({
-      ...newEvent,
+      ...eventData,
+      event_type_record: event_types ?? null,
       budget_amount: newEvent.budget_amount ?? 0,
       expansion_goal: newEvent.expansion_goal ?? 0,
       net_new_goal: newEvent.net_new_goal ?? 0,
