@@ -7,6 +7,10 @@
 // ENUM TYPES
 // ============================================
 
+/**
+ * @deprecated Use EventTypeRecord from event_types table instead.
+ * Kept for backward compatibility during migration.
+ */
 export type EventType = 'executive' | 'national' | 'state' | 'regional' | 'customer';
 
 export type QuarterType = 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'TBD';
@@ -27,6 +31,30 @@ export interface FiscalYear {
 }
 
 /**
+ * Event type record - configurable event categories with budgets
+ */
+export interface EventTypeRecord {
+  id: string;
+  name: string;
+  description: string | null;
+  fiscal_year_id: string | null;
+  budget_amount: number;
+  is_archived: boolean;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Event type with computed totals for display
+ */
+export interface EventTypeWithTotals extends EventTypeRecord {
+  actual_spent: number;
+  event_count: number;
+  remaining: number;
+}
+
+/**
  * App settings for configuration (e.g., OpenRouter model selection)
  */
 export interface AppSetting {
@@ -42,7 +70,9 @@ export interface AppSetting {
 export interface Event {
   id: string;
   name: string;
+  /** @deprecated Use event_type_id instead */
   event_type: EventType;
+  event_type_id: string | null;
   quarter: QuarterType;
   fiscal_year_id: string | null;
   date_start: string | null;
@@ -105,6 +135,9 @@ export interface Expense {
 
 export type FiscalYearInsert = Omit<FiscalYear, 'id' | 'created_at'>;
 
+export type EventTypeRecordInsert = Omit<EventTypeRecord, 'id' | 'created_at' | 'updated_at'>;
+export type EventTypeRecordUpdate = Partial<Omit<EventTypeRecord, 'id' | 'created_at'>>;
+
 export type AppSettingInsert = Omit<AppSetting, 'id' | 'updated_at'>;
 export type AppSettingUpdate = Partial<Omit<AppSetting, 'id'>>;
 
@@ -126,6 +159,13 @@ export type ExpenseUpdate = Partial<Omit<Expense, 'id' | 'created_at'>>;
  */
 export interface EventWithFiscalYear extends Event {
   fiscal_year: FiscalYear | null;
+}
+
+/**
+ * Event with its event type populated
+ */
+export interface EventWithEventType extends Event {
+  event_type_record: EventTypeRecord | null;
 }
 
 /**
@@ -188,6 +228,10 @@ export interface EventROIMetrics {
 // DISPLAY LABELS
 // ============================================
 
+/**
+ * @deprecated Use EventTypeRecord.name from event_types table instead.
+ * Kept for backward compatibility during migration.
+ */
 export const eventTypeLabels: Record<EventType, string> = {
   executive: 'Executive',
   national: 'National',
@@ -254,6 +298,49 @@ export interface Database {
         };
         Relationships: [];
       };
+      event_types: {
+        Row: {
+          id: string;
+          name: string;
+          description: string | null;
+          fiscal_year_id: string | null;
+          budget_amount: number;
+          is_archived: boolean;
+          display_order: number;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          description?: string | null;
+          fiscal_year_id?: string | null;
+          budget_amount?: number;
+          is_archived?: boolean;
+          display_order?: number;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          description?: string | null;
+          fiscal_year_id?: string | null;
+          budget_amount?: number;
+          is_archived?: boolean;
+          display_order?: number;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'event_types_fiscal_year_id_fkey';
+            columns: ['fiscal_year_id'];
+            referencedRelation: 'fiscal_years';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
       app_settings: {
         Row: {
           id: string;
@@ -279,7 +366,9 @@ export interface Database {
         Row: {
           id: string;
           name: string;
+          /** @deprecated Use event_type_id instead */
           event_type: EventType;
+          event_type_id: string | null;
           quarter: QuarterType | null;
           fiscal_year_id: string | null;
           date_start: string | null;
@@ -304,7 +393,9 @@ export interface Database {
         Insert: {
           id?: string;
           name: string;
+          /** @deprecated Use event_type_id instead */
           event_type: EventType;
+          event_type_id?: string | null;
           quarter?: QuarterType | null;
           fiscal_year_id?: string | null;
           date_start?: string | null;
@@ -329,7 +420,9 @@ export interface Database {
         Update: {
           id?: string;
           name?: string;
+          /** @deprecated Use event_type_id instead */
           event_type?: EventType;
+          event_type_id?: string | null;
           quarter?: QuarterType | null;
           fiscal_year_id?: string | null;
           date_start?: string | null;
