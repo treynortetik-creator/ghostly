@@ -1,6 +1,15 @@
 -- Migration: Create event_types table and migrate from enum
 -- This replaces the hardcoded event_type enum with a configurable table
 
+-- 0. Ensure set_updated_at() function exists (idempotent)
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 -- 1. Create the event_types table
 CREATE TABLE event_types (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
