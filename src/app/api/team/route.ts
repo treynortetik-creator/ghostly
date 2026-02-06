@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logError } from '@/lib/error-logger';
+import { withIdempotency } from '@/lib/idempotency';
 
 export async function GET() {
   try {
@@ -29,7 +30,7 @@ export async function GET() {
   }
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withIdempotency(async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
@@ -64,4 +65,4 @@ export async function POST(request: NextRequest) {
     logError('Failed to create team member', { error: err as Error, source: 'api/team', context: { method: 'POST' } });
     return NextResponse.json({ error: 'Failed to create team member' }, { status: 500 });
   }
-}
+});

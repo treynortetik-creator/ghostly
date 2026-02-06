@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logError } from '@/lib/error-logger';
+import { withIdempotency } from '@/lib/idempotency';
 import type { EventType, QuarterType, EventTypeRecord } from '@/types/database';
 
 interface EventWithTotals {
@@ -172,7 +173,7 @@ export async function GET(request: NextRequest) {
 // POST /api/events
 // ============================================
 
-export async function POST(request: NextRequest) {
+export const POST = withIdempotency(async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
@@ -284,4 +285,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

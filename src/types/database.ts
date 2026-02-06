@@ -867,6 +867,39 @@ export interface Database {
         };
         Relationships: [];
       };
+      idempotency_keys: {
+        Row: {
+          id: string;
+          key: string;
+          method: string;
+          path: string;
+          status_code: number | null;
+          response_body: Json | null;
+          created_at: string | null;
+          expires_at: string;
+        };
+        Insert: {
+          id?: string;
+          key: string;
+          method: string;
+          path: string;
+          status_code?: number | null;
+          response_body?: Json | null;
+          created_at?: string | null;
+          expires_at?: string;
+        };
+        Update: {
+          id?: string;
+          key?: string;
+          method?: string;
+          path?: string;
+          status_code?: number | null;
+          response_body?: Json | null;
+          created_at?: string | null;
+          expires_at?: string;
+        };
+        Relationships: [];
+      };
       api_keys: {
         Row: {
           id: string;

@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logError } from '@/lib/error-logger';
 import type { ExpenseSource } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
+import { withIdempotency } from '@/lib/idempotency';
 
 // ============================================
 // GET /api/expenses
@@ -197,7 +198,7 @@ export async function GET(request: NextRequest) {
 // POST /api/expenses
 // ============================================
 
-export async function POST(request: NextRequest) {
+export const POST = withIdempotency(async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
@@ -351,4 +352,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
