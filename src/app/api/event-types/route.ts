@@ -33,12 +33,28 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const fiscalYearId = searchParams.get('fiscal_year_id');
     const includeArchived = searchParams.get('include_archived') === 'true';
+    const modifiedAfter = searchParams.get('modified_after');
 
     if (!fiscalYearId) {
       return NextResponse.json(
         { error: 'fiscal_year_id is required' },
         { status: 400 }
       );
+    }
+
+    // Validate modified_after if provided
+    if (modifiedAfter && isNaN(Date.parse(modifiedAfter))) {
+      return NextResponse.json(
+        { error: 'Invalid modified_after. Must be a valid ISO 8601 timestamp.' },
+        { status: 400 }
+      );
+    }
+
+    const filters: { fiscal_year_id: string; modified_after?: string } = {
+      fiscal_year_id: fiscalYearId,
+    };
+    if (modifiedAfter) {
+      filters.modified_after = modifiedAfter;
     }
 
     const supabase = await createClient();
@@ -51,6 +67,9 @@ export async function GET(request: NextRequest) {
 
     if (!includeArchived) {
       query = query.eq('is_archived', false);
+    }
+    if (filters.modified_after) {
+      query = query.gt('updated_at', filters.modified_after);
     }
 
     const [eventTypesResult, eventsResult, expensesResult] = await Promise.all([
@@ -106,7 +125,13 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({ event_types: eventTypes });
+    return NextResponse.json({
+      event_types: eventTypes,
+      meta: {
+        total: eventTypes.length,
+        filters_applied: filters,
+      },
+    });
   } catch (error) {
     console.error('Event Types API error:', error);
     return NextResponse.json(

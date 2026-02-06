@@ -34,6 +34,8 @@ export async function GET(request: NextRequest) {
 
     // Parse filter parameters
     const fiscalYearId = searchParams.get('fiscal_year_id');
+    const modifiedAfter = searchParams.get('modified_after');
+    const idsParam = searchParams.get('ids');
 
     // Parse pagination parameters
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
@@ -41,13 +43,29 @@ export async function GET(request: NextRequest) {
     const from = (page - 1) * perPage;
     const to = from + perPage - 1;
 
+    // Validate modified_after if provided
+    if (modifiedAfter && isNaN(Date.parse(modifiedAfter))) {
+      return NextResponse.json(
+        { error: 'Invalid modified_after. Must be a valid ISO 8601 timestamp.' },
+        { status: 400 }
+      );
+    }
+
     // Build filters object
     const filters: {
       fiscal_year_id?: string;
+      modified_after?: string;
+      ids?: string[];
     } = {};
 
     if (fiscalYearId) {
       filters.fiscal_year_id = fiscalYearId;
+    }
+    if (modifiedAfter) {
+      filters.modified_after = modifiedAfter;
+    }
+    if (idsParam) {
+      filters.ids = idsParam.split(',');
     }
 
     const supabase = await createClient();
@@ -58,6 +76,8 @@ export async function GET(request: NextRequest) {
       .is('deleted_at', null);
 
     if (filters.fiscal_year_id) query = query.eq('fiscal_year_id', filters.fiscal_year_id);
+    if (filters.modified_after) query = query.gt('updated_at', filters.modified_after);
+    if (filters.ids) query = query.in('id', filters.ids);
 
     // Fetch paginated categories and all category expense totals in parallel (avoids N+1)
     const [categoriesResult, expenseTotalsResult] = await Promise.all([

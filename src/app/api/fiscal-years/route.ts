@@ -13,14 +13,33 @@ import { createClient } from '@/lib/supabase/server';
 // GET /api/fiscal-years
 // ============================================
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const modifiedAfter = searchParams.get('modified_after');
+
+    // Validate modified_after if provided
+    if (modifiedAfter && isNaN(Date.parse(modifiedAfter))) {
+      return NextResponse.json(
+        { error: 'Invalid modified_after. Must be a valid ISO 8601 timestamp.' },
+        { status: 400 }
+      );
+    }
+
+    const filters: { modified_after?: string } = {};
+    if (modifiedAfter) {
+      filters.modified_after = modifiedAfter;
+    }
+
     const supabase = await createClient();
 
-    const { data: fiscalYears, error } = await supabase
+    let query = supabase
       .from('fiscal_years')
-      .select('*')
-      .order('year', { ascending: false });
+      .select('*');
+
+    if (filters.modified_after) query = query.gt('updated_at', filters.modified_after);
+
+    const { data: fiscalYears, error } = await query.order('year', { ascending: false });
 
     if (error) {
       console.error('Fiscal years fetch error:', error);
@@ -31,6 +50,7 @@ export async function GET() {
       fiscal_years: fiscalYears || [],
       meta: {
         total: fiscalYears?.length || 0,
+        filters_applied: filters,
       },
     });
   } catch (error) {

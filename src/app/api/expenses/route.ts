@@ -29,6 +29,8 @@ export async function GET(request: NextRequest) {
     const dateEnd = searchParams.get('date_end');
     const vendor = searchParams.get('vendor');
     const sourceType = searchParams.get('source_type') as ExpenseSource | null;
+    const modifiedAfter = searchParams.get('modified_after');
+    const idsParam = searchParams.get('ids');
     const sortBy = searchParams.get('sort_by') || 'date'; // date, amount, vendor
     const sortOrder = searchParams.get('sort_order') || 'desc'; // asc, desc
 
@@ -37,6 +39,14 @@ export async function GET(request: NextRequest) {
     const perPage = Math.min(200, Math.max(1, parseInt(searchParams.get('per_page') || '50', 10)));
     const from = (page - 1) * perPage;
     const to = from + perPage - 1;
+
+    // Validate modified_after if provided
+    if (modifiedAfter && isNaN(Date.parse(modifiedAfter))) {
+      return NextResponse.json(
+        { error: 'Invalid modified_after. Must be a valid ISO 8601 timestamp.' },
+        { status: 400 }
+      );
+    }
 
     // Build filters object for meta response
     const filters: {
@@ -47,6 +57,8 @@ export async function GET(request: NextRequest) {
       date_end?: string;
       vendor?: string;
       source_type?: ExpenseSource;
+      modified_after?: string;
+      ids?: string[];
     } = {};
 
     if (eventId) {
@@ -69,6 +81,12 @@ export async function GET(request: NextRequest) {
     }
     if (sourceType && ['manual', 'brex', 'pdf'].includes(sourceType)) {
       filters.source_type = sourceType;
+    }
+    if (modifiedAfter) {
+      filters.modified_after = modifiedAfter;
+    }
+    if (idsParam) {
+      filters.ids = idsParam.split(',');
     }
 
     const supabase = await createClient();
@@ -134,6 +152,12 @@ export async function GET(request: NextRequest) {
     }
     if (filters.source_type) {
       query = query.eq('source_type', filters.source_type);
+    }
+    if (filters.modified_after) {
+      query = query.gt('updated_at', filters.modified_after);
+    }
+    if (filters.ids) {
+      query = query.in('id', filters.ids);
     }
 
     // Map sortBy param to actual column name

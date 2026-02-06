@@ -10,19 +10,53 @@ import { createClient } from '@/lib/supabase/server';
 import { logError } from '@/lib/error-logger';
 import { withIdempotency } from '@/lib/idempotency';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const modifiedAfter = searchParams.get('modified_after');
+    const idsParam = searchParams.get('ids');
+
+    // Validate modified_after if provided
+    if (modifiedAfter && isNaN(Date.parse(modifiedAfter))) {
+      return NextResponse.json(
+        { error: 'Invalid modified_after. Must be a valid ISO 8601 timestamp.' },
+        { status: 400 }
+      );
+    }
+
+    const filters: {
+      modified_after?: string;
+      ids?: string[];
+    } = {};
+
+    if (modifiedAfter) {
+      filters.modified_after = modifiedAfter;
+    }
+    if (idsParam) {
+      filters.ids = idsParam.split(',');
+    }
+
     const supabase = await createClient();
 
-    const { data, error } = await supabase
+    let query = supabase
       .from('team_members')
       .select('*')
-      .is('deleted_at', null)
-      .order('name', { ascending: true });
+      .is('deleted_at', null);
+
+    if (filters.modified_after) query = query.gt('updated_at', filters.modified_after);
+    if (filters.ids) query = query.in('id', filters.ids);
+
+    const { data, error } = await query.order('name', { ascending: true });
 
     if (error) throw error;
 
-    return NextResponse.json({ team_members: data || [] });
+    return NextResponse.json({
+      team_members: data || [],
+      meta: {
+        total: data?.length || 0,
+        filters_applied: filters,
+      },
+    });
   } catch (err) {
     console.error('Team API error:', err);
     logError('Failed to fetch team members', { error: err as Error, source: 'api/team', context: { method: 'GET' } });

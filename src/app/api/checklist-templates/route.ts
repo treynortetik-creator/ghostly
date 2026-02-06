@@ -9,15 +9,34 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logError } from '@/lib/error-logger';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const modifiedAfter = searchParams.get('modified_after');
+
+    // Validate modified_after if provided
+    if (modifiedAfter && isNaN(Date.parse(modifiedAfter))) {
+      return NextResponse.json(
+        { error: 'Invalid modified_after. Must be a valid ISO 8601 timestamp.' },
+        { status: 400 }
+      );
+    }
+
+    const filters: { modified_after?: string } = {};
+    if (modifiedAfter) {
+      filters.modified_after = modifiedAfter;
+    }
+
     const supabase = await createClient();
 
-    const { data: templates, error } = await supabase
+    let query = supabase
       .from('checklist_templates')
       .select('*')
-      .is('deleted_at', null)
-      .order('name', { ascending: true });
+      .is('deleted_at', null);
+
+    if (filters.modified_after) query = query.gt('updated_at', filters.modified_after);
+
+    const { data: templates, error } = await query.order('name', { ascending: true });
 
     if (error) throw error;
 
@@ -41,7 +60,13 @@ export async function GET() {
       item_count: itemCounts.get(t.id) || 0,
     }));
 
-    return NextResponse.json({ templates: result });
+    return NextResponse.json({
+      templates: result,
+      meta: {
+        total: result.length,
+        filters_applied: filters,
+      },
+    });
   } catch (err) {
     console.error('Templates API error:', err);
     logError('Failed to fetch templates', { error: err as Error, source: 'api/checklist-templates', context: { method: 'GET' } });
