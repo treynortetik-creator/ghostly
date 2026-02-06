@@ -942,6 +942,42 @@ export interface Database {
         };
         Relationships: [];
       };
+      audit_log: {
+        Row: {
+          id: string;
+          entity_type: string;
+          entity_id: string;
+          action: string;
+          changes: Json | null;
+          actor: string;
+          actor_type: string;
+          metadata: Json | null;
+          created_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          entity_type: string;
+          entity_id: string;
+          action: string;
+          changes?: Json | null;
+          actor: string;
+          actor_type?: string;
+          metadata?: Json | null;
+          created_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          entity_type?: string;
+          entity_id?: string;
+          action?: string;
+          changes?: Json | null;
+          actor?: string;
+          actor_type?: string;
+          metadata?: Json | null;
+          created_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

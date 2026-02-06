@@ -11,6 +11,7 @@ import { logError } from '@/lib/error-logger';
 import type { ExpenseSource } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
 import { withIdempotency } from '@/lib/idempotency';
+import { logAudit, getActor } from '@/lib/audit';
 
 // ============================================
 // GET /api/expenses
@@ -342,6 +343,21 @@ export const POST = withIdempotency(async function POST(request: NextRequest) {
       target_type: hasEventId ? 'event' as const : 'category' as const,
       target_name: eventName || categoryName || 'Unknown',
     };
+
+    // Audit log (non-blocking)
+    try {
+      const { actor, actor_type } = await getActor(request);
+      logAudit({
+        entity_type: 'expense',
+        entity_id: newExpense.id,
+        action: 'create',
+        changes: null,
+        actor,
+        actor_type,
+      });
+    } catch (e) {
+      console.error('Audit log failed:', e);
+    }
 
     return NextResponse.json(response, { status: 201 });
   } catch (err) {

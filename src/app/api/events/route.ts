@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logError } from '@/lib/error-logger';
 import { withIdempotency } from '@/lib/idempotency';
+import { logAudit, getActor } from '@/lib/audit';
 import type { EventType, QuarterType, EventTypeRecord } from '@/types/database';
 
 interface EventWithTotals {
@@ -260,6 +261,21 @@ export const POST = withIdempotency(async function POST(request: NextRequest) {
 
     // Extract event_types join result and rename to event_type_record
     const { event_types, ...eventData } = newEvent as typeof newEvent & { event_types: EventTypeRecord | null };
+
+    // Audit log (non-blocking)
+    try {
+      const { actor, actor_type } = await getActor(request);
+      logAudit({
+        entity_type: 'event',
+        entity_id: newEvent.id,
+        action: 'create',
+        changes: null,
+        actor,
+        actor_type,
+      });
+    } catch (e) {
+      console.error('Audit log failed:', e);
+    }
 
     return NextResponse.json({
       ...eventData,
