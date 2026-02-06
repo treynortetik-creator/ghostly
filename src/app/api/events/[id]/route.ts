@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { logAudit, getActor, computeChanges } from '@/lib/audit';
 import type { EventType, QuarterType, EventTypeRecord } from '@/types/database';
 
 // ============================================
@@ -254,6 +255,23 @@ export async function PUT(
       expense_count: expenseList.length,
     };
 
+    // Audit log (non-blocking)
+    try {
+      const { actor, actor_type } = await getActor(request);
+      const auditFields = ['name', 'event_type_id', 'quarter', 'fiscal_year_id', 'date_start', 'date_end', 'location', 'budget_amount', 'expansion_goal', 'net_new_goal', 'approach_notes', 'marketing_notes', 'sales_notes', 'pipeline_generated', 'revenue_closed', 'leads_generated', 'meetings_booked', 'opportunities_created', 'roi_notes'];
+      const changes = computeChanges(existingEvent as Record<string, unknown>, updatedEvent as Record<string, unknown>, auditFields);
+      logAudit({
+        entity_type: 'event',
+        entity_id: id,
+        action: 'update',
+        changes,
+        actor,
+        actor_type,
+      });
+    } catch (e) {
+      console.error('Audit log failed:', e);
+    }
+
     return NextResponse.json(eventWithTotals);
   } catch (error) {
     console.error('Update event error:', error);
@@ -300,6 +318,21 @@ export async function DELETE(
       .eq('id', id);
 
     if (deleteError) throw deleteError;
+
+    // Audit log (non-blocking)
+    try {
+      const { actor, actor_type } = await getActor(request);
+      logAudit({
+        entity_type: 'event',
+        entity_id: id,
+        action: 'delete',
+        changes: null,
+        actor,
+        actor_type,
+      });
+    } catch (e) {
+      console.error('Audit log failed:', e);
+    }
 
     return NextResponse.json({
       message: 'Event deleted successfully',

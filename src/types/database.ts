@@ -978,6 +978,63 @@ export interface Database {
         };
         Relationships: [];
       };
+      reminder_config: {
+        Row: {
+          id: string;
+          reminder_type: string;
+          enabled: boolean;
+          days_before: number;
+          channel: string;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          reminder_type: string;
+          enabled?: boolean;
+          days_before?: number;
+          channel?: string;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          reminder_type?: string;
+          enabled?: boolean;
+          days_before?: number;
+          channel?: string;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+      reminder_log: {
+        Row: {
+          id: string;
+          reminder_type: string;
+          entity_type: string;
+          entity_id: string;
+          sent_at: string | null;
+          channel: string;
+        };
+        Insert: {
+          id?: string;
+          reminder_type: string;
+          entity_type: string;
+          entity_id: string;
+          sent_at?: string | null;
+          channel: string;
+        };
+        Update: {
+          id?: string;
+          reminder_type?: string;
+          entity_type?: string;
+          entity_id?: string;
+          sent_at?: string | null;
+          channel?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
