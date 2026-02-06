@@ -8,8 +8,8 @@
 // ============================================
 
 /**
- * @deprecated Use EventTypeRecord from event_types table instead.
- * Kept for backward compatibility during migration.
+ * Legacy event type enum - still actively used in DB column and forms.
+ * Will be removed once event_type_id migration is fully complete.
  */
 export type EventType = 'executive' | 'national' | 'state' | 'regional' | 'customer';
 
@@ -247,6 +247,28 @@ export type EventChecklistItemUpdate = Partial<Omit<EventChecklistItem, 'id' | '
 // ============================================
 
 /**
+ * Expense row with joined event and category data from Supabase.
+ * Used when selecting expenses with `.select('*, events(name, event_type_id, event_types(name)), budget_categories(name)')`.
+ */
+export interface ExpenseWithJoins {
+  id: string;
+  event_id: string | null;
+  category_id: string | null;
+  amount: number;
+  expense_date: string;
+  vendor: string | null;
+  memo: string | null;
+  source_type: string;
+  source_reference: string | null;
+  is_duplicate: boolean | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  events: { id: string; name: string; event_type_id: string | null; event_types?: { name: string } | null } | null;
+  budget_categories: { id: string; name: string } | null;
+}
+
+/**
  * Event with its fiscal year populated
  */
 export interface EventWithFiscalYear extends Event {
@@ -344,8 +366,8 @@ export interface EventROIMetrics {
 // ============================================
 
 /**
- * @deprecated Use EventTypeRecord.name from event_types table instead.
- * Kept for backward compatibility during migration.
+ * Legacy event type display labels - still actively used.
+ * Will be removed once event_type_id migration is fully complete.
  */
 export const eventTypeLabels: Record<EventType, string> = {
   executive: 'Executive',
@@ -1034,6 +1056,85 @@ export interface Database {
           channel?: string;
         };
         Relationships: [];
+      };
+      webhooks: {
+        Row: {
+          id: string;
+          url: string;
+          event_types: Json;
+          secret: string | null;
+          is_active: boolean;
+          description: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          url: string;
+          event_types: Json;
+          secret?: string | null;
+          is_active?: boolean;
+          description?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          url?: string;
+          event_types?: Json;
+          secret?: string | null;
+          is_active?: boolean;
+          description?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+      webhook_deliveries: {
+        Row: {
+          id: string;
+          webhook_id: string;
+          event_type: string;
+          payload: Json;
+          status: string;
+          response_status: number | null;
+          response_body: string | null;
+          attempts: number;
+          next_retry_at: string | null;
+          created_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          webhook_id: string;
+          event_type: string;
+          payload: Json;
+          status?: string;
+          response_status?: number | null;
+          response_body?: string | null;
+          attempts?: number;
+          next_retry_at?: string | null;
+          created_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          webhook_id?: string;
+          event_type?: string;
+          payload?: Json;
+          status?: string;
+          response_status?: number | null;
+          response_body?: string | null;
+          attempts?: number;
+          next_retry_at?: string | null;
+          created_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'webhook_deliveries_webhook_id_fkey';
+            columns: ['webhook_id'];
+            referencedRelation: 'webhooks';
+            referencedColumns: ['id'];
+          }
+        ];
       };
     };
     Views: {

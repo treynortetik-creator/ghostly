@@ -84,11 +84,12 @@ export function EventForm({
 
   const [errors, setErrors] = useState<Partial<Record<keyof EventFormData, string>>>({});
 
+  const fiscalYearId = formData.fiscal_year_id;
   useEffect(() => {
     const fetchEventTypes = async () => {
       try {
         // Get fiscal year from form or fetch current settings
-        let fyId = formData.fiscal_year_id;
+        let fyId = fiscalYearId;
         if (!fyId) {
           const settingsRes = await fetch('/api/settings');
           if (settingsRes.ok) {
@@ -111,7 +112,7 @@ export function EventForm({
       }
     };
     fetchEventTypes();
-  }, [formData.fiscal_year_id]);
+  }, [fiscalYearId]);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof EventFormData, string>> = {};

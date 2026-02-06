@@ -47,6 +47,29 @@ export async function GET() {
     overallStatus = 'degraded';
   }
 
+  // OpenRouter connectivity check
+  const orStart = Date.now();
+  try {
+    const orKey = process.env.OPENROUTER_API_KEY;
+    if (!orKey) throw new Error('OpenRouter not configured');
+
+    const res = await fetch('https://openrouter.ai/api/v1/models', {
+      headers: { 'Authorization': `Bearer ${orKey}` },
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (!res.ok) throw new Error(`OpenRouter responded with ${res.status}`);
+
+    checks.openrouter = { status: 'healthy', latency_ms: Date.now() - orStart };
+  } catch (err) {
+    checks.openrouter = {
+      status: 'unhealthy',
+      latency_ms: Date.now() - orStart,
+      error: err instanceof Error ? err.message : 'Connection failed',
+    };
+    if (overallStatus === 'healthy') overallStatus = 'degraded';
+  }
+
   const uptimeSeconds = Math.floor((Date.now() - startedAt) / 1000);
 
   const body = {

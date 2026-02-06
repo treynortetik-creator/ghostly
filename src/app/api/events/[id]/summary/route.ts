@@ -7,11 +7,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logError } from '@/lib/error-logger';
+import { requirePermission } from '@/lib/permissions';
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const denied = requirePermission(request, 'read');
+  if (denied) return denied;
+
   try {
     const { id } = await params;
     const supabase = await createClient();

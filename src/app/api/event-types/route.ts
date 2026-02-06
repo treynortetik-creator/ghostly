@@ -8,6 +8,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { requirePermission } from '@/lib/permissions';
+import { logError } from '@/lib/error-logger';
+import { logAudit, getActor } from '@/lib/audit';
+import type { AuditEntityType } from '@/lib/audit';
 
 interface EventTypeWithTotals {
   id: string;
@@ -29,11 +33,15 @@ interface EventTypeWithTotals {
 // ============================================
 
 export async function GET(request: NextRequest) {
+  const denied = requirePermission(request, 'read');
+  if (denied) return denied;
+
   try {
     const { searchParams } = new URL(request.url);
     const fiscalYearId = searchParams.get('fiscal_year_id');
     const includeArchived = searchParams.get('include_archived') === 'true';
     const modifiedAfter = searchParams.get('modified_after');
+    const idsParam = searchParams.get('ids');
 
     if (!fiscalYearId) {
       return NextResponse.json(
@@ -70,6 +78,9 @@ export async function GET(request: NextRequest) {
     }
     if (filters.modified_after) {
       query = query.gt('updated_at', filters.modified_after);
+    }
+    if (idsParam) {
+      query = query.in('id', idsParam.split(','));
     }
 
     const [eventTypesResult, eventsResult, expensesResult] = await Promise.all([
@@ -134,6 +145,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Event Types API error:', error);
+    logError('Failed to fetch event types', { error: error as Error, source: 'api/event-types', context: { method: 'GET' } });
     return NextResponse.json(
       { error: 'Failed to fetch event types' },
       { status: 500 }
@@ -146,6 +158,9 @@ export async function GET(request: NextRequest) {
 // ============================================
 
 export async function POST(request: NextRequest) {
+  const deniedPost = requirePermission(request, 'write');
+  if (deniedPost) return deniedPost;
+
   try {
     const body = await request.json();
 
@@ -222,6 +237,22 @@ export async function POST(request: NextRequest) {
 
     if (insertError) throw insertError;
 
+    // Audit log (non-blocking)
+    try {
+      const { actor, actor_type } = await getActor(request);
+      logAudit({
+        entity_type: 'event' as AuditEntityType,
+        entity_id: newEventType.id,
+        action: 'create',
+        changes: null,
+        actor,
+        actor_type,
+        metadata: { sub_type: 'event_type' },
+      });
+    } catch (e) {
+      console.error('Audit log failed:', e);
+    }
+
     return NextResponse.json({
       ...newEventType,
       actual_spent: 0,
@@ -230,6 +261,7 @@ export async function POST(request: NextRequest) {
     }, { status: 201 });
   } catch (error) {
     console.error('Create event type error:', error);
+    logError('Failed to create event type', { error: error as Error, source: 'api/event-types', context: { method: 'POST' } });
     return NextResponse.json(
       { error: 'Failed to create event type' },
       { status: 500 }

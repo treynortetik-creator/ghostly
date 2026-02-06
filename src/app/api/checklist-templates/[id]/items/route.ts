@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logError } from '@/lib/error-logger';
+import { requirePermission } from '@/lib/permissions';
 import type { ChecklistPhase } from '@/types/database';
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -14,6 +15,9 @@ type RouteContext = { params: Promise<{ id: string }> };
 const validPhases: ChecklistPhase[] = ['pre_event', 'day_of', 'post_event'];
 
 export async function POST(request: NextRequest, context: RouteContext) {
+  const denied = requirePermission(request, 'write');
+  if (denied) return denied;
+
   try {
     const { id: templateId } = await context.params;
     const body = await request.json();

@@ -9,24 +9,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { hashApiKey, generateApiKey } from '@/lib/auth';
+import { requirePermission } from '@/lib/permissions';
+import { logError } from '@/lib/error-logger';
 
 // ============================================
 // GET /api/api-keys — List API keys
 // ============================================
 
 export async function GET(request: NextRequest) {
+  const denied = requirePermission(request, 'admin');
+  if (denied) return denied;
+
   try {
-    // Only cookie-authed admin users can manage API keys
-    const authType = request.headers.get('x-auth-type');
-    if (authType === 'api_key') {
-      const permissions = JSON.parse(request.headers.get('x-auth-permissions') || '[]');
-      if (!permissions.includes('admin')) {
-        return NextResponse.json(
-          { error: 'API key does not have admin permission', code: 'AUTH_INSUFFICIENT_PERMISSIONS' },
-          { status: 403 }
-        );
-      }
-    }
 
     const supabase = await createClient();
 
@@ -40,6 +34,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ api_keys: data });
   } catch (error) {
     console.error('List API keys error:', error);
+    logError('Failed to list API keys', { error: error as Error, source: 'api/api-keys', context: { method: 'GET' } });
     return NextResponse.json(
       { error: 'Failed to list API keys' },
       { status: 500 }
@@ -52,18 +47,10 @@ export async function GET(request: NextRequest) {
 // ============================================
 
 export async function POST(request: NextRequest) {
+  const deniedPost = requirePermission(request, 'admin');
+  if (deniedPost) return deniedPost;
+
   try {
-    // Only cookie-authed admin users can create API keys
-    const authType = request.headers.get('x-auth-type');
-    if (authType === 'api_key') {
-      const permissions = JSON.parse(request.headers.get('x-auth-permissions') || '[]');
-      if (!permissions.includes('admin')) {
-        return NextResponse.json(
-          { error: 'API key does not have admin permission', code: 'AUTH_INSUFFICIENT_PERMISSIONS' },
-          { status: 403 }
-        );
-      }
-    }
 
     const body = await request.json();
 
@@ -121,6 +108,7 @@ export async function POST(request: NextRequest) {
     }, { status: 201 });
   } catch (error) {
     console.error('Create API key error:', error);
+    logError('Failed to create API key', { error: error as Error, source: 'api/api-keys', context: { method: 'POST' } });
     return NextResponse.json(
       { error: 'Failed to create API key' },
       { status: 500 }

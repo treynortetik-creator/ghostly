@@ -189,7 +189,10 @@ export async function chatCompletion(
  * Fetch a custom prompt from the app_settings table by key.
  * Returns the `prompt` field from the JSON value, or null if not found.
  */
-export async function getCustomPrompt(key: string, supabase: any): Promise<string | null> {
+export async function getCustomPrompt(
+  key: string,
+  supabase: Awaited<ReturnType<typeof import('@/lib/supabase/server').createClient>>
+): Promise<string | null> {
   try {
     const { data, error } = await supabase
       .from('app_settings')
@@ -201,7 +204,8 @@ export async function getCustomPrompt(key: string, supabase: any): Promise<strin
       return null;
     }
 
-    return data.value?.prompt ?? null;
+    const val = data.value as Record<string, unknown> | null;
+    return (val?.prompt as string) ?? null;
   } catch {
     return null;
   }

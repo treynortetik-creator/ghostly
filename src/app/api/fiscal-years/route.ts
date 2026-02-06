@@ -8,12 +8,18 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { requirePermission } from '@/lib/permissions';
+import { logError } from '@/lib/error-logger';
+import { logAudit, getActor } from '@/lib/audit';
 
 // ============================================
 // GET /api/fiscal-years
 // ============================================
 
 export async function GET(request: NextRequest) {
+  const denied = requirePermission(request, 'read');
+  if (denied) return denied;
+
   try {
     const { searchParams } = new URL(request.url);
     const modifiedAfter = searchParams.get('modified_after');
@@ -55,6 +61,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Fiscal years API error:', error);
+    logError('Failed to fetch fiscal years', { error: error as Error, source: 'api/fiscal-years', context: { method: 'GET' } });
     return NextResponse.json(
       { error: 'Failed to fetch fiscal years' },
       { status: 500 }
@@ -67,6 +74,9 @@ export async function GET(request: NextRequest) {
 // ============================================
 
 export async function POST(request: NextRequest) {
+  const deniedPost = requirePermission(request, 'write');
+  if (deniedPost) return deniedPost;
+
   try {
     const body = await request.json();
     const supabase = await createClient();
@@ -121,9 +131,16 @@ export async function POST(request: NextRequest) {
       throw insertError;
     }
 
+    // Audit log (non-blocking)
+    try {
+      const { actor, actor_type } = await getActor(request);
+      logAudit({ entity_type: 'event', entity_id: newFiscalYear.id, action: 'create', changes: null, actor, actor_type, metadata: { sub_type: 'fiscal_year', year } });
+    } catch (e) { console.error('Audit log failed:', e); }
+
     return NextResponse.json(newFiscalYear, { status: 201 });
   } catch (error) {
     console.error('Create fiscal year error:', error);
+    logError('Failed to create fiscal year', { error: error as Error, source: 'api/fiscal-years', context: { method: 'POST' } });
     return NextResponse.json(
       { error: 'Failed to create fiscal year' },
       { status: 500 }

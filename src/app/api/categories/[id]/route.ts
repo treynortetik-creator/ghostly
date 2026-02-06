@@ -9,6 +9,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { requirePermission } from '@/lib/permissions';
+import { logError } from '@/lib/error-logger';
+import { logAudit, getActor, computeChanges } from '@/lib/audit';
 
 // ============================================
 // GET /api/categories/[id]
@@ -18,6 +21,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const denied = requirePermission(request, 'read');
+  if (denied) return denied;
+
   try {
     const { id } = await params;
     const supabase = await createClient();
@@ -78,6 +84,7 @@ export async function GET(
     });
   } catch (error) {
     console.error('Get category error:', error);
+    logError('Failed to fetch category', { error: error as Error, source: 'api/categories/[id]', context: { method: 'GET' } });
     return NextResponse.json(
       { error: 'Failed to fetch category' },
       { status: 500 }
@@ -93,6 +100,9 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const deniedPut = requirePermission(request, 'write');
+  if (deniedPut) return deniedPut;
+
   try {
     const { id } = await params;
     const body = await request.json();
@@ -137,16 +147,15 @@ export async function PUT(
     // Check for duplicate name if name is being changed
     if (body.name && body.name.toLowerCase() !== existingCategory.name.toLowerCase()) {
       const escapedName = String(body.name).replace(/[%_\\]/g, '\\$&');
-      const { data: duplicateCategory } = await supabase
+      const { data: duplicateCategories } = await supabase
         .from('budget_categories')
         .select('id')
         .ilike('name', escapedName)
         .is('deleted_at', null)
         .neq('id', id)
-        .limit(1)
-        .single();
+        .limit(1);
 
-      if (duplicateCategory) {
+      if (duplicateCategories && duplicateCategories.length > 0) {
         return NextResponse.json(
           { error: 'A category with this name already exists' },
           { status: 400 }
@@ -193,9 +202,27 @@ export async function PUT(
       expense_count: expenseList.length,
     };
 
+    // Audit log (non-blocking)
+    try {
+      const { actor, actor_type } = await getActor(request);
+      const auditFields = ['name', 'budget_amount', 'description', 'fiscal_year_id'];
+      const changes = computeChanges(existingCategory as Record<string, unknown>, updatedCategory as Record<string, unknown>, auditFields);
+      logAudit({
+        entity_type: 'category',
+        entity_id: id,
+        action: 'update',
+        changes,
+        actor,
+        actor_type,
+      });
+    } catch (e) {
+      console.error('Audit log failed:', e);
+    }
+
     return NextResponse.json(categoryWithTotals);
   } catch (error) {
     console.error('Update category error:', error);
+    logError('Failed to update category', { error: error as Error, source: 'api/categories/[id]', context: { method: 'PUT' } });
     return NextResponse.json(
       { error: 'Failed to update category' },
       { status: 500 }
@@ -211,6 +238,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const deniedDel = requirePermission(request, 'write');
+  if (deniedDel) return deniedDel;
+
   try {
     const { id } = await params;
     const supabase = await createClient();
@@ -240,12 +270,28 @@ export async function DELETE(
 
     if (deleteError) throw deleteError;
 
+    // Audit log (non-blocking)
+    try {
+      const { actor, actor_type } = await getActor(request);
+      logAudit({
+        entity_type: 'category',
+        entity_id: id,
+        action: 'delete',
+        changes: null,
+        actor,
+        actor_type,
+      });
+    } catch (e) {
+      console.error('Audit log failed:', e);
+    }
+
     return NextResponse.json({
       message: 'Category deleted successfully',
       id,
     });
   } catch (error) {
     console.error('Delete category error:', error);
+    logError('Failed to delete category', { error: error as Error, source: 'api/categories/[id]', context: { method: 'DELETE' } });
     return NextResponse.json(
       { error: 'Failed to delete category' },
       { status: 500 }

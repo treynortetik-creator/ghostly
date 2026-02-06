@@ -8,6 +8,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { ExpenseSource } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
+import { requirePermission } from '@/lib/permissions';
+import { logError } from '@/lib/error-logger';
+import { logAudit, getActor } from '@/lib/audit';
 
 // ============================================
 // TYPES
@@ -38,6 +41,9 @@ interface ImportResult {
 // ============================================
 
 export async function POST(request: NextRequest) {
+  const denied = requirePermission(request, 'write');
+  if (denied) return denied;
+
   try {
     const supabase = await createClient();
     const body = await request.json();
@@ -120,67 +126,112 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Process transactions
+    // Process transactions in batch
     const results: ImportResult[] = [];
     const createdExpenses: Record<string, unknown>[] = [];
     const now = new Date().toISOString();
 
-    for (const txn of transactions) {
-      try {
-        const isEvent = txn.assignmentType === 'event';
+    // Batch soft-delete replacements
+    const replaceIds = transactions
+      .filter(txn => txn.status === 'replace' && txn.replaceExpenseId)
+      .map(txn => txn.replaceExpenseId!);
 
-        // Handle replace action - soft delete old expense
-        if (txn.status === 'replace' && txn.replaceExpenseId) {
-          await supabase
-            .from('expenses')
-            .update({ deleted_at: now })
-            .eq('id', txn.replaceExpenseId);
-        }
+    if (replaceIds.length > 0) {
+      await supabase
+        .from('expenses')
+        .update({ deleted_at: now })
+        .in('id', replaceIds);
+    }
 
-        // Create new expense via Supabase
-        const { data: newExpense, error: insertError } = await supabase
-          .from('expenses')
-          .insert({
-            event_id: isEvent ? txn.assignmentId : null,
-            category_id: !isEvent ? txn.assignmentId : null,
-            amount: txn.amount,
-            expense_date: txn.date,
-            vendor: txn.vendor,
-            memo: txn.memo,
-            source_type: 'brex' as ExpenseSource,
-            source_reference: txn.id,
-            is_duplicate: false,
-          })
-          .select('*, events(name), budget_categories(name)')
-          .single();
+    // Build all insert rows
+    const insertRows = transactions.map(txn => {
+      const isEvent = txn.assignmentType === 'event';
+      return {
+        event_id: isEvent ? txn.assignmentId : null,
+        category_id: !isEvent ? txn.assignmentId : null,
+        amount: txn.amount,
+        expense_date: txn.date,
+        vendor: txn.vendor,
+        memo: txn.memo,
+        source_type: 'brex' as ExpenseSource,
+        source_reference: txn.id,
+        is_duplicate: false,
+      };
+    });
 
-        if (insertError || !newExpense) {
-          throw insertError || new Error('Insert failed');
-        }
+    // Batch insert all expenses
+    const { data: newExpenses, error: insertError } = await supabase
+      .from('expenses')
+      .insert(insertRows)
+      .select('*, events(name), budget_categories(name)');
 
-        const { events: eventRel, budget_categories: catRel, ...rest } = newExpense as any;
-        createdExpenses.push({
-          ...rest,
-          event_name: eventRel?.name || null,
-          category_name: catRel?.name || null,
-          target_type: isEvent ? 'event' : 'category',
-          target_name: eventRel?.name || catRel?.name || 'Unknown',
-        });
-
-        results.push({
-          success: true,
-          expenseId: newExpense.id,
-          transactionId: txn.id,
-          action: txn.status === 'replace' ? 'replaced' : 'created',
-        });
-      } catch (error) {
+    if (insertError || !newExpenses) {
+      // If batch insert fails entirely, mark all as error
+      for (const txn of transactions) {
         results.push({
           success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: insertError?.message || 'Insert failed',
           transactionId: txn.id,
           action: 'error',
         });
       }
+    } else {
+      // Match results back to transactions by source_reference
+      const expenseByRef = new Map<string, typeof newExpenses[number]>();
+      for (const exp of newExpenses) {
+        if (exp.source_reference) {
+          expenseByRef.set(exp.source_reference, exp);
+        }
+      }
+
+      for (const txn of transactions) {
+        const newExpense = expenseByRef.get(txn.id);
+        if (newExpense) {
+          const { events: eventRel, budget_categories: catRel, ...rest } = newExpense as any;
+          const isEvent = txn.assignmentType === 'event';
+          createdExpenses.push({
+            ...rest,
+            event_name: eventRel?.name || null,
+            category_name: catRel?.name || null,
+            target_type: isEvent ? 'event' : 'category',
+            target_name: eventRel?.name || catRel?.name || 'Unknown',
+          });
+
+          results.push({
+            success: true,
+            expenseId: newExpense.id,
+            transactionId: txn.id,
+            action: txn.status === 'replace' ? 'replaced' : 'created',
+          });
+        } else {
+          results.push({
+            success: false,
+            error: 'Expense not found after insert',
+            transactionId: txn.id,
+            action: 'error',
+          });
+        }
+      }
+    }
+
+    // Audit log (non-blocking)
+    try {
+      const { actor, actor_type } = await getActor(request);
+      for (const result of results) {
+        if (result.success && result.expenseId) {
+          logAudit({
+            entity_type: 'expense',
+            entity_id: result.expenseId,
+            action: 'create',
+            changes: null,
+            actor,
+            actor_type,
+            metadata: { source: 'brex_import', action: result.action },
+          });
+        }
+      }
+    } catch (e) {
+      console.error('Audit log failed:', e);
     }
 
     // Calculate summary
@@ -200,6 +251,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Brex import confirm error:', error);
+    logError('Failed to confirm Brex import', { error: error as Error, source: 'api/import/brex/confirm', context: { method: 'POST' } });
     return NextResponse.json(
       { error: 'Failed to confirm import' },
       { status: 500 }

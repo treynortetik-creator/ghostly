@@ -8,9 +8,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logError } from '@/lib/error-logger';
+import { requirePermission } from '@/lib/permissions';
 import { withIdempotency } from '@/lib/idempotency';
+import { logAudit, getActor } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
+  const denied = requirePermission(request, 'read');
+  if (denied) return denied;
+
   try {
     const { searchParams } = new URL(request.url);
     const modifiedAfter = searchParams.get('modified_after');
@@ -65,6 +70,9 @@ export async function GET(request: NextRequest) {
 }
 
 export const POST = withIdempotency(async function POST(request: NextRequest) {
+  const deniedPost = requirePermission(request, 'write');
+  if (deniedPost) return deniedPost;
+
   try {
     const body = await request.json();
 
@@ -92,6 +100,21 @@ export const POST = withIdempotency(async function POST(request: NextRequest) {
       .single();
 
     if (error) throw error;
+
+    // Audit log (non-blocking)
+    try {
+      const { actor, actor_type } = await getActor(request);
+      logAudit({
+        entity_type: 'team_member',
+        entity_id: data.id,
+        action: 'create',
+        changes: null,
+        actor,
+        actor_type,
+      });
+    } catch (e) {
+      console.error('Audit log failed:', e);
+    }
 
     return NextResponse.json(data, { status: 201 });
   } catch (err) {

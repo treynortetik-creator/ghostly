@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logAudit, getActor, computeChanges } from '@/lib/audit';
+import { requirePermission } from '@/lib/permissions';
 import type { EventType, QuarterType, EventTypeRecord } from '@/types/database';
 
 // ============================================
@@ -21,12 +22,15 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const denied = requirePermission(request, 'read');
+    if (denied) return denied;
+
     const { id } = await params;
     const supabase = await createClient();
 
     const { data: event, error: eventError } = await supabase
       .from('events')
-      .select('*, event_types(*)')
+      .select('*, event_types(*), fiscal_years(*)')
       .eq('id', id)
       .is('deleted_at', null)
       .single();
@@ -54,8 +58,8 @@ export async function GET(
     const actualSpent = expenseList.reduce((sum, e) => sum + e.amount, 0);
     const budgetAmount = event.budget_amount ?? 0;
 
-    // Extract event_types join result and rename to event_type_record
-    const { event_types, ...eventData } = event as typeof event & { event_types: EventTypeRecord | null };
+    // Extract event_types and fiscal_years join results
+    const { event_types, fiscal_years, ...eventData } = event as typeof event & { event_types: EventTypeRecord | null; fiscal_years: Record<string, unknown> | null };
 
     const eventWithTotals = {
       ...eventData,
@@ -74,21 +78,10 @@ export async function GET(
       expense_count: expenseList.length,
     };
 
-    // Query fiscal year if event has one
-    let fiscalYear = null;
-    if (event.fiscal_year_id) {
-      const { data: fy } = await supabase
-        .from('fiscal_years')
-        .select('*')
-        .eq('id', event.fiscal_year_id)
-        .single();
-      fiscalYear = fy;
-    }
-
     return NextResponse.json({
       event: eventWithTotals,
       expenses: expenseList,
-      fiscal_year: fiscalYear,
+      fiscal_year: fiscal_years ?? null,
     });
   } catch (error) {
     console.error('Get event error:', error);
@@ -108,6 +101,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const denied = requirePermission(request, 'write');
+    if (denied) return denied;
+
     const { id } = await params;
     const body = await request.json();
     const supabase = await createClient();
@@ -202,8 +198,8 @@ export async function PUT(
     if (body.date_end !== undefined) updateData.date_end = body.date_end?.trim() || null;
     if (body.location !== undefined) updateData.location = body.location;
     if (body.budget_amount !== undefined) updateData.budget_amount = parseFloat(body.budget_amount);
-    if (body.expansion_goal !== undefined) updateData.expansion_goal = parseInt(body.expansion_goal);
-    if (body.net_new_goal !== undefined) updateData.net_new_goal = parseInt(body.net_new_goal);
+    if (body.expansion_goal !== undefined) updateData.expansion_goal = parseInt(body.expansion_goal) || 0;
+    if (body.net_new_goal !== undefined) updateData.net_new_goal = parseInt(body.net_new_goal) || 0;
     if (body.approach_notes !== undefined) updateData.approach_notes = body.approach_notes;
     if (body.marketing_notes !== undefined) updateData.marketing_notes = body.marketing_notes;
     if (body.sales_notes !== undefined) updateData.sales_notes = body.sales_notes;
@@ -291,6 +287,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const denied = requirePermission(request, 'write');
+    if (denied) return denied;
+
     const { id } = await params;
     const supabase = await createClient();
 

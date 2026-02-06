@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { logError } from '@/lib/error-logger';
+import { requirePermission } from '@/lib/permissions';
 import { createClient } from '@/lib/supabase/server';
 import {
   chatCompletion,
@@ -311,6 +312,9 @@ function extractDataFromText(text: string): ExtractedPDFData {
 // ============================================
 
 export async function POST(request: NextRequest) {
+  const denied = requirePermission(request, 'write');
+  if (denied) return denied;
+
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
@@ -348,11 +352,11 @@ export async function POST(request: NextRequest) {
     try {
       pdfData = await parsePDF(buffer);
     } catch (error) {
-      const errMsg = error instanceof Error ? error.message : String(error);
-      console.error('PDF parse error:', errMsg, error);
+      console.error('PDF parse error:', error);
+      logError('PDF parse failed', { error: error as Error, source: 'api/import/pdf' });
       return NextResponse.json(
-        { error: `Failed to parse PDF: ${errMsg}` },
-        { status: 400 }
+        { error: 'Failed to parse PDF file' },
+        { status: 422 }
       );
     }
 

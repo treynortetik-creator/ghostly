@@ -6,17 +6,6 @@ const loginAttempts = new Map<string, { count: number; resetTime: number }>();
 
 const MAX_ATTEMPTS = 5;
 const WINDOW_MS = 60 * 1000; // 1 minute
-const CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
-
-// Periodically clean up stale entries
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, entry] of loginAttempts) {
-    if (now > entry.resetTime) {
-      loginAttempts.delete(ip);
-    }
-  }
-}, CLEANUP_INTERVAL_MS);
 
 function getClientIp(request: NextRequest): string {
   return (
@@ -29,6 +18,13 @@ function getClientIp(request: NextRequest): string {
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
   const entry = loginAttempts.get(ip);
+
+  // Lazy cleanup: remove expired entries when we check
+  if (loginAttempts.size > 100) {
+    for (const [key, val] of loginAttempts) {
+      if (now > val.resetTime) loginAttempts.delete(key);
+    }
+  }
 
   if (!entry || now > entry.resetTime) {
     loginAttempts.set(ip, { count: 1, resetTime: now + WINDOW_MS });

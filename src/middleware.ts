@@ -25,7 +25,7 @@ function isPublicRoute(pathname: string): boolean {
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon') ||
-    pathname.includes('.')
+    (!pathname.startsWith('/api/') && pathname.includes('.'))
   ) {
     return true;
   }
@@ -45,7 +45,10 @@ async function verifyTokenFromCookie(token: string): Promise<boolean> {
     }
 
     const secretKey = new TextEncoder().encode(secret);
-    await jwtVerify(token, secretKey);
+    await jwtVerify(token, secretKey, {
+      issuer: 'counting-house',
+      audience: 'counting-house',
+    });
     return true;
   } catch {
     return false;
@@ -120,7 +123,7 @@ async function validateApiKeyInMiddleware(rawKey: string): Promise<{
       'Prefer': 'return=minimal',
     },
     body: JSON.stringify({ last_used_at: new Date().toISOString() }),
-  }).catch(() => { /* non-critical */ });
+  }).catch((err) => { console.error('Failed to update API key last_used_at:', err); });
 
   return {
     valid: true,
@@ -133,6 +136,13 @@ async function validateApiKeyInMiddleware(rawKey: string): Promise<{
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Strip all internal auth headers to prevent client spoofing
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.delete('x-auth-type');
+  requestHeaders.delete('x-auth-agent-name');
+  requestHeaders.delete('x-auth-permissions');
+  requestHeaders.delete('x-auth-api-key-id');
+
   // Allow public routes without authentication
   if (isPublicRoute(pathname)) {
     if (pathname === '/login') {
@@ -144,7 +154,7 @@ export async function middleware(request: NextRequest) {
         }
       }
     }
-    return NextResponse.next();
+    return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
   // For API routes, check x-api-key header first
@@ -162,7 +172,6 @@ export async function middleware(request: NextRequest) {
       }
 
       // API key is valid — pass auth context to route handlers via headers
-      const requestHeaders = new Headers(request.headers);
       requestHeaders.set('x-auth-type', 'api_key');
       requestHeaders.set('x-auth-agent-name', result.agentName!);
       requestHeaders.set('x-auth-permissions', JSON.stringify(result.permissions!));
@@ -206,7 +215,6 @@ export async function middleware(request: NextRequest) {
   }
 
   // Cookie auth valid — pass auth context via headers
-  const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-auth-type', 'cookie');
 
   return NextResponse.next({

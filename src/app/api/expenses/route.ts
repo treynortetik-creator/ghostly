@@ -12,6 +12,7 @@ import type { ExpenseSource } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
 import { withIdempotency } from '@/lib/idempotency';
 import { logAudit, getActor } from '@/lib/audit';
+import { requirePermission } from '@/lib/permissions';
 
 // ============================================
 // GET /api/expenses
@@ -19,6 +20,9 @@ import { logAudit, getActor } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
   try {
+    const denied = requirePermission(request, 'read');
+    if (denied) return denied;
+
     const { searchParams } = new URL(request.url);
 
     // Parse filter parameters
@@ -178,6 +182,35 @@ export async function GET(request: NextRequest) {
       throw error;
     }
 
+    // Get total amount across ALL matching expenses (not just current page)
+    let sumQuery = supabase
+      .from('expenses')
+      .select('amount')
+      .is('deleted_at', null);
+
+    if (filters.event_id) sumQuery = sumQuery.eq('event_id', filters.event_id);
+    if (filters.category_id) sumQuery = sumQuery.eq('category_id', filters.category_id);
+    if (fiscalEventIds && fiscalCategoryIds) {
+      const allIds = [...fiscalEventIds, ...fiscalCategoryIds];
+      if (allIds.length > 0) {
+        sumQuery = sumQuery.or(
+          `event_id.in.(${[...fiscalEventIds].join(',')}),category_id.in.(${[...fiscalCategoryIds].join(',')})`
+        );
+      }
+    }
+    if (filters.date_start) sumQuery = sumQuery.gte('expense_date', filters.date_start);
+    if (filters.date_end) sumQuery = sumQuery.lte('expense_date', filters.date_end);
+    if (filters.vendor) {
+      const escapedVendor = filters.vendor.replace(/[%_\\]/g, '\\$&');
+      sumQuery = sumQuery.ilike('vendor', `%${escapedVendor}%`);
+    }
+    if (filters.source_type) sumQuery = sumQuery.eq('source_type', filters.source_type);
+    if (filters.modified_after) sumQuery = sumQuery.gt('updated_at', filters.modified_after);
+    if (filters.ids) sumQuery = sumQuery.in('id', filters.ids);
+
+    const { data: allAmounts } = await sumQuery;
+    const totalAmount = (allAmounts || []).reduce((sum: number, e: { amount: number }) => sum + e.amount, 0);
+
     // Map results to add relation fields
     const expenses = (rawExpenses || []).map(e => {
       const { events: eventRel, budget_categories: catRel, ...rest } = e as any;
@@ -190,8 +223,6 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    // Calculate totals
-    const totalAmount = expenses.reduce((sum: number, e: any) => sum + e.amount, 0);
     const total = totalCount ?? expenses.length;
 
     return NextResponse.json({
@@ -225,6 +256,9 @@ export async function GET(request: NextRequest) {
 
 export const POST = withIdempotency(async function POST(request: NextRequest) {
   try {
+    const denied = requirePermission(request, 'write');
+    if (denied) return denied;
+
     const body = await request.json();
 
     // Validate required fields

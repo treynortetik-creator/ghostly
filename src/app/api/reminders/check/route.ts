@@ -5,15 +5,19 @@
  * POST /api/reminders/check - Check for due reminders (Scrooge calls this)
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logError } from '@/lib/error-logger';
+import { requirePermission } from '@/lib/permissions';
 
 // ============================================
 // POST /api/reminders/check
 // ============================================
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  const denied = requirePermission(request, 'read');
+  if (denied) return denied;
+
   try {
     const supabase = await createClient();
     const today = new Date();

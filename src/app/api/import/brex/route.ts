@@ -13,6 +13,8 @@ import {
   type TransactionForCategorization,
 } from '@/lib/openrouter';
 import { createClient } from '@/lib/supabase/server';
+import { requirePermission } from '@/lib/permissions';
+import { parseCSVLine, findDuplicate, type DuplicateCandidate } from '@/lib/business-logic';
 
 // ============================================
 // TYPES
@@ -108,6 +110,7 @@ function parseBrexCSV(csvContent: string): ParsedBrexTransaction[] {
 
   // Parse data rows
   const transactions: ParsedBrexTransaction[] = [];
+  let counter = 0;
 
   for (let i = 1; i < lines.length; i++) {
     const values = parseCSVLine(lines[i]);
@@ -155,7 +158,7 @@ function parseBrexCSV(csvContent: string): ParsedBrexTransaction[] {
       : '';
 
     transactions.push({
-      id: `brex-${Date.now()}-${i}`,
+      id: `brex-${Date.now()}-${counter++}`,
       date: parsedDate,
       amount,
       originalAmount,
@@ -170,89 +173,16 @@ function parseBrexCSV(csvContent: string): ParsedBrexTransaction[] {
   return transactions;
 }
 
-/**
- * Parse a single CSV line handling quoted fields
- */
-function parseCSVLine(line: string): string[] {
-  const result: string[] = [];
-  let current = '';
-  let inQuotes = false;
-
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-
-    if (char === '"') {
-      if (inQuotes && line[i + 1] === '"') {
-        // Escaped quote
-        current += '"';
-        i++;
-      } else {
-        // Toggle quote mode
-        inQuotes = !inQuotes;
-      }
-    } else if (char === ',' && !inQuotes) {
-      // End of field
-      result.push(current);
-      current = '';
-    } else {
-      current += char;
-    }
-  }
-
-  // Add last field
-  result.push(current);
-
-  return result;
-}
-
-// ============================================
-// DUPLICATE DETECTION
-// ============================================
-
-/**
- * Check for duplicate expenses based on amount, date, and vendor
- */
-function findDuplicate(
-  transaction: ParsedBrexTransaction,
-  existingExpenses: Array<{
-    id: string;
-    amount: number;
-    expense_date: string;
-    vendor: string | null;
-  }>
-): DuplicateInfo | undefined {
-  const duplicate = existingExpenses.find(exp => {
-    // Compare cents as integers to avoid floating-point issues
-    const amountMatch = Math.round(exp.amount * 100) === Math.round(transaction.amount * 100);
-
-    // Match date
-    const dateMatch = exp.expense_date === transaction.date;
-
-    // Match vendor (case-insensitive partial match)
-    const vendorMatch = exp.vendor &&
-      (exp.vendor.toLowerCase().includes(transaction.vendor.toLowerCase()) ||
-        transaction.vendor.toLowerCase().includes(exp.vendor.toLowerCase()));
-
-    return amountMatch && dateMatch && vendorMatch;
-  });
-
-  if (duplicate) {
-    return {
-      id: duplicate.id,
-      date: duplicate.expense_date,
-      vendor: duplicate.vendor || 'Unknown',
-      amount: duplicate.amount,
-    };
-  }
-
-  return undefined;
-}
+// parseCSVLine and findDuplicate imported from @/lib/business-logic
 
 // ============================================
 // API HANDLER
 // ============================================
 
 export async function POST(request: NextRequest) {
+  const denied = requirePermission(request, 'write');
+  if (denied) return denied;
+
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
@@ -352,10 +282,18 @@ export async function POST(request: NextRequest) {
     }));
 
     for (const txn of transactionsWithDuplicates) {
-      const duplicate = findDuplicate(txn, existingExpenses || []);
-      if (duplicate) {
+      const dup = findDuplicate(
+        { amount: txn.amount, date: txn.date, vendor: txn.vendor },
+        (existingExpenses || []) as DuplicateCandidate[]
+      );
+      if (dup) {
         txn.isDuplicate = true;
-        txn.duplicateOf = duplicate;
+        txn.duplicateOf = {
+          id: dup.id,
+          date: dup.expense_date,
+          vendor: dup.vendor || 'Unknown',
+          amount: dup.amount,
+        };
       }
     }
 

@@ -9,6 +9,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { requirePermission } from '@/lib/permissions';
+import { logError } from '@/lib/error-logger';
+import { logAudit, getActor } from '@/lib/audit';
+import type { AuditEntityType } from '@/lib/audit';
 import type { Json } from '@/types/database';
 
 // Settings interface matching our app_config structure
@@ -36,7 +40,10 @@ interface PromptsResponse {
 // GET /api/settings
 // ============================================
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const denied = requirePermission(request, 'admin');
+  if (denied) return denied;
+
   try {
     const supabase = await createClient();
 
@@ -95,6 +102,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Settings API error:', error);
+    logError('Failed to fetch settings', { error: error as Error, source: 'api/settings', context: { method: 'GET' } });
     return NextResponse.json(
       { error: 'Failed to fetch settings' },
       { status: 500 }
@@ -107,6 +115,9 @@ export async function GET() {
 // ============================================
 
 export async function PUT(request: NextRequest) {
+  const deniedPut = requirePermission(request, 'admin');
+  if (deniedPut) return deniedPut;
+
   try {
     const body = await request.json();
     const supabase = await createClient();
@@ -234,6 +245,22 @@ export async function PUT(request: NextRequest) {
     // Fetch updated prompts
     const prompts = await fetchPrompts(supabase);
 
+    // Audit log (non-blocking)
+    try {
+      const { actor, actor_type } = await getActor(request);
+      logAudit({
+        entity_type: 'event' as AuditEntityType,
+        entity_id: 'app_config',
+        action: 'update',
+        changes: null,
+        actor,
+        actor_type,
+        metadata: { sub_type: 'settings' },
+      });
+    } catch (e) {
+      console.error('Audit log failed:', e);
+    }
+
     return NextResponse.json({
       settings: updatedSettings,
       fiscal_year: fiscalYear,
@@ -242,6 +269,7 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error) {
     console.error('Update settings error:', error);
+    logError('Failed to update settings', { error: error as Error, source: 'api/settings', context: { method: 'PUT' } });
     return NextResponse.json(
       { error: 'Failed to update settings' },
       { status: 500 }
@@ -254,6 +282,9 @@ export async function PUT(request: NextRequest) {
 // ============================================
 
 export async function DELETE(request: NextRequest) {
+  const deniedDel = requirePermission(request, 'admin');
+  if (deniedDel) return deniedDel;
+
   try {
     const { searchParams } = new URL(request.url);
     const promptKey = searchParams.get('prompt_key');
@@ -277,9 +308,26 @@ export async function DELETE(request: NextRequest) {
       throw error;
     }
 
+    // Audit log (non-blocking)
+    try {
+      const { actor, actor_type } = await getActor(request);
+      logAudit({
+        entity_type: 'event' as AuditEntityType,
+        entity_id: promptKey,
+        action: 'delete',
+        changes: null,
+        actor,
+        actor_type,
+        metadata: { sub_type: 'settings_prompt' },
+      });
+    } catch (e) {
+      console.error('Audit log failed:', e);
+    }
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Delete prompt error:', error);
+    logError('Failed to delete prompt', { error: error as Error, source: 'api/settings', context: { method: 'DELETE' } });
     return NextResponse.json(
       { error: 'Failed to delete prompt' },
       { status: 500 }

@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { getErrorLogs, clearErrorLogs, logError } from '@/lib/error-logger';
+import { requirePermission } from '@/lib/permissions';
 
 export async function GET(request: NextRequest) {
+  const denied = requirePermission(request, 'admin');
+  if (denied) return denied;
+
   // Check authentication
   const session = await getSession();
   if (!session) {
@@ -24,6 +28,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const deniedPost = requirePermission(request, 'admin');
+  if (deniedPost) return deniedPost;
+
   // Allow logging errors from client
   try {
     const body = await request.json();
@@ -39,7 +46,10 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function DELETE() {
+export async function DELETE(request: NextRequest) {
+  const deniedDel = requirePermission(request, 'admin');
+  if (deniedDel) return deniedDel;
+
   const session = await getSession();
   if (!session) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });

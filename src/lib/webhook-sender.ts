@@ -1,0 +1,118 @@
+/**
+ * Webhook Delivery System for The Counting House
+ *
+ * Queues and delivers webhook events to registered endpoints.
+ * Non-blocking: failures are logged but never break the caller.
+ */
+
+import { createClient } from '@/lib/supabase/server';
+import { createHmac } from 'crypto';
+import type { Json } from '@/types/database';
+
+interface WebhookPayload {
+  event_type: string;
+  timestamp: string;
+  data: Record<string, unknown>;
+}
+
+/**
+ * Queue a webhook delivery for all matching webhooks.
+ * Non-blocking - failures are logged but don't break the caller.
+ */
+export async function queueWebhookEvent(eventType: string, data: Record<string, unknown>): Promise<void> {
+  try {
+    const supabase = await createClient();
+
+    // Find all active webhooks that subscribe to this event type
+    const { data: webhooks } = await supabase
+      .from('webhooks')
+      .select('id, url, secret, event_types')
+      .eq('is_active', true);
+
+    if (!webhooks || webhooks.length === 0) return;
+
+    const matching = webhooks.filter(w => {
+      const types = w.event_types as string[];
+      return types.includes(eventType) || types.includes('*');
+    });
+
+    if (matching.length === 0) return;
+
+    const payload: WebhookPayload = {
+      event_type: eventType,
+      timestamp: new Date().toISOString(),
+      data,
+    };
+
+    // Insert delivery records
+    const deliveries = matching.map(w => ({
+      webhook_id: w.id,
+      event_type: eventType,
+      payload: payload as unknown as Json,
+      status: 'pending',
+    }));
+
+    await supabase.from('webhook_deliveries').insert(deliveries);
+
+    // Fire-and-forget: attempt immediate delivery
+    for (const webhook of matching) {
+      deliverWebhook(webhook.id, webhook.url, webhook.secret, payload).catch(() => {});
+    }
+  } catch (err) {
+    console.error('Webhook queue error:', err);
+  }
+}
+
+async function deliverWebhook(
+  webhookId: string,
+  url: string,
+  secret: string | null,
+  payload: WebhookPayload
+): Promise<void> {
+  const body = JSON.stringify(payload);
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'User-Agent': 'CountingHouse-Webhooks/1.0',
+  };
+
+  if (secret) {
+    const signature = createHmac('sha256', secret).update(body).digest('hex');
+    headers['X-Webhook-Signature'] = `sha256=${signature}`;
+  }
+
+  const supabase = await createClient();
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers,
+      body,
+      signal: AbortSignal.timeout(10000),
+    });
+
+    await supabase.from('webhook_deliveries')
+      .update({
+        status: res.ok ? 'delivered' : 'failed',
+        response_status: res.status,
+        response_body: (await res.text()).substring(0, 1000),
+        attempts: 1,
+      })
+      .eq('webhook_id', webhookId)
+      .eq('event_type', payload.event_type)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(1);
+  } catch (err) {
+    await supabase.from('webhook_deliveries')
+      .update({
+        status: 'failed',
+        response_body: err instanceof Error ? err.message : 'Delivery failed',
+        attempts: 1,
+      })
+      .eq('webhook_id', webhookId)
+      .eq('event_type', payload.event_type)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(1);
+  }
+}

@@ -1,6 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import * as XLSX from 'xlsx';
 import { createClient } from '@/lib/supabase/server';
+import { requirePermission } from '@/lib/permissions';
+import { getDateRangeForScope, type ExportScope } from '@/lib/export-helpers';
 
 /* ============================================
    EXCEL EXPORT API
@@ -10,59 +12,10 @@ import { createClient } from '@/lib/supabase/server';
    expenses, and summary.
    ============================================ */
 
-type ExportScope = 'year' | 'quarter' | 'month' | 'custom';
+export async function GET(request: NextRequest) {
+  const denied = requirePermission(request, 'read');
+  if (denied) return denied;
 
-interface DateRange {
-  start: string;
-  end: string;
-}
-
-function getDateRangeForScope(
-  scope: ExportScope,
-  fiscalYear: number,
-  quarter?: string,
-  month?: number,
-  dateStart?: string,
-  dateEnd?: string
-): DateRange {
-  switch (scope) {
-    case 'year':
-      return {
-        start: `${fiscalYear}-01-01`,
-        end: `${fiscalYear}-12-31`,
-      };
-    case 'quarter': {
-      const quarterRanges: Record<string, DateRange> = {
-        Q1: { start: `${fiscalYear}-01-01`, end: `${fiscalYear}-03-31` },
-        Q2: { start: `${fiscalYear}-04-01`, end: `${fiscalYear}-06-30` },
-        Q3: { start: `${fiscalYear}-07-01`, end: `${fiscalYear}-09-30` },
-        Q4: { start: `${fiscalYear}-10-01`, end: `${fiscalYear}-12-31` },
-      };
-      return quarterRanges[quarter || 'Q1'];
-    }
-    case 'month': {
-      const m = month || 1;
-      const monthStr = m.toString().padStart(2, '0');
-      const lastDay = new Date(fiscalYear, m, 0).getDate();
-      return {
-        start: `${fiscalYear}-${monthStr}-01`,
-        end: `${fiscalYear}-${monthStr}-${lastDay.toString().padStart(2, '0')}`,
-      };
-    }
-    case 'custom':
-      return {
-        start: dateStart || `${fiscalYear}-01-01`,
-        end: dateEnd || `${fiscalYear}-12-31`,
-      };
-    default:
-      return {
-        start: `${fiscalYear}-01-01`,
-        end: `${fiscalYear}-12-31`,
-      };
-  }
-}
-
-export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const scope = (searchParams.get('scope') || 'year') as ExportScope;
@@ -94,7 +47,7 @@ export async function GET(request: Request) {
 
     if (eventsErr || catsErr || expErr) throw eventsErr || catsErr || expErr;
 
-    const allExpenses = (rawExpenses || []).map(e => {
+    let allExpenses = (rawExpenses || []).map(e => {
       const { events: eventRel, budget_categories: catRel, ...rest } = e as any;
       return {
         ...rest,
@@ -152,6 +105,15 @@ export async function GET(request: Request) {
         if (!e.date_start) return false;
         return e.date_start >= dateRange.start && e.date_start <= dateRange.end;
       });
+    }
+
+    // When filtering by quarter, also restrict expenses to filtered events only
+    // This prevents expenses from unrelated events leaking in via date range overlap
+    if (scope === 'quarter') {
+      const filteredEventIds = new Set(filteredEvents.map(e => e.id));
+      allExpenses = allExpenses.filter(e =>
+        !e.event_id || filteredEventIds.has(e.event_id)
+      );
     }
 
     // Create a new workbook

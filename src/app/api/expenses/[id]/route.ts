@@ -11,6 +11,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { ExpenseSource } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
 import { logAudit, getActor, computeChanges } from '@/lib/audit';
+import { requirePermission } from '@/lib/permissions';
+import { logError } from '@/lib/error-logger';
 
 // ============================================
 // GET /api/expenses/[id]
@@ -20,6 +22,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const denied = requirePermission(request, 'read');
+  if (denied) return denied;
+
   try {
     const { id } = await params;
     const supabase = await createClient();
@@ -53,6 +58,7 @@ export async function GET(
     return NextResponse.json({ expense: mapped });
   } catch (error) {
     console.error('Get expense error:', error);
+    logError('Failed to fetch expense', { error: error as Error, source: 'api/expenses/[id]', context: { method: 'GET' } });
     return NextResponse.json(
       { error: 'Failed to fetch expense' },
       { status: 500 }
@@ -68,6 +74,9 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const deniedPut = requirePermission(request, 'write');
+  if (deniedPut) return deniedPut;
+
   try {
     const { id } = await params;
     const body = await request.json();
@@ -233,6 +242,7 @@ export async function PUT(
     return NextResponse.json({ expense: mapped });
   } catch (error) {
     console.error('Update expense error:', error);
+    logError('Failed to update expense', { error: error as Error, source: 'api/expenses/[id]', context: { method: 'PUT' } });
     return NextResponse.json(
       { error: 'Failed to update expense' },
       { status: 500 }
@@ -248,6 +258,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const deniedDel = requirePermission(request, 'write');
+  if (deniedDel) return deniedDel;
+
   try {
     const { id } = await params;
     const supabase = await createClient();
@@ -298,6 +311,7 @@ export async function DELETE(
     });
   } catch (error) {
     console.error('Delete expense error:', error);
+    logError('Failed to delete expense', { error: error as Error, source: 'api/expenses/[id]', context: { method: 'DELETE' } });
     return NextResponse.json(
       { error: 'Failed to delete expense' },
       { status: 500 }

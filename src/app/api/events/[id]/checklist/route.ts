@@ -8,13 +8,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logError } from '@/lib/error-logger';
+import { requirePermission } from '@/lib/permissions';
+import { logAudit, getActor } from '@/lib/audit';
 import type { ChecklistPhase } from '@/types/database';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 const validPhases: ChecklistPhase[] = ['pre_event', 'day_of', 'post_event'];
 
-export async function GET(_request: NextRequest, context: RouteContext) {
+export async function GET(request: NextRequest, context: RouteContext) {
+  const denied = requirePermission(request, 'read');
+  if (denied) return denied;
+
   try {
     const { id: eventId } = await context.params;
     const supabase = await createClient();
@@ -72,6 +77,9 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
+  const deniedPost = requirePermission(request, 'write');
+  if (deniedPost) return deniedPost;
+
   try {
     const { id: eventId } = await context.params;
     const body = await request.json();
@@ -101,6 +109,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .single();
 
     if (error) throw error;
+
+    // Audit log (non-blocking)
+    try {
+      const { actor, actor_type } = await getActor(request);
+      logAudit({ entity_type: 'event', entity_id: data.id, action: 'create', changes: null, actor, actor_type, metadata: { sub_type: 'checklist_item' } });
+    } catch (e) { console.error('Audit log failed:', e); }
 
     return NextResponse.json(data, { status: 201 });
   } catch (err) {

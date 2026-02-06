@@ -48,6 +48,10 @@ export function parseBrexDate(rawDate: string): string | null {
   if (trimmed.includes('/')) {
     const [month, day, year] = trimmed.split('/');
     if (!month || !day || !year) return null;
+    const m = parseInt(month, 10);
+    const d = parseInt(day, 10);
+    const y = parseInt(year, 10);
+    if (isNaN(m) || isNaN(d) || isNaN(y) || m < 1 || m > 12 || d < 1 || d > 31 || y < 2000 || y > 2100) return null;
     return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   }
 

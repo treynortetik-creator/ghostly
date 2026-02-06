@@ -7,9 +7,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { logError } from '@/lib/error-logger';
+import { requirePermission } from '@/lib/permissions';
 import type { ExpenseSource } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
 import { withIdempotency } from '@/lib/idempotency';
+import { logAudit, getActor } from '@/lib/audit';
 
 const MAX_EXPENSES_PER_REQUEST = 100;
 
@@ -94,6 +96,9 @@ function validateExpenseItem(item: ExpenseInput, index: number): string[] {
 // ============================================
 
 export const POST = withIdempotency(async function POST(request: NextRequest) {
+  const denied = requirePermission(request, 'write');
+  if (denied) return denied;
+
   try {
     const body = await request.json();
 
@@ -237,6 +242,23 @@ export const POST = withIdempotency(async function POST(request: NextRequest) {
 
     if (insertError || !newExpenses) {
       throw insertError || new Error('Failed to insert expenses');
+    }
+
+    // Audit log (non-blocking)
+    try {
+      const { actor, actor_type } = await getActor(request);
+      for (const expense of newExpenses) {
+        logAudit({
+          entity_type: 'expense',
+          entity_id: expense.id,
+          action: 'create',
+          changes: null,
+          actor,
+          actor_type,
+        });
+      }
+    } catch (e) {
+      console.error('Audit log failed:', e);
     }
 
     // Build response with relation fields

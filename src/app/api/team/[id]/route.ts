@@ -9,10 +9,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logError } from '@/lib/error-logger';
+import { requirePermission } from '@/lib/permissions';
+import { logAudit, getActor } from '@/lib/audit';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-export async function GET(_request: NextRequest, context: RouteContext) {
+export async function GET(request: NextRequest, context: RouteContext) {
+  const denied = requirePermission(request, 'read');
+  if (denied) return denied;
+
   try {
     const { id } = await context.params;
     const supabase = await createClient();
@@ -37,6 +42,9 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 }
 
 export async function PUT(request: NextRequest, context: RouteContext) {
+  const deniedPut = requirePermission(request, 'write');
+  if (deniedPut) return deniedPut;
+
   try {
     const { id } = await context.params;
     const body = await request.json();
@@ -63,6 +71,21 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'Team member not found' }, { status: 404 });
     }
 
+    // Audit log (non-blocking)
+    try {
+      const { actor, actor_type } = await getActor(request);
+      logAudit({
+        entity_type: 'team_member',
+        entity_id: id,
+        action: 'update',
+        changes: null,
+        actor,
+        actor_type,
+      });
+    } catch (e) {
+      console.error('Audit log failed:', e);
+    }
+
     return NextResponse.json(data);
   } catch (err) {
     console.error('Update team member error:', err);
@@ -71,7 +94,10 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   }
 }
 
-export async function DELETE(_request: NextRequest, context: RouteContext) {
+export async function DELETE(request: NextRequest, context: RouteContext) {
+  const deniedDel = requirePermission(request, 'write');
+  if (deniedDel) return deniedDel;
+
   try {
     const { id } = await context.params;
     const supabase = await createClient();
@@ -86,6 +112,21 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
 
     if (error || !data) {
       return NextResponse.json({ error: 'Team member not found' }, { status: 404 });
+    }
+
+    // Audit log (non-blocking)
+    try {
+      const { actor, actor_type } = await getActor(request);
+      logAudit({
+        entity_type: 'team_member',
+        entity_id: id,
+        action: 'delete',
+        changes: null,
+        actor,
+        actor_type,
+      });
+    } catch (e) {
+      console.error('Audit log failed:', e);
     }
 
     return NextResponse.json({ message: 'Team member deleted' });

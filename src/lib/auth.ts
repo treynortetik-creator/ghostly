@@ -1,7 +1,6 @@
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
-import { timingSafeEqual } from 'crypto';
+import { createHash, timingSafeEqual, randomBytes } from 'crypto';
 import { cookies } from 'next/headers';
-import { createHash, randomBytes } from 'crypto';
 
 // Cookie name for the auth token
 const AUTH_COOKIE_NAME = 'counting-house-token';
@@ -63,15 +62,10 @@ export function verifyCredentials(username: string, password: string): boolean {
     return false;
   }
 
-  // Use timing-safe comparison to prevent timing attacks
-  const passwordBuffer = Buffer.from(password);
-  const envPasswordBuffer = Buffer.from(envPassword);
-
-  // timingSafeEqual requires both buffers to be same length
-  if (passwordBuffer.length !== envPasswordBuffer.length) {
-    return false;
-  }
-  return timingSafeEqual(passwordBuffer, envPasswordBuffer);
+  // Hash both passwords to ensure constant-time comparison regardless of length
+  const passwordHash = createHash('sha256').update(password).digest();
+  const envPasswordHash = createHash('sha256').update(envPassword).digest();
+  return timingSafeEqual(passwordHash, envPasswordHash);
 }
 
 /**
@@ -83,6 +77,8 @@ export async function createToken(username: string): Promise<string> {
   const token = await new SignJWT({ username })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
+    .setIssuer('counting-house')
+    .setAudience('counting-house')
     .setExpirationTime(TOKEN_EXPIRATION)
     .sign(secret);
 
@@ -95,7 +91,10 @@ export async function createToken(username: string): Promise<string> {
 export async function verifyToken(token: string): Promise<TokenPayload | null> {
   try {
     const secret = getJwtSecret();
-    const { payload } = await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, secret, {
+      issuer: 'counting-house',
+      audience: 'counting-house',
+    });
     return payload as TokenPayload;
   } catch {
     // Token is invalid or expired
@@ -225,7 +224,7 @@ export async function validateApiKey(rawKey: string): Promise<ApiKeyAuthResult> 
       'Prefer': 'return=minimal',
     },
     body: JSON.stringify({ last_used_at: new Date().toISOString() }),
-  }).catch(() => { /* non-critical */ });
+  }).catch((err) => { console.error('Failed to update API key last_used_at:', err); });
 
   return { authenticated: true, apiKey };
 }

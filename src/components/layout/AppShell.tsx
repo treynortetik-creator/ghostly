@@ -203,7 +203,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               &ldquo;Keep careful accounts, and the shillings shall mind themselves.&rdquo;
             </p>
             <p className="text-xs text-sepia/40">
-              The Counting House &middot; FY 2026
+              The Counting House &middot; FY {new Date().getFullYear()}
             </p>
           </div>
         </div>

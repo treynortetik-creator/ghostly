@@ -133,7 +133,7 @@ export default function DashboardPage() {
           The Ledger
         </h1>
         <p className="mt-1 text-sepia">
-          FY 2026 Budget Overview &middot; As of {formattedDate}
+          FY {new Date().getFullYear()} Budget Overview &middot; As of {formattedDate}
         </p>
       </div>
 

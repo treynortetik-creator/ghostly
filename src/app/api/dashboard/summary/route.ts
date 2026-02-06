@@ -6,8 +6,9 @@
  * GET /api/dashboard/summary - Returns dashboard summary data
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { logError } from '@/lib/error-logger';
+import { requirePermission } from '@/lib/permissions';
 import type { QuarterType } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
 
@@ -46,7 +47,10 @@ export interface DashboardSummary {
 // API HANDLER
 // ============================================
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const denied = requirePermission(request, 'read');
+  if (denied) return denied;
+
   try {
     const supabase = await createClient();
 

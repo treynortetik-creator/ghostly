@@ -9,12 +9,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logError } from '@/lib/error-logger';
+import { requirePermission } from '@/lib/permissions';
 
 // ============================================
 // GET /api/reminders/config
 // ============================================
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const denied = requirePermission(request, 'admin');
+  if (denied) return denied;
+
   try {
     const supabase = await createClient();
 
@@ -41,6 +45,9 @@ export async function GET() {
 // ============================================
 
 export async function PUT(request: NextRequest) {
+  const deniedPut = requirePermission(request, 'admin');
+  if (deniedPut) return deniedPut;
+
   try {
     const supabase = await createClient();
     const body = await request.json();

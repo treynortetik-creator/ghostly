@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logError } from '@/lib/error-logger';
+import { requirePermission } from '@/lib/permissions';
 import { withIdempotency } from '@/lib/idempotency';
 import { logAudit, getActor } from '@/lib/audit';
 import type { EventType, QuarterType, EventTypeRecord } from '@/types/database';
@@ -50,6 +51,9 @@ interface EventWithTotals {
 // ============================================
 
 export async function GET(request: NextRequest) {
+  const denied = requirePermission(request, 'read');
+  if (denied) return denied;
+
   try {
     const { searchParams } = new URL(request.url);
 
@@ -195,6 +199,9 @@ export async function GET(request: NextRequest) {
 // ============================================
 
 export const POST = withIdempotency(async function POST(request: NextRequest) {
+  const deniedPost = requirePermission(request, 'write');
+  if (deniedPost) return deniedPost;
+
   try {
     const body = await request.json();
 

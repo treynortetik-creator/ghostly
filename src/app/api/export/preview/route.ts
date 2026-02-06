@@ -1,5 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { requirePermission } from '@/lib/permissions';
+import { logError } from '@/lib/error-logger';
 import type { QuarterType } from '@/types/database';
 
 /* ============================================
@@ -61,7 +63,10 @@ function getDateRangeForScope(
   }
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  const denied = requirePermission(request, 'read');
+  if (denied) return denied;
+
   try {
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
@@ -178,6 +183,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error('Export preview error:', error);
+    logError('Failed to generate export preview', { error: error as Error, source: 'api/export/preview', context: { method: 'GET' } });
     return NextResponse.json(
       { error: 'Failed to generate export preview' },
       { status: 500 }

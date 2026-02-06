@@ -8,12 +8,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logError } from '@/lib/error-logger';
+import { requirePermission } from '@/lib/permissions';
 
 type RouteContext = { params: Promise<{ id: string; assignmentId: string }> };
 
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
-    const { assignmentId } = await context.params;
+    const denied = requirePermission(request, 'write');
+    if (denied) return denied;
+
+    const { id: eventId, assignmentId } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
 
@@ -25,6 +29,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       .from('event_team_assignments')
       .update(updates)
       .eq('id', assignmentId)
+      .eq('event_id', eventId)
       .select()
       .single();
 
@@ -40,15 +45,19 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   }
 }
 
-export async function DELETE(_request: NextRequest, context: RouteContext) {
+export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
-    const { assignmentId } = await context.params;
+    const denied = requirePermission(request, 'write');
+    if (denied) return denied;
+
+    const { id: eventId, assignmentId } = await context.params;
     const supabase = await createClient();
 
     const { error } = await supabase
       .from('event_team_assignments')
       .delete()
-      .eq('id', assignmentId);
+      .eq('id', assignmentId)
+      .eq('event_id', eventId);
 
     if (error) throw error;
 

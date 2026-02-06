@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { logError } from '@/lib/error-logger';
+import { requirePermission } from '@/lib/permissions';
 import type { ExpenseSource } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
 import { withIdempotency } from '@/lib/idempotency';
@@ -84,6 +85,9 @@ function validateUpdateItem(item: UpdateInput): string[] {
 // ============================================
 
 export const PUT = withIdempotency(async function PUT(request: NextRequest) {
+  const denied = requirePermission(request, 'write');
+  if (denied) return denied;
+
   try {
     const body = await request.json();
 
@@ -272,58 +276,68 @@ export const PUT = withIdempotency(async function PUT(request: NextRequest) {
       );
     }
 
-    // Phase 5: Apply all updates
+    // Phase 5: Apply all updates (track per-item results)
     const updatedExpenses: Record<string, unknown>[] = [];
+    const itemResults: Array<{ id: string; status: 'updated' | 'error'; error?: string }> = [];
     const now = new Date().toISOString();
 
     for (const item of body.updates) {
       const existing = existingMap.get(item.id as string)!;
 
-      const updateData: Record<string, unknown> = {
-        updated_at: now,
-      };
-
-      // Resolve event_id / category_id with XOR clearing
-      if (item.event_id !== undefined) {
-        updateData.event_id = item.event_id || null;
-        if (item.event_id) updateData.category_id = null;
-      }
-      if (item.category_id !== undefined) {
-        updateData.category_id = item.category_id || null;
-        if (item.category_id) updateData.event_id = null;
-      }
-
-      if (item.amount !== undefined) updateData.amount = parseFloat(String(item.amount));
-      if (item.expense_date !== undefined) updateData.expense_date = item.expense_date;
-      if (item.vendor !== undefined) updateData.vendor = item.vendor;
-      if (item.memo !== undefined) updateData.memo = item.memo;
-
-      const { data: updated, error: updateError } = await supabase
-        .from('expenses')
-        .update(updateData)
-        .eq('id', item.id as string)
-        .is('deleted_at', null)
-        .select('*')
-        .single();
-
-      if (updateError) throw updateError;
-
-      updatedExpenses.push(updated as Record<string, unknown>);
-
-      // Audit log (non-blocking)
       try {
-        const { actor, actor_type } = await getActor(request);
-        const changes = computeChanges(existing, updated as Record<string, unknown>, AUDIT_FIELDS);
-        logAudit({
-          entity_type: 'expense',
-          entity_id: item.id as string,
-          action: 'update',
-          changes,
-          actor,
-          actor_type,
+        const updateData: Record<string, unknown> = {
+          updated_at: now,
+        };
+
+        // Resolve event_id / category_id with XOR clearing
+        if (item.event_id !== undefined) {
+          updateData.event_id = item.event_id || null;
+          if (item.event_id) updateData.category_id = null;
+        }
+        if (item.category_id !== undefined) {
+          updateData.category_id = item.category_id || null;
+          if (item.category_id) updateData.event_id = null;
+        }
+
+        if (item.amount !== undefined) updateData.amount = parseFloat(String(item.amount));
+        if (item.expense_date !== undefined) updateData.expense_date = item.expense_date;
+        if (item.vendor !== undefined) updateData.vendor = item.vendor;
+        if (item.memo !== undefined) updateData.memo = item.memo;
+
+        const { data: updated, error: updateError } = await supabase
+          .from('expenses')
+          .update(updateData)
+          .eq('id', item.id as string)
+          .is('deleted_at', null)
+          .select('*')
+          .single();
+
+        if (updateError) throw updateError;
+
+        updatedExpenses.push(updated as Record<string, unknown>);
+        itemResults.push({ id: item.id as string, status: 'updated' });
+
+        // Audit log (non-blocking)
+        try {
+          const { actor, actor_type } = await getActor(request);
+          const changes = computeChanges(existing, updated as Record<string, unknown>, AUDIT_FIELDS);
+          logAudit({
+            entity_type: 'expense',
+            entity_id: item.id as string,
+            action: 'update',
+            changes,
+            actor,
+            actor_type,
+          });
+        } catch (e) {
+          console.error('Audit log failed:', e);
+        }
+      } catch (error) {
+        itemResults.push({
+          id: item.id as string,
+          status: 'error',
+          error: error instanceof Error ? error.message : 'Unknown error',
         });
-      } catch (e) {
-        console.error('Audit log failed:', e);
       }
     }
 
@@ -378,13 +392,17 @@ export const PUT = withIdempotency(async function PUT(request: NextRequest) {
       };
     });
 
+    const hasErrors = itemResults.some(r => r.status === 'error');
+
     return NextResponse.json({
       expenses,
       meta: {
-        total: expenses.length,
-        updated: expenses.length,
+        total: body.updates.length,
+        updated: itemResults.filter(r => r.status === 'updated').length,
+        errors: itemResults.filter(r => r.status === 'error').length,
       },
-    });
+      ...(hasErrors ? { results: itemResults } : {}),
+    }, { status: hasErrors ? 207 : 200 });
   } catch (err) {
     console.error('Bulk update expenses error:', err);
     logError('Failed to bulk update expenses', { error: err as Error, source: 'api/expenses/bulk/update', context: { method: 'PUT' } });
