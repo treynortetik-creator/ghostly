@@ -1,7 +1,21 @@
-'use client';
+"use client";
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, ProgressBar } from '@/components/ui';
-import { Crown, Building2, MapPin, Map, Users, CalendarDays } from 'lucide-react';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  ProgressBar,
+} from "@/components/ui";
+import {
+  Crown,
+  Building2,
+  MapPin,
+  Map,
+  Users,
+  CalendarDays,
+} from "lucide-react";
 
 /* ============================================
    EVENT TYPE SUMMARY
@@ -24,7 +38,10 @@ export interface EventTypeSummaryProps {
 }
 
 // Legacy event type icon mapping (for backward compatibility with common names)
-const eventTypeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+const eventTypeIcons: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
   executive: Crown,
   national: Building2,
   state: MapPin,
@@ -33,10 +50,16 @@ const eventTypeIcons: Record<string, React.ComponentType<{ className?: string }>
 };
 
 // Event type icon component - renders the appropriate icon based on type name
-function EventTypeIcon({ typeName, className }: { typeName: string; className?: string }) {
+function EventTypeIcon({
+  typeName,
+  className,
+}: {
+  typeName: string;
+  className?: string;
+}) {
   const normalizedName = typeName.toLowerCase();
   const IconComponent = eventTypeIcons[normalizedName] || CalendarDays;
-  return <IconComponent className={className} />;
+  return <IconComponent className={className} data-oid="1n--7_s" />;
 }
 
 function EventTypeRow({ data }: { data: EventTypeData }) {
@@ -45,18 +68,18 @@ function EventTypeRow({ data }: { data: EventTypeData }) {
   const isOverBudget = data.actual > data.budget;
 
   const formatCurrency = (value: number) => {
-    return value.toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return value.toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
   };
 
   const getStatusColor = () => {
-    if (isOverBudget) return 'text-ink-red';
-    if (percentage >= 80) return 'text-ink-gold';
-    return 'text-ink-green';
+    if (isOverBudget) return "text-ink-red";
+    if (percentage >= 80) return "text-ink-gold";
+    return "text-ink-green";
   };
 
   // Skip event types with no budget
@@ -65,23 +88,41 @@ function EventTypeRow({ data }: { data: EventTypeData }) {
   }
 
   return (
-    <div className="p-4 rounded-lg bg-parchment border border-wood-medium/20 hover:border-wood-medium/40 transition-colors">
+    <div
+      className="p-4 rounded-lg bg-parchment border border-wood-medium/20 hover:border-wood-medium/40 transition-colors"
+      data-oid="czilw_:"
+    >
       {/* Header Row */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-md bg-wood-medium/10 text-wood-medium">
-            <EventTypeIcon typeName={data.type} className="w-5 h-5" />
+      <div className="flex items-start justify-between mb-3" data-oid="9kilj00">
+        <div className="flex items-center gap-3" data-oid="yznbn:y">
+          <div
+            className="p-2 rounded-md bg-wood-medium/10 text-wood-medium"
+            data-oid="czazt85"
+          >
+            <EventTypeIcon
+              typeName={data.type}
+              className="w-5 h-5"
+              data-oid="q9:ytht"
+            />
           </div>
-          <div>
-            <h4 className="font-semibold text-ink-black">{data.type} Events</h4>
+          <div data-oid="23h4ygx">
+            <h4 className="font-semibold text-ink-black" data-oid="g6d9c3d">
+              {data.type} Events
+            </h4>
             {data.description && (
-              <p className="text-xs text-sepia">{data.description}</p>
+              <p className="text-xs text-sepia" data-oid="uw_at-f">
+                {data.description}
+              </p>
             )}
           </div>
         </div>
-        <div className={`text-right ${getStatusColor()}`}>
-          <p className="font-medium text-lg tabular-nums">{formatCurrency(remaining)}</p>
-          <p className="text-xs">remaining</p>
+        <div className={`text-right ${getStatusColor()}`} data-oid="3pqh2g3">
+          <p className="font-medium text-lg tabular-nums" data-oid="krv6s8n">
+            {formatCurrency(remaining)}
+          </p>
+          <p className="text-xs" data-oid="ptwig9p">
+            remaining
+          </p>
         </div>
       </div>
 
@@ -91,19 +132,37 @@ function EventTypeRow({ data }: { data: EventTypeData }) {
         max={data.budget}
         size="md"
         animated={isOverBudget}
+        data-oid=".__uwpt"
       />
 
       {/* Stats Row */}
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-wood-medium/15 text-sm">
-        <div>
-          <span className="text-sepia">Spent: </span>
-          <span className="font-medium tabular-nums text-ink-black">{formatCurrency(data.actual)}</span>
+      <div
+        className="flex items-center justify-between mt-3 pt-3 border-t border-wood-medium/15 text-sm"
+        data-oid="mp:xt9h"
+      >
+        <div data-oid="eqb2tc.">
+          <span className="text-sepia" data-oid="x3:e4mv">
+            Spent:{" "}
+          </span>
+          <span
+            className="font-medium tabular-nums text-ink-black"
+            data-oid="47kxbkw"
+          >
+            {formatCurrency(data.actual)}
+          </span>
         </div>
-        <div>
-          <span className="text-sepia">Budget: </span>
-          <span className="font-medium tabular-nums text-ink-black">{formatCurrency(data.budget)}</span>
+        <div data-oid="6ymekcr">
+          <span className="text-sepia" data-oid="aua1l08">
+            Budget:{" "}
+          </span>
+          <span
+            className="font-medium tabular-nums text-ink-black"
+            data-oid="hlr59f9"
+          >
+            {formatCurrency(data.budget)}
+          </span>
         </div>
-        <div className={`font-medium ${getStatusColor()}`}>
+        <div className={`font-medium ${getStatusColor()}`} data-oid="75hc.ua">
           {percentage.toFixed(0)}% used
         </div>
       </div>
@@ -120,28 +179,39 @@ export function EventTypeSummary({ data, className }: EventTypeSummaryProps) {
   const totalActual = activeEventTypes.reduce((sum, d) => sum + d.actual, 0);
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Budget by Event Type</CardTitle>
-            <CardDescription>
-              Spending breakdown across {activeEventTypes.length} event categories
+    <Card className={className} data-oid="w5iwyht">
+      <CardHeader data-oid="nmm5yl8">
+        <div className="flex items-center justify-between" data-oid="vttc-ej">
+          <div data-oid="_d2:7tm">
+            <CardTitle data-oid="hjspl4q">Budget by Event Type</CardTitle>
+            <CardDescription data-oid="wk8pg5g">
+              Spending breakdown across {activeEventTypes.length} event
+              categories
             </CardDescription>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-sepia">Events Total</p>
-            <p className="font-serif font-bold text-lg text-ink-black tabular-nums">
-              {totalActual.toLocaleString('en-US', {
-                style: 'currency',
-                currency: 'USD',
+          <div className="text-right" data-oid="u.qofrm">
+            <p className="text-sm text-sepia" data-oid="ntufiez">
+              Events Total
+            </p>
+            <p
+              className="font-serif font-bold text-lg text-ink-black tabular-nums"
+              data-oid="1maqpn4"
+            >
+              {totalActual.toLocaleString("en-US", {
+                style: "currency",
+                currency: "USD",
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
-              <span className="text-sepia font-normal text-sm">
-                {' '}/ {totalBudget.toLocaleString('en-US', {
-                  style: 'currency',
-                  currency: 'USD',
+              <span
+                className="text-sepia font-normal text-sm"
+                data-oid="m5f5f61"
+              >
+                {" "}
+                /{" "}
+                {totalBudget.toLocaleString("en-US", {
+                  style: "currency",
+                  currency: "USD",
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
@@ -150,9 +220,13 @@ export function EventTypeSummary({ data, className }: EventTypeSummaryProps) {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4" data-oid="dataarl">
         {activeEventTypes.map((eventType) => (
-          <EventTypeRow key={eventType.id} data={eventType} />
+          <EventTypeRow
+            key={eventType.id}
+            data={eventType}
+            data-oid="9is2om5"
+          />
         ))}
       </CardContent>
     </Card>

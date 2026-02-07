@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Plus, Calendar, RefreshCw } from 'lucide-react';
-import { AppShell } from '@/components/layout';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent } from '@/components/ui/Card';
-import { EventList } from '@/components/events/EventList';
-import { EventForm, EventFormData } from '@/components/events/EventForm';
-import type { EventWithTotals } from '@/types/database';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Plus, Calendar, RefreshCw } from "lucide-react";
+import { AppShell } from "@/components/layout";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
+import { EventList } from "@/components/events/EventList";
+import { EventForm, EventFormData } from "@/components/events/EventForm";
+import type { EventWithTotals } from "@/types/database";
 
 /* ============================================
    EVENTS LIST PAGE
@@ -40,14 +40,16 @@ export default function EventsPage() {
     setError(null);
 
     try {
-      const response = await fetch('/api/events');
+      const response = await fetch("/api/events");
       if (!response.ok) {
-        throw new Error('Failed to fetch events');
+        throw new Error("Failed to fetch events");
       }
       const data: EventsApiResponse = await response.json();
       setEvents(data.events);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      setError(
+        err instanceof Error ? err.message : "An unexpected error occurred",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -62,24 +64,24 @@ export default function EventsPage() {
     setIsCreating(true);
 
     try {
-      const response = await fetch('/api/events', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to create event');
+        throw new Error(error.error || "Failed to create event");
       }
 
       const newEvent = await response.json();
 
       // Add to local state (in real app, would refetch)
-      setEvents(prev => [newEvent, ...prev]);
+      setEvents((prev) => [newEvent, ...prev]);
       setShowCreateForm(false);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to create event');
+      alert(err instanceof Error ? err.message : "Failed to create event");
     } finally {
       setIsCreating(false);
     }
@@ -87,41 +89,52 @@ export default function EventsPage() {
 
   // Format date for header
   const today = new Date();
-  const formattedDate = today.toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
+  const formattedDate = today.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
   });
 
   return (
-    <AppShell>
+    <AppShell data-oid="6ks2gaf">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-serif font-bold text-wood-dark flex items-center gap-3">
-            <Calendar className="w-8 h-8 text-ink-gold" />
+      <div
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
+        data-oid="wa.lzf9"
+      >
+        <div data-oid="hsjmlip">
+          <h1
+            className="text-3xl font-serif font-bold text-wood-dark flex items-center gap-3"
+            data-oid="qfgfujw"
+          >
+            <Calendar className="w-8 h-8 text-ink-gold" data-oid="0s4j:z." />
             The Event Ledger
           </h1>
-          <p className="mt-1 text-sepia">
+          <p className="mt-1 text-sepia" data-oid="3-0ey.i">
             FY 2026 Events &middot; As of {formattedDate}
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3" data-oid="tie.4j9">
           <Button
             variant="secondary"
             size="sm"
             onClick={fetchEvents}
             disabled={isLoading}
+            data-oid="in34b05"
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+              data-oid="jvqimi-"
+            />
             Refresh
           </Button>
 
           <Button
             variant="primary"
             onClick={() => setShowCreateForm(true)}
-            leftIcon={<Plus className="w-4 h-4" />}
+            leftIcon={<Plus className="w-4 h-4" data-oid="2ompy-i" />}
+            data-oid=":s7-a3n"
           >
             Add Event
           </Button>
@@ -130,12 +143,13 @@ export default function EventsPage() {
 
       {/* Create Event Form (Modal-like) */}
       {showCreateForm && (
-        <div className="mb-8">
+        <div className="mb-8" data-oid="n-ina1r">
           <EventForm
             mode="create"
             onSubmit={handleCreateEvent}
             onCancel={() => setShowCreateForm(false)}
             isLoading={isCreating}
+            data-oid="m1jdotw"
           />
         </div>
       )}
@@ -148,12 +162,16 @@ export default function EventsPage() {
         expandable={false}
         showSearch={true}
         groupByQuarter={false}
+        data-oid="tggnq1d"
       />
 
       {/* Footer Info */}
       {!isLoading && !error && events.length > 0 && (
-        <div className="text-center py-6 mt-8 border-t border-wood-medium/20">
-          <p className="text-xs text-sepia/60">
+        <div
+          className="text-center py-6 mt-8 border-t border-wood-medium/20"
+          data-oid="qf.l20z"
+        >
+          <p className="text-xs text-sepia/60" data-oid="f15.15f">
             Click on any event to view full details and manage expenses.
           </p>
         </div>

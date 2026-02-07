@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx:*)",
+      "Bash(echo:*)",
+      "Bash(/usr/local/bin/node:*)",
+      "Bash(/opt/homebrew/bin/node:*)",
+      "Bash(brew list:*)",
+      "Bash(mdfind:*)",
+      "Bash(~/.local/bin/fnm list:*)",
+      "Bash(~/.local/bin/fnm env:*)",
+      "Bash(/Users/treynor/.local/share/fnm/node-versions/v24.13.0/installation/bin/npx --version)",
+      "Bash(fnm list:*)",
+      "Bash(source ~/.zshenv)",
+      "mcp__railway__get-logs",
+      "mcp__railway__list-projects",
+      "Bash(cd:*)",
+      "Bash(git pull)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "context7",
+    "supabase",
+    "railway"
+  ]
+}

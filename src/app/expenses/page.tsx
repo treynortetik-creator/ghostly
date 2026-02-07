@@ -1,12 +1,19 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Receipt, Plus, RefreshCw } from 'lucide-react';
-import { AppShell } from '@/components/layout';
-import { Button } from '@/components/ui/Button';
-import { ExpenseList } from '@/components/expenses/ExpenseList';
-import { ExpenseForm, ExpenseFormData } from '@/components/expenses/ExpenseForm';
-import type { Event, BudgetCategory, ExpenseWithRelations } from '@/types/database';
+import { useEffect, useState } from "react";
+import { Receipt, Plus, RefreshCw } from "lucide-react";
+import { AppShell } from "@/components/layout";
+import { Button } from "@/components/ui/Button";
+import { ExpenseList } from "@/components/expenses/ExpenseList";
+import {
+  ExpenseForm,
+  ExpenseFormData,
+} from "@/components/expenses/ExpenseForm";
+import type {
+  Event,
+  BudgetCategory,
+  ExpenseWithRelations,
+} from "@/types/database";
 
 /* ============================================
    EXPENSES LIST PAGE
@@ -44,7 +51,8 @@ export default function ExpensesPage() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const [editingExpense, setEditingExpense] = useState<ExpenseWithRelations | null>(null);
+  const [editingExpense, setEditingExpense] =
+    useState<ExpenseWithRelations | null>(null);
 
   // Fetch expenses and related data
   const fetchData = async () => {
@@ -54,14 +62,14 @@ export default function ExpensesPage() {
     try {
       // Fetch all data in parallel
       const [expensesRes, eventsRes, categoriesRes] = await Promise.all([
-        fetch('/api/expenses'),
-        fetch('/api/events'),
-        fetch('/api/categories'),
+        fetch("/api/expenses"),
+        fetch("/api/events"),
+        fetch("/api/categories"),
       ]);
 
-      if (!expensesRes.ok) throw new Error('Failed to fetch expenses');
-      if (!eventsRes.ok) throw new Error('Failed to fetch events');
-      if (!categoriesRes.ok) throw new Error('Failed to fetch categories');
+      if (!expensesRes.ok) throw new Error("Failed to fetch expenses");
+      if (!eventsRes.ok) throw new Error("Failed to fetch events");
+      if (!categoriesRes.ok) throw new Error("Failed to fetch categories");
 
       const expensesData: ExpensesApiResponse = await expensesRes.json();
       const eventsData: EventsApiResponse = await eventsRes.json();
@@ -71,7 +79,9 @@ export default function ExpensesPage() {
       setEvents(eventsData.events);
       setCategories(categoriesData.categories);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      setError(
+        err instanceof Error ? err.message : "An unexpected error occurred",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -92,28 +102,29 @@ export default function ExpensesPage() {
         vendor: formData.vendor || null,
         memo: formData.memo || null,
         source_type: formData.source_type,
-        event_id: formData.target_type === 'event' ? formData.event_id : null,
-        category_id: formData.target_type === 'category' ? formData.category_id : null,
+        event_id: formData.target_type === "event" ? formData.event_id : null,
+        category_id:
+          formData.target_type === "category" ? formData.category_id : null,
       };
 
-      const response = await fetch('/api/expenses', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/expenses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create expense');
+        throw new Error(errorData.error || "Failed to create expense");
       }
 
       const newExpense: ExpenseWithRelations = await response.json();
 
       // Add to local state
-      setExpenses(prev => [newExpense, ...prev]);
+      setExpenses((prev) => [newExpense, ...prev]);
       setShowCreateForm(false);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to create expense');
+      alert(err instanceof Error ? err.message : "Failed to create expense");
     } finally {
       setIsCreating(false);
     }
@@ -138,31 +149,32 @@ export default function ExpensesPage() {
         vendor: formData.vendor || null,
         memo: formData.memo || null,
         source_type: formData.source_type,
-        event_id: formData.target_type === 'event' ? formData.event_id : null,
-        category_id: formData.target_type === 'category' ? formData.category_id : null,
+        event_id: formData.target_type === "event" ? formData.event_id : null,
+        category_id:
+          formData.target_type === "category" ? formData.category_id : null,
       };
 
       const response = await fetch(`/api/expenses/${editingExpense.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update expense');
+        throw new Error(errorData.error || "Failed to update expense");
       }
 
       const data = await response.json();
       const updatedExpense: ExpenseWithRelations = data.expense;
 
       // Update in local state
-      setExpenses(prev =>
-        prev.map(e => (e.id === updatedExpense.id ? updatedExpense : e))
+      setExpenses((prev) =>
+        prev.map((e) => (e.id === updatedExpense.id ? updatedExpense : e)),
       );
       setEditingExpense(null);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to update expense');
+      alert(err instanceof Error ? err.message : "Failed to update expense");
     } finally {
       setIsCreating(false);
     }
@@ -170,37 +182,44 @@ export default function ExpensesPage() {
 
   // Handle delete expense (optimistic UI)
   const handleDeleteExpense = async (expense: ExpenseWithRelations) => {
-    if (!confirm(`Are you sure you wish to delete this expense from ${expense.vendor || 'Unknown Vendor'}?`)) {
+    if (
+      !confirm(
+        `Are you sure you wish to delete this expense from ${expense.vendor || "Unknown Vendor"}?`,
+      )
+    ) {
       return;
     }
 
     // Optimistic: save previous state and remove immediately
     const previousExpenses = expenses;
-    setExpenses(prev => prev.filter(e => e.id !== expense.id));
+    setExpenses((prev) => prev.filter((e) => e.id !== expense.id));
 
     try {
       const response = await fetch(`/api/expenses/${expense.id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete expense');
+        throw new Error(errorData.error || "Failed to delete expense");
       }
     } catch (err) {
       // Rollback on failure
       setExpenses(previousExpenses);
-      alert(err instanceof Error ? err.message : 'Failed to delete expense');
+      alert(err instanceof Error ? err.message : "Failed to delete expense");
     }
   };
 
   // Handle bulk delete expenses (optimistic UI)
-  const handleBulkDeleteExpenses = async (expensesToDelete: ExpenseWithRelations[]) => {
+  const handleBulkDeleteExpenses = async (
+    expensesToDelete: ExpenseWithRelations[],
+  ) => {
     if (expensesToDelete.length === 0) return;
 
-    const confirmMsg = expensesToDelete.length === 1
-      ? `Are you sure you wish to delete this expense?`
-      : `Are you sure you wish to delete ${expensesToDelete.length} expenses?`;
+    const confirmMsg =
+      expensesToDelete.length === 1
+        ? `Are you sure you wish to delete this expense?`
+        : `Are you sure you wish to delete ${expensesToDelete.length} expenses?`;
 
     if (!confirm(confirmMsg)) {
       return;
@@ -208,71 +227,88 @@ export default function ExpensesPage() {
 
     // Optimistic: save previous state and remove immediately
     const previousExpenses = expenses;
-    const deleteIds = new Set(expensesToDelete.map(e => e.id));
-    setExpenses(prev => prev.filter(e => !deleteIds.has(e.id)));
+    const deleteIds = new Set(expensesToDelete.map((e) => e.id));
+    setExpenses((prev) => prev.filter((e) => !deleteIds.has(e.id)));
 
     try {
       // Delete all selected expenses
-      const deletePromises = expensesToDelete.map(expense =>
-        fetch(`/api/expenses/${expense.id}`, { method: 'DELETE' })
+      const deletePromises = expensesToDelete.map((expense) =>
+        fetch(`/api/expenses/${expense.id}`, { method: "DELETE" }),
       );
 
       const results = await Promise.all(deletePromises);
-      const failedCount = results.filter(r => !r.ok).length;
+      const failedCount = results.filter((r) => !r.ok).length;
 
       if (failedCount > 0) {
         // Rollback: restore previous state since some failed
         setExpenses(previousExpenses);
-        alert(`Failed to delete ${failedCount} expense(s). Changes have been reverted.`);
+        alert(
+          `Failed to delete ${failedCount} expense(s). Changes have been reverted.`,
+        );
       }
     } catch (err) {
       // Rollback on failure
       setExpenses(previousExpenses);
-      alert(err instanceof Error ? err.message : 'Failed to delete expenses. Changes have been reverted.');
+      alert(
+        err instanceof Error
+          ? err.message
+          : "Failed to delete expenses. Changes have been reverted.",
+      );
     }
   };
 
   // Format date for header
   const today = new Date();
-  const formattedDate = today.toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
+  const formattedDate = today.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
   });
 
   // Calculate total amount
   const totalAmount = expenses.reduce((sum, e) => sum + e.amount, 0);
   const formatCurrency = (amount: number) => {
-    return amount.toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return amount.toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
   };
 
   return (
-    <AppShell>
+    <AppShell data-oid="y46.1jg">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-serif font-bold text-wood-dark flex items-center gap-3">
-            <Receipt className="w-8 h-8 text-ink-gold" />
+      <div
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
+        data-oid="4s-68.."
+      >
+        <div data-oid="yd26zxz">
+          <h1
+            className="text-3xl font-serif font-bold text-wood-dark flex items-center gap-3"
+            data-oid="csaszdy"
+          >
+            <Receipt className="w-8 h-8 text-ink-gold" data-oid="9q60mf8" />
             The Expense Register
           </h1>
-          <p className="mt-1 text-sepia">
-            FY 2026 Expenses &middot; {formatCurrency(totalAmount)} total &middot; As of {formattedDate}
+          <p className="mt-1 text-sepia" data-oid="s200mmv">
+            FY 2026 Expenses &middot; {formatCurrency(totalAmount)} total
+            &middot; As of {formattedDate}
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3" data-oid="806s4oq">
           <Button
             variant="secondary"
             size="sm"
             onClick={fetchData}
             disabled={isLoading}
+            data-oid="1g3v.op"
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+              data-oid="0w7vlrc"
+            />
             Refresh
           </Button>
 
@@ -282,7 +318,8 @@ export default function ExpensesPage() {
               setEditingExpense(null);
               setShowCreateForm(true);
             }}
-            leftIcon={<Plus className="w-4 h-4" />}
+            leftIcon={<Plus className="w-4 h-4" data-oid=":e:6wzz" />}
+            data-oid="_g5s899"
           >
             Add Expense
           </Button>
@@ -291,18 +328,21 @@ export default function ExpensesPage() {
 
       {/* Create/Edit Expense Form */}
       {(showCreateForm || editingExpense) && (
-        <div className="mb-8">
+        <div className="mb-8" data-oid="dlk:19v">
           <ExpenseForm
-            mode={editingExpense ? 'edit' : 'create'}
+            mode={editingExpense ? "edit" : "create"}
             expense={editingExpense || undefined}
             events={events}
             categories={categories}
-            onSubmit={editingExpense ? handleUpdateExpense : handleCreateExpense}
+            onSubmit={
+              editingExpense ? handleUpdateExpense : handleCreateExpense
+            }
             onCancel={() => {
               setShowCreateForm(false);
               setEditingExpense(null);
             }}
             isLoading={isCreating}
+            data-oid=":tm:5fy"
           />
         </div>
       )}
@@ -318,12 +358,16 @@ export default function ExpensesPage() {
         onEdit={handleEditExpense}
         onDelete={handleDeleteExpense}
         onBulkDelete={handleBulkDeleteExpenses}
+        data-oid="ze-fe5i"
       />
 
       {/* Footer Info */}
       {!isLoading && !error && expenses.length > 0 && (
-        <div className="text-center py-6 mt-8 border-t border-wood-medium/20">
-          <p className="text-xs text-sepia/60">
+        <div
+          className="text-center py-6 mt-8 border-t border-wood-medium/20"
+          data-oid="pj-d2zz"
+        >
+          <p className="text-xs text-sepia/60" data-oid="a0tditr">
             Click on an event or category name to view its details.
           </p>
         </div>

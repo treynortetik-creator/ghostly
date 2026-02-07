@@ -1,9 +1,16 @@
-'use client';
+"use client";
 
-import { useCallback, useState, useRef } from 'react';
-import { Upload, FileText, X, AlertCircle, CheckCircle, File } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/Button';
+import { useCallback, useState, useRef } from "react";
+import {
+  Upload,
+  FileText,
+  X,
+  AlertCircle,
+  CheckCircle,
+  File,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/Button";
 
 /* ============================================
    PDF UPLOAD COMPONENT
@@ -37,11 +44,12 @@ export function PDFUpload({
   const validateFile = useCallback(
     (file: File): string | null => {
       // Check file type
-      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-      const isValidType = fileExtension === '.pdf' || file.type === 'application/pdf';
+      const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
+      const isValidType =
+        fileExtension === ".pdf" || file.type === "application/pdf";
 
       if (!isValidType) {
-        return 'Invalid file type. Please upload a PDF file.';
+        return "Invalid file type. Please upload a PDF file.";
       }
 
       // Check file size
@@ -51,7 +59,7 @@ export function PDFUpload({
 
       return null;
     },
-    [maxSizeBytes, maxSizeMB]
+    [maxSizeBytes, maxSizeMB],
   );
 
   const handleFile = useCallback(
@@ -67,7 +75,7 @@ export function PDFUpload({
       setSelectedFile(file);
       onFileSelect(file);
     },
-    [validateFile, onFileSelect]
+    [validateFile, onFileSelect],
   );
 
   const handleDrop = useCallback(
@@ -80,7 +88,7 @@ export function PDFUpload({
         handleFile(file);
       }
     },
-    [handleFile]
+    [handleFile],
   );
 
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
@@ -100,7 +108,7 @@ export function PDFUpload({
         handleFile(file);
       }
     },
-    [handleFile]
+    [handleFile],
   );
 
   const handleBrowseClick = () => {
@@ -111,14 +119,14 @@ export function PDFUpload({
     setSelectedFile(null);
     setLocalError(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
   const displayError = error || localError;
 
   return (
-    <div className={cn('space-y-4', className)}>
+    <div className={cn("space-y-4", className)} data-oid="dmb-n-o">
       {/* Drop Zone */}
       <div
         role="button"
@@ -128,22 +136,23 @@ export function PDFUpload({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
+          if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             fileInputRef.current?.click();
           }
         }}
         className={cn(
-          'relative border-2 border-dashed rounded-lg p-8 transition-all duration-200',
-          'bg-parchment hover:bg-parchment-dark cursor-pointer',
-          'focus:outline-none focus:ring-2 focus:ring-ink-gold focus:ring-offset-2',
+          "relative border-2 border-dashed rounded-lg p-8 transition-all duration-200",
+          "bg-parchment hover:bg-parchment-dark cursor-pointer",
+          "focus:outline-none focus:ring-2 focus:ring-ink-gold focus:ring-offset-2",
           isDragging
-            ? 'border-ink-gold bg-ink-gold/5 scale-[1.01]'
-            : 'border-wood-medium/40 hover:border-wood-medium',
-          displayError && 'border-ink-red/50 bg-ink-red/5',
-          isLoading && 'opacity-60 pointer-events-none'
+            ? "border-ink-gold bg-ink-gold/5 scale-[1.01]"
+            : "border-wood-medium/40 hover:border-wood-medium",
+          displayError && "border-ink-red/50 bg-ink-red/5",
+          isLoading && "opacity-60 pointer-events-none",
         )}
         onClick={handleBrowseClick}
+        data-oid="brz6j-v"
       >
         <input
           ref={fileInputRef}
@@ -152,30 +161,38 @@ export function PDFUpload({
           onChange={handleInputChange}
           className="sr-only"
           disabled={isLoading}
+          data-oid="7_4yw77"
         />
 
-        <div className="flex flex-col items-center text-center">
+        <div
+          className="flex flex-col items-center text-center"
+          data-oid="dfaxui7"
+        >
           {/* Icon */}
           <div
             className={cn(
-              'p-4 rounded-full mb-4 transition-colors',
+              "p-4 rounded-full mb-4 transition-colors",
               isDragging
-                ? 'bg-ink-gold/20 text-ink-gold'
-                : 'bg-wood-medium/10 text-wood-medium'
+                ? "bg-ink-gold/20 text-ink-gold"
+                : "bg-wood-medium/10 text-wood-medium",
             )}
+            data-oid="e9-8myl"
           >
             {isDragging ? (
-              <Upload className="w-8 h-8" />
+              <Upload className="w-8 h-8" data-oid=":9-ttoj" />
             ) : (
-              <File className="w-8 h-8" />
+              <File className="w-8 h-8" data-oid="gj43291" />
             )}
           </div>
 
           {/* Text */}
-          <h3 className="font-serif font-semibold text-wood-dark mb-1">
-            {isDragging ? 'Drop your PDF here' : 'Upload PDF Invoice'}
+          <h3
+            className="font-serif font-semibold text-wood-dark mb-1"
+            data-oid=":z4dk2z"
+          >
+            {isDragging ? "Drop your PDF here" : "Upload PDF Invoice"}
           </h3>
-          <p className="text-sm text-sepia mb-4">
+          <p className="text-sm text-sepia mb-4" data-oid="b7y5.5g">
             Drag and drop your PDF invoice here, or click to browse
           </p>
 
@@ -189,12 +206,13 @@ export function PDFUpload({
               handleBrowseClick();
             }}
             disabled={isLoading}
+            data-oid="r1_27bp"
           >
             Browse Files
           </Button>
 
           {/* File Info */}
-          <p className="text-xs text-sepia/60 mt-4">
+          <p className="text-xs text-sepia/60 mt-4" data-oid="yhyjt4g">
             Accepted: PDF files &middot; Max size: {maxSizeMB}MB
           </p>
         </div>
@@ -202,20 +220,29 @@ export function PDFUpload({
 
       {/* Selected File Display */}
       {selectedFile && !displayError && (
-        <div className="flex items-center gap-3 p-3 bg-ink-green/10 border border-ink-green/30 rounded-lg">
-          <div className="p-2 bg-ink-green/20 rounded">
-            <FileText className="w-5 h-5 text-ink-green" />
+        <div
+          className="flex items-center gap-3 p-3 bg-ink-green/10 border border-ink-green/30 rounded-lg"
+          data-oid="nk86let"
+        >
+          <div className="p-2 bg-ink-green/20 rounded" data-oid="5ld013z">
+            <FileText className="w-5 h-5 text-ink-green" data-oid="p6u.p5i" />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-ink-black truncate">
+          <div className="flex-1 min-w-0" data-oid="kv4cn1m">
+            <p
+              className="font-medium text-ink-black truncate"
+              data-oid="cjxlm0h"
+            >
               {selectedFile.name}
             </p>
-            <p className="text-xs text-sepia">
+            <p className="text-xs text-sepia" data-oid="arzrxy0">
               {(selectedFile.size / 1024).toFixed(1)} KB
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-ink-green" />
+          <div className="flex items-center gap-2" data-oid="z3mgp3z">
+            <CheckCircle
+              className="w-5 h-5 text-ink-green"
+              data-oid="j147_6a"
+            />
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -224,8 +251,9 @@ export function PDFUpload({
               className="p-1 text-sepia hover:text-ink-red transition-colors"
               disabled={isLoading}
               aria-label="Remove selected file"
+              data-oid="-zoghxu"
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4" data-oid="j:cwgs:" />
             </button>
           </div>
         </div>
@@ -233,11 +261,21 @@ export function PDFUpload({
 
       {/* Error Display */}
       {displayError && (
-        <div className="flex items-start gap-3 p-3 bg-ink-red/10 border border-ink-red/30 rounded-lg">
-          <AlertCircle className="w-5 h-5 text-ink-red shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="font-medium text-ink-red">Upload Error</p>
-            <p className="text-sm text-ink-red/80">{displayError}</p>
+        <div
+          className="flex items-start gap-3 p-3 bg-ink-red/10 border border-ink-red/30 rounded-lg"
+          data-oid="80pv3d2"
+        >
+          <AlertCircle
+            className="w-5 h-5 text-ink-red shrink-0 mt-0.5"
+            data-oid="0g6o50n"
+          />
+          <div className="flex-1" data-oid="brpm0t8">
+            <p className="font-medium text-ink-red" data-oid="d6n_q10">
+              Upload Error
+            </p>
+            <p className="text-sm text-ink-red/80" data-oid="64vnf9i">
+              {displayError}
+            </p>
           </div>
           <button
             onClick={(e) => {
@@ -245,17 +283,26 @@ export function PDFUpload({
               handleClearFile();
             }}
             className="p-1 text-ink-red/60 hover:text-ink-red transition-colors"
+            data-oid="7lodzkc"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4" data-oid="w:4rt7h" />
           </button>
         </div>
       )}
 
       {/* Loading Overlay */}
       {isLoading && (
-        <div className="flex items-center justify-center gap-2 text-sepia">
-          <div className="w-4 h-4 border-2 border-ink-gold/30 border-t-ink-gold rounded-full animate-spin" />
-          <span className="text-sm">Extracting text from PDF...</span>
+        <div
+          className="flex items-center justify-center gap-2 text-sepia"
+          data-oid="uy6u8a-"
+        >
+          <div
+            className="w-4 h-4 border-2 border-ink-gold/30 border-t-ink-gold rounded-full animate-spin"
+            data-oid="wdrlq:l"
+          />
+          <span className="text-sm" data-oid="ghpyjgh">
+            Extracting text from PDF...
+          </span>
         </div>
       )}
     </div>

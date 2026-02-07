@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Type, RotateCcw, AlertCircle, Check } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { useState } from "react";
+import { Type, RotateCcw, AlertCircle, Check } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 
 /* ============================================
    PROMPT EDITOR COMPONENT
@@ -53,31 +53,40 @@ export function PromptEditor({
   };
 
   return (
-    <Card>
-      <CardHeader divider={false} className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Type className="w-5 h-5 text-ink-gold" />
+    <Card data-oid="mvvc1m3">
+      <CardHeader divider={false} className="pb-2" data-oid="7a9.6vk">
+        <div className="flex items-center justify-between" data-oid="fty5x12">
+          <CardTitle
+            className="text-lg flex items-center gap-2"
+            data-oid="z9irpbo"
+          >
+            <Type className="w-5 h-5 text-ink-gold" data-oid="j5uhsij" />
             {label}
           </CardTitle>
 
           {/* Custom / Default Badge */}
           {isCustom ? (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-ink-gold/15 text-ink-gold border border-ink-gold/30">
+            <span
+              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-ink-gold/15 text-ink-gold border border-ink-gold/30"
+              data-oid="s3vdu5n"
+            >
               Custom
             </span>
           ) : (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-wood-medium/10 text-sepia border border-wood-medium/20">
+            <span
+              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-wood-medium/10 text-sepia border border-wood-medium/20"
+              data-oid="ygloen5"
+            >
               Default
             </span>
           )}
         </div>
-        <p className="text-sm text-sepia mt-1">
+        <p className="text-sm text-sepia mt-1" data-oid="5il0tgr">
           {description}
         </p>
       </CardHeader>
 
-      <CardContent>
+      <CardContent data-oid="tu8:bd-">
         {/* Textarea */}
         <textarea
           value={displayValue}
@@ -91,45 +100,55 @@ export function PromptEditor({
             transition-all duration-200
             focus:outline-none focus:ring-1 focus:ring-ink-gold focus:border-ink-gold
             resize-y
-            ${disabled
-              ? 'opacity-50 cursor-not-allowed'
-              : 'hover:border-wood-medium'
+            ${
+              disabled
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:border-wood-medium"
             }
-            ${isCustom
-              ? 'text-wood-dark'
-              : 'text-sepia/70'
-            }
+            ${isCustom ? "text-wood-dark" : "text-sepia/70"}
           `}
+          data-oid="6v.-y:h"
         />
 
         {/* Footer: char count + reset button */}
-        <div className="mt-2 flex items-center justify-between">
+        <div
+          className="mt-2 flex items-center justify-between"
+          data-oid="9b.xmuq"
+        >
           {/* Character Count */}
-          <span className="text-xs text-sepia/70 tabular-nums">
+          <span
+            className="text-xs text-sepia/70 tabular-nums"
+            data-oid="fikd0zc"
+          >
             {charCount.toLocaleString()} characters
           </span>
 
           {/* Reset to Default */}
           {isCustom && !disabled && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" data-oid="37vuusf">
               {showResetConfirm ? (
                 <>
-                  <span className="text-xs text-ink-red flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
+                  <span
+                    className="text-xs text-ink-red flex items-center gap-1"
+                    data-oid="h9ep5lu"
+                  >
+                    <AlertCircle className="w-3 h-3" data-oid="ncbwj3k" />
                     Are you sure?
                   </span>
                   <Button
                     variant="destructive"
                     size="sm"
                     onClick={handleReset}
+                    data-oid="0:eqent"
                   >
-                    <Check className="w-3 h-3" />
+                    <Check className="w-3 h-3" data-oid="ug5gk5n" />
                     Confirm
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowResetConfirm(false)}
+                    data-oid="yk2muku"
                   >
                     Cancel
                   </Button>
@@ -140,8 +159,9 @@ export function PromptEditor({
                   size="sm"
                   onClick={() => setShowResetConfirm(true)}
                   className="text-sepia hover:text-wood-dark"
+                  data-oid="jvhf-11"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
+                  <RotateCcw className="w-3.5 h-3.5" data-oid="fu7f.nz" />
                   Reset to Default
                 </Button>
               )}

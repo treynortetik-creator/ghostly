@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { UserPlus, User, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent } from '@/components/ui/Card';
-import { AssignTeamMemberModal } from './AssignTeamMemberModal';
-import type { TeamMember } from '@/types/database';
+import { useState, useEffect, useCallback } from "react";
+import { UserPlus, User, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
+import { AssignTeamMemberModal } from "./AssignTeamMemberModal";
+import type { TeamMember } from "@/types/database";
 
 interface Assignment {
   id: string;
@@ -40,59 +40,88 @@ export function EventTeamTab({ eventId }: EventTeamTabProps) {
   }, [fetchTeam]);
 
   const handleRemove = async (assignmentId: string) => {
-    if (!confirm('Remove this team member from the event?')) return;
-    await fetch(`/api/events/${eventId}/team/${assignmentId}`, { method: 'DELETE' });
+    if (!confirm("Remove this team member from the event?")) return;
+    await fetch(`/api/events/${eventId}/team/${assignmentId}`, {
+      method: "DELETE",
+    });
     fetchTeam();
   };
 
   if (isLoading) {
-    return <div className="py-8 text-center text-sepia">Loading team...</div>;
+    return (
+      <div className="py-8 text-center text-sepia" data-oid="e042sln">
+        Loading team...
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-serif text-lg font-semibold text-wood-dark">
+    <div className="space-y-4" data-oid="m_s7ijb">
+      <div className="flex items-center justify-between" data-oid="dr73x1a">
+        <h3
+          className="font-serif text-lg font-semibold text-wood-dark"
+          data-oid="x8--6a6"
+        >
           Assigned Staff ({assignments.length})
         </h3>
         <Button
           variant="secondary"
           size="sm"
-          leftIcon={<UserPlus className="w-4 h-4" />}
+          leftIcon={<UserPlus className="w-4 h-4" data-oid="lixgnv3" />}
           onClick={() => setShowAssignModal(true)}
+          data-oid="l-f1zcy"
         >
           Assign Member
         </Button>
       </div>
 
       {assignments.length === 0 ? (
-        <div className="text-center py-8 text-sepia">
-          <p className="font-serif">No staff assigned to this affair</p>
-          <p className="text-sm mt-1">Assign team members to track who&apos;s attending.</p>
+        <div className="text-center py-8 text-sepia" data-oid="bsj-yun">
+          <p className="font-serif" data-oid="82rvft2">
+            No staff assigned to this affair
+          </p>
+          <p className="text-sm mt-1" data-oid="oi_yo4k">
+            Assign team members to track who&apos;s attending.
+          </p>
         </div>
       ) : (
-        <div className="grid gap-3 md:grid-cols-2">
-          {assignments.map(a => (
-            <Card key={a.id}>
-              <CardContent className="py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-wood-medium/15 flex items-center justify-center">
-                    <User className="w-4 h-4 text-wood-medium" />
+        <div className="grid gap-3 md:grid-cols-2" data-oid="d:ufylf">
+          {assignments.map((a) => (
+            <Card key={a.id} data-oid="s6v.kvw">
+              <CardContent
+                className="py-3 flex items-center justify-between"
+                data-oid="kshopqr"
+              >
+                <div className="flex items-center gap-3" data-oid="waluk-u">
+                  <div
+                    className="w-9 h-9 rounded-full bg-wood-medium/15 flex items-center justify-center"
+                    data-oid="::xzaut"
+                  >
+                    <User
+                      className="w-4 h-4 text-wood-medium"
+                      data-oid="30xj_-s"
+                    />
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-wood-dark">
-                      {a.team_member?.name || 'Unknown'}
+                  <div data-oid="2vkeueq">
+                    <p
+                      className="text-sm font-medium text-wood-dark"
+                      data-oid="xngr-79"
+                    >
+                      {a.team_member?.name || "Unknown"}
                     </p>
-                    <p className="text-xs text-sepia">
-                      {a.event_role || a.team_member?.default_role || 'No role assigned'}
+                    <p className="text-xs text-sepia" data-oid="l4jwkz6">
+                      {a.event_role ||
+                        a.team_member?.default_role ||
+                        "No role assigned"}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => handleRemove(a.id)}
                   className="text-sepia/50 hover:text-ink-red transition-colors"
+                  data-oid="rx5bxtt"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-4 h-4" data-oid="1rqcai:" />
                 </button>
               </CardContent>
             </Card>
@@ -103,12 +132,13 @@ export function EventTeamTab({ eventId }: EventTeamTabProps) {
       {showAssignModal && (
         <AssignTeamMemberModal
           eventId={eventId}
-          existingMemberIds={assignments.map(a => a.team_member_id)}
+          existingMemberIds={assignments.map((a) => a.team_member_id)}
           onAssigned={() => {
             setShowAssignModal(false);
             fetchTeam();
           }}
           onCancel={() => setShowAssignModal(false)}
+          data-oid="u1sm8cj"
         />
       )}
     </div>

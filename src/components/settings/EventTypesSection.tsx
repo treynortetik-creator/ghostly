@@ -1,11 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { Plus, MoreVertical, Pencil, Archive, Layers } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
-import { EventTypeForm, EventTypeFormData } from './EventTypeForm';
-import type { EventTypeWithTotals } from '@/types/database';
+import { useState, useEffect, useCallback } from "react";
+import { Plus, MoreVertical, Pencil, Archive, Layers } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/Card";
+import { EventTypeForm, EventTypeFormData } from "./EventTypeForm";
+import type { EventTypeWithTotals } from "@/types/database";
 
 /* ============================================
    EVENT TYPES SECTION COMPONENT
@@ -21,12 +27,17 @@ interface EventTypesSectionProps {
   disabled?: boolean;
 }
 
-export function EventTypesSection({ fiscalYearId, disabled = false }: EventTypesSectionProps) {
+export function EventTypesSection({
+  fiscalYearId,
+  disabled = false,
+}: EventTypesSectionProps) {
   const [eventTypes, setEventTypes] = useState<EventTypeWithTotals[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [editingType, setEditingType] = useState<EventTypeWithTotals | null>(null);
+  const [editingType, setEditingType] = useState<EventTypeWithTotals | null>(
+    null,
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
@@ -40,12 +51,16 @@ export function EventTypesSection({ fiscalYearId, disabled = false }: EventTypes
     setError(null);
 
     try {
-      const response = await fetch(`/api/event-types?fiscal_year_id=${fiscalYearId}`);
-      if (!response.ok) throw new Error('Failed to fetch event types');
+      const response = await fetch(
+        `/api/event-types?fiscal_year_id=${fiscalYearId}`,
+      );
+      if (!response.ok) throw new Error("Failed to fetch event types");
       const data = await response.json();
       setEventTypes(data.event_types || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load event types');
+      setError(
+        err instanceof Error ? err.message : "Failed to load event types",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -61,9 +76,9 @@ export function EventTypesSection({ fiscalYearId, disabled = false }: EventTypes
   const handleCreate = async (data: EventTypeFormData) => {
     setIsSaving(true);
     try {
-      const response = await fetch('/api/event-types', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/event-types", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...data,
           fiscal_year_id: fiscalYearId,
@@ -72,13 +87,13 @@ export function EventTypesSection({ fiscalYearId, disabled = false }: EventTypes
 
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.error || 'Failed to create event type');
+        throw new Error(err.error || "Failed to create event type");
       }
 
       setShowForm(false);
       fetchEventTypes();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to create event type');
+      alert(err instanceof Error ? err.message : "Failed to create event type");
     } finally {
       setIsSaving(false);
     }
@@ -93,20 +108,20 @@ export function EventTypesSection({ fiscalYearId, disabled = false }: EventTypes
 
     try {
       const response = await fetch(`/api/event-types/${editingType.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.error || 'Failed to update event type');
+        throw new Error(err.error || "Failed to update event type");
       }
 
       setEditingType(null);
       fetchEventTypes();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to update event type');
+      alert(err instanceof Error ? err.message : "Failed to update event type");
     } finally {
       setIsSaving(false);
     }
@@ -116,23 +131,29 @@ export function EventTypesSection({ fiscalYearId, disabled = false }: EventTypes
    * Handle archiving an event type
    */
   const handleArchive = async (id: string) => {
-    if (!confirm('Archive this event type? It will no longer appear in dropdowns but existing events will keep their association.')) {
+    if (
+      !confirm(
+        "Archive this event type? It will no longer appear in dropdowns but existing events will keep their association.",
+      )
+    ) {
       return;
     }
 
     try {
       const response = await fetch(`/api/event-types/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.error || 'Failed to archive event type');
+        throw new Error(err.error || "Failed to archive event type");
       }
 
       fetchEventTypes();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to archive event type');
+      alert(
+        err instanceof Error ? err.message : "Failed to archive event type",
+      );
     }
     setOpenMenu(null);
   };
@@ -141,9 +162,9 @@ export function EventTypesSection({ fiscalYearId, disabled = false }: EventTypes
    * Format currency for display
    */
   const formatCurrency = (value: number) => {
-    return value.toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return value.toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     });
@@ -154,12 +175,12 @@ export function EventTypesSection({ fiscalYearId, disabled = false }: EventTypes
     const handleClickOutside = (e: MouseEvent) => {
       // Only close if clicking outside the menu
       const target = e.target as HTMLElement;
-      if (!target.closest('[data-menu-container]')) {
+      if (!target.closest("[data-menu-container]")) {
         setOpenMenu(null);
       }
     };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
   // Show create form
@@ -170,6 +191,7 @@ export function EventTypesSection({ fiscalYearId, disabled = false }: EventTypes
         onCancel={() => setShowForm(false)}
         isLoading={isSaving}
         mode="create"
+        data-oid="s55nt_5"
       />
     );
   }
@@ -183,22 +205,27 @@ export function EventTypesSection({ fiscalYearId, disabled = false }: EventTypes
         onCancel={() => setEditingType(null)}
         isLoading={isSaving}
         mode="edit"
+        data-oid="rp2y:4-"
       />
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-md bg-ink-gold/10 text-ink-gold">
-              <Layers className="w-5 h-5" />
+    <Card data-oid="x26aqn1">
+      <CardHeader data-oid="qgczujg">
+        <div className="flex items-center justify-between" data-oid="x7d5.b2">
+          <div className="flex items-center gap-3" data-oid="chh78wg">
+            <div
+              className="p-2 rounded-md bg-ink-gold/10 text-ink-gold"
+              data-oid="ugojhwx"
+            >
+              <Layers className="w-5 h-5" data-oid="d_bheg6" />
             </div>
-            <div>
-              <CardTitle>Event Type Budgets</CardTitle>
-              <CardDescription>
-                Budget allocations by event category for the selected fiscal year
+            <div data-oid="7ydi38i">
+              <CardTitle data-oid="zoiszqr">Event Type Budgets</CardTitle>
+              <CardDescription data-oid="7a49ih0">
+                Budget allocations by event category for the selected fiscal
+                year
               </CardDescription>
             </div>
           </div>
@@ -207,56 +234,79 @@ export function EventTypesSection({ fiscalYearId, disabled = false }: EventTypes
             size="sm"
             onClick={() => setShowForm(true)}
             disabled={disabled || !fiscalYearId}
-            leftIcon={<Plus className="w-4 h-4" />}
+            leftIcon={<Plus className="w-4 h-4" data-oid="cef0rtw" />}
+            data-oid="_5_2-hn"
           >
             Add Type
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent data-oid="wv7nmi5">
         {isLoading && (
-          <div className="text-center py-8 text-sepia">Loading event types...</div>
+          <div className="text-center py-8 text-sepia" data-oid="89-j-rk">
+            Loading event types...
+          </div>
         )}
 
         {error && (
-          <div className="text-center py-8 text-ink-red">{error}</div>
+          <div className="text-center py-8 text-ink-red" data-oid="lsjz:p2">
+            {error}
+          </div>
         )}
 
         {!isLoading && !error && eventTypes.length === 0 && (
-          <div className="text-center py-8 text-sepia">
+          <div className="text-center py-8 text-sepia" data-oid="4n2q7at">
             No event types configured for this fiscal year.
           </div>
         )}
 
         {!isLoading && !error && eventTypes.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-2" data-oid="c8-m5ck">
             {eventTypes.map((et) => (
               <div
                 key={et.id}
                 className="flex items-center gap-3 p-3 rounded-lg bg-parchment border border-wood-medium/20 hover:border-wood-medium/40 transition-colors group"
+                data-oid="q58.wpr"
               >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-wood-dark">{et.name}</span>
-                    <span className="text-xs text-sepia">
-                      ({et.event_count} event{et.event_count !== 1 ? 's' : ''})
+                <div className="flex-1 min-w-0" data-oid="tc5.5ho">
+                  <div className="flex items-center gap-2" data-oid="r53ylp.">
+                    <span
+                      className="font-medium text-wood-dark"
+                      data-oid="2x9wea8"
+                    >
+                      {et.name}
+                    </span>
+                    <span className="text-xs text-sepia" data-oid="wjfwerf">
+                      ({et.event_count} event{et.event_count !== 1 ? "s" : ""})
                     </span>
                   </div>
                   {et.description && (
-                    <p className="text-xs text-sepia truncate">{et.description}</p>
+                    <p
+                      className="text-xs text-sepia truncate"
+                      data-oid="eax95_8"
+                    >
+                      {et.description}
+                    </p>
                   )}
                 </div>
 
-                <div className="text-right">
-                  <p className="font-medium text-ink-gold tabular-nums">
+                <div className="text-right" data-oid="215i0fe">
+                  <p
+                    className="font-medium text-ink-gold tabular-nums"
+                    data-oid="5va0_nw"
+                  >
                     {formatCurrency(et.budget_amount)}
                   </p>
-                  <p className="text-xs text-sepia">
+                  <p className="text-xs text-sepia" data-oid="ive67h8">
                     {formatCurrency(et.actual_spent)} spent
                   </p>
                 </div>
 
-                <div className="relative" data-menu-container>
+                <div
+                  className="relative"
+                  data-menu-container
+                  data-oid="qhbb_un"
+                >
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -267,14 +317,16 @@ export function EventTypesSection({ fiscalYearId, disabled = false }: EventTypes
                     aria-expanded={openMenu === et.id}
                     aria-haspopup="true"
                     aria-label={`Actions for ${et.name}`}
+                    data-oid="5qo88i9"
                   >
-                    <MoreVertical className="w-4 h-4" />
+                    <MoreVertical className="w-4 h-4" data-oid="dp7l8ii" />
                   </button>
 
                   {openMenu === et.id && (
                     <div
                       role="menu"
                       className="absolute right-0 top-full mt-1 w-36 bg-parchment border border-wood-medium/20 rounded-lg shadow-lg z-50"
+                      data-oid="mps8.8a"
                     >
                       <button
                         role="menuitem"
@@ -283,16 +335,18 @@ export function EventTypesSection({ fiscalYearId, disabled = false }: EventTypes
                           setOpenMenu(null);
                         }}
                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-wood-dark hover:bg-wood-light/30 rounded-t-lg transition-colors"
+                        data-oid="ln-d-ya"
                       >
-                        <Pencil className="w-4 h-4" />
+                        <Pencil className="w-4 h-4" data-oid="jmrkxhu" />
                         Edit
                       </button>
                       <button
                         role="menuitem"
                         onClick={() => handleArchive(et.id)}
                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink-red hover:bg-ink-red/10 rounded-b-lg transition-colors"
+                        data-oid="me4pro5"
                       >
-                        <Archive className="w-4 h-4" />
+                        <Archive className="w-4 h-4" data-oid="9fxc06:" />
                         Archive
                       </button>
                     </div>

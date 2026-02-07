@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Calendar, FolderOpen, Sparkles, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useState, useRef, useEffect } from "react";
+import { ChevronDown, Calendar, FolderOpen, Sparkles, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 /* ============================================
    ASSIGNMENT SELECTOR COMPONENT
@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 export interface AssignmentOption {
   id: string;
   name: string;
-  type: 'event' | 'category';
+  type: "event" | "category";
   eventType?: string;
   quarter?: string;
 }
@@ -37,41 +37,44 @@ export function AssignmentSelector({
   onChange,
   aiSuggested = false,
   aiConfidence,
-  placeholder = 'Select assignment...',
+  placeholder = "Select assignment...",
   disabled = false,
   className,
 }: AssignmentSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
-        setSearchTerm('');
+        setSearchTerm("");
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Filter options based on search term
   const filteredOptions = options.filter((option) =>
-    option.name.toLowerCase().includes(searchTerm.toLowerCase())
+    option.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   // Group options by type
-  const events = filteredOptions.filter((o) => o.type === 'event');
-  const categories = filteredOptions.filter((o) => o.type === 'category');
+  const events = filteredOptions.filter((o) => o.type === "event");
+  const categories = filteredOptions.filter((o) => o.type === "category");
 
   const handleSelect = (option: AssignmentOption) => {
     onChange(option);
     setIsOpen(false);
-    setSearchTerm('');
+    setSearchTerm("");
   };
 
   const handleClear = (e: React.MouseEvent) => {
@@ -80,48 +83,62 @@ export function AssignmentSelector({
   };
 
   const getConfidenceColor = (confidence?: number) => {
-    if (!confidence) return 'text-sepia';
-    if (confidence >= 0.8) return 'text-ink-green';
-    if (confidence >= 0.5) return 'text-ink-gold';
-    return 'text-ink-red';
+    if (!confidence) return "text-sepia";
+    if (confidence >= 0.8) return "text-ink-green";
+    if (confidence >= 0.5) return "text-ink-gold";
+    return "text-ink-red";
   };
 
   const getConfidenceLabel = (confidence?: number) => {
-    if (!confidence) return '';
-    if (confidence >= 0.8) return 'High';
-    if (confidence >= 0.5) return 'Medium';
-    return 'Low';
+    if (!confidence) return "";
+    if (confidence >= 0.8) return "High";
+    if (confidence >= 0.5) return "Medium";
+    return "Low";
   };
 
   return (
-    <div ref={containerRef} className={cn('relative', className)}>
+    <div
+      ref={containerRef}
+      className={cn("relative", className)}
+      data-oid="4r3o8c:"
+    >
       {/* Selected Value Display / Trigger */}
       <button
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
         className={cn(
-          'w-full flex items-center gap-2 px-3 py-2 text-left text-sm',
-          'bg-parchment border border-wood-medium/40 rounded-md',
-          'transition-all duration-200',
-          'hover:border-wood-medium focus:outline-none focus:ring-2 focus:ring-ink-gold/30',
-          disabled && 'opacity-50 cursor-not-allowed',
-          isOpen && 'ring-2 ring-ink-gold/30 border-wood-medium'
+          "w-full flex items-center gap-2 px-3 py-2 text-left text-sm",
+          "bg-parchment border border-wood-medium/40 rounded-md",
+          "transition-all duration-200",
+          "hover:border-wood-medium focus:outline-none focus:ring-2 focus:ring-ink-gold/30",
+          disabled && "opacity-50 cursor-not-allowed",
+          isOpen && "ring-2 ring-ink-gold/30 border-wood-medium",
         )}
+        data-oid="z5qupg1"
       >
         {/* Icon */}
         {value ? (
-          value.type === 'event' ? (
-            <Calendar className="w-4 h-4 text-ink-gold shrink-0" />
+          value.type === "event" ? (
+            <Calendar
+              className="w-4 h-4 text-ink-gold shrink-0"
+              data-oid="jofsl-c"
+            />
           ) : (
-            <FolderOpen className="w-4 h-4 text-ink-green shrink-0" />
+            <FolderOpen
+              className="w-4 h-4 text-ink-green shrink-0"
+              data-oid="e0.w27b"
+            />
           )
         ) : (
-          <span className="w-4 h-4" />
+          <span className="w-4 h-4" data-oid="y4uy9kp" />
         )}
 
         {/* Value Display */}
-        <span className={cn('flex-1 truncate', !value && 'text-sepia/60')}>
+        <span
+          className={cn("flex-1 truncate", !value && "text-sepia/60")}
+          data-oid="3uyu63y"
+        >
           {value ? value.name : placeholder}
         </span>
 
@@ -129,15 +146,18 @@ export function AssignmentSelector({
         {aiSuggested && value && (
           <span
             className={cn(
-              'flex items-center gap-1 px-1.5 py-0.5 text-xs rounded',
-              'bg-ink-gold/10 border border-ink-gold/30',
-              getConfidenceColor(aiConfidence)
+              "flex items-center gap-1 px-1.5 py-0.5 text-xs rounded",
+              "bg-ink-gold/10 border border-ink-gold/30",
+              getConfidenceColor(aiConfidence),
             )}
-            title={`AI suggested with ${aiConfidence ? Math.round(aiConfidence * 100) : '?'}% confidence`}
+            title={`AI suggested with ${aiConfidence ? Math.round(aiConfidence * 100) : "?"}% confidence`}
+            data-oid="r-6gdhe"
           >
-            <Sparkles className="w-3 h-3" />
+            <Sparkles className="w-3 h-3" data-oid="-1b5jws" />
             {aiConfidence && (
-              <span className="font-medium">{getConfidenceLabel(aiConfidence)}</span>
+              <span className="font-medium" data-oid="agerw77">
+                {getConfidenceLabel(aiConfidence)}
+              </span>
             )}
           </span>
         )}
@@ -147,17 +167,19 @@ export function AssignmentSelector({
           <button
             onClick={handleClear}
             className="p-0.5 text-sepia/60 hover:text-ink-red transition-colors"
+            data-oid="t0w202-"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3.5 h-3.5" data-oid="zodpv_l" />
           </button>
         )}
 
         {/* Chevron */}
         <ChevronDown
           className={cn(
-            'w-4 h-4 text-sepia transition-transform',
-            isOpen && 'rotate-180'
+            "w-4 h-4 text-sepia transition-transform",
+            isOpen && "rotate-180",
           )}
+          data-oid="4-bsjnb"
         />
       </button>
 
@@ -165,13 +187,17 @@ export function AssignmentSelector({
       {isOpen && (
         <div
           className={cn(
-            'absolute z-50 w-full mt-1 py-1',
-            'bg-parchment-dark border border-wood-medium/40 rounded-md shadow-lg',
-            'max-h-64 overflow-hidden'
+            "absolute z-50 w-full mt-1 py-1",
+            "bg-parchment-dark border border-wood-medium/40 rounded-md shadow-lg",
+            "max-h-64 overflow-hidden",
           )}
+          data-oid="nai.vkx"
         >
           {/* Search Input */}
-          <div className="px-2 pb-2 border-b border-wood-medium/20">
+          <div
+            className="px-2 pb-2 border-b border-wood-medium/20"
+            data-oid="qjdn6po"
+          >
             <input
               ref={inputRef}
               type="text"
@@ -179,20 +205,24 @@ export function AssignmentSelector({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className={cn(
-                'w-full px-2 py-1.5 text-sm',
-                'bg-parchment border border-wood-medium/30 rounded',
-                'focus:outline-none focus:ring-1 focus:ring-ink-gold/30'
+                "w-full px-2 py-1.5 text-sm",
+                "bg-parchment border border-wood-medium/30 rounded",
+                "focus:outline-none focus:ring-1 focus:ring-ink-gold/30",
               )}
               autoFocus
+              data-oid="3cs.b1w"
             />
           </div>
 
           {/* Options List */}
-          <div className="overflow-y-auto max-h-48">
+          <div className="overflow-y-auto max-h-48" data-oid="xbibnfv">
             {/* Events Group */}
             {events.length > 0 && (
-              <div>
-                <div className="px-3 py-1.5 text-xs font-semibold text-sepia/70 uppercase tracking-wider bg-wood-medium/5">
+              <div data-oid="agdd.u8">
+                <div
+                  className="px-3 py-1.5 text-xs font-semibold text-sepia/70 uppercase tracking-wider bg-wood-medium/5"
+                  data-oid="4zwq-ol"
+                >
                   Events
                 </div>
                 {events.map((option) => (
@@ -200,15 +230,26 @@ export function AssignmentSelector({
                     key={option.id}
                     onClick={() => handleSelect(option)}
                     className={cn(
-                      'w-full flex items-center gap-2 px-3 py-2 text-left text-sm',
-                      'hover:bg-ink-gold/10 transition-colors',
-                      value?.id === option.id && 'bg-ink-gold/15'
+                      "w-full flex items-center gap-2 px-3 py-2 text-left text-sm",
+                      "hover:bg-ink-gold/10 transition-colors",
+                      value?.id === option.id && "bg-ink-gold/15",
                     )}
+                    data-oid="a34do.n"
                   >
-                    <Calendar className="w-4 h-4 text-ink-gold shrink-0" />
-                    <span className="flex-1 truncate">{option.name}</span>
+                    <Calendar
+                      className="w-4 h-4 text-ink-gold shrink-0"
+                      data-oid="ng88zsq"
+                    />
+                    <span className="flex-1 truncate" data-oid="9yrnpy8">
+                      {option.name}
+                    </span>
                     {option.quarter && (
-                      <span className="text-xs text-sepia/60">{option.quarter}</span>
+                      <span
+                        className="text-xs text-sepia/60"
+                        data-oid="q6jwipd"
+                      >
+                        {option.quarter}
+                      </span>
                     )}
                   </button>
                 ))}
@@ -217,8 +258,11 @@ export function AssignmentSelector({
 
             {/* Categories Group */}
             {categories.length > 0 && (
-              <div>
-                <div className="px-3 py-1.5 text-xs font-semibold text-sepia/70 uppercase tracking-wider bg-wood-medium/5">
+              <div data-oid="3icdzxw">
+                <div
+                  className="px-3 py-1.5 text-xs font-semibold text-sepia/70 uppercase tracking-wider bg-wood-medium/5"
+                  data-oid="c10ygjb"
+                >
                   Budget Categories
                 </div>
                 {categories.map((option) => (
@@ -226,13 +270,19 @@ export function AssignmentSelector({
                     key={option.id}
                     onClick={() => handleSelect(option)}
                     className={cn(
-                      'w-full flex items-center gap-2 px-3 py-2 text-left text-sm',
-                      'hover:bg-ink-green/10 transition-colors',
-                      value?.id === option.id && 'bg-ink-green/15'
+                      "w-full flex items-center gap-2 px-3 py-2 text-left text-sm",
+                      "hover:bg-ink-green/10 transition-colors",
+                      value?.id === option.id && "bg-ink-green/15",
                     )}
+                    data-oid="9pdq04."
                   >
-                    <FolderOpen className="w-4 h-4 text-ink-green shrink-0" />
-                    <span className="flex-1 truncate">{option.name}</span>
+                    <FolderOpen
+                      className="w-4 h-4 text-ink-green shrink-0"
+                      data-oid="z67znb:"
+                    />
+                    <span className="flex-1 truncate" data-oid="kzsqgp3">
+                      {option.name}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -240,7 +290,10 @@ export function AssignmentSelector({
 
             {/* Empty State */}
             {filteredOptions.length === 0 && (
-              <div className="px-3 py-4 text-center text-sm text-sepia/60">
+              <div
+                className="px-3 py-4 text-center text-sm text-sepia/60"
+                data-oid="jbr0zxq"
+              >
                 No matching options found
               </div>
             )}

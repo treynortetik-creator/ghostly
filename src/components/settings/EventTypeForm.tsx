@@ -1,9 +1,15 @@
-'use client';
+"use client";
 
-import { useState, FormEvent } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/Card';
-import type { EventTypeRecord } from '@/types/database';
+import { useState, FormEvent } from "react";
+import { Button } from "@/components/ui/Button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/Card";
+import type { EventTypeRecord } from "@/types/database";
 
 /* ============================================
    EVENT TYPE FORM COMPONENT
@@ -29,17 +35,17 @@ export interface EventTypeFormProps {
   /** Loading state for submit button */
   isLoading?: boolean;
   /** Form mode - create or edit */
-  mode?: 'create' | 'edit';
+  mode?: "create" | "edit";
 }
 
 /**
  * Sanitize currency input - allows only numbers and single decimal point
  */
 const sanitizeCurrency = (value: string): string => {
-  const cleaned = value.replace(/[^0-9.]/g, '');
-  const parts = cleaned.split('.');
+  const cleaned = value.replace(/[^0-9.]/g, "");
+  const parts = cleaned.split(".");
   if (parts.length > 2) {
-    return parts[0] + '.' + parts.slice(1).join('');
+    return parts[0] + "." + parts.slice(1).join("");
   }
   return cleaned;
 };
@@ -49,15 +55,17 @@ export function EventTypeForm({
   onSubmit,
   onCancel,
   isLoading = false,
-  mode = 'create',
+  mode = "create",
 }: EventTypeFormProps) {
   const [formData, setFormData] = useState<EventTypeFormData>({
-    name: eventType?.name || '',
-    budget_amount: eventType?.budget_amount?.toString() || '0',
-    description: eventType?.description || '',
+    name: eventType?.name || "",
+    budget_amount: eventType?.budget_amount?.toString() || "0",
+    description: eventType?.description || "",
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof EventTypeFormData, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof EventTypeFormData, string>>
+  >({});
 
   /**
    * Validate form data
@@ -66,12 +74,12 @@ export function EventTypeForm({
     const newErrors: Partial<Record<keyof EventTypeFormData, string>> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = "Name is required";
     }
 
     const budget = parseFloat(formData.budget_amount);
     if (isNaN(budget) || budget < 0) {
-      newErrors.budget_amount = 'Budget must be zero or positive';
+      newErrors.budget_amount = "Budget must be zero or positive";
     }
 
     setErrors(newErrors);
@@ -91,9 +99,9 @@ export function EventTypeForm({
    * Handle field change with error clearing
    */
   const handleChange = (field: keyof EventTypeFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
 
@@ -107,78 +115,112 @@ export function EventTypeForm({
     disabled:opacity-50 disabled:cursor-not-allowed
   `;
 
-  const labelClasses = 'block text-sm font-medium text-wood-dark mb-1.5';
-  const errorClasses = 'text-xs text-ink-red mt-1';
+  const labelClasses = "block text-sm font-medium text-wood-dark mb-1.5";
+  const errorClasses = "text-xs text-ink-red mt-1";
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          {mode === 'create' ? 'Add Event Type' : 'Edit Event Type'}
+    <Card data-oid="q1unkgz">
+      <CardHeader data-oid="lhyv2ns">
+        <CardTitle data-oid="psd-9e_">
+          {mode === "create" ? "Add Event Type" : "Edit Event Type"}
         </CardTitle>
       </CardHeader>
 
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
+      <form onSubmit={handleSubmit} data-oid="3wl5nz3">
+        <CardContent className="space-y-4" data-oid="tb80uws">
           {/* Name Field */}
-          <div>
-            <label htmlFor="name" className={labelClasses}>
-              Name <span className="text-ink-red">*</span>
+          <div data-oid="i5bd0qh">
+            <label htmlFor="name" className={labelClasses} data-oid="fnw_2dg">
+              Name{" "}
+              <span className="text-ink-red" data-oid="h6h6se.">
+                *
+              </span>
             </label>
             <input
               type="text"
               id="name"
               value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
+              onChange={(e) => handleChange("name", e.target.value)}
               className={inputClasses}
               placeholder="e.g., Executive"
               disabled={isLoading}
+              data-oid="9w9r1ux"
             />
-            {errors.name && <p className={errorClasses}>{errors.name}</p>}
+
+            {errors.name && (
+              <p className={errorClasses} data-oid="a-gu3ih">
+                {errors.name}
+              </p>
+            )}
           </div>
 
           {/* Budget Amount Field */}
-          <div>
-            <label htmlFor="budget_amount" className={labelClasses}>
+          <div data-oid="yk7cxyi">
+            <label
+              htmlFor="budget_amount"
+              className={labelClasses}
+              data-oid="7q8qt:n"
+            >
               Budget Amount
             </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sepia">$</span>
+            <div className="relative" data-oid="3:_1hwj">
+              <span
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-sepia"
+                data-oid="ypssh1q"
+              >
+                $
+              </span>
               <input
                 type="text"
                 id="budget_amount"
                 value={formData.budget_amount}
-                onChange={(e) => handleChange('budget_amount', sanitizeCurrency(e.target.value))}
+                onChange={(e) =>
+                  handleChange(
+                    "budget_amount",
+                    sanitizeCurrency(e.target.value),
+                  )
+                }
                 className={`${inputClasses} pl-7`}
                 placeholder="0.00"
                 disabled={isLoading}
+                data-oid="omt_end"
               />
             </div>
-            {errors.budget_amount && <p className={errorClasses}>{errors.budget_amount}</p>}
+            {errors.budget_amount && (
+              <p className={errorClasses} data-oid="64m7act">
+                {errors.budget_amount}
+              </p>
+            )}
           </div>
 
           {/* Description Field */}
-          <div>
-            <label htmlFor="description" className={labelClasses}>
+          <div data-oid="68.gy64">
+            <label
+              htmlFor="description"
+              className={labelClasses}
+              data-oid="ooavb0r"
+            >
               Description
             </label>
             <textarea
               id="description"
               value={formData.description}
-              onChange={(e) => handleChange('description', e.target.value)}
+              onChange={(e) => handleChange("description", e.target.value)}
               className={`${inputClasses} min-h-[80px] resize-y`}
               placeholder="Brief description of this event type..."
               disabled={isLoading}
+              data-oid="tzx0vhq"
             />
           </div>
         </CardContent>
 
-        <CardFooter className="flex justify-end gap-3">
+        <CardFooter className="flex justify-end gap-3" data-oid="4f0tbus">
           <Button
             type="button"
             variant="secondary"
             onClick={onCancel}
             disabled={isLoading}
+            data-oid="3rz_sbm"
           >
             Cancel
           </Button>
@@ -186,8 +228,9 @@ export function EventTypeForm({
             type="submit"
             variant="primary"
             isLoading={isLoading}
+            data-oid="obc6t-6"
           >
-            {mode === 'create' ? 'Add Type' : 'Save Changes'}
+            {mode === "create" ? "Add Type" : "Save Changes"}
           </Button>
         </CardFooter>
       </form>

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Filter, X } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import type { QuarterType, EventTypeRecord } from '@/types/database';
+import { useState, useEffect } from "react";
+import { Filter, X } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import type { QuarterType, EventTypeRecord } from "@/types/database";
 
 /* ============================================
    EVENT FILTERS COMPONENT
@@ -14,20 +14,20 @@ import type { QuarterType, EventTypeRecord } from '@/types/database';
 
 export interface EventFiltersProps {
   /** Currently selected event type ID filter */
-  selectedTypeId: string | 'all';
+  selectedTypeId: string | "all";
   /** Currently selected quarter filter */
-  selectedQuarter: QuarterType | 'all';
+  selectedQuarter: QuarterType | "all";
   /** Called when event type filter changes */
-  onTypeChange: (typeId: string | 'all') => void;
+  onTypeChange: (typeId: string | "all") => void;
   /** Called when quarter filter changes */
-  onQuarterChange: (quarter: QuarterType | 'all') => void;
+  onQuarterChange: (quarter: QuarterType | "all") => void;
   /** Called when filters are cleared */
   onClearFilters: () => void;
   /** Number of active filters */
   activeFilterCount?: number;
 }
 
-const quarters: QuarterType[] = ['Q1', 'Q2', 'Q3', 'Q4', 'TBD'];
+const quarters: QuarterType[] = ["Q1", "Q2", "Q3", "Q4", "TBD"];
 
 export function EventFilters({
   selectedTypeId,
@@ -44,7 +44,7 @@ export function EventFilters({
     const fetchEventTypes = async () => {
       try {
         // Fetch current fiscal year from settings
-        const settingsRes = await fetch('/api/settings');
+        const settingsRes = await fetch("/api/settings");
         let fyId: string | undefined;
         if (settingsRes.ok) {
           const settingsData = await settingsRes.json();
@@ -59,7 +59,7 @@ export function EventFilters({
           }
         }
       } catch (err) {
-        console.error('Failed to load event types:', err);
+        console.error("Failed to load event types:", err);
       } finally {
         setLoadingTypes(false);
       }
@@ -82,26 +82,33 @@ export function EventFilters({
     pr-8
   `;
 
-  const hasActiveFilters = selectedTypeId !== 'all' || selectedQuarter !== 'all';
+  const hasActiveFilters =
+    selectedTypeId !== "all" || selectedQuarter !== "all";
 
   // Get the selected event type name for display
-  const selectedTypeName = selectedTypeId !== 'all'
-    ? eventTypes.find(t => t.id === selectedTypeId)?.name || 'Unknown'
-    : null;
+  const selectedTypeName =
+    selectedTypeId !== "all"
+      ? eventTypes.find((t) => t.id === selectedTypeId)?.name || "Unknown"
+      : null;
 
   return (
-    <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+    <div
+      className="flex flex-col sm:flex-row gap-3 items-start sm:items-center"
+      data-oid="7ul_yfa"
+    >
       {/* Filter icon and label */}
-      <div className="flex items-center gap-2 text-sepia">
-        <Filter className="w-4 h-4" />
-        <span className="text-sm font-medium">Filters:</span>
+      <div className="flex items-center gap-2 text-sepia" data-oid="o7.an.n">
+        <Filter className="w-4 h-4" data-oid="3xd_49l" />
+        <span className="text-sm font-medium" data-oid="l8b3vjm">
+          Filters:
+        </span>
       </div>
 
       {/* Filter dropdowns */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3" data-oid="21zlutu">
         {/* Event Type Filter */}
-        <div className="flex items-center gap-2">
-          <label htmlFor="filter-type" className="sr-only">
+        <div className="flex items-center gap-2" data-oid="a3kkqn7">
+          <label htmlFor="filter-type" className="sr-only" data-oid="9ox5.9f">
             Filter by Event Type
           </label>
           <select
@@ -110,10 +117,13 @@ export function EventFilters({
             onChange={(e) => onTypeChange(e.target.value)}
             className={selectClasses}
             disabled={loadingTypes}
+            data-oid="9koz0qs"
           >
-            <option value="all">{loadingTypes ? 'Loading...' : 'All Types'}</option>
-            {eventTypes.map(type => (
-              <option key={type.id} value={type.id}>
+            <option value="all" data-oid="_-wp353">
+              {loadingTypes ? "Loading..." : "All Types"}
+            </option>
+            {eventTypes.map((type) => (
+              <option key={type.id} value={type.id} data-oid="mqxhe9l">
                 {type.name}
               </option>
             ))}
@@ -121,19 +131,28 @@ export function EventFilters({
         </div>
 
         {/* Quarter Filter */}
-        <div className="flex items-center gap-2">
-          <label htmlFor="filter-quarter" className="sr-only">
+        <div className="flex items-center gap-2" data-oid="62-h_l:">
+          <label
+            htmlFor="filter-quarter"
+            className="sr-only"
+            data-oid="sdw265b"
+          >
             Filter by Quarter
           </label>
           <select
             id="filter-quarter"
             value={selectedQuarter}
-            onChange={(e) => onQuarterChange(e.target.value as QuarterType | 'all')}
+            onChange={(e) =>
+              onQuarterChange(e.target.value as QuarterType | "all")
+            }
             className={selectClasses}
+            data-oid="wz3i5c_"
           >
-            <option value="all">All Quarters</option>
-            {quarters.map(q => (
-              <option key={q} value={q}>
+            <option value="all" data-oid="lrekq0u">
+              All Quarters
+            </option>
+            {quarters.map((q) => (
+              <option key={q} value={q} data-oid="vwro_bs">
                 {q}
               </option>
             ))}
@@ -147,11 +166,15 @@ export function EventFilters({
             size="sm"
             onClick={onClearFilters}
             className="text-sepia hover:text-ink-red"
+            data-oid="cxh78g9"
           >
-            <X className="w-4 h-4 mr-1" />
+            <X className="w-4 h-4 mr-1" data-oid="sx.gjpq" />
             Clear
             {activeFilterCount > 0 && (
-              <span className="ml-1 px-1.5 py-0.5 text-xs bg-ink-red/10 text-ink-red rounded">
+              <span
+                className="ml-1 px-1.5 py-0.5 text-xs bg-ink-red/10 text-ink-red rounded"
+                data-oid="28:h0xq"
+              >
                 {activeFilterCount}
               </span>
             )}
@@ -169,9 +192,9 @@ export function EventFilters({
    ============================================ */
 
 export interface FilterPillsProps {
-  selectedTypeId: string | 'all';
+  selectedTypeId: string | "all";
   selectedTypeName: string | null;
-  selectedQuarter: QuarterType | 'all';
+  selectedQuarter: QuarterType | "all";
   onRemoveType: () => void;
   onRemoveQuarter: () => void;
 }
@@ -183,34 +206,42 @@ export function FilterPills({
   onRemoveType,
   onRemoveQuarter,
 }: FilterPillsProps) {
-  if (selectedTypeId === 'all' && selectedQuarter === 'all') {
+  if (selectedTypeId === "all" && selectedQuarter === "all") {
     return null;
   }
 
   return (
-    <div className="flex flex-wrap gap-2 mt-3">
-      {selectedTypeId !== 'all' && selectedTypeName && (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-wood-medium/10 text-sm text-wood-dark border border-wood-medium/20">
+    <div className="flex flex-wrap gap-2 mt-3" data-oid="4chdgzv">
+      {selectedTypeId !== "all" && selectedTypeName && (
+        <span
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-wood-medium/10 text-sm text-wood-dark border border-wood-medium/20"
+          data-oid="b1uhyk_"
+        >
           Type: {selectedTypeName}
           <button
             onClick={onRemoveType}
             className="ml-0.5 p-0.5 rounded-full hover:bg-wood-medium/20 transition-colors"
             aria-label={`Remove ${selectedTypeName} filter`}
+            data-oid="y4eoevg"
           >
-            <X className="w-3 h-3" />
+            <X className="w-3 h-3" data-oid="n2qjid4" />
           </button>
         </span>
       )}
 
-      {selectedQuarter !== 'all' && (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-wood-medium/10 text-sm text-wood-dark border border-wood-medium/20">
+      {selectedQuarter !== "all" && (
+        <span
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-wood-medium/10 text-sm text-wood-dark border border-wood-medium/20"
+          data-oid="50wbaaa"
+        >
           Quarter: {selectedQuarter}
           <button
             onClick={onRemoveQuarter}
             className="ml-0.5 p-0.5 rounded-full hover:bg-wood-medium/20 transition-colors"
             aria-label={`Remove ${selectedQuarter} filter`}
+            data-oid="gjs21:0"
           >
-            <X className="w-3 h-3" />
+            <X className="w-3 h-3" data-oid="5x8stw7" />
           </button>
         </span>
       )}

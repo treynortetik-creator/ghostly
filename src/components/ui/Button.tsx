@@ -1,6 +1,6 @@
-import { forwardRef, ButtonHTMLAttributes } from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from '@/lib/utils';
+import { forwardRef, ButtonHTMLAttributes } from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "@/lib/utils";
 
 /* ============================================
    BUTTON COMPONENT
@@ -89,20 +89,20 @@ const buttonVariants = cva(
         `,
       },
       size: {
-        sm: 'h-8 px-3 text-xs rounded',
-        md: 'h-10 px-4 text-sm rounded-md',
-        lg: 'h-12 px-6 text-base rounded-md',
-        xl: 'h-14 px-8 text-lg rounded-lg',
-        icon: 'h-10 w-10 rounded-md',
-        'icon-sm': 'h-8 w-8 rounded',
-        'icon-lg': 'h-12 w-12 rounded-md',
+        sm: "h-8 px-3 text-xs rounded",
+        md: "h-10 px-4 text-sm rounded-md",
+        lg: "h-12 px-6 text-base rounded-md",
+        xl: "h-14 px-8 text-lg rounded-lg",
+        icon: "h-10 w-10 rounded-md",
+        "icon-sm": "h-8 w-8 rounded",
+        "icon-lg": "h-12 w-12 rounded-md",
       },
     },
     defaultVariants: {
-      variant: 'primary',
-      size: 'md',
+      variant: "primary",
+      size: "md",
     },
-  }
+  },
 );
 
 export interface ButtonProps
@@ -129,7 +129,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       children,
       ...props
     },
-    ref
+    ref,
   ) => {
     return (
       <button
@@ -137,9 +137,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || isLoading}
         {...props}
+        data-oid=":d9uc.f"
       >
         {isLoading ? (
-          <LoadingSpinner className="w-4 h-4" />
+          <LoadingSpinner className="w-4 h-4" data-oid="ogllmbh" />
         ) : (
           leftIcon
         )}
@@ -147,18 +148,19 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {!isLoading && rightIcon}
       </button>
     );
-  }
+  },
 );
-Button.displayName = 'Button';
+Button.displayName = "Button";
 
 /* Loading Spinner */
 function LoadingSpinner({ className }: { className?: string }) {
   return (
     <svg
-      className={cn('animate-spin', className)}
+      className={cn("animate-spin", className)}
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
+      data-oid="7:hij5y"
     >
       <circle
         className="opacity-25"
@@ -167,32 +169,36 @@ function LoadingSpinner({ className }: { className?: string }) {
         r="10"
         stroke="currentColor"
         strokeWidth="4"
+        data-oid="ouh75ac"
       />
+
       <path
         className="opacity-75"
         fill="currentColor"
         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        data-oid="vzs73ni"
       />
     </svg>
   );
 }
 
 /* Icon Button - Convenience wrapper */
-export interface IconButtonProps extends Omit<ButtonProps, 'leftIcon' | 'rightIcon'> {
+export interface IconButtonProps
+  extends Omit<ButtonProps, "leftIcon" | "rightIcon"> {
   icon: React.ReactNode;
-  'aria-label': string;
+  "aria-label": string;
 }
 
 const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-  ({ icon, size = 'icon', ...props }, ref) => {
+  ({ icon, size = "icon", ...props }, ref) => {
     return (
-      <Button ref={ref} size={size} {...props}>
+      <Button ref={ref} size={size} {...props} data-oid="o_8ii8_">
         {icon}
       </Button>
     );
-  }
+  },
 );
-IconButton.displayName = 'IconButton';
+IconButton.displayName = "IconButton";
 
 /* Button Group - For grouped actions */
 interface ButtonGroupProps {
@@ -204,13 +210,14 @@ function ButtonGroup({ children, className }: ButtonGroupProps) {
   return (
     <div
       className={cn(
-        'inline-flex rounded-md shadow-sm',
-        '[&>button]:rounded-none',
-        '[&>button:first-child]:rounded-l-md',
-        '[&>button:last-child]:rounded-r-md',
-        '[&>button:not(:first-child)]:-ml-px',
-        className
+        "inline-flex rounded-md shadow-sm",
+        "[&>button]:rounded-none",
+        "[&>button:first-child]:rounded-l-md",
+        "[&>button:last-child]:rounded-r-md",
+        "[&>button:not(:first-child)]:-ml-px",
+        className,
       )}
+      data-oid="y22pd4i"
     >
       {children}
     </div>
