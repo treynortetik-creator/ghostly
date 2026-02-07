@@ -13,3 +13,5 @@ export type { EventCardProps } from './EventCard';
 
 export { EventList } from './EventList';
 export type { EventListProps } from './EventList';
+
+export { EventRemindersTab } from './EventRemindersTab';
