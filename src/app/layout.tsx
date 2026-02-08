@@ -22,21 +22,23 @@ const playfairDisplay = Playfair_Display({
 
 export const metadata: Metadata = {
   title: "The Counting House",
-  description:
-    "Budget tracking for SafelyYou events - Victorian bookkeeper style",
+  description: "Budget tracking for SafelyYou events - Victorian bookkeeper style",
   icons: {
-    icon: [{ url: "/favicon.ico" }],
+    icon: [
+      { url: "/favicon.ico" },
+    ],
   },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html lang="en" data-oid="y9efa0j">
+    <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${playfairDisplay.variable} antialiased paper-texture min-h-screen`}
-        data-oid=":i28.dq"
       >
         {children}
       </body>

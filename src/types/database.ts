@@ -207,6 +207,51 @@ export interface EventChecklistItem {
   updated_at: string;
 }
 
+export type NotifyChannel = 'scrooge' | 'in_app' | 'both';
+
+export type ReminderStatus = 'pending' | 'sent' | 'dismissed' | 'snoozed';
+
+/**
+ * Cadence template — reusable reminder schedule tied to an event type
+ */
+export interface CadenceTemplate {
+  id: string;
+  name: string;
+  event_type_id: string | null;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Cadence milestone — individual reminder offset within a template
+ */
+export interface CadenceMilestone {
+  id: string;
+  template_id: string;
+  offset_days: number;
+  title: string;
+  description: string | null;
+  notify_channel: NotifyChannel;
+  display_order: number;
+  created_at: string;
+}
+
+/**
+ * Event reminder — concrete reminder instance for a specific event
+ */
+export interface EventReminder {
+  id: string;
+  event_id: string;
+  milestone_id: string | null;
+  reminder_date: string;
+  title: string;
+  description: string | null;
+  status: ReminderStatus;
+  sent_at: string | null;
+  created_at: string;
+}
+
 // ============================================
 // INSERT/UPDATE TYPES (without auto-generated fields)
 // ============================================
@@ -241,6 +286,14 @@ export type ChecklistTemplateItemInsert = Omit<ChecklistTemplateItem, 'id' | 'cr
 
 export type EventChecklistItemInsert = Omit<EventChecklistItem, 'id' | 'created_at' | 'updated_at'>;
 export type EventChecklistItemUpdate = Partial<Omit<EventChecklistItem, 'id' | 'created_at'>>;
+
+export type CadenceTemplateInsert = Omit<CadenceTemplate, 'id' | 'created_at' | 'updated_at'>;
+export type CadenceTemplateUpdate = Partial<Omit<CadenceTemplate, 'id' | 'created_at'>>;
+
+export type CadenceMilestoneInsert = Omit<CadenceMilestone, 'id' | 'created_at'>;
+
+export type EventReminderInsert = Omit<EventReminder, 'id' | 'created_at'>;
+export type EventReminderUpdate = Partial<Omit<EventReminder, 'id' | 'created_at'>>;
 
 // ============================================
 // EXTENDED TYPES (with relations)
@@ -319,6 +372,23 @@ export interface EventChecklistItemWithAssignee extends EventChecklistItem {
 export interface ChecklistTemplateWithItems extends ChecklistTemplate {
   items: ChecklistTemplateItem[];
   item_count: number;
+}
+
+/**
+ * Cadence template with milestones and optional event type name
+ */
+export interface CadenceTemplateWithMilestones extends CadenceTemplate {
+  milestones: CadenceMilestone[];
+  milestone_count: number;
+  event_type_name?: string | null;
+}
+
+/**
+ * Event reminder with event name for display
+ */
+export interface EventReminderWithEvent extends EventReminder {
+  event_name: string;
+  event_date_start: string | null;
 }
 
 // ============================================
@@ -889,6 +959,55 @@ export interface Database {
         };
         Relationships: [];
       };
+      event_notes: {
+        Row: {
+          id: string;
+          event_id: string;
+          author: string;
+          note_type: string | null;
+          title: string | null;
+          content: string;
+          metadata: Json | null;
+          pinned: boolean | null;
+          created_at: string | null;
+          updated_at: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          author: string;
+          note_type?: string | null;
+          title?: string | null;
+          content: string;
+          metadata?: Json | null;
+          pinned?: boolean | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          author?: string;
+          note_type?: string | null;
+          title?: string | null;
+          content?: string;
+          metadata?: Json | null;
+          pinned?: boolean | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'event_notes_event_id_fkey';
+            columns: ['event_id'];
+            referencedRelation: 'events';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
       idempotency_keys: {
         Row: {
           id: string;
@@ -1089,6 +1208,129 @@ export interface Database {
           updated_at?: string | null;
         };
         Relationships: [];
+      };
+      cadence_templates: {
+        Row: {
+          id: string;
+          name: string;
+          event_type_id: string | null;
+          is_default: boolean;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          event_type_id?: string | null;
+          is_default?: boolean;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          event_type_id?: string | null;
+          is_default?: boolean;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'cadence_templates_event_type_id_fkey';
+            columns: ['event_type_id'];
+            referencedRelation: 'event_types';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      cadence_milestones: {
+        Row: {
+          id: string;
+          template_id: string;
+          offset_days: number;
+          title: string;
+          description: string | null;
+          notify_channel: string;
+          display_order: number;
+          created_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          template_id: string;
+          offset_days: number;
+          title: string;
+          description?: string | null;
+          notify_channel?: string;
+          display_order?: number;
+          created_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          template_id?: string;
+          offset_days?: number;
+          title?: string;
+          description?: string | null;
+          notify_channel?: string;
+          display_order?: number;
+          created_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'cadence_milestones_template_id_fkey';
+            columns: ['template_id'];
+            referencedRelation: 'cadence_templates';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      event_reminders: {
+        Row: {
+          id: string;
+          event_id: string;
+          milestone_id: string | null;
+          reminder_date: string;
+          title: string;
+          description: string | null;
+          status: string;
+          sent_at: string | null;
+          created_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          milestone_id?: string | null;
+          reminder_date: string;
+          title: string;
+          description?: string | null;
+          status?: string;
+          sent_at?: string | null;
+          created_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          milestone_id?: string | null;
+          reminder_date?: string;
+          title?: string;
+          description?: string | null;
+          status?: string;
+          sent_at?: string | null;
+          created_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'event_reminders_event_id_fkey';
+            columns: ['event_id'];
+            referencedRelation: 'events';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'event_reminders_milestone_id_fkey';
+            columns: ['milestone_id'];
+            referencedRelation: 'cadence_milestones';
+            referencedColumns: ['id'];
+          }
+        ];
       };
       webhook_deliveries: {
         Row: {
