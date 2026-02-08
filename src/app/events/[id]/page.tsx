@@ -22,6 +22,7 @@ import {
   Briefcase,
   Save,
   Bell,
+  MessageSquare,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
@@ -31,6 +32,7 @@ import { EventForm, EventFormData } from '@/components/events/EventForm';
 import { EventTeamTab } from '@/components/events/EventTeamTab';
 import { EventChecklistTab } from '@/components/events/EventChecklistTab';
 import { EventRemindersTab } from '@/components/events/EventRemindersTab';
+import { EventNotesTab } from '@/components/events/EventNotesTab';
 import type { Expense, FiscalYear, EventWithTotals } from '@/types/database';
 import { eventTypeLabels, quarterLabels } from '@/types/database';
 
@@ -74,7 +76,7 @@ export default function EventDetailPage({ params }: PageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [activeTab, setActiveTab] = useState<'details' | 'team' | 'checklist' | 'reminders' | 'roi'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'team' | 'checklist' | 'reminders' | 'notes' | 'roi'>('details');
   const [isEditingROI, setIsEditingROI] = useState(false);
   const [isSavingROI, setIsSavingROI] = useState(false);
   const [roiForm, setRoiForm] = useState({
@@ -489,6 +491,17 @@ export default function EventDetailPage({ params }: PageProps) {
           Reminders
         </button>
         <button
+          onClick={() => setActiveTab('notes')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === 'notes'
+              ? 'border-ink-gold text-ink-gold'
+              : 'border-transparent text-sepia hover:text-wood-dark hover:border-wood-medium/40'
+          }`}
+        >
+          <MessageSquare className="w-4 h-4 inline mr-1.5 -mt-0.5" />
+          Notes
+        </button>
+        <button
           onClick={() => setActiveTab('roi')}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
             activeTab === 'roi'
@@ -514,6 +527,11 @@ export default function EventDetailPage({ params }: PageProps) {
       {/* Reminders Tab */}
       {activeTab === 'reminders' && (
         <EventRemindersTab eventId={id} eventDateStart={event.date_start} />
+      )}
+
+      {/* Notes Tab */}
+      {activeTab === 'notes' && (
+        <EventNotesTab eventId={id} />
       )}
 
       {/* ROI Tab */}
