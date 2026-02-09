@@ -106,13 +106,13 @@ export default function PDFImportPage() {
             (e: {
               id: string;
               name: string;
-              event_type?: string;
+              event_type_record?: { name: string } | null;
               quarter?: string;
             }) => ({
               id: e.id,
               name: e.name,
               type: "event" as const,
-              eventType: e.event_type,
+              eventType: e.event_type_record?.name?.toLowerCase() ?? null,
               quarter: e.quarter,
             }),
           ),

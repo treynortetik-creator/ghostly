@@ -72,8 +72,6 @@ export interface AppSetting {
 export interface Event {
   id: string;
   name: string;
-  /** @deprecated Use event_type_id instead */
-  event_type: EventType;
   event_type_id: string | null;
   quarter: QuarterType;
   fiscal_year_id: string | null;
@@ -579,8 +577,6 @@ export interface Database {
         Row: {
           id: string;
           name: string;
-          /** @deprecated Use event_type_id instead */
-          event_type: EventType;
           event_type_id: string | null;
           quarter: QuarterType | null;
           fiscal_year_id: string | null;
@@ -606,8 +602,6 @@ export interface Database {
         Insert: {
           id?: string;
           name: string;
-          /** @deprecated Use event_type_id instead */
-          event_type: EventType;
           event_type_id?: string | null;
           quarter?: QuarterType | null;
           fiscal_year_id?: string | null;
@@ -633,8 +627,6 @@ export interface Database {
         Update: {
           id?: string;
           name?: string;
-          /** @deprecated Use event_type_id instead */
-          event_type?: EventType;
           event_type_id?: string | null;
           quarter?: QuarterType | null;
           fiscal_year_id?: string | null;

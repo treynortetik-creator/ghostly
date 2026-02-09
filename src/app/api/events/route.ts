@@ -17,8 +17,6 @@ import type { EventType, QuarterType, EventTypeRecord } from '@/types/database';
 interface EventWithTotals {
   id: string;
   name: string;
-  /** @deprecated Use event_type_id and event_type_record instead */
-  event_type: EventType;
   event_type_id: string | null;
   event_type_record: EventTypeRecord | null;
   quarter: QuarterType | null;

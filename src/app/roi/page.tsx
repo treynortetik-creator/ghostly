@@ -28,7 +28,8 @@ import type { EventType } from "@/types/database";
 interface EventROIRow {
   id: string;
   name: string;
-  event_type: EventType;
+  event_type_id: string | null;
+  event_type_record: { name: string } | null;
   pipeline_generated: number;
   revenue_closed: number;
   leads_generated: number;
@@ -39,7 +40,7 @@ interface EventROIRow {
 }
 
 interface EventTypeBreakdown {
-  event_type: EventType;
+  event_type: string;
   event_count: number;
   total_spent: number;
   total_pipeline: number;
@@ -341,16 +342,16 @@ export default function ROIDashboardPage() {
                   <tbody data-oid="vqlnh9u">
                     {data.by_event_type.map((row) => (
                       <tr
-                        key={row.event_type}
+                        key={row.event_type || 'unknown'}
                         className="border-b border-wood-medium/10 hover:bg-parchment/50"
                         data-oid="rz3s8nl"
                       >
                         <td className="py-3 pr-4" data-oid="lq9rqye">
                           <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium border ${typeColorClasses[row.event_type]}`}
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium border ${typeColorClasses[row.event_type?.toLowerCase?.()] || 'bg-sepia/15 text-sepia border-sepia/30'}`}
                             data-oid="nva0wc1"
                           >
-                            {eventTypeLabels[row.event_type]}
+                            {row.event_type || 'Uncategorized'}
                           </span>
                         </td>
                         <td
@@ -488,10 +489,10 @@ export default function ROIDashboardPage() {
                             />
                           </div>
                           <span
-                            className={`inline-flex items-center mt-1 px-2 py-0.5 rounded text-xs font-medium border ${typeColorClasses[event.event_type]}`}
+                            className={`inline-flex items-center mt-1 px-2 py-0.5 rounded text-xs font-medium border ${typeColorClasses[event.event_type_record?.name?.toLowerCase() ?? ''] || 'bg-sepia/15 text-sepia border-sepia/30'}`}
                             data-oid="3dal06v"
                           >
-                            {eventTypeLabels[event.event_type]}
+                            {event.event_type_record?.name ?? 'Uncategorized'}
                           </span>
                         </td>
                         <td

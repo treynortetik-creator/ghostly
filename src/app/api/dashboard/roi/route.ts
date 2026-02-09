@@ -13,8 +13,6 @@ import type { EventType, EventTypeRecord } from '@/types/database';
 interface EventROIRow {
   id: string;
   name: string;
-  /** @deprecated Use event_type_id and event_type_record instead */
-  event_type: EventType;
   event_type_id: string | null;
   event_type_record: EventTypeRecord | null;
   pipeline_generated: number;
@@ -72,7 +70,6 @@ export async function GET(request: NextRequest) {
       return {
         id: eventData.id,
         name: eventData.name,
-        event_type: eventData.event_type,
         event_type_id: eventData.event_type_id ?? null,
         event_type_record: event_types ?? null,
         pipeline_generated: eventData.pipeline_generated ?? 0,
@@ -110,11 +107,12 @@ export async function GET(request: NextRequest) {
       ? (totals.total_revenue - totals.total_spent) / totals.total_spent
       : null;
 
-    // Breakdown by event_type
-    const typeMap = new Map<EventType, { spent: number; pipeline: number; revenue: number; leads: number; meetings: number; opportunities: number; count: number }>();
+    // Breakdown by event_type_record name
+    const typeMap = new Map<string, { spent: number; pipeline: number; revenue: number; leads: number; meetings: number; opportunities: number; count: number }>();
     for (const row of eventRows) {
-      const existing = typeMap.get(row.event_type) || { spent: 0, pipeline: 0, revenue: 0, leads: 0, meetings: 0, opportunities: 0, count: 0 };
-      typeMap.set(row.event_type, {
+      const typeName = row.event_type_record?.name ?? 'Uncategorized';
+      const existing = typeMap.get(typeName) || { spent: 0, pipeline: 0, revenue: 0, leads: 0, meetings: 0, opportunities: 0, count: 0 };
+      typeMap.set(typeName, {
         spent: existing.spent + row.actual_spent,
         pipeline: existing.pipeline + row.pipeline_generated,
         revenue: existing.revenue + row.revenue_closed,

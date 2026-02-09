@@ -395,11 +395,11 @@ export default function EventDetailPage({ params }: PageProps) {
             <span
               className={`
                 inline-flex items-center px-3 py-1 rounded text-sm font-medium border
-                ${typeColorClasses[event.event_type]}
+                ${typeColorClasses[event.event_type_record?.name?.toLowerCase() ?? ''] || 'bg-sepia/15 text-sepia border-sepia/30'}
               `}
               data-oid="r3culeu"
             >
-              {eventTypeLabels[event.event_type]}
+              {event.event_type_record?.name ?? 'Uncategorized'}
             </span>
             <span
               className="text-sm font-medium text-sepia bg-parchment-dark px-3 py-1 rounded border border-wood-medium/20"

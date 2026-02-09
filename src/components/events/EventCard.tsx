@@ -142,7 +142,7 @@ export function EventCard({
                       <span
                         className={`
                           inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border
-                          ${typeColorClasses[event.event_type] || "bg-sepia/15 text-sepia border-sepia/30"}
+                          ${typeColorClasses[event.event_type_record?.name?.toLowerCase() ?? ''] || "bg-sepia/15 text-sepia border-sepia/30"}
                         `}
                         data-oid="p6:y021"
                       >

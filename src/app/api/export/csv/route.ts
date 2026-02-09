@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
     lines.push('"=== EVENTS SUMMARY ==="');
     lines.push('"Event Name","Event Type","Quarter","Budget","Actual Spent","Remaining","Location"');
     for (const event of filteredEvents) {
-      const eventTypeName = (event as any).event_types?.name || event.event_type;
+      const eventTypeName = (event as any).event_types?.name || 'Uncategorized';
       lines.push([
         escapeCSVValue(event.name),
         escapeCSVValue(eventTypeName),

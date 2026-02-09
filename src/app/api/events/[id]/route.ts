@@ -133,14 +133,6 @@ export async function PUT(
       );
     }
 
-    // Validate event_type if provided
-    if (body.event_type && !['executive', 'national', 'state', 'regional', 'customer'].includes(body.event_type)) {
-      return NextResponse.json(
-        { error: 'Invalid event_type. Must be one of: executive, national, state, regional, customer' },
-        { status: 400 }
-      );
-    }
-
     // Validate quarter if provided
     if (body.quarter && !['Q1', 'Q2', 'Q3', 'Q4', 'TBD'].includes(body.quarter)) {
       return NextResponse.json(
@@ -184,13 +176,8 @@ export async function PUT(
     };
 
     if (body.name !== undefined) updateData.name = body.name;
-    // If event_type_id is provided, update both event_type_id and event_type for backward compatibility
     if (eventTypeRecord) {
       updateData.event_type_id = body.event_type_id;
-      updateData.event_type = eventTypeRecord.name.toLowerCase() as EventType;
-    } else if (body.event_type !== undefined) {
-      // Legacy: direct event_type update (deprecated)
-      updateData.event_type = body.event_type as EventType;
     }
     if (body.quarter !== undefined) updateData.quarter = body.quarter as QuarterType;
     if (body.fiscal_year_id !== undefined) updateData.fiscal_year_id = body.fiscal_year_id?.trim() || null;

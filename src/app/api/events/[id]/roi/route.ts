@@ -74,7 +74,6 @@ export async function GET(
     return NextResponse.json({
       event_id: id,
       event_name: eventData.name,
-      event_type: eventData.event_type,
       event_type_id: eventData.event_type_id ?? null,
       event_type_record: event_types ?? null,
       actual_spent: actualSpent,

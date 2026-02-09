@@ -184,7 +184,7 @@ export async function GET(request: NextRequest) {
     ];
 
     for (const event of filteredEvents) {
-      const eventTypeName = (event as any).event_types?.name || event.event_type;
+      const eventTypeName = (event as any).event_types?.name || 'Uncategorized';
       eventsData.push([
         event.name,
         eventTypeName,
