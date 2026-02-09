@@ -266,8 +266,6 @@ export const POST = withIdempotency(async function POST(request: NextRequest) {
       .from('events')
       .insert({
         name: body.name,
-        // Set event_type from event_types.name for backward compatibility
-        event_type: eventType.name.toLowerCase() as EventType,
         event_type_id: body.event_type_id,
         quarter: body.quarter as QuarterType,
         fiscal_year_id: fiscalYearId,
