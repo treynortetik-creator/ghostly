@@ -62,10 +62,22 @@ export async function GET(request: NextRequest) {
     const modifiedAfter = searchParams.get('modified_after');
     const idsParam = searchParams.get('ids');
 
-    // Parse pagination parameters
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
-    const perPage = Math.min(200, Math.max(1, parseInt(searchParams.get('per_page') || '50', 10)));
-    const from = (page - 1) * perPage;
+    // Parse search parameter
+    const search = searchParams.get('search')?.trim() || null;
+
+    // Parse pagination parameters (supports both page-based and offset-based)
+    const perPage = Math.min(200, Math.max(1, parseInt(searchParams.get('per_page') || '50', 10) || 50));
+    const offsetParam = searchParams.get('offset');
+    const pageParam = searchParams.get('page');
+    let from: number;
+    let page: number;
+    if (offsetParam !== null) {
+      from = Math.max(0, parseInt(offsetParam, 10) || 0);
+      page = Math.floor(from / perPage) + 1;
+    } else {
+      page = Math.max(1, parseInt(pageParam || '1', 10) || 1);
+      from = (page - 1) * perPage;
+    }
     const to = from + perPage - 1;
 
     // Validate modified_after if provided
@@ -113,6 +125,7 @@ export async function GET(request: NextRequest) {
     if (filters.fiscal_year_id) query = query.eq('fiscal_year_id', filters.fiscal_year_id);
     if (filters.modified_after) query = query.gt('updated_at', filters.modified_after);
     if (filters.ids) query = query.in('id', filters.ids);
+    if (search) query = query.ilike('name', `%${search}%`);
 
     // Fetch paginated events and all event expense totals in parallel (avoids N+1)
     const [eventsResult, expenseTotalsResult] = await Promise.all([
@@ -178,6 +191,7 @@ export async function GET(request: NextRequest) {
       pagination: {
         page,
         per_page: perPage,
+        offset: from,
         total,
         total_pages: Math.ceil(total / perPage),
       },
@@ -259,6 +273,25 @@ export const POST = withIdempotency(async function POST(request: NextRequest) {
     const fiscalYearId = body.fiscal_year_id?.trim() || null;
     const dateStart = body.date_start?.trim() || null;
     const dateEnd = body.date_end?.trim() || null;
+
+    // Duplicate check: prevent same event name within same fiscal year
+    let dupeQuery = supabase
+      .from('events')
+      .select('id, name')
+      .eq('name', body.name)
+      .is('deleted_at', null);
+    if (fiscalYearId) {
+      dupeQuery = dupeQuery.eq('fiscal_year_id', fiscalYearId);
+    } else {
+      dupeQuery = dupeQuery.is('fiscal_year_id', null);
+    }
+    const { data: existing } = await dupeQuery.limit(1);
+    if (existing && existing.length > 0) {
+      return NextResponse.json(
+        { error: `Duplicate event: "${body.name}" already exists${fiscalYearId ? ' in this fiscal year' : ''}. Existing ID: ${existing[0].id}` },
+        { status: 409 }
+      );
+    }
 
     const { data: newEvent, error: insertError } = await supabase
       .from('events')
