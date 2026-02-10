@@ -17,6 +17,8 @@ export type QuarterType = 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'TBD';
 
 export type ExpenseSource = 'brex' | 'pdf' | 'manual';
 
+export type DocumentSource = 'upload' | 'api';
+
 export type ChecklistPhase = 'pre_event' | 'day_of' | 'post_event';
 
 // ============================================
@@ -250,6 +252,33 @@ export interface EventReminder {
   created_at: string;
 }
 
+/**
+ * Document record - files attached to events or expenses
+ */
+export interface Document {
+  id: string;
+  filename: string;
+  original_filename: string;
+  mime_type: string;
+  file_size_bytes: number;
+  storage_path: string;
+  source: DocumentSource;
+  event_id: string | null;
+  expense_id: string | null;
+  uploaded_by: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+/**
+ * Document with joined event/expense name for display
+ */
+export interface DocumentWithRelations extends Document {
+  event_name: string | null;
+  expense_vendor: string | null;
+}
+
 // ============================================
 // INSERT/UPDATE TYPES (without auto-generated fields)
 // ============================================
@@ -292,6 +321,9 @@ export type CadenceMilestoneInsert = Omit<CadenceMilestone, 'id' | 'created_at'>
 
 export type EventReminderInsert = Omit<EventReminder, 'id' | 'created_at'>;
 export type EventReminderUpdate = Partial<Omit<EventReminder, 'id' | 'created_at'>>;
+
+export type DocumentInsert = Omit<Document, 'id' | 'created_at' | 'updated_at'>;
+export type DocumentUpdate = Partial<Omit<Document, 'id' | 'created_at'>>;
 
 // ============================================
 // EXTENDED TYPES (with relations)
@@ -1324,6 +1356,67 @@ export interface Database {
           }
         ];
       };
+      documents: {
+        Row: {
+          id: string;
+          filename: string;
+          original_filename: string;
+          mime_type: string;
+          file_size_bytes: number;
+          storage_path: string;
+          source: DocumentSource;
+          event_id: string | null;
+          expense_id: string | null;
+          uploaded_by: string;
+          created_at: string | null;
+          updated_at: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          filename: string;
+          original_filename: string;
+          mime_type: string;
+          file_size_bytes: number;
+          storage_path: string;
+          source?: DocumentSource;
+          event_id?: string | null;
+          expense_id?: string | null;
+          uploaded_by?: string;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          filename?: string;
+          original_filename?: string;
+          mime_type?: string;
+          file_size_bytes?: number;
+          storage_path?: string;
+          source?: DocumentSource;
+          event_id?: string | null;
+          expense_id?: string | null;
+          uploaded_by?: string;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'documents_event_id_fkey';
+            columns: ['event_id'];
+            referencedRelation: 'events';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'documents_expense_id_fkey';
+            columns: ['expense_id'];
+            referencedRelation: 'expenses';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
       webhook_deliveries: {
         Row: {
           id: string;
@@ -1382,6 +1475,7 @@ export interface Database {
       quarter_type: QuarterType;
       expense_source: ExpenseSource;
       checklist_phase: ChecklistPhase;
+      document_source: DocumentSource;
     };
     CompositeTypes: {
       [_ in never]: never;

@@ -23,6 +23,7 @@ import {
   Save,
   Bell,
   MessageSquare,
+  Paperclip,
 } from "lucide-react";
 import { AppShell } from "@/components/layout";
 import { Button } from "@/components/ui/Button";
@@ -41,6 +42,7 @@ import { EventTeamTab } from "@/components/events/EventTeamTab";
 import { EventChecklistTab } from "@/components/events/EventChecklistTab";
 import { EventRemindersTab } from "@/components/events/EventRemindersTab";
 import { EventNotesTab } from "@/components/events/EventNotesTab";
+import { EventDocumentsTab } from "@/components/documents/EventDocumentsTab";
 import type { Expense, FiscalYear, EventWithTotals } from "@/types/database";
 import { eventTypeLabels, quarterLabels } from "@/types/database";
 
@@ -85,7 +87,7 @@ export default function EventDetailPage({ params }: PageProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "details" | "team" | "checklist" | "reminders" | "notes" | "roi"
+    "details" | "documents" | "team" | "checklist" | "reminders" | "notes" | "roi"
   >("details");
   const [isEditingROI, setIsEditingROI] = useState(false);
   const [isSavingROI, setIsSavingROI] = useState(false);
@@ -534,6 +536,21 @@ export default function EventDetailPage({ params }: PageProps) {
           Budget &amp; Details
         </button>
         <button
+          onClick={() => setActiveTab("documents")}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === "documents"
+              ? "border-ink-gold text-ink-gold"
+              : "border-transparent text-sepia hover:text-wood-dark hover:border-wood-medium/40"
+          }`}
+          data-oid="doc-tab"
+        >
+          <Paperclip
+            className="w-4 h-4 inline mr-1.5 -mt-0.5"
+            data-oid="doc-ico"
+          />
+          Documents
+        </button>
+        <button
           onClick={() => setActiveTab("team")}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
             activeTab === "team"
@@ -606,6 +623,9 @@ export default function EventDetailPage({ params }: PageProps) {
           ROI Tracking
         </button>
       </div>
+
+      {/* Documents Tab */}
+      {activeTab === "documents" && <EventDocumentsTab eventId={id} />}
 
       {/* Team Tab */}
       {activeTab === "team" && <EventTeamTab eventId={id} data-oid=":q0a1fv" />}
