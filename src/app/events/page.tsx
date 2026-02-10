@@ -40,7 +40,8 @@ export default function EventsPage() {
     setError(null);
 
     try {
-      const response = await fetch("/api/events");
+      // Fetch all events (API defaults to 50; request up to 200)
+      const response = await fetch("/api/events?per_page=200");
       if (!response.ok) {
         throw new Error("Failed to fetch events");
       }
