@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Receipt, Plus, RefreshCw } from "lucide-react";
 import { AppShell } from "@/components/layout";
 import { Button } from "@/components/ui/Button";
@@ -53,6 +53,9 @@ export default function ExpensesPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [editingExpense, setEditingExpense] =
     useState<ExpenseWithRelations | null>(null);
+
+  // Ref for the form section so we can scroll to it
+  const formRef = useRef<HTMLDivElement>(null);
 
   // Fetch expenses and related data
   const fetchData = async () => {
@@ -130,10 +133,14 @@ export default function ExpensesPage() {
     }
   };
 
-  // Handle edit expense
+  // Handle edit expense — scroll to form so user sees it
   const handleEditExpense = (expense: ExpenseWithRelations) => {
     setEditingExpense(expense);
     setShowCreateForm(false);
+    // Scroll to the form after React re-renders
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
   };
 
   // Handle update expense
@@ -317,6 +324,9 @@ export default function ExpensesPage() {
             onClick={() => {
               setEditingExpense(null);
               setShowCreateForm(true);
+              setTimeout(() => {
+                formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }, 0);
             }}
             leftIcon={<Plus className="w-4 h-4" data-oid=":e:6wzz" />}
             data-oid="_g5s899"
@@ -328,8 +338,9 @@ export default function ExpensesPage() {
 
       {/* Create/Edit Expense Form */}
       {(showCreateForm || editingExpense) && (
-        <div className="mb-8" data-oid="dlk:19v">
+        <div ref={formRef} className="mb-8" data-oid="dlk:19v">
           <ExpenseForm
+            key={editingExpense?.id ?? "create"}
             mode={editingExpense ? "edit" : "create"}
             expense={editingExpense || undefined}
             events={events}
