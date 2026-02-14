@@ -24,6 +24,8 @@ import {
   Bell,
   MessageSquare,
   Paperclip,
+  Package,
+  ClipboardCheck,
 } from "lucide-react";
 import { AppShell } from "@/components/layout";
 import { Button } from "@/components/ui/Button";
@@ -42,6 +44,8 @@ import { EventTeamTab } from "@/components/events/EventTeamTab";
 import { EventChecklistTab } from "@/components/events/EventChecklistTab";
 import { EventRemindersTab } from "@/components/events/EventRemindersTab";
 import { EventNotesTab } from "@/components/events/EventNotesTab";
+import { EventShipmentsTab } from "@/components/events/EventShipmentsTab";
+import { EventPostEventTab } from "@/components/events/EventPostEventTab";
 import { EventDocumentsTab } from "@/components/documents/EventDocumentsTab";
 import type { Expense, FiscalYear, EventWithTotals } from "@/types/database";
 import { eventTypeLabels, quarterLabels } from "@/types/database";
@@ -87,7 +91,7 @@ export default function EventDetailPage({ params }: PageProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "details" | "documents" | "team" | "checklist" | "reminders" | "notes" | "roi"
+    "details" | "documents" | "team" | "checklist" | "reminders" | "notes" | "shipments" | "post_event" | "roi"
   >("details");
   const [isEditingROI, setIsEditingROI] = useState(false);
   const [isSavingROI, setIsSavingROI] = useState(false);
@@ -608,6 +612,36 @@ export default function EventDetailPage({ params }: PageProps) {
           Notes
         </button>
         <button
+          onClick={() => setActiveTab("shipments")}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === "shipments"
+              ? "border-ink-gold text-ink-gold"
+              : "border-transparent text-sepia hover:text-wood-dark hover:border-wood-medium/40"
+          }`}
+          data-oid="ship-tab"
+        >
+          <Package
+            className="w-4 h-4 inline mr-1.5 -mt-0.5"
+            data-oid="ship-ico"
+          />
+          Shipments
+        </button>
+        <button
+          onClick={() => setActiveTab("post_event")}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === "post_event"
+              ? "border-ink-gold text-ink-gold"
+              : "border-transparent text-sepia hover:text-wood-dark hover:border-wood-medium/40"
+          }`}
+          data-oid="post-tab"
+        >
+          <ClipboardCheck
+            className="w-4 h-4 inline mr-1.5 -mt-0.5"
+            data-oid="post-ico"
+          />
+          Post-Event
+        </button>
+        <button
           onClick={() => setActiveTab("roi")}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
             activeTab === "roi"
@@ -642,6 +676,12 @@ export default function EventDetailPage({ params }: PageProps) {
 
       {/* Notes Tab */}
       {activeTab === "notes" && <EventNotesTab eventId={id} />}
+
+      {/* Shipments Tab */}
+      {activeTab === "shipments" && <EventShipmentsTab eventId={id} />}
+
+      {/* Post-Event Tab */}
+      {activeTab === "post_event" && <EventPostEventTab eventId={id} />}
 
       {/* ROI Tab */}
       {activeTab === "roi" && (

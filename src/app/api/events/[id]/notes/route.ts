@@ -12,7 +12,7 @@ import { requirePermission } from '@/lib/permissions';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-const validNoteTypes = ['competitor_alert', 'general', 'logistics', 'budget'];
+const validNoteTypes = ['competitor_alert', 'general', 'logistics', 'budget', 'post_event'];
 
 export async function GET(request: NextRequest, context: RouteContext) {
   const denied = requirePermission(request, 'read');

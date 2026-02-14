@@ -253,6 +253,30 @@ export interface EventReminder {
 }
 
 /**
+ * Event shipment - tracking shipments related to events
+ */
+export interface EventShipment {
+  id: string;
+  event_id: string;
+  description: string;
+  carrier: string | null;
+  tracking_number: string | null;
+  tracking_url: string | null;
+  status: string;
+  ship_date: string | null;
+  estimated_delivery: string | null;
+  actual_delivery: string | null;
+  shipped_from: string | null;
+  shipped_to: string | null;
+  weight_lbs: number | null;
+  notes: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+/**
  * Document record - files attached to events or expenses
  */
 export interface Document {
@@ -321,6 +345,9 @@ export type CadenceMilestoneInsert = Omit<CadenceMilestone, 'id' | 'created_at'>
 
 export type EventReminderInsert = Omit<EventReminder, 'id' | 'created_at'>;
 export type EventReminderUpdate = Partial<Omit<EventReminder, 'id' | 'created_at'>>;
+
+export type EventShipmentInsert = Omit<EventShipment, 'id' | 'created_at' | 'updated_at'>;
+export type EventShipmentUpdate = Partial<Omit<EventShipment, 'id' | 'created_at'>>;
 
 export type DocumentInsert = Omit<Document, 'id' | 'created_at' | 'updated_at'>;
 export type DocumentUpdate = Partial<Omit<Document, 'id' | 'created_at'>>;
@@ -1026,6 +1053,76 @@ export interface Database {
         Relationships: [
           {
             foreignKeyName: 'event_notes_event_id_fkey';
+            columns: ['event_id'];
+            referencedRelation: 'events';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      event_shipments: {
+        Row: {
+          id: string;
+          event_id: string;
+          description: string;
+          carrier: string | null;
+          tracking_number: string | null;
+          tracking_url: string | null;
+          status: string;
+          ship_date: string | null;
+          estimated_delivery: string | null;
+          actual_delivery: string | null;
+          shipped_from: string | null;
+          shipped_to: string | null;
+          weight_lbs: number | null;
+          notes: string | null;
+          created_by: string;
+          created_at: string | null;
+          updated_at: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          description: string;
+          carrier?: string | null;
+          tracking_number?: string | null;
+          tracking_url?: string | null;
+          status?: string;
+          ship_date?: string | null;
+          estimated_delivery?: string | null;
+          actual_delivery?: string | null;
+          shipped_from?: string | null;
+          shipped_to?: string | null;
+          weight_lbs?: number | null;
+          notes?: string | null;
+          created_by?: string;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          description?: string;
+          carrier?: string | null;
+          tracking_number?: string | null;
+          tracking_url?: string | null;
+          status?: string;
+          ship_date?: string | null;
+          estimated_delivery?: string | null;
+          actual_delivery?: string | null;
+          shipped_from?: string | null;
+          shipped_to?: string | null;
+          weight_lbs?: number | null;
+          notes?: string | null;
+          created_by?: string;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'event_shipments_event_id_fkey';
             columns: ['event_id'];
             referencedRelation: 'events';
             referencedColumns: ['id'];
