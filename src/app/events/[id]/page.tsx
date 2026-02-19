@@ -26,6 +26,7 @@ import {
   Paperclip,
   Package,
   ClipboardCheck,
+  Truck,
 } from "lucide-react";
 import { AppShell } from "@/components/layout";
 import { Button } from "@/components/ui/Button";
@@ -47,8 +48,8 @@ import { EventNotesTab } from "@/components/events/EventNotesTab";
 import { EventShipmentsTab } from "@/components/events/EventShipmentsTab";
 import { EventPostEventTab } from "@/components/events/EventPostEventTab";
 import { EventDocumentsTab } from "@/components/documents/EventDocumentsTab";
-import type { Expense, FiscalYear, EventWithTotals } from "@/types/database";
-import { eventTypeLabels, quarterLabels } from "@/types/database";
+import type { Expense, FiscalYear, EventWithTotals, EventTier, ShippingHandler } from "@/types/database";
+import { eventTypeLabels, quarterLabels, tierColors, eventTierLabels, eventStageLabels } from "@/types/database";
 
 /* ============================================
    EVENT DETAIL PAGE
@@ -413,6 +414,18 @@ export default function EventDetailPage({ params }: PageProps) {
             >
               {event.quarter}
             </span>
+            {event.tier && (
+              <span
+                className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${tierColors[event.tier as EventTier].bg} ${tierColors[event.tier as EventTier].text} border ${tierColors[event.tier as EventTier].border}`}
+              >
+                {eventTierLabels[event.tier as EventTier]}
+              </span>
+            )}
+            {event.stage && (
+              <span className="inline-flex items-center bg-parchment-dark text-sepia border border-wood-medium/30 rounded-full px-2 py-0.5 text-xs">
+                {eventStageLabels[event.stage]}
+              </span>
+            )}
           </div>
 
           <div
@@ -433,6 +446,12 @@ export default function EventDetailPage({ params }: PageProps) {
               >
                 <MapPin className="w-4 h-4" data-oid="t_ort:r" />
                 {event.location}
+              </span>
+            )}
+            {event.shipping_handler && (
+              <span className="inline-flex items-center gap-1 text-xs text-sepia/60">
+                <Truck className="w-3.5 h-3.5" />
+                {event.shipping_handler === 'handler_a' ? 'Handler A' : 'Handler B'}
               </span>
             )}
           </div>
@@ -666,7 +685,7 @@ export default function EventDetailPage({ params }: PageProps) {
 
       {/* Checklist Tab */}
       {activeTab === "checklist" && (
-        <EventChecklistTab eventId={id} data-oid="o:oscvv" />
+        <EventChecklistTab eventId={id} tier={event.tier} data-oid="o:oscvv" />
       )}
 
       {/* Reminders Tab */}

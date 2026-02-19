@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Calendar,
+  Workflow,
   FolderOpen,
   Receipt,
   TrendingUp,
@@ -29,6 +30,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Events", href: "/events", icon: Calendar },
+  { name: "Pipeline", href: "/pipeline", icon: Workflow },
   { name: "Categories", href: "/categories", icon: FolderOpen },
   { name: "Expenses", href: "/expenses", icon: Receipt },
   { name: "Team", href: "/team", icon: Users },

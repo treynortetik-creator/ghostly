@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logAudit, getActor, computeChanges } from '@/lib/audit';
 import { requirePermission } from '@/lib/permissions';
-import type { EventType, QuarterType, EventTypeRecord } from '@/types/database';
+import type { QuarterType, EventTypeRecord } from '@/types/database';
 
 // ============================================
 // GET /api/events/[id]
@@ -141,6 +141,32 @@ export async function PUT(
       );
     }
 
+    // Validate stage if provided
+    const validStages = ['confirmed', 'in_progress', 'ready', 'active', 'debrief', 'archived'];
+    if (body.stage !== undefined && !validStages.includes(body.stage)) {
+      return NextResponse.json(
+        { error: `Invalid stage. Must be one of: ${validStages.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    // Validate tier if provided
+    const validTiers = ['executive', 'national_t1', 'national_t2', 'state_t1', 'state_t2', 'customer_partner'];
+    if (body.tier !== undefined && body.tier !== null && !validTiers.includes(body.tier)) {
+      return NextResponse.json(
+        { error: `Invalid tier. Must be one of: ${validTiers.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    // Validate shipping_handler if provided
+    if (body.shipping_handler !== undefined && !['handler_a', 'handler_b'].includes(body.shipping_handler)) {
+      return NextResponse.json(
+        { error: 'Invalid shipping_handler. Must be "handler_a" or "handler_b"' },
+        { status: 400 }
+      );
+    }
+
     // Validate budget_amount if provided
     if (body.budget_amount !== undefined) {
       const budgetAmount = parseFloat(body.budget_amount);
@@ -196,6 +222,9 @@ export async function PUT(
     if (body.meetings_booked !== undefined) updateData.meetings_booked = parseInt(body.meetings_booked) || 0;
     if (body.opportunities_created !== undefined) updateData.opportunities_created = parseInt(body.opportunities_created) || 0;
     if (body.roi_notes !== undefined) updateData.roi_notes = body.roi_notes;
+    if (body.stage !== undefined) updateData.stage = body.stage;
+    if (body.tier !== undefined) updateData.tier = body.tier;
+    if (body.shipping_handler !== undefined) updateData.shipping_handler = body.shipping_handler;
 
     const { data: updatedEvent, error: updateError } = await supabase
       .from('events')
@@ -241,7 +270,7 @@ export async function PUT(
     // Audit log (non-blocking)
     try {
       const { actor, actor_type } = await getActor(request);
-      const auditFields = ['name', 'event_type_id', 'quarter', 'fiscal_year_id', 'date_start', 'date_end', 'location', 'budget_amount', 'expansion_goal', 'net_new_goal', 'approach_notes', 'marketing_notes', 'sales_notes', 'pipeline_generated', 'revenue_closed', 'leads_generated', 'meetings_booked', 'opportunities_created', 'roi_notes'];
+      const auditFields = ['name', 'event_type_id', 'quarter', 'fiscal_year_id', 'date_start', 'date_end', 'location', 'budget_amount', 'expansion_goal', 'net_new_goal', 'approach_notes', 'marketing_notes', 'sales_notes', 'pipeline_generated', 'revenue_closed', 'leads_generated', 'meetings_booked', 'opportunities_created', 'roi_notes', 'stage', 'tier', 'shipping_handler'];
       const changes = computeChanges(existingEvent as Record<string, unknown>, updatedEvent as Record<string, unknown>, auditFields);
       logAudit({
         entity_type: 'event',

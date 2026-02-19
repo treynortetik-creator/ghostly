@@ -21,6 +21,10 @@ export type DocumentSource = 'upload' | 'api';
 
 export type ChecklistPhase = 'pre_event' | 'day_of' | 'post_event';
 
+export type EventStage = 'confirmed' | 'in_progress' | 'ready' | 'active' | 'debrief' | 'archived';
+export type EventTier = 'executive' | 'national_t1' | 'national_t2' | 'state_t1' | 'state_t2' | 'customer_partner';
+export type ShippingHandler = 'handler_a' | 'handler_b';
+
 // ============================================
 // TABLE INTERFACES
 // ============================================
@@ -92,6 +96,9 @@ export interface Event {
   meetings_booked: number;
   opportunities_created: number;
   roi_notes: string | null;
+  stage: EventStage;
+  tier: EventTier | null;
+  shipping_handler: ShippingHandler;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -185,6 +192,13 @@ export interface ChecklistTemplateItem {
   default_assignee_role: string | null;
   days_offset: number | null;
   sort_order: number;
+  category: string | null;
+  tier_executive: boolean;
+  tier_national_t1: boolean;
+  tier_national_t2: boolean;
+  tier_state_t1: boolean;
+  tier_state_t2: boolean;
+  tier_customer: boolean;
   created_at: string;
 }
 
@@ -203,6 +217,7 @@ export interface EventChecklistItem {
   completed_at: string | null;
   completed_by: string | null;
   sort_order: number;
+  category: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -524,6 +539,42 @@ export const checklistPhaseLabels: Record<ChecklistPhase, string> = {
   post_event: 'After the Affair',
 };
 
+export const eventStageLabels: Record<EventStage, string> = {
+  confirmed: 'Confirmed',
+  in_progress: 'In Progress',
+  ready: 'Ready',
+  active: 'Active',
+  debrief: 'Debrief',
+  archived: 'Archived',
+};
+
+export const eventTierLabels: Record<EventTier, string> = {
+  executive: 'Executive',
+  national_t1: 'National T1',
+  national_t2: 'National T2',
+  state_t1: 'State T1',
+  state_t2: 'State T2',
+  customer_partner: 'Customer/Partner',
+};
+
+export const tierColors: Record<EventTier, { bg: string; text: string; border: string }> = {
+  executive: { bg: 'bg-red-100', text: 'text-red-800', border: 'border-red-300' },
+  national_t1: { bg: 'bg-orange-100', text: 'text-orange-800', border: 'border-orange-300' },
+  national_t2: { bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-300' },
+  state_t1: { bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-blue-300' },
+  state_t2: { bg: 'bg-sky-100', text: 'text-sky-800', border: 'border-sky-300' },
+  customer_partner: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-300' },
+};
+
+export const tierBarColors: Record<EventTier, string> = {
+  executive: 'bg-red-500',
+  national_t1: 'bg-orange-500',
+  national_t2: 'bg-yellow-500',
+  state_t1: 'bg-blue-500',
+  state_t2: 'bg-sky-400',
+  customer_partner: 'bg-green-500',
+};
+
 // ============================================
 // JSON TYPE FOR SUPABASE
 // ============================================
@@ -654,6 +705,9 @@ export interface Database {
           meetings_booked: number | null;
           opportunities_created: number | null;
           roi_notes: string | null;
+          stage: string;
+          tier: string | null;
+          shipping_handler: string;
           created_at: string | null;
           updated_at: string | null;
           deleted_at: string | null;
@@ -679,6 +733,9 @@ export interface Database {
           meetings_booked?: number | null;
           opportunities_created?: number | null;
           roi_notes?: string | null;
+          stage?: string;
+          tier?: string | null;
+          shipping_handler?: string;
           created_at?: string | null;
           updated_at?: string | null;
           deleted_at?: string | null;
@@ -704,6 +761,9 @@ export interface Database {
           meetings_booked?: number | null;
           opportunities_created?: number | null;
           roi_notes?: string | null;
+          stage?: string;
+          tier?: string | null;
+          shipping_handler?: string;
           created_at?: string | null;
           updated_at?: string | null;
           deleted_at?: string | null;
@@ -936,6 +996,13 @@ export interface Database {
           default_assignee_role: string | null;
           days_offset: number | null;
           sort_order: number;
+          category: string | null;
+          tier_executive: boolean;
+          tier_national_t1: boolean;
+          tier_national_t2: boolean;
+          tier_state_t1: boolean;
+          tier_state_t2: boolean;
+          tier_customer: boolean;
           created_at: string | null;
         };
         Insert: {
@@ -947,6 +1014,13 @@ export interface Database {
           default_assignee_role?: string | null;
           days_offset?: number | null;
           sort_order?: number;
+          category?: string | null;
+          tier_executive?: boolean;
+          tier_national_t1?: boolean;
+          tier_national_t2?: boolean;
+          tier_state_t1?: boolean;
+          tier_state_t2?: boolean;
+          tier_customer?: boolean;
           created_at?: string | null;
         };
         Update: {
@@ -958,6 +1032,13 @@ export interface Database {
           default_assignee_role?: string | null;
           days_offset?: number | null;
           sort_order?: number;
+          category?: string | null;
+          tier_executive?: boolean;
+          tier_national_t1?: boolean;
+          tier_national_t2?: boolean;
+          tier_state_t1?: boolean;
+          tier_state_t2?: boolean;
+          tier_customer?: boolean;
           created_at?: string | null;
         };
         Relationships: [];
@@ -975,6 +1056,7 @@ export interface Database {
           completed_at: string | null;
           completed_by: string | null;
           sort_order: number;
+          category: string | null;
           created_at: string | null;
           updated_at: string | null;
         };
@@ -990,6 +1072,7 @@ export interface Database {
           completed_at?: string | null;
           completed_by?: string | null;
           sort_order?: number;
+          category?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
         };
@@ -1005,6 +1088,7 @@ export interface Database {
           completed_at?: string | null;
           completed_by?: string | null;
           sort_order?: number;
+          category?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
         };
@@ -1573,6 +1657,9 @@ export interface Database {
       expense_source: ExpenseSource;
       checklist_phase: ChecklistPhase;
       document_source: DocumentSource;
+      event_stage: EventStage;
+      event_tier: EventTier;
+      shipping_handler: ShippingHandler;
     };
     CompositeTypes: {
       [_ in never]: never;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, ListChecks, FileText } from "lucide-react";
+import { Plus, ListChecks, FileText, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { ChecklistSection } from "@/components/checklist/ChecklistSection";
@@ -25,15 +25,28 @@ interface ChecklistData {
 
 interface EventChecklistTabProps {
   eventId: string;
+  tier?: string | null;
 }
 
-export function EventChecklistTab({ eventId }: EventChecklistTabProps) {
+const CATEGORY_FILTERS = [
+  { label: "All", value: "all" },
+  { label: "Planning", value: "planning" },
+  { label: "Logistics", value: "logistics" },
+  { label: "Materials", value: "materials" },
+  { label: "Comms", value: "comms" },
+  { label: "Post-Event", value: "post-event" },
+] as const;
+
+export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
   const [data, setData] = useState<ChecklistData | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generateMessage, setGenerateMessage] = useState<{ type: "success" | "error" | "warning"; text: string } | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
   const fetchChecklist = useCallback(async () => {
     try {
@@ -88,6 +101,41 @@ export function EventChecklistTab({ eventId }: EventChecklistTabProps) {
     }
   };
 
+  const handleGenerateTasks = async () => {
+    if (!tier) {
+      setGenerateMessage({ type: "warning", text: "Set event tier first to generate pipeline tasks" });
+      return;
+    }
+    setIsGenerating(true);
+    setGenerateMessage(null);
+    try {
+      const res = await fetch(`/api/events/${eventId}/checklist/generate`, {
+        method: "POST",
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setGenerateMessage({ type: "error", text: json.error || "Failed to generate tasks" });
+        return;
+      }
+      if (json.items_added === 0) {
+        setGenerateMessage({ type: "warning", text: json.message || "No new tasks to add" });
+      } else {
+        setGenerateMessage({ type: "success", text: `Added ${json.items_added} pipeline task${json.items_added !== 1 ? "s" : ""}${json.items_skipped > 0 ? ` (${json.items_skipped} already existed)` : ""}` });
+      }
+      fetchChecklist();
+    } catch {
+      setGenerateMessage({ type: "error", text: "Failed to generate pipeline tasks" });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Filter items by category (client-side)
+  const filterByCategory = (items: (EventChecklistItem & { assignee?: TeamMember | null })[]) => {
+    if (categoryFilter === "all") return items;
+    return items.filter(item => item.category === categoryFilter);
+  };
+
   if (isLoading) {
     return (
       <div className="py-8 text-center text-sepia" data-oid="pecs0im">
@@ -126,6 +174,15 @@ export function EventChecklistTab({ eventId }: EventChecklistTabProps) {
         </div>
         <div className="flex gap-2" data-oid="obmyq1v">
           <Button
+            variant="gold"
+            size="sm"
+            leftIcon={<Sparkles className="w-4 h-4" />}
+            onClick={handleGenerateTasks}
+            isLoading={isGenerating}
+          >
+            Generate Tasks
+          </Button>
+          <Button
             variant="secondary"
             size="sm"
             leftIcon={<FileText className="w-4 h-4" data-oid="zo:c_of" />}
@@ -146,9 +203,43 @@ export function EventChecklistTab({ eventId }: EventChecklistTabProps) {
         </div>
       </div>
 
+      {/* Generate message */}
+      {generateMessage && (
+        <div
+          className={`text-sm px-3 py-2 rounded border ${
+            generateMessage.type === "success"
+              ? "bg-ink-green/10 text-ink-green border-ink-green/30"
+              : generateMessage.type === "error"
+                ? "bg-ink-red/10 text-ink-red border-ink-red/30"
+                : "bg-ink-gold/10 text-ink-gold border-ink-gold/30"
+          }`}
+        >
+          {generateMessage.text}
+        </div>
+      )}
+
       {/* Progress bar */}
       {total > 0 && (
         <ProgressBar value={progressPercent} max={100} data-oid="daxu08a" />
+      )}
+
+      {/* Category filter pills */}
+      {total > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {CATEGORY_FILTERS.map((filter) => (
+            <button
+              key={filter.value}
+              onClick={() => setCategoryFilter(filter.value)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                categoryFilter === filter.value
+                  ? "bg-wood-medium text-ink-gold"
+                  : "text-sepia/70 hover:bg-parchment-dark border border-wood-medium/20"
+              }`}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
       )}
 
       {/* Checklist sections */}
@@ -172,7 +263,7 @@ export function EventChecklistTab({ eventId }: EventChecklistTabProps) {
               <ChecklistSection
                 key={phase}
                 phase={phase}
-                items={data?.grouped[phase] || []}
+                items={filterByCategory(data?.grouped[phase] || [])}
                 onToggle={handleToggle}
                 data-oid="t5s.1fo"
               />
