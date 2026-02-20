@@ -433,6 +433,8 @@ export default function EventDetailPage({ params }: PageProps) {
       {/* Tab Navigation */}
       <div
         className="flex gap-1 mb-6 border-b border-wood-medium/20"
+        role="tablist"
+        aria-label="Event sections"
         data-oid="_c-kyax"
       >
         <button
@@ -442,6 +444,10 @@ export default function EventDetailPage({ params }: PageProps) {
               ? "border-ink-gold text-ink-gold"
               : "border-transparent text-sepia hover:text-wood-dark hover:border-wood-medium/40"
           }`}
+          role="tab"
+          aria-selected={activeTab === "details"}
+          aria-controls="panel-details"
+          id="tab-details"
           data-oid="e3a4d:."
         >
           <DollarSign
@@ -457,6 +463,10 @@ export default function EventDetailPage({ params }: PageProps) {
               ? "border-ink-gold text-ink-gold"
               : "border-transparent text-sepia hover:text-wood-dark hover:border-wood-medium/40"
           }`}
+          role="tab"
+          aria-selected={activeTab === "documents"}
+          aria-controls="panel-documents"
+          id="tab-documents"
           data-oid="doc-tab"
         >
           <Paperclip
@@ -472,6 +482,10 @@ export default function EventDetailPage({ params }: PageProps) {
               ? "border-ink-gold text-ink-gold"
               : "border-transparent text-sepia hover:text-wood-dark hover:border-wood-medium/40"
           }`}
+          role="tab"
+          aria-selected={activeTab === "team"}
+          aria-controls="panel-team"
+          id="tab-team"
           data-oid="nx3_n-a"
         >
           <Users className="w-4 h-4 inline mr-1.5 -mt-0.5" data-oid="0t42yf8" />
@@ -484,6 +498,10 @@ export default function EventDetailPage({ params }: PageProps) {
               ? "border-ink-gold text-ink-gold"
               : "border-transparent text-sepia hover:text-wood-dark hover:border-wood-medium/40"
           }`}
+          role="tab"
+          aria-selected={activeTab === "checklist"}
+          aria-controls="panel-checklist"
+          id="tab-checklist"
           data-oid="sm:_6w3"
         >
           <FileText
@@ -499,6 +517,10 @@ export default function EventDetailPage({ params }: PageProps) {
               ? "border-ink-gold text-ink-gold"
               : "border-transparent text-sepia hover:text-wood-dark hover:border-wood-medium/40"
           }`}
+          role="tab"
+          aria-selected={activeTab === "reminders"}
+          aria-controls="panel-reminders"
+          id="tab-reminders"
           data-oid="rmnd-tab"
         >
           <Bell
@@ -514,6 +536,10 @@ export default function EventDetailPage({ params }: PageProps) {
               ? "border-ink-gold text-ink-gold"
               : "border-transparent text-sepia hover:text-wood-dark hover:border-wood-medium/40"
           }`}
+          role="tab"
+          aria-selected={activeTab === "notes"}
+          aria-controls="panel-notes"
+          id="tab-notes"
           data-oid="note-tab"
         >
           <MessageSquare
@@ -529,6 +555,10 @@ export default function EventDetailPage({ params }: PageProps) {
               ? "border-ink-gold text-ink-gold"
               : "border-transparent text-sepia hover:text-wood-dark hover:border-wood-medium/40"
           }`}
+          role="tab"
+          aria-selected={activeTab === "shipments"}
+          aria-controls="panel-shipments"
+          id="tab-shipments"
           data-oid="ship-tab"
         >
           <Package
@@ -544,6 +574,10 @@ export default function EventDetailPage({ params }: PageProps) {
               ? "border-ink-gold text-ink-gold"
               : "border-transparent text-sepia hover:text-wood-dark hover:border-wood-medium/40"
           }`}
+          role="tab"
+          aria-selected={activeTab === "post_event"}
+          aria-controls="panel-post_event"
+          id="tab-post_event"
           data-oid="post-tab"
         >
           <ClipboardCheck
@@ -559,6 +593,10 @@ export default function EventDetailPage({ params }: PageProps) {
               ? "border-ink-gold text-ink-gold"
               : "border-transparent text-sepia hover:text-wood-dark hover:border-wood-medium/40"
           }`}
+          role="tab"
+          aria-selected={activeTab === "roi"}
+          aria-controls="panel-roi"
+          id="tab-roi"
           data-oid="ajspqtn"
         >
           <TrendingUp
@@ -570,38 +608,66 @@ export default function EventDetailPage({ params }: PageProps) {
       </div>
 
       {/* Documents Tab */}
-      {activeTab === "documents" && <EventDocumentsTab eventId={id} />}
+      {activeTab === "documents" && (
+        <div role="tabpanel" id="panel-documents" aria-labelledby="tab-documents">
+          <EventDocumentsTab eventId={id} />
+        </div>
+      )}
 
       {/* Team Tab */}
-      {activeTab === "team" && <EventTeamTab eventId={id} data-oid=":q0a1fv" />}
+      {activeTab === "team" && (
+        <div role="tabpanel" id="panel-team" aria-labelledby="tab-team">
+          <EventTeamTab eventId={id} data-oid=":q0a1fv" />
+        </div>
+      )}
 
       {/* Checklist Tab */}
       {activeTab === "checklist" && (
-        <EventChecklistTab eventId={id} tier={event.tier} data-oid="o:oscvv" />
+        <div role="tabpanel" id="panel-checklist" aria-labelledby="tab-checklist">
+          <EventChecklistTab eventId={id} tier={event.tier} data-oid="o:oscvv" />
+        </div>
       )}
 
       {/* Reminders Tab */}
       {activeTab === "reminders" && (
-        <EventRemindersTab eventId={id} eventDateStart={event.date_start} />
+        <div role="tabpanel" id="panel-reminders" aria-labelledby="tab-reminders">
+          <EventRemindersTab eventId={id} eventDateStart={event.date_start} />
+        </div>
       )}
 
       {/* Notes Tab */}
-      {activeTab === "notes" && <EventNotesTab eventId={id} />}
+      {activeTab === "notes" && (
+        <div role="tabpanel" id="panel-notes" aria-labelledby="tab-notes">
+          <EventNotesTab eventId={id} />
+        </div>
+      )}
 
       {/* Shipments Tab */}
-      {activeTab === "shipments" && <EventShipmentsTab eventId={id} />}
+      {activeTab === "shipments" && (
+        <div role="tabpanel" id="panel-shipments" aria-labelledby="tab-shipments">
+          <EventShipmentsTab eventId={id} />
+        </div>
+      )}
 
       {/* Post-Event Tab */}
-      {activeTab === "post_event" && <EventPostEventTab eventId={id} />}
+      {activeTab === "post_event" && (
+        <div role="tabpanel" id="panel-post_event" aria-labelledby="tab-post_event">
+          <EventPostEventTab eventId={id} />
+        </div>
+      )}
 
       {/* ROI Tab */}
       {activeTab === "roi" && (
-        <EventROITab event={event} onEventUpdated={fetchEvent} />
+        <div role="tabpanel" id="panel-roi" aria-labelledby="tab-roi">
+          <EventROITab event={event} onEventUpdated={fetchEvent} />
+        </div>
       )}
 
       {/* Details Tab */}
       {activeTab === "details" && (
-        <EventDetailsTab event={event} expenses={expenses} />
+        <div role="tabpanel" id="panel-details" aria-labelledby="tab-details">
+          <EventDetailsTab event={event} expenses={expenses} />
+        </div>
       )}
     </AppShell>
   );
