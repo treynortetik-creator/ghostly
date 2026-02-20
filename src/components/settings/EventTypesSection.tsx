@@ -11,6 +11,7 @@ import {
   CardDescription,
 } from "@/components/ui/Card";
 import { EventTypeForm, EventTypeFormData } from "./EventTypeForm";
+import { formatCurrencyCompact } from "@/lib/format";
 import type { EventTypeWithTotals } from "@/types/database";
 
 /* ============================================
@@ -158,18 +159,6 @@ export function EventTypesSection({
     setOpenMenu(null);
   };
 
-  /**
-   * Format currency for display
-   */
-  const formatCurrency = (value: number) => {
-    return value.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    });
-  };
-
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -295,10 +284,10 @@ export function EventTypesSection({
                     className="font-medium text-ink-gold tabular-nums"
                     data-oid="5va0_nw"
                   >
-                    {formatCurrency(et.budget_amount)}
+                    {formatCurrencyCompact(et.budget_amount)}
                   </p>
                   <p className="text-xs text-sepia" data-oid="ive67h8">
-                    {formatCurrency(et.actual_spent)} spent
+                    {formatCurrencyCompact(et.actual_spent)} spent
                   </p>
                 </div>
 

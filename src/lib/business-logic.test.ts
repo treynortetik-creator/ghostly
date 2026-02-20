@@ -10,6 +10,11 @@ import {
   formatCurrencyFixed,
   toCents,
 } from './business-logic';
+import {
+  formatCurrency,
+  formatCurrencyCompact,
+  sanitizeCurrency,
+} from './format';
 
 // ============================================
 // CSV PARSING
@@ -211,5 +216,41 @@ describe('toCents', () => {
 
   it('rounds to nearest cent', () => {
     expect(toCents(12.345)).toBe(1235);
+  });
+});
+
+// ============================================
+// FORMAT UTILITIES (from format.ts)
+// ============================================
+
+describe('format utilities', () => {
+  describe('formatCurrency', () => {
+    it('formats positive amounts as USD with 2 decimals', () => {
+      expect(formatCurrency(1234.56)).toBe('$1,234.56');
+    });
+    it('formats zero', () => {
+      expect(formatCurrency(0)).toBe('$0.00');
+    });
+    it('formats negative amounts', () => {
+      expect(formatCurrency(-500)).toBe('-$500.00');
+    });
+  });
+
+  describe('formatCurrencyCompact', () => {
+    it('formats without decimals', () => {
+      expect(formatCurrencyCompact(1234.56)).toBe('$1,235');
+    });
+    it('formats zero', () => {
+      expect(formatCurrencyCompact(0)).toBe('$0');
+    });
+  });
+
+  describe('sanitizeCurrency (re-exported)', () => {
+    it('strips non-numeric characters except decimal', () => {
+      expect(sanitizeCurrency('$1,234.56')).toBe('1234.56');
+    });
+    it('keeps only one decimal point', () => {
+      expect(sanitizeCurrency('12.34.56')).toBe('12.3456');
+    });
   });
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, ProgressBar } from "@/components/ui";
+import { formatCurrency } from "@/lib/format";
 import { DollarSign, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 
 /* ============================================
@@ -28,15 +29,6 @@ export function BudgetOverviewCard({
   const hasSetBudget = allocated !== undefined && allocated !== budget;
   const percentUsed = budget > 0 ? (actual / budget) * 100 : 0;
   const isOverBudget = actual > budget;
-
-  const formatCurrency = (value: number) => {
-    return value.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
 
   const getStatusColor = () => {
     if (isOverBudget) return "text-ink-red";

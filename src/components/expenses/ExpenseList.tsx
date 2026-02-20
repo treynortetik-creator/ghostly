@@ -24,6 +24,7 @@ import type {
   BudgetCategory,
   ExpenseWithRelations,
 } from "@/types/database";
+import { formatCurrency } from "@/lib/format";
 
 /* ============================================
    EXPENSE LIST COMPONENT
@@ -242,15 +243,6 @@ export function ExpenseList({
       { amount: 0, count: 0 },
     );
   }, [sortedExpenses]);
-
-  const formatCurrency = (amount: number) => {
-    return amount.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
 
   // Sort indicator
   const SortIcon = ({ field }: { field: SortField }) => {

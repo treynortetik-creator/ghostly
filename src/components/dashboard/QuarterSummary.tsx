@@ -8,6 +8,7 @@ import {
   CardContent,
   ProgressBar,
 } from "@/components/ui";
+import { formatCurrency, formatCurrencyCompact } from "@/lib/format";
 import { Calendar, Clock } from "lucide-react";
 import type { QuarterType } from "@/types/database";
 
@@ -66,15 +67,6 @@ function QuarterCard({ data }: { data: QuarterData }) {
   const percentage = data.budget > 0 ? (data.actual / data.budget) * 100 : 0;
   const remaining = data.budget - data.actual;
   const isOverBudget = data.actual > data.budget;
-
-  const formatCurrency = (value: number) => {
-    return value.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    });
-  };
 
   const getStatusColor = () => {
     if (isOverBudget) return "text-ink-red";
@@ -150,7 +142,7 @@ function QuarterCard({ data }: { data: QuarterData }) {
               className="font-medium text-xs tabular-nums text-ink-black"
               data-oid="t9hhtd6"
             >
-              {formatCurrency(data.actual)}
+              {formatCurrencyCompact(data.actual)}
             </span>
           </div>
           <div
@@ -164,7 +156,7 @@ function QuarterCard({ data }: { data: QuarterData }) {
               className="font-medium text-xs tabular-nums text-ink-black"
               data-oid="4_5c_g4"
             >
-              {formatCurrency(data.budget)}
+              {formatCurrencyCompact(data.budget)}
             </span>
           </div>
           <div
@@ -178,7 +170,7 @@ function QuarterCard({ data }: { data: QuarterData }) {
               className={`font-medium text-xs tabular-nums ${getStatusColor()}`}
               data-oid="y8sfdov"
             >
-              {formatCurrency(remaining)}
+              {formatCurrencyCompact(remaining)}
             </span>
           </div>
         </div>
@@ -225,24 +217,14 @@ export function QuarterSummary({ data, className }: QuarterSummaryProps) {
               className="font-serif font-bold text-lg text-ink-black tabular-nums"
               data-oid="7pohq5a"
             >
-              {totalActual.toLocaleString("en-US", {
-                style: "currency",
-                currency: "USD",
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
+              {formatCurrency(totalActual)}
               <span
                 className="text-sepia font-normal text-sm"
                 data-oid=".mk1qgp"
               >
                 {" "}
                 /{" "}
-                {totalBudget.toLocaleString("en-US", {
-                  style: "currency",
-                  currency: "USD",
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
+                {formatCurrency(totalBudget)}
               </span>
             </p>
           </div>

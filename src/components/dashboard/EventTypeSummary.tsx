@@ -8,6 +8,7 @@ import {
   CardContent,
   ProgressBar,
 } from "@/components/ui";
+import { formatCurrency } from "@/lib/format";
 import {
   Crown,
   Building2,
@@ -66,15 +67,6 @@ function EventTypeRow({ data }: { data: EventTypeData }) {
   const percentage = data.budget > 0 ? (data.actual / data.budget) * 100 : 0;
   const remaining = data.budget - data.actual;
   const isOverBudget = data.actual > data.budget;
-
-  const formatCurrency = (value: number) => {
-    return value.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
 
   const getStatusColor = () => {
     if (isOverBudget) return "text-ink-red";
@@ -197,24 +189,14 @@ export function EventTypeSummary({ data, className }: EventTypeSummaryProps) {
               className="font-serif font-bold text-lg text-ink-black tabular-nums"
               data-oid="1maqpn4"
             >
-              {totalActual.toLocaleString("en-US", {
-                style: "currency",
-                currency: "USD",
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
+              {formatCurrency(totalActual)}
               <span
                 className="text-sepia font-normal text-sm"
                 data-oid="m5f5f61"
               >
                 {" "}
                 /{" "}
-                {totalBudget.toLocaleString("en-US", {
-                  style: "currency",
-                  currency: "USD",
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
+                {formatCurrency(totalBudget)}
               </span>
             </p>
           </div>

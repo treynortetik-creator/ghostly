@@ -16,6 +16,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/Card";
+import { formatCurrency } from "@/lib/format";
 import type { ExportScope, Quarter } from "./ExportOptions";
 
 /* ============================================
@@ -58,15 +59,6 @@ interface ExportPreviewProps {
   fiscalYear: number;
   data: ExportPreviewData;
   isLoading?: boolean;
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
 }
 
 function getScopeDescription(

@@ -23,6 +23,7 @@ import {
   StatCard,
 } from "@/components/ui/Card";
 import { eventTypeLabels } from "@/types/database";
+import { formatCurrency } from "@/lib/format";
 import type { EventType } from "@/types/database";
 
 interface EventROIRow {
@@ -99,14 +100,6 @@ export default function ROIDashboardPage() {
   useEffect(() => {
     fetchData();
   }, []);
-
-  const formatCurrency = (amount: number) =>
-    amount.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
 
   const formatPercent = (value: number | null) => {
     if (value === null) return "N/A";

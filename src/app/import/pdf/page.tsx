@@ -21,6 +21,7 @@ import {
   CardContent,
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { formatCurrency } from "@/lib/format";
 import { PDFUpload, PDFPreview, AssignmentSelector } from "@/components/import";
 import type {
   ExtractedData,
@@ -272,14 +273,6 @@ export default function PDFImportPage() {
       setIsLoading(false);
     }
   }, [editableData, selectedAssignment, pdfResult]);
-
-  // Format currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
 
   // Reset form
   const handleStartOver = () => {

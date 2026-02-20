@@ -1,5 +1,6 @@
 import { forwardRef, HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
 
 /* ============================================
    PROGRESS BAR COMPONENT
@@ -82,14 +83,7 @@ const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
       lg: "h-4",
     };
 
-    const formatValue = (val: number) => {
-      return val.toLocaleString("en-US", {
-        style: "currency",
-        currency: "USD",
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
-    };
+    const formatValue = (val: number) => formatCurrency(val);
 
     const renderLabel = () => {
       if (!showLabel) return null;
@@ -269,12 +263,7 @@ const BudgetProgress = forwardRef<HTMLDivElement, BudgetProgressProps>(
               className="font-medium tabular-nums text-ink-black"
               data-oid="9ho92fi"
             >
-              {spent.toLocaleString("en-US", {
-                style: "currency",
-                currency: "USD",
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
+              {formatCurrency(spent)}
             </span>
           </div>
           <div className="text-center" data-oid=":pj0myx">
@@ -285,12 +274,7 @@ const BudgetProgress = forwardRef<HTMLDivElement, BudgetProgressProps>(
               className="font-medium tabular-nums text-ink-black"
               data-oid="rn0p1:2"
             >
-              {budget.toLocaleString("en-US", {
-                style: "currency",
-                currency: "USD",
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
+              {formatCurrency(budget)}
             </span>
           </div>
           <div className="text-right" data-oid="pz9qg4k">
@@ -301,12 +285,7 @@ const BudgetProgress = forwardRef<HTMLDivElement, BudgetProgressProps>(
               className={cn("font-medium tabular-nums", getStatusColor())}
               data-oid="bzj.pmn"
             >
-              {remaining.toLocaleString("en-US", {
-                style: "currency",
-                currency: "USD",
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
+              {formatCurrency(remaining)}
             </span>
           </div>
         </div>

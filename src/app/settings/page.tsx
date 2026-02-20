@@ -31,6 +31,7 @@ import {
 } from "@/components/settings";
 import { DEFAULT_CSV_PROMPT, DEFAULT_PDF_PROMPT } from "@/lib/openrouter";
 import type { FiscalYear } from "@/types/database";
+import { formatCurrency } from "@/lib/format";
 
 /* ============================================
    SETTINGS PAGE
@@ -497,12 +498,7 @@ export default function SettingsPage() {
                         >
                           <span className="text-sepia" data-oid="i4.sur8">
                             Allocated:{" "}
-                            {allocated.toLocaleString("en-US", {
-                              style: "currency",
-                              currency: "USD",
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
+                            {formatCurrency(allocated)}
                           </span>
                           <span
                             className={
@@ -516,12 +512,7 @@ export default function SettingsPage() {
                               ? "Unallocated"
                               : "Over-allocated"}
                             :{" "}
-                            {Math.abs(unallocated).toLocaleString("en-US", {
-                              style: "currency",
-                              currency: "USD",
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
+                            {formatCurrency(Math.abs(unallocated))}
                           </span>
                         </div>
                       )}
@@ -556,12 +547,7 @@ export default function SettingsPage() {
                           className="text-xl font-serif font-semibold text-wood-dark"
                           data-oid="lvk0a6a"
                         >
-                          {budgetSummary.eventsBudget.toLocaleString("en-US", {
-                            style: "currency",
-                            currency: "USD",
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
+                          {formatCurrency(budgetSummary.eventsBudget)}
                         </p>
                         <p
                           className="text-xs text-sepia mt-1"
@@ -606,15 +592,7 @@ export default function SettingsPage() {
                           className="text-xl font-serif font-semibold text-wood-dark"
                           data-oid="6o38u6k"
                         >
-                          {budgetSummary.categoriesBudget.toLocaleString(
-                            "en-US",
-                            {
-                              style: "currency",
-                              currency: "USD",
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            },
-                          )}
+                          {formatCurrency(budgetSummary.categoriesBudget)}
                         </p>
                         <p
                           className="text-xs text-sepia mt-1"

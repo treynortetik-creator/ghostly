@@ -10,6 +10,7 @@ import {
   CardFooter,
 } from "@/components/ui/Card";
 import type { EventTypeRecord } from "@/types/database";
+import { sanitizeCurrency } from "@/lib/format";
 
 /* ============================================
    EVENT TYPE FORM COMPONENT
@@ -37,18 +38,6 @@ export interface EventTypeFormProps {
   /** Form mode - create or edit */
   mode?: "create" | "edit";
 }
-
-/**
- * Sanitize currency input - allows only numbers and single decimal point
- */
-const sanitizeCurrency = (value: string): string => {
-  const cleaned = value.replace(/[^0-9.]/g, "");
-  const parts = cleaned.split(".");
-  if (parts.length > 2) {
-    return parts[0] + "." + parts.slice(1).join("");
-  }
-  return cleaned;
-};
 
 export function EventTypeForm({
   eventType,

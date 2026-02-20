@@ -16,6 +16,7 @@ import type {
   BudgetCategory,
 } from "@/types/database";
 import { sourceTypeLabels } from "@/types/database";
+import { sanitizeCurrency } from "@/lib/format";
 
 /* ============================================
    EXPENSE FORM COMPONENT
@@ -57,18 +58,6 @@ export interface ExpenseFormProps {
 }
 
 const sourceTypes: ExpenseSource[] = ["manual", "brex", "pdf"];
-
-// Helper to sanitize currency input - only allows one decimal point
-const sanitizeCurrency = (value: string): string => {
-  // Remove all non-numeric except decimal points
-  const cleaned = value.replace(/[^0-9.]/g, "");
-  const parts = cleaned.split(".");
-  if (parts.length > 2) {
-    // Keep only first decimal point
-    return parts[0] + "." + parts.slice(1).join("");
-  }
-  return cleaned;
-};
 
 export function ExpenseForm({
   expense,

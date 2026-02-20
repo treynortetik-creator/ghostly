@@ -20,6 +20,7 @@ import {
   CardContent,
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { formatCurrency } from "@/lib/format";
 import {
   FileUpload,
   TransactionReview,
@@ -222,14 +223,6 @@ export default function BrexImportPage() {
       setIsLoading(false);
     }
   }, [transactions]);
-
-  // Format currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
 
   return (
     <AppShell data-oid="wdtv3v2">

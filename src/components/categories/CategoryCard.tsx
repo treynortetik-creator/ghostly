@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronDown, ChevronRight, Receipt, Folder } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { formatCurrency } from "@/lib/format";
 import type { Expense, CategoryWithTotals } from "@/types/database";
 
 /* ============================================
@@ -36,15 +37,6 @@ export function CategoryCard({
   compact = false,
 }: CategoryCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-
-  const formatCurrency = (amount: number) => {
-    return amount.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
 
   const percentage =
     category.budget_amount > 0

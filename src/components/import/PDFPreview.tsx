@@ -11,6 +11,7 @@ import {
   Edit3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
 /* ============================================
@@ -103,15 +104,6 @@ export function PDFPreview({
       },
     };
     return badges[level];
-  };
-
-  const formatCurrency = (value: string) => {
-    const num = parseFloat(value);
-    if (isNaN(num)) return "";
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(num);
   };
 
   return (
@@ -231,7 +223,7 @@ export function PDFPreview({
             </div>
             {amount && parseFloat(amount) > 0 && (
               <p className="text-xs text-sepia" data-oid="_wl3nbv">
-                {formatCurrency(amount)}
+                {formatCurrency(parseFloat(amount))}
               </p>
             )}
           </div>

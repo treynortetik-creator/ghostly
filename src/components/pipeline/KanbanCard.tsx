@@ -11,6 +11,7 @@ import {
   eventTierLabels,
   type EventTier,
 } from '@/types/database';
+import { formatCurrencyCompact } from '@/lib/format';
 import type { BoardEvent } from './KanbanBoard';
 
 interface KanbanCardProps {
@@ -29,10 +30,6 @@ function formatDateRange(start: string | null, end: string | null): string {
     return `${format(startDate, 'MMM d')}-${format(endDate, 'd, yyyy')}`;
   }
   return `${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d, yyyy')}`;
-}
-
-function formatCurrency(value: number): string {
-  return value.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
 function CountdownBadge({ daysUntil }: { daysUntil: number | null }) {
@@ -151,7 +148,7 @@ export function KanbanCard({ event, overlay = false }: KanbanCardProps) {
             size="sm"
           />
           <p className="text-[10px] text-sepia tabular-nums">
-            {formatCurrency(event.actual_spent)} / {formatCurrency(event.budget_amount)}
+            {formatCurrencyCompact(event.actual_spent)} / {formatCurrencyCompact(event.budget_amount)}
           </p>
         </div>
 

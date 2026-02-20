@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { Folder, AlertTriangle, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { CategoryCard } from "./CategoryCard";
+import { formatCurrency } from "@/lib/format";
 import type { Expense, CategoryWithTotals } from "@/types/database";
 
 /* ============================================
@@ -63,15 +64,6 @@ export function CategoryList({
       { budget: 0, actual: 0, count: 0 },
     );
   }, [filteredCategories]);
-
-  const formatCurrency = (amount: number) => {
-    return amount.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
 
   // Loading state
   if (isLoading) {

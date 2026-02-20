@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Calendar, Tag, FileText, CreditCard, PencilLine } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
+import { formatCurrency } from "@/lib/format";
 import type { ExpenseWithRelations } from "@/types/database";
 
 /* ============================================
@@ -47,15 +48,6 @@ export function ExpenseCard({
   onEdit,
   onDelete,
 }: ExpenseCardProps) {
-  const formatCurrency = (amount: number) => {
-    return amount.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
-
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("en-US", {
       month: "short",

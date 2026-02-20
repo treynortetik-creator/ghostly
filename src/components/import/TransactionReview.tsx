@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
+import { formatCurrency } from "@/lib/format";
 import {
   AssignmentSelector,
   type AssignmentOption,
@@ -136,13 +137,6 @@ export function TransactionReview({
     status: ParsedTransaction["status"],
   ) => {
     onUpdateTransaction(id, { status });
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
   };
 
   const formatDate = (dateStr: string) => {

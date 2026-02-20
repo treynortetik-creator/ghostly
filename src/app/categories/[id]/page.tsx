@@ -30,6 +30,7 @@ import {
   CategoryForm,
   CategoryFormData,
 } from "@/components/categories/CategoryForm";
+import { formatCurrency } from "@/lib/format";
 import type { Expense, FiscalYear, CategoryWithTotals } from "@/types/database";
 
 /* ============================================
@@ -140,15 +141,6 @@ export default function CategoryDetailPage({ params }: PageProps) {
       setIsDeleting(false);
       setShowDeleteConfirm(false);
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return amount.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
   };
 
   // Loading state

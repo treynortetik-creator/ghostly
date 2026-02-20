@@ -9,6 +9,7 @@ import {
   ExpenseForm,
   ExpenseFormData,
 } from "@/components/expenses/ExpenseForm";
+import { formatCurrency } from "@/lib/format";
 import type {
   Event,
   BudgetCategory,
@@ -274,14 +275,6 @@ export default function ExpensesPage() {
 
   // Calculate total amount
   const totalAmount = expenses.reduce((sum, e) => sum + e.amount, 0);
-  const formatCurrency = (amount: number) => {
-    return amount.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
 
   return (
     <AppShell data-oid="y46.1jg">

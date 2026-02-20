@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/Card";
 import type { Event, QuarterType, EventTypeRecord } from "@/types/database";
 import { quarterLabels } from "@/types/database";
+import { sanitizeCurrency } from "@/lib/format";
 
 /* ============================================
    EVENT FORM COMPONENT
@@ -49,18 +50,6 @@ export interface EventFormProps {
 }
 
 const quarters: QuarterType[] = ["Q1", "Q2", "Q3", "Q4", "TBD"];
-
-// Helper to sanitize currency input - only allows one decimal point
-const sanitizeCurrency = (value: string): string => {
-  // Remove all non-numeric except decimal points
-  const cleaned = value.replace(/[^0-9.]/g, "");
-  const parts = cleaned.split(".");
-  if (parts.length > 2) {
-    // Keep only first decimal point
-    return parts[0] + "." + parts.slice(1).join("");
-  }
-  return cleaned;
-};
 
 export function EventForm({
   event,

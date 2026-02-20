@@ -48,6 +48,7 @@ import { EventNotesTab } from "@/components/events/EventNotesTab";
 import { EventShipmentsTab } from "@/components/events/EventShipmentsTab";
 import { EventPostEventTab } from "@/components/events/EventPostEventTab";
 import { EventDocumentsTab } from "@/components/documents/EventDocumentsTab";
+import { formatCurrency } from "@/lib/format";
 import type { Expense, FiscalYear, EventWithTotals, EventTier, ShippingHandler } from "@/types/database";
 import { eventTypeLabels, quarterLabels, tierColors, eventTierLabels, eventStageLabels } from "@/types/database";
 
@@ -217,15 +218,6 @@ export default function EventDetailPage({ params }: PageProps) {
       setIsDeleting(false);
       setShowDeleteConfirm(false);
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return amount.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
   };
 
   const formatDate = (dateStr: string | null) => {

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { formatCurrency } from "@/lib/format";
 import type { Expense, EventWithTotals } from "@/types/database";
 
 /* ============================================
@@ -50,15 +51,6 @@ export function EventCard({
   compact = false,
 }: EventCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-
-  const formatCurrency = (amount: number) => {
-    return amount.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return null;

@@ -5,6 +5,7 @@ import { Calendar, AlertTriangle, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { EventCard } from "./EventCard";
 import { EventFilters, FilterPills } from "./EventFilters";
+import { formatCurrency } from "@/lib/format";
 import type {
   QuarterType,
   Expense,
@@ -170,15 +171,6 @@ export function EventList({
       { budget: 0, actual: 0, count: 0 },
     );
   }, [filteredEvents]);
-
-  const formatCurrency = (amount: number) => {
-    return amount.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
 
   // Loading state
   if (isLoading) {

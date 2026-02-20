@@ -19,6 +19,7 @@ import {
   CardFooter,
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { formatCurrency } from "@/lib/format";
 import type { ParsedTransaction } from "./TransactionReview";
 
 /* ============================================
@@ -88,13 +89,6 @@ export function ImportConfirmation({
       byCategory: Object.values(byCategory),
     };
   }, [transactions]);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
 
   const canConfirm =
     summary.accepted.length > 0 &&
