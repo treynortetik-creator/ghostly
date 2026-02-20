@@ -139,6 +139,69 @@
 }
 
 /* ========================================
+   DARK MODE - Victorian Counting House at Night
+   ========================================
+   Deep charcoal-brown backgrounds with warm undertones,
+   like a counting house lit by gaslight and candleflame.
+   ======================================== */
+
+.dark {
+  /* Wood Tones - Lighter for visibility on dark backgrounds */
+  --wood-dark: #5c4a3a;
+  --wood-medium: #7a6350;
+  --wood-light: #a8892e;
+
+  /* Parchment - Deep charcoal with warm brown undertone */
+  --parchment: #1a1612;
+  --parchment-dark: #242018;
+  --parchment-darker: #2e281f;
+
+  /* Ink Colors - Brighter for contrast on dark backgrounds */
+  --ink-black: #d4c9b0;
+  --ink-green: #2d8a5e;
+  --ink-red: #c44425;
+  --ink-gold: #d4a017;
+  --sepia: #a08050;
+
+  /* Semantic mappings */
+  --background: #1a1612;
+  --foreground: #d4c9b0;
+  --card: #242018;
+  --card-foreground: #d4c9b0;
+  --popover: #242018;
+  --popover-foreground: #d4c9b0;
+  --primary: #d4c9b0;
+  --primary-foreground: #1a1612;
+  --secondary: #2e281f;
+  --secondary-foreground: #c4b898;
+  --muted: #2e281f;
+  --muted-foreground: #a08050;
+  --accent: #d4a017;
+  --accent-foreground: #1a1612;
+  --destructive: #c44425;
+  --border: #7a6350;
+  --input: #7a6350;
+  --ring: #d4a017;
+
+  /* Chart colors - Brighter Victorian palette */
+  --chart-1: #2d8a5e;
+  --chart-2: #d4a017;
+  --chart-3: #7a6350;
+  --chart-4: #a08050;
+  --chart-5: #c44425;
+
+  /* Sidebar - Deep wood tones */
+  --sidebar: #242018;
+  --sidebar-foreground: #d4c9b0;
+  --sidebar-primary: #d4a017;
+  --sidebar-primary-foreground: #1a1612;
+  --sidebar-accent: #2e281f;
+  --sidebar-accent-foreground: #d4c9b0;
+  --sidebar-border: #7a6350;
+  --sidebar-ring: #d4a017;
+}
+
+/* ========================================
    BASE STYLES
    ======================================== */
 
@@ -173,6 +236,26 @@
         transparent 80%,
         rgba(0, 0, 0, 0.02) 100%
       );
+  }
+
+  /* Dark mode paper texture - aged paper by candlelight */
+  .dark .paper-texture {
+    background-color: var(--parchment);
+    background-image:
+      radial-gradient(ellipse at 20% 30%, rgba(164, 130, 46, 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(160, 128, 80, 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(122, 99, 80, 0.03) 0%, transparent 70%),
+      linear-gradient(180deg,
+        rgba(255, 255, 255, 0.01) 0%,
+        transparent 20%,
+        transparent 80%,
+        rgba(0, 0, 0, 0.03) 100%
+      );
+  }
+
+  /* Dark mode heading colors - wood-dark is too dark on dark bg */
+  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+    color: var(--wood-light);
   }
 
   /* Typography refinements */
@@ -287,6 +370,28 @@
     inset 0 0 0 1px rgba(92, 61, 46, 0.15);
 }
 
+/* Dark mode shadow overrides */
+.dark .ink-shadow {
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.4),
+    0 2px 4px -2px rgba(0, 0, 0, 0.3),
+    inset 0 -1px 0 rgba(168, 137, 46, 0.08);
+}
+
+.dark .parchment-shadow {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    0 2px 4px rgba(0, 0, 0, 0.15),
+    0 4px 8px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(122, 99, 80, 0.2);
+}
+
+.dark .inset-shadow {
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(122, 99, 80, 0.25);
+}
+
 /* ========================================
    ANIMATIONS - Subtle, Period-Appropriate
    ======================================== */
@@ -382,6 +487,25 @@
   scrollbar-color: var(--wood-medium) var(--parchment-dark);
 }
 
+/* Dark mode scrollbars */
+.dark ::-webkit-scrollbar-track {
+  background: var(--parchment-dark);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--wood-medium);
+  border-color: var(--parchment-dark);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--wood-light);
+}
+
+/* Dark mode Firefox scrollbars */
+.dark * {
+  scrollbar-color: var(--wood-medium) var(--parchment-dark);
+}
+
 /* ========================================
    UTILITY CLASSES
    ======================================== */
@@ -430,6 +554,26 @@ select:focus {
   @apply border-ink-gold ring-2 ring-ink-gold/20 outline-none;
 }
 
+/* Dark mode form elements */
+.dark input[type="text"],
+.dark input[type="email"],
+.dark input[type="password"],
+.dark input[type="number"],
+.dark input[type="date"],
+.dark input[type="search"],
+.dark textarea,
+.dark select {
+  background-color: var(--parchment-dark);
+  border-color: var(--wood-medium);
+  color: var(--ink-black);
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--sepia);
+  opacity: 0.6;
+}
+
 /* ========================================
    SELECTION STYLING
    ======================================== */
@@ -441,5 +585,16 @@ select:focus {
 
 ::-moz-selection {
   background-color: rgba(184, 134, 11, 0.25);
+  color: var(--ink-black);
+}
+
+/* Dark mode selection */
+.dark ::selection {
+  background-color: rgba(212, 160, 23, 0.3);
+  color: var(--ink-black);
+}
+
+.dark ::-moz-selection {
+  background-color: rgba(212, 160, 23, 0.3);
   color: var(--ink-black);
 }
