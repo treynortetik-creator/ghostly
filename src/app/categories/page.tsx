@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Plus, Folder, RefreshCw } from "lucide-react";
 import { AppShell } from "@/components/layout";
 import { Button } from "@/components/ui/Button";
+import { useToast, ToastContainer } from "@/components/ui/Toast";
 import { CategoryList } from "@/components/categories/CategoryList";
 import {
   CategoryForm,
@@ -35,6 +36,7 @@ export default function CategoriesPage() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const { toasts, removeToast, toast } = useToast();
 
   // Fetch categories
   const fetchCategories = async () => {
@@ -83,7 +85,7 @@ export default function CategoriesPage() {
       setCategories((prev) => [newCategory, ...prev]);
       setShowCreateForm(false);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to create category");
+      toast.error(err instanceof Error ? err.message : "Failed to create category");
     } finally {
       setIsCreating(false);
     }
@@ -99,6 +101,7 @@ export default function CategoriesPage() {
 
   return (
     <AppShell data-oid="_zvptt4">
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
       {/* Page Header */}
       <div
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"

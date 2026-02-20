@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { MessageSquare, Pin, PinOff, Trash2, Plus, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Card, CardContent } from '@/components/ui/Card';
 import { formatDateMedium } from '@/lib/format';
 
@@ -52,6 +53,7 @@ export function EventNotesTab({ eventId }: EventNotesTabProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newNote, setNewNote] = useState({ content: '', title: '', note_type: 'general', author: 'Treynor' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const fetchNotes = useCallback(async () => {
     try {
@@ -105,7 +107,7 @@ export function EventNotesTab({ eventId }: EventNotesTabProps) {
   };
 
   const handleDelete = async (noteId: string) => {
-    if (!confirm('Delete this note?')) return;
+    setDeleteConfirmId(null);
     try {
       const res = await fetch(`/api/events/${eventId}/notes/${noteId}`, { method: 'DELETE' });
       if (res.ok) fetchNotes();
@@ -122,6 +124,15 @@ export function EventNotesTab({ eventId }: EventNotesTabProps) {
 
   return (
     <div className="space-y-4">
+      <ConfirmDialog
+        open={deleteConfirmId !== null}
+        title="Delete Note"
+        message="Delete this note?"
+        variant="danger"
+        confirmLabel="Delete"
+        onConfirm={() => { if (deleteConfirmId) handleDelete(deleteConfirmId); }}
+        onCancel={() => setDeleteConfirmId(null)}
+      />
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-wood-dark flex items-center gap-2">
@@ -244,7 +255,7 @@ export function EventNotesTab({ eventId }: EventNotesTabProps) {
                         {note.pinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
                       </button>
                       <button
-                        onClick={() => handleDelete(note.id)}
+                        onClick={() => setDeleteConfirmId(note.id)}
                         className="p-1.5 text-sepia hover:text-ink-red transition-colors"
                         title="Delete"
                       >

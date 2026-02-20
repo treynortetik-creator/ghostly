@@ -10,6 +10,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { useToast, ToastContainer } from "@/components/ui/Toast";
 import {
   Card,
   CardContent,
@@ -70,6 +71,7 @@ function formatRatio(value: number | null) {
 export function EventROITab({ event, onEventUpdated }: EventROITabProps) {
   const [isEditingROI, setIsEditingROI] = useState(false);
   const [isSavingROI, setIsSavingROI] = useState(false);
+  const { toasts, removeToast, toast } = useToast();
   const [roiForm, setRoiForm] = useState({
     pipeline_generated: 0,
     revenue_closed: 0,
@@ -106,7 +108,7 @@ export function EventROITab({ event, onEventUpdated }: EventROITabProps) {
       setIsEditingROI(false);
       onEventUpdated();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to save ROI data");
+      toast.error(err instanceof Error ? err.message : "Failed to save ROI data");
     } finally {
       setIsSavingROI(false);
     }
@@ -116,6 +118,7 @@ export function EventROITab({ event, onEventUpdated }: EventROITabProps) {
 
   return (
     <div className="space-y-6" data-oid="fe-8f5d">
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
       {/* Computed ROI Metrics */}
       <div
         className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ClipboardCheck, Plus, RefreshCw, Trash2, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { formatDateMedium } from '@/lib/format';
 
@@ -53,6 +54,7 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
     follow_up: '',
   });
   const [isSavingDebrief, setIsSavingDebrief] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const fetchNotes = useCallback(async () => {
     try {
@@ -147,7 +149,7 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
   };
 
   const handleDelete = async (noteId: string) => {
-    if (!confirm('Delete this note?')) return;
+    setDeleteConfirmId(null);
     try {
       const res = await fetch(`/api/events/${eventId}/notes/${noteId}`, { method: 'DELETE' });
       if (res.ok) fetchNotes();
@@ -168,6 +170,15 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
 
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        open={deleteConfirmId !== null}
+        title="Delete Note"
+        message="Delete this note?"
+        variant="danger"
+        confirmLabel="Delete"
+        onConfirm={() => { if (deleteConfirmId) handleDelete(deleteConfirmId); }}
+        onCancel={() => setDeleteConfirmId(null)}
+      />
       {/* Structured Debrief Form */}
       <Card className="border-ink-gold/30">
         <CardHeader>
@@ -296,7 +307,7 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
                     {/* Actions */}
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <button
-                        onClick={() => handleDelete(note.id)}
+                        onClick={() => setDeleteConfirmId(note.id)}
                         className="p-1.5 text-sepia hover:text-ink-red transition-colors"
                         title="Delete"
                       >

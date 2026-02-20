@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { Plus, MoreVertical, Pencil, Archive, Layers } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { useToast, ToastContainer } from "@/components/ui/Toast";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import {
   Card,
   CardContent,
@@ -41,6 +43,8 @@ export function EventTypesSection({
   );
   const [isSaving, setIsSaving] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [archiveConfirmId, setArchiveConfirmId] = useState<string | null>(null);
+  const { toasts, removeToast, toast } = useToast();
 
   /**
    * Fetch event types from the API
@@ -94,7 +98,7 @@ export function EventTypesSection({
       setShowForm(false);
       fetchEventTypes();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to create event type");
+      toast.error(err instanceof Error ? err.message : "Failed to create event type");
     } finally {
       setIsSaving(false);
     }
@@ -122,7 +126,7 @@ export function EventTypesSection({
       setEditingType(null);
       fetchEventTypes();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to update event type");
+      toast.error(err instanceof Error ? err.message : "Failed to update event type");
     } finally {
       setIsSaving(false);
     }
@@ -132,14 +136,6 @@ export function EventTypesSection({
    * Handle archiving an event type
    */
   const handleArchive = async (id: string) => {
-    if (
-      !confirm(
-        "Archive this event type? It will no longer appear in dropdowns but existing events will keep their association.",
-      )
-    ) {
-      return;
-    }
-
     try {
       const response = await fetch(`/api/event-types/${id}`, {
         method: "DELETE",
@@ -152,10 +148,11 @@ export function EventTypesSection({
 
       fetchEventTypes();
     } catch (err) {
-      alert(
+      toast.error(
         err instanceof Error ? err.message : "Failed to archive event type",
       );
     }
+    setArchiveConfirmId(null);
     setOpenMenu(null);
   };
 
@@ -200,6 +197,17 @@ export function EventTypesSection({
   }
 
   return (
+    <>
+    <ToastContainer toasts={toasts} removeToast={removeToast} />
+    <ConfirmDialog
+      open={archiveConfirmId !== null}
+      title="Archive Event Type"
+      message="Archive this event type? It will no longer appear in dropdowns but existing events will keep their association."
+      variant="warning"
+      confirmLabel="Archive"
+      onConfirm={() => { if (archiveConfirmId) handleArchive(archiveConfirmId); }}
+      onCancel={() => setArchiveConfirmId(null)}
+    />
     <Card data-oid="x26aqn1">
       <CardHeader data-oid="qgczujg">
         <div className="flex items-center justify-between" data-oid="x7d5.b2">
@@ -331,7 +339,10 @@ export function EventTypesSection({
                       </button>
                       <button
                         role="menuitem"
-                        onClick={() => handleArchive(et.id)}
+                        onClick={() => {
+                          setArchiveConfirmId(et.id);
+                          setOpenMenu(null);
+                        }}
                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink-red hover:bg-ink-red/10 rounded-b-lg transition-colors"
                         data-oid="me4pro5"
                       >
@@ -347,6 +358,7 @@ export function EventTypesSection({
         )}
       </CardContent>
     </Card>
+    </>
   );
 }
 

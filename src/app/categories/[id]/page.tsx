@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/layout";
 import { Button } from "@/components/ui/Button";
+import { useToast, ToastContainer } from "@/components/ui/Toast";
 import {
   Card,
   CardContent,
@@ -65,6 +66,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { toasts, removeToast, toast } = useToast();
 
   // Fetch category details
   const fetchCategory = async () => {
@@ -115,7 +117,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
       setCategory(updatedCategory);
       setIsEditing(false);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to update category");
+      toast.error(err instanceof Error ? err.message : "Failed to update category");
     } finally {
       setIsSaving(false);
     }
@@ -137,7 +139,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
 
       router.push("/categories");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete category");
+      toast.error(err instanceof Error ? err.message : "Failed to delete category");
       setIsDeleting(false);
       setShowDeleteConfirm(false);
     }
@@ -205,6 +207,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
   if (isEditing) {
     return (
       <AppShell data-oid="uhx7m22">
+        <ToastContainer toasts={toasts} removeToast={removeToast} />
         <div className="mb-6" data-oid="teoc3bw">
           <Link
             href="/categories"
@@ -230,6 +233,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
 
   return (
     <AppShell data-oid="9tz9k.p">
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
       {/* Back link */}
       <div className="mb-6" data-oid="hj7kivv">
         <Link

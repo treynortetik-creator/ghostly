@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/layout";
 import { Button } from "@/components/ui/Button";
+import { useToast, ToastContainer } from "@/components/ui/Toast";
 import {
   Card,
   CardContent,
@@ -82,6 +83,7 @@ export default function EventDetailPage({ params }: PageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { toasts, removeToast, toast } = useToast();
   const [activeTab, setActiveTab] = useState<
     "details" | "documents" | "team" | "checklist" | "reminders" | "notes" | "shipments" | "post_event" | "roi"
   >("details");
@@ -134,7 +136,7 @@ export default function EventDetailPage({ params }: PageProps) {
       setEvent(updatedEvent);
       setIsEditing(false);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to update event");
+      toast.error(err instanceof Error ? err.message : "Failed to update event");
     } finally {
       setIsSaving(false);
     }
@@ -156,7 +158,7 @@ export default function EventDetailPage({ params }: PageProps) {
 
       router.push("/events");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete event");
+      toast.error(err instanceof Error ? err.message : "Failed to delete event");
       setIsDeleting(false);
       setShowDeleteConfirm(false);
     }
@@ -234,6 +236,7 @@ export default function EventDetailPage({ params }: PageProps) {
   if (isEditing) {
     return (
       <AppShell data-oid="o6xod29">
+        <ToastContainer toasts={toasts} removeToast={removeToast} />
         <div className="mb-6" data-oid="lkjjng2">
           <Link
             href="/events"
@@ -259,6 +262,7 @@ export default function EventDetailPage({ params }: PageProps) {
 
   return (
     <AppShell data-oid="jek1nsg">
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
       {/* Back link */}
       <div className="mb-6" data-oid="k8df1j-">
         <Link

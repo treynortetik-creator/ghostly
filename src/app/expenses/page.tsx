@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { Receipt, Plus, RefreshCw } from "lucide-react";
 import { AppShell } from "@/components/layout";
 import { Button } from "@/components/ui/Button";
+import { useToast, ToastContainer } from "@/components/ui/Toast";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ExpenseList } from "@/components/expenses/ExpenseList";
 import {
   ExpenseForm,
@@ -54,6 +56,9 @@ export default function ExpensesPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [editingExpense, setEditingExpense] =
     useState<ExpenseWithRelations | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ExpenseWithRelations | null>(null);
+  const [bulkDeleteTargets, setBulkDeleteTargets] = useState<ExpenseWithRelations[]>([]);
+  const { toasts, removeToast, toast } = useToast();
 
   // Ref for the form section so we can scroll to it
   const formRef = useRef<HTMLDivElement>(null);
@@ -128,7 +133,7 @@ export default function ExpensesPage() {
       setExpenses((prev) => [newExpense, ...prev]);
       setShowCreateForm(false);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to create expense");
+      toast.error(err instanceof Error ? err.message : "Failed to create expense");
     } finally {
       setIsCreating(false);
     }
@@ -182,21 +187,21 @@ export default function ExpensesPage() {
       );
       setEditingExpense(null);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to update expense");
+      toast.error(err instanceof Error ? err.message : "Failed to update expense");
     } finally {
       setIsCreating(false);
     }
   };
 
   // Handle delete expense (optimistic UI)
-  const handleDeleteExpense = async (expense: ExpenseWithRelations) => {
-    if (
-      !confirm(
-        `Are you sure you wish to delete this expense from ${expense.vendor || "Unknown Vendor"}?`,
-      )
-    ) {
-      return;
-    }
+  const handleDeleteExpense = (expense: ExpenseWithRelations) => {
+    setDeleteTarget(expense);
+  };
+
+  const confirmDeleteExpense = async () => {
+    if (!deleteTarget) return;
+    const expense = deleteTarget;
+    setDeleteTarget(null);
 
     // Optimistic: save previous state and remove immediately
     const previousExpenses = expenses;
@@ -214,24 +219,22 @@ export default function ExpensesPage() {
     } catch (err) {
       // Rollback on failure
       setExpenses(previousExpenses);
-      alert(err instanceof Error ? err.message : "Failed to delete expense");
+      toast.error(err instanceof Error ? err.message : "Failed to delete expense");
     }
   };
 
   // Handle bulk delete expenses (optimistic UI)
-  const handleBulkDeleteExpenses = async (
+  const handleBulkDeleteExpenses = (
     expensesToDelete: ExpenseWithRelations[],
   ) => {
     if (expensesToDelete.length === 0) return;
+    setBulkDeleteTargets(expensesToDelete);
+  };
 
-    const confirmMsg =
-      expensesToDelete.length === 1
-        ? `Are you sure you wish to delete this expense?`
-        : `Are you sure you wish to delete ${expensesToDelete.length} expenses?`;
-
-    if (!confirm(confirmMsg)) {
-      return;
-    }
+  const confirmBulkDeleteExpenses = async () => {
+    const expensesToDelete = bulkDeleteTargets;
+    setBulkDeleteTargets([]);
+    if (expensesToDelete.length === 0) return;
 
     // Optimistic: save previous state and remove immediately
     const previousExpenses = expenses;
@@ -250,14 +253,14 @@ export default function ExpensesPage() {
       if (failedCount > 0) {
         // Rollback: restore previous state since some failed
         setExpenses(previousExpenses);
-        alert(
+        toast.error(
           `Failed to delete ${failedCount} expense(s). Changes have been reverted.`,
         );
       }
     } catch (err) {
       // Rollback on failure
       setExpenses(previousExpenses);
-      alert(
+      toast.error(
         err instanceof Error
           ? err.message
           : "Failed to delete expenses. Changes have been reverted.",
@@ -278,6 +281,29 @@ export default function ExpensesPage() {
 
   return (
     <AppShell data-oid="y46.1jg">
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Delete Expense"
+        message={`Are you sure you wish to delete this expense from ${deleteTarget?.vendor || "Unknown Vendor"}?`}
+        variant="danger"
+        confirmLabel="Delete"
+        onConfirm={confirmDeleteExpense}
+        onCancel={() => setDeleteTarget(null)}
+      />
+      <ConfirmDialog
+        open={bulkDeleteTargets.length > 0}
+        title="Delete Expenses"
+        message={
+          bulkDeleteTargets.length === 1
+            ? "Are you sure you wish to delete this expense?"
+            : `Are you sure you wish to delete ${bulkDeleteTargets.length} expenses?`
+        }
+        variant="danger"
+        confirmLabel="Delete"
+        onConfirm={confirmBulkDeleteExpenses}
+        onCancel={() => setBulkDeleteTargets([])}
+      />
       {/* Page Header */}
       <div
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"

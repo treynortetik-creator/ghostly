@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { UserPlus, Users, RefreshCw } from "lucide-react";
 import { AppShell } from "@/components/layout";
 import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { TeamMemberList } from "@/components/team/TeamMemberList";
 import { TeamMemberForm } from "@/components/team/TeamMemberForm";
 import type { TeamMember } from "@/types/database";
@@ -14,6 +15,7 @@ export default function TeamPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<TeamMember | null>(null);
 
   const fetchMembers = useCallback(async () => {
     try {
@@ -63,14 +65,29 @@ export default function TeamPage() {
     setShowForm(true);
   };
 
-  const handleDelete = async (member: TeamMember) => {
-    if (!confirm(`Remove ${member.name} from the staff rolls?`)) return;
+  const handleDelete = (member: TeamMember) => {
+    setDeleteTarget(member);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const member = deleteTarget;
+    setDeleteTarget(null);
     await fetch(`/api/team/${member.id}`, { method: "DELETE" });
     fetchMembers();
   };
 
   return (
     <AppShell data-oid="xml9grd">
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Remove Staff Member"
+        message={`Remove ${deleteTarget?.name || ""} from the staff rolls?`}
+        variant="danger"
+        confirmLabel="Remove"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
       {/* Page Header */}
       <div
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"

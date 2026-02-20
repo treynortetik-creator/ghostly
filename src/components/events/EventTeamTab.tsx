@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { UserPlus, User, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Card, CardContent } from "@/components/ui/Card";
 import { AssignTeamMemberModal } from "./AssignTeamMemberModal";
 import type { TeamMember } from "@/types/database";
@@ -24,6 +25,7 @@ export function EventTeamTab({ eventId }: EventTeamTabProps) {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [removeConfirmId, setRemoveConfirmId] = useState<string | null>(null);
 
   const fetchTeam = useCallback(async () => {
     try {
@@ -40,7 +42,7 @@ export function EventTeamTab({ eventId }: EventTeamTabProps) {
   }, [fetchTeam]);
 
   const handleRemove = async (assignmentId: string) => {
-    if (!confirm("Remove this team member from the event?")) return;
+    setRemoveConfirmId(null);
     await fetch(`/api/events/${eventId}/team/${assignmentId}`, {
       method: "DELETE",
     });
@@ -57,6 +59,15 @@ export function EventTeamTab({ eventId }: EventTeamTabProps) {
 
   return (
     <div className="space-y-4" data-oid="m_s7ijb">
+      <ConfirmDialog
+        open={removeConfirmId !== null}
+        title="Remove Team Member"
+        message="Remove this team member from the event?"
+        variant="danger"
+        confirmLabel="Remove"
+        onConfirm={() => { if (removeConfirmId) handleRemove(removeConfirmId); }}
+        onCancel={() => setRemoveConfirmId(null)}
+      />
       <div className="flex items-center justify-between" data-oid="dr73x1a">
         <h3
           className="font-serif text-lg font-semibold text-wood-dark"
@@ -117,7 +128,7 @@ export function EventTeamTab({ eventId }: EventTeamTabProps) {
                   </div>
                 </div>
                 <button
-                  onClick={() => handleRemove(a.id)}
+                  onClick={() => setRemoveConfirmId(a.id)}
                   className="text-sepia/50 hover:text-ink-red transition-colors"
                   data-oid="rx5bxtt"
                 >

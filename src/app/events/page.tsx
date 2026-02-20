@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Plus, Calendar, RefreshCw } from "lucide-react";
 import { AppShell } from "@/components/layout";
 import { Button } from "@/components/ui/Button";
+import { useToast, ToastContainer } from "@/components/ui/Toast";
 import { Card, CardContent } from "@/components/ui/Card";
 import { EventList } from "@/components/events/EventList";
 import { EventForm, EventFormData } from "@/components/events/EventForm";
@@ -33,6 +34,7 @@ export default function EventsPage() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const { toasts, removeToast, toast } = useToast();
 
   // Fetch events
   const fetchEvents = async () => {
@@ -82,7 +84,7 @@ export default function EventsPage() {
       setEvents((prev) => [newEvent, ...prev]);
       setShowCreateForm(false);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to create event");
+      toast.error(err instanceof Error ? err.message : "Failed to create event");
     } finally {
       setIsCreating(false);
     }
@@ -98,6 +100,7 @@ export default function EventsPage() {
 
   return (
     <AppShell data-oid="6ks2gaf">
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
       {/* Page Header */}
       <div
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"

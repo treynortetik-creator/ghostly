@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Download, Trash2, FileText, File, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { useToast, ToastContainer } from "@/components/ui/Toast";
 import { formatDateShort } from "@/lib/format";
 
 interface DocumentItem {
@@ -40,6 +41,7 @@ export function DocumentList({
 }: DocumentListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const { toasts, removeToast, toast } = useToast();
 
   const handleDelete = async (id: string) => {
     setDeletingId(id);
@@ -55,7 +57,7 @@ export function DocumentList({
 
       onDelete?.(id);
     } catch (err) {
-      alert(
+      toast.error(
         err instanceof Error ? err.message : "Failed to delete document"
       );
     } finally {
@@ -83,6 +85,7 @@ export function DocumentList({
 
   return (
     <div className="space-y-2">
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
       {documents.map((doc) => (
         <div key={doc.id}>
           <div className="flex items-center justify-between p-3 rounded-lg bg-parchment border border-wood-medium/20 hover:border-wood-medium/40 transition-colors">

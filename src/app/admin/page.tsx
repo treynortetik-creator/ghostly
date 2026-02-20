@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/layout";
 import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import {
   Card,
   CardContent,
@@ -75,6 +76,7 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedLog, setSelectedLog] = useState<ErrorLogEntry | null>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   // Filter state
   const [levelFilter, setLevelFilter] = useState<
@@ -119,13 +121,7 @@ export default function AdminPage() {
 
   // Clear all logs
   const handleClearLogs = async () => {
-    if (
-      !confirm(
-        "Are you sure you want to clear all error logs? This action cannot be undone.",
-      )
-    ) {
-      return;
-    }
+    setShowClearConfirm(false);
 
     try {
       const response = await fetch("/api/admin/errors", { method: "DELETE" });
@@ -172,6 +168,15 @@ export default function AdminPage() {
 
   return (
     <AppShell data-oid=":t9od5r">
+      <ConfirmDialog
+        open={showClearConfirm}
+        title="Clear All Error Logs"
+        message="Are you sure you want to clear all error logs? This action cannot be undone."
+        variant="danger"
+        confirmLabel="Clear All"
+        onConfirm={handleClearLogs}
+        onCancel={() => setShowClearConfirm(false)}
+      />
       {/* Page Header */}
       <div
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
@@ -207,7 +212,7 @@ export default function AdminPage() {
           <Button
             variant="destructive"
             size="sm"
-            onClick={handleClearLogs}
+            onClick={() => setShowClearConfirm(true)}
             disabled={isLoading || logs.length === 0}
             data-oid="et9phwm"
           >

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Bell, RefreshCw, AlertTriangle, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { useToast, ToastContainer } from '@/components/ui/Toast';
 import { Card, CardContent } from '@/components/ui/Card';
 import { formatDateLong } from '@/lib/format';
 import type { EventReminder, ReminderStatus } from '@/types/database';
@@ -55,6 +56,7 @@ export function EventRemindersTab({ eventId, eventDateStart }: EventRemindersTab
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showGenerateConfirm, setShowGenerateConfirm] = useState(false);
+  const { toasts, removeToast, toast } = useToast();
 
   const fetchReminders = useCallback(async () => {
     try {
@@ -85,7 +87,7 @@ export function EventRemindersTab({ eventId, eventDateStart }: EventRemindersTab
       }
       await fetchReminders();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to generate reminders');
+      toast.error(err instanceof Error ? err.message : 'Failed to generate reminders');
     } finally {
       setIsGenerating(false);
     }
@@ -104,7 +106,7 @@ export function EventRemindersTab({ eventId, eventDateStart }: EventRemindersTab
       }
       await fetchReminders();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to dismiss reminder');
+      toast.error(err instanceof Error ? err.message : 'Failed to dismiss reminder');
     }
   };
 
@@ -118,6 +120,7 @@ export function EventRemindersTab({ eventId, eventDateStart }: EventRemindersTab
 
   return (
     <div className="space-y-6">
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
       {/* Generate Reminders Action */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

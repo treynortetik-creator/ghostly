@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, RefreshCw, Plus, Edit, Trash2, ChevronDown, ChevronRight, Clock, AlertCircle } from 'lucide-react';
 import { AppShell } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card';
 import type { CadenceTemplate, CadenceMilestone, CadenceTemplateWithMilestones, NotifyChannel, EventTypeRecord } from '@/types/database';
 
@@ -90,6 +91,8 @@ export default function CadenceRegistryPage() {
   const [editingMilestoneId, setEditingMilestoneId] = useState<string | null>(null);
   const [editMilestoneForm, setEditMilestoneForm] = useState<MilestoneFormData>(emptyMilestoneForm);
   const [isSavingMilestone, setIsSavingMilestone] = useState(false);
+  const [deleteTemplateId, setDeleteTemplateId] = useState<string | null>(null);
+  const [deleteMilestone, setDeleteMilestone] = useState<{ templateId: string; milestoneId: string } | null>(null);
 
   const fetchTemplates = useCallback(async () => {
     setIsLoading(true);
@@ -201,7 +204,7 @@ export default function CadenceRegistryPage() {
 
   // Delete template
   const handleDeleteTemplate = async (templateId: string) => {
-    if (!confirm('Delete this cadence template and all its milestones?')) return;
+    setDeleteTemplateId(null);
     try {
       const res = await fetch(`/api/cadence-templates/${templateId}`, { method: 'DELETE' });
       if (!res.ok) {
@@ -283,7 +286,7 @@ export default function CadenceRegistryPage() {
 
   // Delete milestone
   const handleDeleteMilestone = async (templateId: string, milestoneId: string) => {
-    if (!confirm('Delete this milestone?')) return;
+    setDeleteMilestone(null);
     try {
       const res = await fetch(`/api/cadence-templates/${templateId}/milestones/${milestoneId}`, { method: 'DELETE' });
       if (!res.ok) {
@@ -315,6 +318,24 @@ export default function CadenceRegistryPage() {
 
   return (
     <AppShell>
+      <ConfirmDialog
+        open={deleteTemplateId !== null}
+        title="Delete Cadence Template"
+        message="Delete this cadence template and all its milestones?"
+        variant="danger"
+        confirmLabel="Delete"
+        onConfirm={() => { if (deleteTemplateId) handleDeleteTemplate(deleteTemplateId); }}
+        onCancel={() => setDeleteTemplateId(null)}
+      />
+      <ConfirmDialog
+        open={deleteMilestone !== null}
+        title="Delete Milestone"
+        message="Delete this milestone?"
+        variant="danger"
+        confirmLabel="Delete"
+        onConfirm={() => { if (deleteMilestone) handleDeleteMilestone(deleteMilestone.templateId, deleteMilestone.milestoneId); }}
+        onCancel={() => setDeleteMilestone(null)}
+      />
       {/* Back link */}
       <div className="mb-6">
         <Link
@@ -593,7 +614,7 @@ export default function CadenceRegistryPage() {
                         <Button
                           variant="ghost"
                           size="icon-sm"
-                          onClick={() => handleDeleteTemplate(template.id)}
+                          onClick={() => setDeleteTemplateId(template.id)}
                           aria-label="Delete template"
                         >
                           <Trash2 className="w-4 h-4 text-ink-red" />
@@ -738,7 +759,7 @@ export default function CadenceRegistryPage() {
                                     <Button
                                       variant="ghost"
                                       size="icon-sm"
-                                      onClick={() => handleDeleteMilestone(template.id, milestone.id)}
+                                      onClick={() => setDeleteMilestone({ templateId: template.id, milestoneId: milestone.id })}
                                       aria-label="Delete milestone"
                                     >
                                       <Trash2 className="w-3 h-3 text-ink-red" />

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Package, Plus, RefreshCw, Trash2, Edit3, ExternalLink, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Card, CardContent } from '@/components/ui/Card';
 import { formatDateMedium } from '@/lib/format';
 
@@ -97,6 +98,7 @@ export function EventShipmentsTab({ eventId }: EventShipmentsTabProps) {
     notes: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const fetchShipments = useCallback(async () => {
     try {
@@ -190,7 +192,7 @@ export function EventShipmentsTab({ eventId }: EventShipmentsTabProps) {
   };
 
   const handleDelete = async (shipmentId: string) => {
-    if (!confirm('Delete this shipment?')) return;
+    setDeleteConfirmId(null);
     try {
       const res = await fetch(`/api/events/${eventId}/shipments/${shipmentId}`, { method: 'DELETE' });
       if (res.ok) fetchShipments();
@@ -207,6 +209,15 @@ export function EventShipmentsTab({ eventId }: EventShipmentsTabProps) {
 
   return (
     <div className="space-y-4">
+      <ConfirmDialog
+        open={deleteConfirmId !== null}
+        title="Delete Shipment"
+        message="Delete this shipment?"
+        variant="danger"
+        confirmLabel="Delete"
+        onConfirm={() => { if (deleteConfirmId) handleDelete(deleteConfirmId); }}
+        onCancel={() => setDeleteConfirmId(null)}
+      />
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-wood-dark flex items-center gap-2">
@@ -411,7 +422,7 @@ export function EventShipmentsTab({ eventId }: EventShipmentsTabProps) {
                         ))}
                       </select>
                       <button
-                        onClick={() => handleDelete(shipment.id)}
+                        onClick={() => setDeleteConfirmId(shipment.id)}
                         className="p-1.5 text-sepia hover:text-ink-red transition-colors"
                         title="Delete"
                       >
