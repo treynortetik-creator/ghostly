@@ -6,8 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 import { startOfMonth, endOfMonth, parseISO, format, isBefore } from 'date-fns';
 import type { EventTypeRecord } from '@/types/database';
 
@@ -15,11 +14,8 @@ import type { EventTypeRecord } from '@/types/database';
 // GET /api/events/calendar
 // ============================================
 
-export async function GET(request: NextRequest) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'events/calendar' },
+  async (request: NextRequest) => {
     const { searchParams } = new URL(request.url);
     const month = searchParams.get('month');
 
@@ -49,7 +45,6 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
 
     // Fetch events that overlap the month, expenses, and checklist items in parallel
-    // Event overlap logic: date_start <= last_day AND (date_end >= first_day OR (date_end IS NULL AND date_start >= first_day))
     const [eventsResult, expenseTotalsResult, checklistResult] = await Promise.all([
       supabase
         .from('events')
@@ -149,12 +144,5 @@ export async function GET(request: NextRequest) {
       task_dates: taskDates,
       month,
     });
-  } catch (err) {
-    console.error('Calendar API error:', err);
-    logError('Failed to fetch calendar data', { error: err as Error, source: 'api/events/calendar', context: { method: 'GET' } });
-    return NextResponse.json(
-      { error: 'Failed to fetch calendar data' },
-      { status: 500 }
-    );
   }
-}
+);

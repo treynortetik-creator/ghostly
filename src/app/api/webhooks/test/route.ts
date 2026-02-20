@@ -6,16 +6,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/permissions';
-import { logError } from '@/lib/error-logger';
+import { withApiHandler } from '@/lib/api-helpers';
 import { createHmac } from 'crypto';
 import type { Json } from '@/types/database';
 
-export async function POST(request: NextRequest) {
-  const denied = requirePermission(request, 'admin');
-  if (denied) return denied;
-
-  try {
+export const POST = withApiHandler({ permission: 'admin', resource: 'webhooks/test' },
+  async (request: NextRequest) => {
     const body = await request.json();
 
     if (!body.webhook_id) {
@@ -97,9 +93,5 @@ export async function POST(request: NextRequest) {
       response_body: responseBody,
       latency_ms: latencyMs,
     });
-  } catch (error) {
-    console.error('Webhook test error:', error);
-    logError('Failed to test webhook', { error: error as Error, source: 'api/webhooks/test', context: { method: 'POST' } });
-    return NextResponse.json({ error: 'Failed to test webhook' }, { status: 500 });
   }
-}
+);

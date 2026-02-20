@@ -6,18 +6,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
+type RouteContext = { params: Promise<{ id: string }> };
 
-  try {
-    const { id } = await params;
+export const GET = withApiHandler({ permission: 'read', resource: 'events/summary' },
+  async (_request: NextRequest, context: RouteContext) => {
+    const { id } = await context.params;
     const supabase = await createClient();
 
     // Fetch event, expenses, checklist items, and team assignments in parallel
@@ -102,12 +97,5 @@ export async function GET(
         roi_notes: event.roi_notes ?? null,
       },
     });
-  } catch (err) {
-    console.error('Event summary API error:', err);
-    logError('Failed to fetch event summary', { error: err as Error, source: 'api/events/[id]/summary', context: { method: 'GET' } });
-    return NextResponse.json(
-      { error: 'Failed to fetch event summary' },
-      { status: 500 }
-    );
   }
-}
+);

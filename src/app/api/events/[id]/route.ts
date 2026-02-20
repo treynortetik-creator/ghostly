@@ -9,23 +9,19 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logAudit, getActor, computeChanges } from '@/lib/audit';
-import { requirePermission } from '@/lib/permissions';
+import { computeChanges } from '@/lib/audit';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 import type { QuarterType, EventTypeRecord } from '@/types/database';
+
+type RouteContext = { params: Promise<{ id: string }> };
 
 // ============================================
 // GET /api/events/[id]
 // ============================================
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const denied = requirePermission(request, 'read');
-    if (denied) return denied;
-
-    const { id } = await params;
+export const GET = withApiHandler({ permission: 'read', resource: 'events' },
+  async (_request: NextRequest, context: RouteContext) => {
+    const { id } = await context.params;
     const supabase = await createClient();
 
     const { data: event, error: eventError } = await supabase
@@ -83,28 +79,16 @@ export async function GET(
       expenses: expenseList,
       fiscal_year: fiscal_years ?? null,
     });
-  } catch (error) {
-    console.error('Get event error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch event' },
-      { status: 500 }
-    );
   }
-}
+);
 
 // ============================================
 // PUT /api/events/[id]
 // ============================================
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const denied = requirePermission(request, 'write');
-    if (denied) return denied;
-
-    const { id } = await params;
+export const PUT = withApiHandler({ permission: 'write', resource: 'events' },
+  async (request: NextRequest, context: RouteContext) => {
+    const { id } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
 
@@ -268,45 +252,26 @@ export async function PUT(
     };
 
     // Audit log (non-blocking)
-    try {
-      const { actor, actor_type } = await getActor(request);
-      const auditFields = ['name', 'event_type_id', 'quarter', 'fiscal_year_id', 'date_start', 'date_end', 'location', 'budget_amount', 'expansion_goal', 'net_new_goal', 'approach_notes', 'marketing_notes', 'sales_notes', 'pipeline_generated', 'revenue_closed', 'leads_generated', 'meetings_booked', 'opportunities_created', 'roi_notes', 'stage', 'tier', 'shipping_handler'];
-      const changes = computeChanges(existingEvent as Record<string, unknown>, updatedEvent as Record<string, unknown>, auditFields);
-      logAudit({
-        entity_type: 'event',
-        entity_id: id,
-        action: 'update',
-        changes,
-        actor,
-        actor_type,
-      });
-    } catch (e) {
-      console.error('Audit log failed:', e);
-    }
+    const auditFields = ['name', 'event_type_id', 'quarter', 'fiscal_year_id', 'date_start', 'date_end', 'location', 'budget_amount', 'expansion_goal', 'net_new_goal', 'approach_notes', 'marketing_notes', 'sales_notes', 'pipeline_generated', 'revenue_closed', 'leads_generated', 'meetings_booked', 'opportunities_created', 'roi_notes', 'stage', 'tier', 'shipping_handler'];
+    const changes = computeChanges(existingEvent as Record<string, unknown>, updatedEvent as Record<string, unknown>, auditFields);
+    await auditMutation(request, {
+      entity_type: 'event',
+      entity_id: id,
+      action: 'update',
+      changes,
+    });
 
     return NextResponse.json(eventWithTotals);
-  } catch (error) {
-    console.error('Update event error:', error);
-    return NextResponse.json(
-      { error: 'Failed to update event' },
-      { status: 500 }
-    );
   }
-}
+);
 
 // ============================================
 // DELETE /api/events/[id]
 // ============================================
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const denied = requirePermission(request, 'write');
-    if (denied) return denied;
-
-    const { id } = await params;
+export const DELETE = withApiHandler({ permission: 'write', resource: 'events' },
+  async (request: NextRequest, context: RouteContext) => {
+    const { id } = await context.params;
     const supabase = await createClient();
 
     // Check if event exists
@@ -335,29 +300,16 @@ export async function DELETE(
     if (deleteError) throw deleteError;
 
     // Audit log (non-blocking)
-    try {
-      const { actor, actor_type } = await getActor(request);
-      logAudit({
-        entity_type: 'event',
-        entity_id: id,
-        action: 'delete',
-        changes: null,
-        actor,
-        actor_type,
-      });
-    } catch (e) {
-      console.error('Audit log failed:', e);
-    }
+    await auditMutation(request, {
+      entity_type: 'event',
+      entity_id: id,
+      action: 'delete',
+      changes: null,
+    });
 
     return NextResponse.json({
       message: 'Event deleted successfully',
       id,
     });
-  } catch (error) {
-    console.error('Delete event error:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete event' },
-      { status: 500 }
-    );
   }
-}
+);

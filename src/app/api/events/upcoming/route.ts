@@ -6,15 +6,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 import type { EventTypeRecord } from '@/types/database';
 
-export async function GET(request: NextRequest) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'events/upcoming' },
+  async (request: NextRequest) => {
     const { searchParams } = new URL(request.url);
 
     const daysParam = searchParams.get('days');
@@ -130,12 +126,5 @@ export async function GET(request: NextRequest) {
         days_ahead: days,
       },
     });
-  } catch (err) {
-    console.error('Upcoming events API error:', err);
-    logError('Failed to fetch upcoming events', { error: err as Error, source: 'api/events/upcoming', context: { method: 'GET' } });
-    return NextResponse.json(
-      { error: 'Failed to fetch upcoming events' },
-      { status: 500 }
-    );
   }
-}
+);

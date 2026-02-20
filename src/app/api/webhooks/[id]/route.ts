@@ -9,8 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/permissions';
-import { logError } from '@/lib/error-logger';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 
 const VALID_EVENT_TYPES = [
   'expense.created',
@@ -23,17 +22,44 @@ const VALID_EVENT_TYPES = [
   '*',
 ];
 
+/**
+ * SSRF protection: block webhook URLs pointing at internal/private networks.
+ */
+function isUnsafeWebhookUrl(raw: string): string | null {
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    return 'url must be a valid URL';
+  }
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+    return 'Webhook URL must use http or https';
+  }
+  const hostname = parsed.hostname.toLowerCase();
+  if (['localhost', '127.0.0.1', '[::1]', '::1', '0.0.0.0'].includes(hostname)) {
+    return 'Webhook URL must not point to localhost';
+  }
+  const ipv4Match = hostname.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (ipv4Match) {
+    const [, a, b] = ipv4Match.map(Number);
+    if (a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 169 && b === 254) || a === 0) {
+      return 'Webhook URL must not point to a private/reserved IP';
+    }
+  }
+  if (hostname === '169.254.169.254' || hostname === 'metadata.google.internal') {
+    return 'Webhook URL must not point to cloud metadata services';
+  }
+  return null;
+}
+
 type RouteContext = { params: Promise<{ id: string }> };
 
 // ============================================
 // GET /api/webhooks/:id
 // ============================================
 
-export async function GET(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'admin');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'admin', resource: 'webhooks/[id]' },
+  async (_request: NextRequest, context: RouteContext) => {
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -58,22 +84,15 @@ export async function GET(request: NextRequest, context: RouteContext) {
       ...webhookResult.data,
       recent_deliveries: deliveriesResult.data || [],
     });
-  } catch (error) {
-    console.error('Webhook get error:', error);
-    logError('Failed to get webhook', { error: error as Error, source: 'api/webhooks/[id]', context: { method: 'GET' } });
-    return NextResponse.json({ error: 'Failed to get webhook' }, { status: 500 });
   }
-}
+);
 
 // ============================================
 // PUT /api/webhooks/:id
 // ============================================
 
-export async function PUT(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'admin');
-  if (denied) return denied;
-
-  try {
+export const PUT = withApiHandler({ permission: 'admin', resource: 'webhooks/[id]' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -96,10 +115,9 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       if (!body.url?.trim()) {
         return NextResponse.json({ error: 'url cannot be empty' }, { status: 400 });
       }
-      try {
-        new URL(body.url);
-      } catch {
-        return NextResponse.json({ error: 'url must be a valid URL' }, { status: 400 });
+      const urlError = isUnsafeWebhookUrl(body.url.trim());
+      if (urlError) {
+        return NextResponse.json({ error: urlError }, { status: 400 });
       }
       update.url = body.url.trim();
     }
@@ -131,23 +149,25 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
     if (updateError) throw updateError;
 
+    // Audit log
+    await auditMutation(request, {
+      entity_type: 'webhook',
+      entity_id: id,
+      action: 'update',
+      changes: null,
+      metadata: { updated_fields: Object.keys(update).filter(k => k !== 'updated_at') },
+    });
+
     return NextResponse.json(updated);
-  } catch (error) {
-    console.error('Webhook update error:', error);
-    logError('Failed to update webhook', { error: error as Error, source: 'api/webhooks/[id]', context: { method: 'PUT' } });
-    return NextResponse.json({ error: 'Failed to update webhook' }, { status: 500 });
   }
-}
+);
 
 // ============================================
 // DELETE /api/webhooks/:id
 // ============================================
 
-export async function DELETE(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'admin');
-  if (denied) return denied;
-
-  try {
+export const DELETE = withApiHandler({ permission: 'admin', resource: 'webhooks/[id]' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -155,10 +175,14 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
     if (error) throw error;
 
+    // Audit log
+    await auditMutation(request, {
+      entity_type: 'webhook',
+      entity_id: id,
+      action: 'delete',
+      changes: null,
+    });
+
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Webhook delete error:', error);
-    logError('Failed to delete webhook', { error: error as Error, source: 'api/webhooks/[id]', context: { method: 'DELETE' } });
-    return NextResponse.json({ error: 'Failed to delete webhook' }, { status: 500 });
   }
-}
+);

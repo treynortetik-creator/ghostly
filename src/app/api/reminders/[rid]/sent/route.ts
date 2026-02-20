@@ -6,16 +6,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ rid: string }> };
 
-export async function PATCH(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const PATCH = withApiHandler({ permission: 'write', resource: 'reminders/[rid]/sent' },
+  async (request: NextRequest, context: RouteContext) => {
     const { rid } = await context.params;
     const supabase = await createClient();
 
@@ -34,10 +30,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'Reminder not found or already sent' }, { status: 404 });
     }
 
+    // Audit log
+    await auditMutation(request, {
+      entity_type: 'reminder',
+      entity_id: rid,
+      action: 'send',
+      changes: null,
+      metadata: { event_id: data.event_id },
+    });
+
     return NextResponse.json(data);
-  } catch (err) {
-    console.error('Mark reminder sent error:', err);
-    logError('Failed to mark reminder as sent', { error: err as Error, source: 'api/reminders/[rid]/sent', context: { method: 'PATCH' } });
-    return NextResponse.json({ error: 'Failed to mark reminder as sent' }, { status: 500 });
   }
-}
+);

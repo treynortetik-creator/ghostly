@@ -10,23 +10,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { ExpenseSource } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
-import { logAudit, getActor, computeChanges } from '@/lib/audit';
-import { requirePermission } from '@/lib/permissions';
-import { logError } from '@/lib/error-logger';
+import { computeChanges } from '@/lib/audit';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+
+type RouteContext = { params: Promise<{ id: string }> };
 
 // ============================================
 // GET /api/expenses/[id]
 // ============================================
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
-    const { id } = await params;
+export const GET = withApiHandler({ permission: 'read', resource: 'expenses/[id]' },
+  async (_request: NextRequest, context: RouteContext) => {
+    const { id } = await context.params;
     const supabase = await createClient();
 
     const { data: expense, error } = await supabase
@@ -56,29 +51,16 @@ export async function GET(
     };
 
     return NextResponse.json({ expense: mapped });
-  } catch (error) {
-    console.error('Get expense error:', error);
-    logError('Failed to fetch expense', { error: error as Error, source: 'api/expenses/[id]', context: { method: 'GET' } });
-    return NextResponse.json(
-      { error: 'Failed to fetch expense' },
-      { status: 500 }
-    );
   }
-}
+);
 
 // ============================================
 // PUT /api/expenses/[id]
 // ============================================
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const deniedPut = requirePermission(request, 'write');
-  if (deniedPut) return deniedPut;
-
-  try {
-    const { id } = await params;
+export const PUT = withApiHandler({ permission: 'write', resource: 'expenses/[id]' },
+  async (request: NextRequest, context: RouteContext) => {
+    const { id } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
 
@@ -223,46 +205,26 @@ export async function PUT(
     };
 
     // Audit log (non-blocking)
-    try {
-      const { actor, actor_type } = await getActor(request);
-      const auditFields = ['amount', 'expense_date', 'vendor', 'memo', 'event_id', 'category_id', 'source_type', 'source_reference'];
-      const changes = computeChanges(existingExpense as Record<string, unknown>, updatedExpense as Record<string, unknown>, auditFields);
-      logAudit({
-        entity_type: 'expense',
-        entity_id: id,
-        action: 'update',
-        changes,
-        actor,
-        actor_type,
-      });
-    } catch (e) {
-      console.error('Audit log failed:', e);
-    }
+    const auditFields = ['amount', 'expense_date', 'vendor', 'memo', 'event_id', 'category_id', 'source_type', 'source_reference'];
+    const changes = computeChanges(existingExpense as Record<string, unknown>, updatedExpense as Record<string, unknown>, auditFields);
+    await auditMutation(request, {
+      entity_type: 'expense',
+      entity_id: id,
+      action: 'update',
+      changes,
+    });
 
     return NextResponse.json({ expense: mapped });
-  } catch (error) {
-    console.error('Update expense error:', error);
-    logError('Failed to update expense', { error: error as Error, source: 'api/expenses/[id]', context: { method: 'PUT' } });
-    return NextResponse.json(
-      { error: 'Failed to update expense' },
-      { status: 500 }
-    );
   }
-}
+);
 
 // ============================================
 // DELETE /api/expenses/[id]
 // ============================================
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const deniedDel = requirePermission(request, 'write');
-  if (deniedDel) return deniedDel;
-
-  try {
-    const { id } = await params;
+export const DELETE = withApiHandler({ permission: 'write', resource: 'expenses/[id]' },
+  async (request: NextRequest, context: RouteContext) => {
+    const { id } = await context.params;
     const supabase = await createClient();
 
     // Check if expense exists
@@ -291,30 +253,16 @@ export async function DELETE(
     if (deleteError) throw deleteError;
 
     // Audit log (non-blocking)
-    try {
-      const { actor, actor_type } = await getActor(request);
-      logAudit({
-        entity_type: 'expense',
-        entity_id: id,
-        action: 'delete',
-        changes: null,
-        actor,
-        actor_type,
-      });
-    } catch (e) {
-      console.error('Audit log failed:', e);
-    }
+    await auditMutation(request, {
+      entity_type: 'expense',
+      entity_id: id,
+      action: 'delete',
+      changes: null,
+    });
 
     return NextResponse.json({
       message: 'Expense deleted successfully',
       id,
     });
-  } catch (error) {
-    console.error('Delete expense error:', error);
-    logError('Failed to delete expense', { error: error as Error, source: 'api/expenses/[id]', context: { method: 'DELETE' } });
-    return NextResponse.json(
-      { error: 'Failed to delete expense' },
-      { status: 500 }
-    );
   }
-}
+);

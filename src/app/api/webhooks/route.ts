@@ -8,8 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/permissions';
-import { logError } from '@/lib/error-logger';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 
 const VALID_EVENT_TYPES = [
   'expense.created',
@@ -22,15 +21,64 @@ const VALID_EVENT_TYPES = [
   '*',
 ];
 
+/**
+ * SSRF protection: block webhook URLs pointing at internal/private networks.
+ */
+function isUnsafeWebhookUrl(raw: string): string | null {
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    return 'url must be a valid URL';
+  }
+
+  // Only allow http(s)
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+    return 'Webhook URL must use http or https';
+  }
+
+  const hostname = parsed.hostname.toLowerCase();
+
+  // Block localhost variants
+  if (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '[::1]' ||
+    hostname === '::1' ||
+    hostname === '0.0.0.0'
+  ) {
+    return 'Webhook URL must not point to localhost';
+  }
+
+  // Block private/reserved IPv4 ranges
+  const ipv4Match = hostname.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (ipv4Match) {
+    const [, a, b] = ipv4Match.map(Number);
+    if (
+      a === 10 ||                         // 10.0.0.0/8
+      (a === 172 && b >= 16 && b <= 31) || // 172.16.0.0/12
+      (a === 192 && b === 168) ||          // 192.168.0.0/16
+      a === 169 && b === 254 ||            // link-local 169.254.0.0/16
+      a === 0                              // 0.0.0.0/8
+    ) {
+      return 'Webhook URL must not point to a private/reserved IP';
+    }
+  }
+
+  // Block metadata service IPs (cloud SSRF)
+  if (hostname === '169.254.169.254' || hostname === 'metadata.google.internal') {
+    return 'Webhook URL must not point to cloud metadata services';
+  }
+
+  return null;
+}
+
 // ============================================
 // GET /api/webhooks
 // ============================================
 
-export async function GET(request: NextRequest) {
-  const denied = requirePermission(request, 'admin');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'admin', resource: 'webhooks' },
+  async () => {
     const supabase = await createClient();
 
     const { data: webhooks, error } = await supabase
@@ -44,33 +92,25 @@ export async function GET(request: NextRequest) {
       webhooks: webhooks || [],
       meta: { total: webhooks?.length || 0 },
     });
-  } catch (error) {
-    console.error('Webhooks list error:', error);
-    logError('Failed to list webhooks', { error: error as Error, source: 'api/webhooks', context: { method: 'GET' } });
-    return NextResponse.json({ error: 'Failed to list webhooks' }, { status: 500 });
   }
-}
+);
 
 // ============================================
 // POST /api/webhooks
 // ============================================
 
-export async function POST(request: NextRequest) {
-  const denied = requirePermission(request, 'admin');
-  if (denied) return denied;
-
-  try {
+export const POST = withApiHandler({ permission: 'admin', resource: 'webhooks' },
+  async (request: NextRequest) => {
     const body = await request.json();
 
-    // Validate URL
+    // Validate URL (includes SSRF protection)
     if (!body.url?.trim()) {
       return NextResponse.json({ error: 'url is required' }, { status: 400 });
     }
 
-    try {
-      new URL(body.url);
-    } catch {
-      return NextResponse.json({ error: 'url must be a valid URL' }, { status: 400 });
+    const urlError = isUnsafeWebhookUrl(body.url.trim());
+    if (urlError) {
+      return NextResponse.json({ error: urlError }, { status: 400 });
     }
 
     // Validate event_types
@@ -102,10 +142,15 @@ export async function POST(request: NextRequest) {
 
     if (error) throw error;
 
+    // Audit log
+    await auditMutation(request, {
+      entity_type: 'webhook',
+      entity_id: webhook.id,
+      action: 'create',
+      changes: null,
+      metadata: { url: webhook.url, event_types: webhook.event_types },
+    });
+
     return NextResponse.json(webhook, { status: 201 });
-  } catch (error) {
-    console.error('Webhook create error:', error);
-    logError('Failed to create webhook', { error: error as Error, source: 'api/webhooks', context: { method: 'POST' } });
-    return NextResponse.json({ error: 'Failed to create webhook' }, { status: 500 });
   }
-}
+);

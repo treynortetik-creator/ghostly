@@ -6,20 +6,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logAudit, getActor } from '@/lib/audit';
-import { requirePermission } from '@/lib/permissions';
-import { logError } from '@/lib/error-logger';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
-}
+type RouteContext = { params: Promise<{ id: string }> };
 
-export async function PUT(request: NextRequest, { params }: RouteParams) {
-  try {
-    const denied = requirePermission(request, 'write');
-    if (denied) return denied;
-
-    const { id } = await params;
+export const PUT = withApiHandler({ permission: 'write', resource: 'documents' },
+  async (request: NextRequest, context: RouteContext) => {
+    const { id } = await context.params;
     const body = await request.json();
 
     const eventId = body.event_id ?? null;
@@ -100,30 +93,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     // Audit log
-    try {
-      const { actor, actor_type } = await getActor(request);
-      logAudit({
-        entity_type: 'document',
-        entity_id: id,
-        action: 'update',
-        changes: {
-          event_id: { old: existing.event_id, new: eventId },
-          expense_id: { old: existing.expense_id, new: expenseId },
-        },
-        actor,
-        actor_type,
-      });
-    } catch (e) {
-      console.error('Audit log failed:', e);
-    }
+    await auditMutation(request, {
+      entity_type: 'document',
+      entity_id: id,
+      action: 'update',
+      changes: {
+        event_id: { old: existing.event_id, new: eventId },
+        expense_id: { old: existing.expense_id, new: expenseId },
+      },
+    });
 
     return NextResponse.json(updated);
-  } catch (err) {
-    console.error('Link document error:', err);
-    logError('Failed to link document', { error: err as Error, source: 'api/documents/[id]/link', context: { method: 'PUT' } });
-    return NextResponse.json(
-      { error: 'Failed to link document' },
-      { status: 500 }
-    );
   }
-}
+);

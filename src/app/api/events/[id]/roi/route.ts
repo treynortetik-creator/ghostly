@@ -6,19 +6,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 import type { EventTypeRecord } from '@/types/database';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
+type RouteContext = { params: Promise<{ id: string }> };
 
-  try {
-    const { id } = await params;
+export const GET = withApiHandler({ permission: 'read', resource: 'events/roi' },
+  async (_request: NextRequest, context: RouteContext) => {
+    const { id } = await context.params;
     const supabase = await createClient();
 
     const { data: event, error: eventError } = await supabase
@@ -88,12 +83,5 @@ export async function GET(
       cost_per_meeting: costPerMeeting,
       pipeline_to_spend_ratio: pipelineToSpendRatio,
     });
-  } catch (error) {
-    console.error('Event ROI API error:', error);
-    logError('Failed to fetch event ROI', { error: error as Error, source: 'api/events/[id]/roi', context: { method: 'GET' } });
-    return NextResponse.json(
-      { error: 'Failed to fetch event ROI data' },
-      { status: 500 }
-    );
   }
-}
+);

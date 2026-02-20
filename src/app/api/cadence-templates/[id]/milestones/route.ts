@@ -6,18 +6,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 const validChannels = ['scrooge', 'in_app', 'both'];
 
-export async function POST(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const POST = withApiHandler({ permission: 'write', resource: 'cadence-milestones' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id: templateId } = await context.params;
     const body = await request.json();
 
@@ -56,9 +52,5 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (error) throw error;
 
     return NextResponse.json(data, { status: 201 });
-  } catch (err) {
-    console.error('Add cadence milestone error:', err);
-    logError('Failed to add cadence milestone', { error: err as Error, source: 'api/cadence-templates/[id]/milestones', context: { method: 'POST' } });
-    return NextResponse.json({ error: 'Failed to add cadence milestone' }, { status: 500 });
   }
-}
+);

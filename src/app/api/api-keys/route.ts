@@ -9,19 +9,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { hashApiKey, generateApiKey } from '@/lib/auth';
-import { requirePermission } from '@/lib/permissions';
-import { logError } from '@/lib/error-logger';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 
 // ============================================
 // GET /api/api-keys — List API keys
 // ============================================
 
-export async function GET(request: NextRequest) {
-  const denied = requirePermission(request, 'admin');
-  if (denied) return denied;
-
-  try {
-
+export const GET = withApiHandler({ permission: 'admin', resource: 'api-keys' },
+  async () => {
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -32,26 +27,15 @@ export async function GET(request: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json({ api_keys: data });
-  } catch (error) {
-    console.error('List API keys error:', error);
-    logError('Failed to list API keys', { error: error as Error, source: 'api/api-keys', context: { method: 'GET' } });
-    return NextResponse.json(
-      { error: 'Failed to list API keys' },
-      { status: 500 }
-    );
   }
-}
+);
 
 // ============================================
 // POST /api/api-keys — Create a new API key
 // ============================================
 
-export async function POST(request: NextRequest) {
-  const deniedPost = requirePermission(request, 'admin');
-  if (deniedPost) return deniedPost;
-
-  try {
-
+export const POST = withApiHandler({ permission: 'admin', resource: 'api-keys' },
+  async (request: NextRequest) => {
     const body = await request.json();
 
     if (!body.agent_name?.trim()) {
@@ -98,6 +82,15 @@ export async function POST(request: NextRequest) {
 
     if (error) throw error;
 
+    // Audit log
+    await auditMutation(request, {
+      entity_type: 'api_key',
+      entity_id: data.id,
+      action: 'create',
+      changes: null,
+      metadata: { agent_name: agentName, permissions },
+    });
+
     // Return the raw key ONCE — it cannot be retrieved again
     return NextResponse.json({
       api_key: {
@@ -106,12 +99,5 @@ export async function POST(request: NextRequest) {
       },
       warning: 'Store this key securely. It will not be shown again.',
     }, { status: 201 });
-  } catch (error) {
-    console.error('Create API key error:', error);
-    logError('Failed to create API key', { error: error as Error, source: 'api/api-keys', context: { method: 'POST' } });
-    return NextResponse.json(
-      { error: 'Failed to create API key' },
-      { status: 500 }
-    );
   }
-}
+);

@@ -7,8 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getAvailableModels, type OpenRouterModel } from '@/lib/openrouter';
-import { requirePermission } from '@/lib/permissions';
-import { logError } from '@/lib/error-logger';
+import { withApiHandler } from '@/lib/api-helpers';
 
 // ============================================
 // MOCK MODELS (Fallback when API key not configured)
@@ -91,11 +90,8 @@ const mockModels: OpenRouterModel[] = [
 // GET /api/openrouter/models
 // ============================================
 
-export async function GET(request: NextRequest) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'openrouter/models' },
+  async (_request: NextRequest) => {
     // Check if OpenRouter API key is configured
     const hasApiKey = !!process.env.OPENROUTER_API_KEY;
 
@@ -130,18 +126,5 @@ export async function GET(request: NextRequest) {
         total: relevantModels.length,
       },
     });
-  } catch (error) {
-    console.error('OpenRouter models API error:', error);
-    logError('Failed to fetch OpenRouter models', { error: error as Error, source: 'api/openrouter/models', context: { method: 'GET' } });
-
-    // Return mock models as fallback on error
-    return NextResponse.json({
-      models: mockModels,
-      meta: {
-        source: 'mock',
-        message: 'Failed to fetch from OpenRouter. Using mock data.',
-        error: error instanceof Error ? error.message : 'Unknown error',
-      },
-    });
   }
-}
+);

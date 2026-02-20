@@ -6,18 +6,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string; rid: string }> };
 
 const validStatuses = ['pending', 'sent', 'dismissed', 'snoozed'];
 
-export async function PATCH(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const PATCH = withApiHandler({ permission: 'write', resource: 'events/reminders' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id: eventId, rid } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -51,9 +47,5 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     return NextResponse.json(data);
-  } catch (err) {
-    console.error('Update reminder error:', err);
-    logError('Failed to update reminder', { error: err as Error, source: 'api/events/[id]/reminders/[rid]', context: { method: 'PATCH' } });
-    return NextResponse.json({ error: 'Failed to update reminder' }, { status: 500 });
   }
-}
+);

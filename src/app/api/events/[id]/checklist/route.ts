@@ -7,20 +7,15 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
-import { logAudit, getActor } from '@/lib/audit';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 import type { ChecklistPhase } from '@/types/database';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 const validPhases: ChecklistPhase[] = ['pre_event', 'day_of', 'post_event'];
 
-export async function GET(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'events/checklist' },
+  async (_request: NextRequest, context: RouteContext) => {
     const { id: eventId } = await context.params;
     const supabase = await createClient();
 
@@ -35,7 +30,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     // Fetch assignee details
     const assigneeIds = [...new Set((items || []).map(i => i.assignee_id).filter(Boolean))];
-    let assigneeMap = new Map<string, unknown>();
+    const assigneeMap = new Map<string, unknown>();
 
     if (assigneeIds.length > 0) {
       const { data: members } = await supabase
@@ -69,18 +64,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
       total,
       completed,
     });
-  } catch (err) {
-    console.error('Event checklist API error:', err);
-    logError('Failed to fetch event checklist', { error: err as Error, source: 'api/events/[id]/checklist', context: { method: 'GET' } });
-    return NextResponse.json({ error: 'Failed to fetch event checklist' }, { status: 500 });
   }
-}
+);
 
-export async function POST(request: NextRequest, context: RouteContext) {
-  const deniedPost = requirePermission(request, 'write');
-  if (deniedPost) return deniedPost;
-
-  try {
+export const POST = withApiHandler({ permission: 'write', resource: 'events/checklist' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id: eventId } = await context.params;
     const body = await request.json();
 
@@ -111,15 +99,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (error) throw error;
 
     // Audit log (non-blocking)
-    try {
-      const { actor, actor_type } = await getActor(request);
-      logAudit({ entity_type: 'event', entity_id: data.id, action: 'create', changes: null, actor, actor_type, metadata: { sub_type: 'checklist_item' } });
-    } catch (e) { console.error('Audit log failed:', e); }
+    await auditMutation(request, { entity_type: 'event', entity_id: data.id, action: 'create', changes: null, metadata: { sub_type: 'checklist_item' } });
 
     return NextResponse.json(data, { status: 201 });
-  } catch (err) {
-    console.error('Add checklist item error:', err);
-    logError('Failed to add checklist item', { error: err as Error, source: 'api/events/[id]/checklist', context: { method: 'POST' } });
-    return NextResponse.json({ error: 'Failed to add checklist item' }, { status: 500 });
   }
-}
+);

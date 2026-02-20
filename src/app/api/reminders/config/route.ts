@@ -8,18 +8,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
 // ============================================
 // GET /api/reminders/config
 // ============================================
 
-export async function GET(request: NextRequest) {
-  const denied = requirePermission(request, 'admin');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'admin', resource: 'reminders/config' },
+  async () => {
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -33,22 +29,15 @@ export async function GET(request: NextRequest) {
       configs: data || [],
       meta: { total: data?.length || 0 },
     });
-  } catch (err) {
-    console.error('Reminder config GET error:', err);
-    logError('Failed to fetch reminder configs', { error: err as Error, source: 'api/reminders/config', context: { method: 'GET' } });
-    return NextResponse.json({ error: 'Failed to fetch reminder configs' }, { status: 500 });
   }
-}
+);
 
 // ============================================
 // PUT /api/reminders/config
 // ============================================
 
-export async function PUT(request: NextRequest) {
-  const deniedPut = requirePermission(request, 'admin');
-  if (deniedPut) return deniedPut;
-
-  try {
+export const PUT = withApiHandler({ permission: 'admin', resource: 'reminders/config' },
+  async (request: NextRequest) => {
     const supabase = await createClient();
     const body = await request.json();
 
@@ -78,9 +67,5 @@ export async function PUT(request: NextRequest) {
     }
 
     return NextResponse.json({ config: data });
-  } catch (err) {
-    console.error('Reminder config PUT error:', err);
-    logError('Failed to update reminder config', { error: err as Error, source: 'api/reminders/config', context: { method: 'PUT' } });
-    return NextResponse.json({ error: 'Failed to update reminder config' }, { status: 500 });
   }
-}
+);

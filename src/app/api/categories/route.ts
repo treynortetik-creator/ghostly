@@ -9,9 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withIdempotency } from '@/lib/idempotency';
-import { requirePermission } from '@/lib/permissions';
-import { logError } from '@/lib/error-logger';
-import { logAudit, getActor } from '@/lib/audit';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 
 interface CategoryWithTotals {
   id: string;
@@ -31,11 +29,8 @@ interface CategoryWithTotals {
 // GET /api/categories
 // ============================================
 
-export async function GET(request: NextRequest) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'categories' },
+  async (request: NextRequest) => {
     const { searchParams } = new URL(request.url);
 
     // Parse filter parameters
@@ -133,113 +128,91 @@ export async function GET(request: NextRequest) {
         total_pages: Math.ceil(total / perPage),
       },
     });
-  } catch (error) {
-    console.error('Categories API error:', error);
-    logError('Failed to fetch categories', { error: error as Error, source: 'api/categories', context: { method: 'GET' } });
-    return NextResponse.json(
-      { error: 'Failed to fetch categories' },
-      { status: 500 }
-    );
   }
-}
+);
 
 // ============================================
 // POST /api/categories
 // ============================================
 
-export const POST = withIdempotency(async function POST(request: NextRequest) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
+export const POST = withIdempotency(
+  withApiHandler({ permission: 'write', resource: 'categories' },
+    async (request: NextRequest) => {
+      const body = await request.json();
 
-  try {
-    const body = await request.json();
+      // Validate required fields
+      const requiredFields = ['name', 'budget_amount'];
+      for (const field of requiredFields) {
+        if (body[field] === undefined || body[field] === null || body[field] === '') {
+          return NextResponse.json(
+            { error: `Missing required field: ${field}` },
+            { status: 400 }
+          );
+        }
+      }
 
-    // Validate required fields
-    const requiredFields = ['name', 'budget_amount'];
-    for (const field of requiredFields) {
-      if (body[field] === undefined || body[field] === null || body[field] === '') {
+      // Validate input lengths
+      if (String(body.name).length > 200) {
         return NextResponse.json(
-          { error: `Missing required field: ${field}` },
+          { error: 'Category name must be 200 characters or fewer' },
           { status: 400 }
         );
       }
-    }
 
-    // Validate input lengths
-    if (String(body.name).length > 200) {
-      return NextResponse.json(
-        { error: 'Category name must be 200 characters or fewer' },
-        { status: 400 }
-      );
-    }
+      // Validate budget_amount is a positive number
+      const budgetAmount = parseFloat(body.budget_amount);
+      if (isNaN(budgetAmount) || budgetAmount < 0) {
+        return NextResponse.json(
+          { error: 'Invalid budget_amount. Must be a positive number' },
+          { status: 400 }
+        );
+      }
 
-    // Validate budget_amount is a positive number
-    const budgetAmount = parseFloat(body.budget_amount);
-    if (isNaN(budgetAmount) || budgetAmount < 0) {
-      return NextResponse.json(
-        { error: 'Invalid budget_amount. Must be a positive number' },
-        { status: 400 }
-      );
-    }
+      const supabase = await createClient();
 
-    const supabase = await createClient();
+      // Check for duplicate name (escape LIKE special characters)
+      const escapedName = String(body.name).replace(/[%_\\]/g, '\\$&');
+      const { data: existing } = await supabase
+        .from('budget_categories')
+        .select('id')
+        .ilike('name', escapedName)
+        .is('deleted_at', null);
 
-    // Check for duplicate name (escape LIKE special characters)
-    const escapedName = String(body.name).replace(/[%_\\]/g, '\\$&');
-    const { data: existing } = await supabase
-      .from('budget_categories')
-      .select('id')
-      .ilike('name', escapedName)
-      .is('deleted_at', null);
+      if (existing && existing.length > 0) {
+        return NextResponse.json(
+          { error: 'A category with this name already exists' },
+          { status: 400 }
+        );
+      }
 
-    if (existing && existing.length > 0) {
-      return NextResponse.json(
-        { error: 'A category with this name already exists' },
-        { status: 400 }
-      );
-    }
+      const { data: newCategory, error: insertError } = await supabase
+        .from('budget_categories')
+        .insert({
+          name: body.name,
+          fiscal_year_id: body.fiscal_year_id || null,
+          budget_amount: budgetAmount,
+          description: body.description || null,
+        })
+        .select()
+        .single();
 
-    const { data: newCategory, error: insertError } = await supabase
-      .from('budget_categories')
-      .insert({
-        name: body.name,
-        fiscal_year_id: body.fiscal_year_id || null,
-        budget_amount: budgetAmount,
-        description: body.description || null,
-      })
-      .select()
-      .single();
+      if (insertError) throw insertError;
 
-    if (insertError) throw insertError;
-
-    // Audit log (non-blocking)
-    try {
-      const { actor, actor_type } = await getActor(request);
-      logAudit({
+      // Audit log (non-blocking)
+      await auditMutation(request, {
         entity_type: 'category',
         entity_id: newCategory.id,
         action: 'create',
         changes: null,
-        actor,
-        actor_type,
       });
-    } catch (e) {
-      console.error('Audit log failed:', e);
-    }
 
-    return NextResponse.json({
-      ...newCategory,
-      budget_amount: newCategory.budget_amount ?? 0,
-      actual_spent: 0,
-      remaining: newCategory.budget_amount ?? 0,
-      expense_count: 0,
-    }, { status: 201 });
-  } catch (error) {
-    console.error('Create category error:', error);
-    logError('Failed to create category', { error: error as Error, source: 'api/categories', context: { method: 'POST' } });
-    return NextResponse.json(
-      { error: 'Failed to create category' },
-      { status: 500 }
-    );
-  }
-});
+      return NextResponse.json({
+        ...newCategory,
+        budget_amount: newCategory.budget_amount ?? 0,
+        actual_spent: 0,
+        remaining: newCategory.budget_amount ?? 0,
+        expense_count: 0,
+      }, { status: 201 });
+    }
+  )
+);

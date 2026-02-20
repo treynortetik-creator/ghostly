@@ -7,18 +7,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 const validNoteTypes = ['competitor_alert', 'general', 'logistics', 'budget', 'post_event'];
 
-export async function GET(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'events/notes' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id: eventId } = await context.params;
     const { searchParams } = new URL(request.url);
     const noteType = searchParams.get('note_type');
@@ -47,18 +43,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
       notes: notes || [],
       meta: { total: (notes || []).length },
     });
-  } catch (err) {
-    console.error('Event notes API error:', err);
-    logError('Failed to fetch event notes', { error: err as Error, source: 'api/events/[id]/notes', context: { method: 'GET' } });
-    return NextResponse.json({ error: 'Failed to fetch event notes' }, { status: 500 });
   }
-}
+);
 
-export async function POST(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const POST = withApiHandler({ permission: 'write', resource: 'events/notes' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id: eventId } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -105,9 +94,5 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (error) throw error;
 
     return NextResponse.json(note, { status: 201 });
-  } catch (err) {
-    console.error('Create event note error:', err);
-    logError('Failed to create event note', { error: err as Error, source: 'api/events/[id]/notes', context: { method: 'POST' } });
-    return NextResponse.json({ error: 'Failed to create event note' }, { status: 500 });
   }
-}
+);

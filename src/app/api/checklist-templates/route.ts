@@ -7,14 +7,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
-export async function GET(request: NextRequest) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'checklist-templates' },
+  async (request: NextRequest) => {
     const { searchParams } = new URL(request.url);
     const modifiedAfter = searchParams.get('modified_after');
 
@@ -46,7 +42,7 @@ export async function GET(request: NextRequest) {
 
     // Get item counts per template
     const templateIds = (templates || []).map(t => t.id);
-    let itemCounts = new Map<string, number>();
+    const itemCounts = new Map<string, number>();
 
     if (templateIds.length > 0) {
       const { data: items } = await supabase
@@ -71,18 +67,11 @@ export async function GET(request: NextRequest) {
         filters_applied: filters,
       },
     });
-  } catch (err) {
-    console.error('Templates API error:', err);
-    logError('Failed to fetch templates', { error: err as Error, source: 'api/checklist-templates', context: { method: 'GET' } });
-    return NextResponse.json({ error: 'Failed to fetch templates' }, { status: 500 });
   }
-}
+);
 
-export async function POST(request: NextRequest) {
-  const deniedPost = requirePermission(request, 'write');
-  if (deniedPost) return deniedPost;
-
-  try {
+export const POST = withApiHandler({ permission: 'write', resource: 'checklist-templates' },
+  async (request: NextRequest) => {
     const body = await request.json();
 
     if (!body.name || String(body.name).trim() === '') {
@@ -104,9 +93,5 @@ export async function POST(request: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json(data, { status: 201 });
-  } catch (err) {
-    console.error('Create template error:', err);
-    logError('Failed to create template', { error: err as Error, source: 'api/checklist-templates', context: { method: 'POST' } });
-    return NextResponse.json({ error: 'Failed to create template' }, { status: 500 });
   }
-}
+);

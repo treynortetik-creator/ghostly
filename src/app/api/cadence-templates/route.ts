@@ -7,14 +7,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
-export async function GET(request: NextRequest) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'cadence-templates' },
+  async () => {
     const supabase = await createClient();
 
     const { data: templates, error } = await supabase
@@ -26,7 +22,7 @@ export async function GET(request: NextRequest) {
 
     // Get milestone counts per template
     const templateIds = (templates || []).map(t => t.id);
-    let milestoneCounts = new Map<string, number>();
+    const milestoneCounts = new Map<string, number>();
 
     if (templateIds.length > 0) {
       const { data: milestones } = await supabase
@@ -50,18 +46,11 @@ export async function GET(request: NextRequest) {
       templates: result,
       meta: { total: result.length },
     });
-  } catch (err) {
-    console.error('Cadence templates API error:', err);
-    logError('Failed to fetch cadence templates', { error: err as Error, source: 'api/cadence-templates', context: { method: 'GET' } });
-    return NextResponse.json({ error: 'Failed to fetch cadence templates' }, { status: 500 });
   }
-}
+);
 
-export async function POST(request: NextRequest) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const POST = withApiHandler({ permission: 'write', resource: 'cadence-templates' },
+  async (request: NextRequest) => {
     const body = await request.json();
 
     if (!body.name || String(body.name).trim() === '') {
@@ -83,9 +72,5 @@ export async function POST(request: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json(data, { status: 201 });
-  } catch (err) {
-    console.error('Create cadence template error:', err);
-    logError('Failed to create cadence template', { error: err as Error, source: 'api/cadence-templates', context: { method: 'POST' } });
-    return NextResponse.json({ error: 'Failed to create cadence template' }, { status: 500 });
   }
-}
+);

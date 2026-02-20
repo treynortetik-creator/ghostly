@@ -7,7 +7,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { MAX_FILE_SIZE_BYTES } from '@/lib/constants';
+import { withApiHandler } from '@/lib/api-helpers';
 import { createClient } from '@/lib/supabase/server';
 import {
   chatCompletion,
@@ -311,11 +312,8 @@ function extractDataFromText(text: string): ExtractedPDFData {
 // API HANDLER
 // ============================================
 
-export async function POST(request: NextRequest) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const POST = withApiHandler({ permission: 'write', resource: 'import/pdf' },
+  async (request: NextRequest) => {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
 
@@ -334,9 +332,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE_BYTES) {
       return NextResponse.json(
         { error: 'File too large. Maximum size is 10MB.' },
         { status: 400 }
@@ -451,12 +448,5 @@ export async function POST(request: NextRequest) {
       suggestedAssignment: aiExtraction?.suggestedAssignment || null,
       aiPowered: !!aiExtraction,
     });
-  } catch (err) {
-    console.error('PDF import error:', err);
-    logError('PDF import failed', { error: err as Error, source: 'import/pdf' });
-    return NextResponse.json(
-      { error: 'Failed to process PDF file' },
-      { status: 500 }
-    );
   }
-}
+);

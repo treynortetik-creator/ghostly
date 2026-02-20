@@ -6,19 +6,22 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { logError } from '@/lib/error-logger';
+import { MAX_FILE_SIZE_BYTES } from '@/lib/constants';
 import {
   categorizeTransactions,
   type AssignmentTarget,
   type TransactionForCategorization,
 } from '@/lib/openrouter';
 import { createClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 import { parseCSVLine, findDuplicate, type DuplicateCandidate } from '@/lib/business-logic';
 
 // ============================================
 // TYPES
 // ============================================
+
+const MAX_VENDOR_LENGTH = 200;
+const MAX_MEMO_LENGTH = 1000;
 
 interface ParsedBrexTransaction {
   id: string;
@@ -149,7 +152,8 @@ function parseBrexCSV(csvContent: string): ParsedBrexTransaction[] {
     const originalCurrency = originalCurrencyIndex >= 0
       ? values[originalCurrencyIndex]?.trim() || 'USD'
       : 'USD';
-    const memo = memoIndex >= 0 ? values[memoIndex]?.trim() || null : null;
+    const rawMemo = memoIndex >= 0 ? values[memoIndex]?.trim() || null : null;
+    const memo = rawMemo ? rawMemo.substring(0, MAX_MEMO_LENGTH) : null;
     const expenseStatus = expenseStatusIndex >= 0
       ? values[expenseStatusIndex]?.trim() || ''
       : '';
@@ -163,7 +167,7 @@ function parseBrexCSV(csvContent: string): ParsedBrexTransaction[] {
       amount,
       originalAmount,
       originalCurrency,
-      vendor,
+      vendor: vendor.substring(0, MAX_VENDOR_LENGTH),
       memo,
       expenseStatus,
       paymentStatus,
@@ -179,11 +183,8 @@ function parseBrexCSV(csvContent: string): ParsedBrexTransaction[] {
 // API HANDLER
 // ============================================
 
-export async function POST(request: NextRequest) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const POST = withApiHandler({ permission: 'write', resource: 'import/brex' },
+  async (request: NextRequest) => {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const skipAI = formData.get('skipAI') === 'true';
@@ -195,9 +196,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file size (10MB max)
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    if (file.size > maxSize) {
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE_BYTES) {
       return NextResponse.json(
         { error: 'File too large. Maximum size is 10MB.' },
         { status: 400 }
@@ -298,7 +298,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get AI suggestions if not skipped
-    let aiResults: Map<string, { targetId: string | null; targetType: 'event' | 'category' | null; confidence: number }> = new Map();
+    const aiResults: Map<string, { targetId: string | null; targetType: 'event' | 'category' | null; confidence: number }> = new Map();
 
     if (!skipAI && process.env.OPENROUTER_API_KEY) {
       try {
@@ -366,12 +366,5 @@ export async function POST(request: NextRequest) {
         quarter: t.quarter,
       })),
     });
-  } catch (err) {
-    console.error('Brex import error:', err);
-    logError('Brex import failed', { error: err as Error, source: 'import/brex' });
-    return NextResponse.json(
-      { error: 'Failed to process import' },
-      { status: 500 }
-    );
   }
-}
+);

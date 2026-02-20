@@ -9,8 +9,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logAudit, getActor } from '@/lib/audit';
-import { requirePermission } from '@/lib/permissions';
-import { logError } from '@/lib/error-logger';
+import { withApiHandler } from '@/lib/api-helpers';
+import { MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_LABEL } from '@/lib/constants';
 import path from 'path';
 import fs from 'fs/promises';
 import { randomUUID } from 'crypto';
@@ -22,9 +22,42 @@ const ALLOWED_MIME_TYPES = [
 
 const ALLOWED_EXTENSIONS = ['.pdf', '.docx'];
 
-const MAX_FILE_SIZE = (parseInt(process.env.DOCUMENT_MAX_SIZE_MB || '10', 10)) * 1024 * 1024;
-
 const UPLOAD_DIR = process.env.DOCUMENT_UPLOAD_DIR || 'uploads';
+
+const MAX_DOCS_PER_EVENT = 50;
+const MAX_DOCS_PER_EXPENSE = 10;
+
+// Simple in-memory rate limiter for uploads (per IP, 20 uploads per minute)
+const UPLOAD_RATE_LIMIT = 20;
+const UPLOAD_RATE_WINDOW_MS = 60_000;
+const uploadRateMap = new Map<string, { count: number; resetAt: number }>();
+
+function isUploadRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = uploadRateMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    uploadRateMap.set(ip, { count: 1, resetAt: now + UPLOAD_RATE_WINDOW_MS });
+    return false;
+  }
+  entry.count++;
+  return entry.count > UPLOAD_RATE_LIMIT;
+}
+
+// Magic bytes for file type verification
+const PDF_MAGIC = new Uint8Array([0x25, 0x50, 0x44, 0x46]); // %PDF
+const DOCX_MAGIC = new Uint8Array([0x50, 0x4b, 0x03, 0x04]); // PK\x03\x04 (ZIP/DOCX)
+
+function verifyMagicBytes(buffer: Buffer, ext: string): boolean {
+  if (buffer.length < 4) return false;
+  const header = new Uint8Array(buffer.slice(0, 4));
+  if (ext === '.pdf') {
+    return header.every((b, i) => b === PDF_MAGIC[i]);
+  }
+  if (ext === '.docx') {
+    return header.every((b, i) => b === DOCX_MAGIC[i]);
+  }
+  return false;
+}
 
 /**
  * Get the absolute upload directory path
@@ -54,11 +87,9 @@ function sanitizeFilename(filename: string): string {
 // GET /api/documents
 // ============================================
 
-export async function GET(request: NextRequest) {
-  try {
-    const denied = requirePermission(request, 'read');
-    if (denied) return denied;
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export const GET = withApiHandler({ permission: 'read', resource: 'documents' },
+  async (request: NextRequest) => {
     const { searchParams } = new URL(request.url);
 
     const eventId = searchParams.get('event_id');
@@ -127,24 +158,23 @@ export async function GET(request: NextRequest) {
         total_pages: Math.ceil(total / perPage),
       },
     });
-  } catch (err) {
-    console.error('Documents API error:', err);
-    logError('Failed to fetch documents', { error: err as Error, source: 'api/documents', context: { method: 'GET' } });
-    return NextResponse.json(
-      { error: 'Failed to fetch documents' },
-      { status: 500 }
-    );
   }
-}
+);
 
 // ============================================
 // POST /api/documents
 // ============================================
 
-export async function POST(request: NextRequest) {
-  try {
-    const denied = requirePermission(request, 'write');
-    if (denied) return denied;
+export const POST = withApiHandler({ permission: 'write', resource: 'documents' },
+  async (request: NextRequest) => {
+    // Rate limit uploads
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (isUploadRateLimited(clientIp)) {
+      return NextResponse.json(
+        { error: 'Too many uploads. Please try again later.' },
+        { status: 429 },
+      );
+    }
 
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
@@ -160,9 +190,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file size
-    if (file.size > MAX_FILE_SIZE) {
+    if (file.size > MAX_FILE_SIZE_BYTES) {
       return NextResponse.json(
-        { error: `File too large. Maximum size is ${process.env.DOCUMENT_MAX_SIZE_MB || '10'} MB` },
+        { error: `File too large. Maximum size is ${MAX_FILE_SIZE_LABEL}` },
         { status: 400 }
       );
     }
@@ -186,7 +216,7 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
 
-    // Validate event_id exists if provided
+    // Validate event_id exists if provided + check document count limit
     if (eventId) {
       const { data: event, error: eventError } = await supabase
         .from('events')
@@ -201,9 +231,22 @@ export async function POST(request: NextRequest) {
           { status: 404 }
         );
       }
+
+      const { count: docCount } = await supabase
+        .from('documents')
+        .select('id', { count: 'exact', head: true })
+        .eq('event_id', eventId)
+        .is('deleted_at', null);
+
+      if ((docCount ?? 0) >= MAX_DOCS_PER_EVENT) {
+        return NextResponse.json(
+          { error: `Maximum of ${MAX_DOCS_PER_EVENT} documents per event reached.` },
+          { status: 400 },
+        );
+      }
     }
 
-    // Validate expense_id exists if provided
+    // Validate expense_id exists if provided + check document count limit
     if (expenseId) {
       const { data: expense, error: expenseError } = await supabase
         .from('expenses')
@@ -218,6 +261,19 @@ export async function POST(request: NextRequest) {
           { status: 404 }
         );
       }
+
+      const { count: docCount } = await supabase
+        .from('documents')
+        .select('id', { count: 'exact', head: true })
+        .eq('expense_id', expenseId)
+        .is('deleted_at', null);
+
+      if ((docCount ?? 0) >= MAX_DOCS_PER_EXPENSE) {
+        return NextResponse.json(
+          { error: `Maximum of ${MAX_DOCS_PER_EXPENSE} documents per expense reached.` },
+          { status: 400 },
+        );
+      }
     }
 
     // Generate storage path
@@ -227,11 +283,18 @@ export async function POST(request: NextRequest) {
     const docId = randomUUID();
     const storagePath = `uploads/${year}/${month}/${docId}${ext}`;
 
+    // Read file bytes and verify magic bytes match claimed type
+    const buffer = Buffer.from(await file.arrayBuffer());
+    if (!verifyMagicBytes(buffer, ext)) {
+      return NextResponse.json(
+        { error: 'File content does not match its extension. The file may be corrupted or misnamed.' },
+        { status: 400 },
+      );
+    }
+
     // Write file to disk
     const absolutePath = path.join(getUploadBasePath(), year, month);
     await fs.mkdir(absolutePath, { recursive: true });
-
-    const buffer = Buffer.from(await file.arrayBuffer());
     await fs.writeFile(path.join(absolutePath, `${docId}${ext}`), buffer);
 
     // Determine source and uploaded_by
@@ -286,12 +349,5 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(newDoc, { status: 201 });
-  } catch (err) {
-    console.error('Upload document error:', err);
-    logError('Failed to upload document', { error: err as Error, source: 'api/documents', context: { method: 'POST' } });
-    return NextResponse.json(
-      { error: 'Failed to upload document' },
-      { status: 500 }
-    );
   }
-}
+);

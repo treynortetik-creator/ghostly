@@ -7,18 +7,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 
 // ============================================
 // POST /api/reminders/check
 // ============================================
 
-export async function POST(request: NextRequest) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const POST = withApiHandler({ permission: 'read', resource: 'reminders/check' },
+  async (request: NextRequest) => {
     const supabase = await createClient();
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
@@ -101,13 +97,20 @@ export async function POST(request: NextRequest) {
       await supabase.from('reminder_log').insert(logEntries);
     }
 
+    // Audit log reminder check
+    if (reminders.length > 0) {
+      await auditMutation(request, {
+        entity_type: 'reminder',
+        entity_id: 'check',
+        action: 'check',
+        changes: null,
+        metadata: { reminders_found: reminders.length },
+      });
+    }
+
     return NextResponse.json({
       reminders,
       meta: { total: reminders.length, checked_at: new Date().toISOString() },
     });
-  } catch (err) {
-    console.error('Reminder check error:', err);
-    logError('Failed to check reminders', { error: err as Error, source: 'api/reminders/check', context: { method: 'POST' } });
-    return NextResponse.json({ error: 'Failed to check reminders' }, { status: 500 });
   }
-}
+);

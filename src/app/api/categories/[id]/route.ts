@@ -9,23 +9,18 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/permissions';
-import { logError } from '@/lib/error-logger';
-import { logAudit, getActor, computeChanges } from '@/lib/audit';
+import { computeChanges } from '@/lib/audit';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+
+type RouteContext = { params: Promise<{ id: string }> };
 
 // ============================================
 // GET /api/categories/[id]
 // ============================================
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
-    const { id } = await params;
+export const GET = withApiHandler({ permission: 'read', resource: 'categories' },
+  async (_request: NextRequest, context: RouteContext) => {
+    const { id } = await context.params;
     const supabase = await createClient();
 
     const { data: category, error: categoryError } = await supabase
@@ -82,29 +77,16 @@ export async function GET(
       expenses: expenseList,
       fiscal_year: fiscalYear,
     });
-  } catch (error) {
-    console.error('Get category error:', error);
-    logError('Failed to fetch category', { error: error as Error, source: 'api/categories/[id]', context: { method: 'GET' } });
-    return NextResponse.json(
-      { error: 'Failed to fetch category' },
-      { status: 500 }
-    );
   }
-}
+);
 
 // ============================================
 // PUT /api/categories/[id]
 // ============================================
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const deniedPut = requirePermission(request, 'write');
-  if (deniedPut) return deniedPut;
-
-  try {
-    const { id } = await params;
+export const PUT = withApiHandler({ permission: 'write', resource: 'categories' },
+  async (request: NextRequest, context: RouteContext) => {
+    const { id } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
 
@@ -203,46 +185,26 @@ export async function PUT(
     };
 
     // Audit log (non-blocking)
-    try {
-      const { actor, actor_type } = await getActor(request);
-      const auditFields = ['name', 'budget_amount', 'description', 'fiscal_year_id'];
-      const changes = computeChanges(existingCategory as Record<string, unknown>, updatedCategory as Record<string, unknown>, auditFields);
-      logAudit({
-        entity_type: 'category',
-        entity_id: id,
-        action: 'update',
-        changes,
-        actor,
-        actor_type,
-      });
-    } catch (e) {
-      console.error('Audit log failed:', e);
-    }
+    const auditFields = ['name', 'budget_amount', 'description', 'fiscal_year_id'];
+    const changes = computeChanges(existingCategory as Record<string, unknown>, updatedCategory as Record<string, unknown>, auditFields);
+    await auditMutation(request, {
+      entity_type: 'category',
+      entity_id: id,
+      action: 'update',
+      changes,
+    });
 
     return NextResponse.json(categoryWithTotals);
-  } catch (error) {
-    console.error('Update category error:', error);
-    logError('Failed to update category', { error: error as Error, source: 'api/categories/[id]', context: { method: 'PUT' } });
-    return NextResponse.json(
-      { error: 'Failed to update category' },
-      { status: 500 }
-    );
   }
-}
+);
 
 // ============================================
 // DELETE /api/categories/[id]
 // ============================================
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const deniedDel = requirePermission(request, 'write');
-  if (deniedDel) return deniedDel;
-
-  try {
-    const { id } = await params;
+export const DELETE = withApiHandler({ permission: 'write', resource: 'categories' },
+  async (request: NextRequest, context: RouteContext) => {
+    const { id } = await context.params;
     const supabase = await createClient();
 
     // Check if category exists
@@ -271,30 +233,16 @@ export async function DELETE(
     if (deleteError) throw deleteError;
 
     // Audit log (non-blocking)
-    try {
-      const { actor, actor_type } = await getActor(request);
-      logAudit({
-        entity_type: 'category',
-        entity_id: id,
-        action: 'delete',
-        changes: null,
-        actor,
-        actor_type,
-      });
-    } catch (e) {
-      console.error('Audit log failed:', e);
-    }
+    await auditMutation(request, {
+      entity_type: 'category',
+      entity_id: id,
+      action: 'delete',
+      changes: null,
+    });
 
     return NextResponse.json({
       message: 'Category deleted successfully',
       id,
     });
-  } catch (error) {
-    console.error('Delete category error:', error);
-    logError('Failed to delete category', { error: error as Error, source: 'api/categories/[id]', context: { method: 'DELETE' } });
-    return NextResponse.json(
-      { error: 'Failed to delete category' },
-      { status: 500 }
-    );
   }
-}
+);

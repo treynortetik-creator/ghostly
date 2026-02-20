@@ -6,17 +6,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
-import { logAudit, getActor } from '@/lib/audit';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-export async function POST(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const POST = withApiHandler({ permission: 'write', resource: 'events/checklist' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id: eventId } = await context.params;
     const body = await request.json();
 
@@ -97,19 +92,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (insertError) throw insertError;
 
     // Audit log (non-blocking)
-    try {
-      const { actor, actor_type } = await getActor(request);
-      logAudit({ entity_type: 'event', entity_id: eventId, action: 'update', changes: null, actor, actor_type, metadata: { sub_type: 'apply_template', template_id: body.template_id, items_added: (inserted || []).length } });
-    } catch (e) { console.error('Audit log failed:', e); }
+    await auditMutation(request, { entity_type: 'event', entity_id: eventId, action: 'update', changes: null, metadata: { sub_type: 'apply_template', template_id: body.template_id, items_added: (inserted || []).length } });
 
     return NextResponse.json({
       message: `Applied ${(inserted || []).length} items from template`,
       items_added: (inserted || []).length,
       items: inserted,
     }, { status: 201 });
-  } catch (err) {
-    console.error('Apply template error:', err);
-    logError('Failed to apply template', { error: err as Error, source: 'api/events/[id]/checklist/apply-template', context: { method: 'POST' } });
-    return NextResponse.json({ error: 'Failed to apply template' }, { status: 500 });
   }
-}
+);

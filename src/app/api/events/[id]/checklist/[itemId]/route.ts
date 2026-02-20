@@ -7,16 +7,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string; itemId: string }> };
 
-export async function PUT(request: NextRequest, context: RouteContext) {
-  try {
-    const denied = requirePermission(request, 'write');
-    if (denied) return denied;
-
+export const PUT = withApiHandler({ permission: 'write', resource: 'events/checklist' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id: eventId, itemId } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -54,18 +50,11 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     }
 
     return NextResponse.json(data);
-  } catch (err) {
-    console.error('Update checklist item error:', err);
-    logError('Failed to update checklist item', { error: err as Error, source: 'api/events/[id]/checklist/[itemId]', context: { method: 'PUT' } });
-    return NextResponse.json({ error: 'Failed to update checklist item' }, { status: 500 });
   }
-}
+);
 
-export async function DELETE(request: NextRequest, context: RouteContext) {
-  try {
-    const denied = requirePermission(request, 'write');
-    if (denied) return denied;
-
+export const DELETE = withApiHandler({ permission: 'write', resource: 'events/checklist' },
+  async (_request: NextRequest, context: RouteContext) => {
     const { id: eventId, itemId } = await context.params;
     const supabase = await createClient();
 
@@ -78,9 +67,5 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     if (error) throw error;
 
     return NextResponse.json({ message: 'Checklist item deleted' });
-  } catch (err) {
-    console.error('Delete checklist item error:', err);
-    logError('Failed to delete checklist item', { error: err as Error, source: 'api/events/[id]/checklist/[itemId]', context: { method: 'DELETE' } });
-    return NextResponse.json({ error: 'Failed to delete checklist item' }, { status: 500 });
   }
-}
+);

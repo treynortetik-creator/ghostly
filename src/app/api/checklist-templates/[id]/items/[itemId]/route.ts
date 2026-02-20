@@ -7,16 +7,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string; itemId: string }> };
 
-export async function PUT(request: NextRequest, context: RouteContext) {
-  const deniedPut = requirePermission(request, 'write');
-  if (deniedPut) return deniedPut;
-
-  try {
+export const PUT = withApiHandler({ permission: 'write', resource: 'checklist-template-items' },
+  async (request: NextRequest, context: RouteContext) => {
     const { itemId } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -41,18 +37,11 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     }
 
     return NextResponse.json(data);
-  } catch (err) {
-    console.error('Update template item error:', err);
-    logError('Failed to update template item', { error: err as Error, source: 'api/checklist-templates/[id]/items/[itemId]', context: { method: 'PUT' } });
-    return NextResponse.json({ error: 'Failed to update template item' }, { status: 500 });
   }
-}
+);
 
-export async function DELETE(request: NextRequest, context: RouteContext) {
-  const deniedDel = requirePermission(request, 'write');
-  if (deniedDel) return deniedDel;
-
-  try {
+export const DELETE = withApiHandler({ permission: 'write', resource: 'checklist-template-items' },
+  async (_request: NextRequest, context: RouteContext) => {
     const { itemId } = await context.params;
     const supabase = await createClient();
 
@@ -64,9 +53,5 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     if (error) throw error;
 
     return NextResponse.json({ message: 'Template item deleted' });
-  } catch (err) {
-    console.error('Delete template item error:', err);
-    logError('Failed to delete template item', { error: err as Error, source: 'api/checklist-templates/[id]/items/[itemId]', context: { method: 'DELETE' } });
-    return NextResponse.json({ error: 'Failed to delete template item' }, { status: 500 });
   }
-}
+);

@@ -7,18 +7,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string; mid: string }> };
 
 const validChannels = ['scrooge', 'in_app', 'both'];
 
-export async function PUT(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const PUT = withApiHandler({ permission: 'write', resource: 'cadence-milestones' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id: templateId, mid } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -54,18 +50,11 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     }
 
     return NextResponse.json(data);
-  } catch (err) {
-    console.error('Update cadence milestone error:', err);
-    logError('Failed to update cadence milestone', { error: err as Error, source: 'api/cadence-templates/[id]/milestones/[mid]', context: { method: 'PUT' } });
-    return NextResponse.json({ error: 'Failed to update cadence milestone' }, { status: 500 });
   }
-}
+);
 
-export async function DELETE(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const DELETE = withApiHandler({ permission: 'write', resource: 'cadence-milestones' },
+  async (_request: NextRequest, context: RouteContext) => {
     const { id: templateId, mid } = await context.params;
     const supabase = await createClient();
 
@@ -78,9 +67,5 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     if (error) throw error;
 
     return NextResponse.json({ message: 'Milestone deleted', id: mid });
-  } catch (err) {
-    console.error('Delete cadence milestone error:', err);
-    logError('Failed to delete cadence milestone', { error: err as Error, source: 'api/cadence-templates/[id]/milestones/[mid]', context: { method: 'DELETE' } });
-    return NextResponse.json({ error: 'Failed to delete cadence milestone' }, { status: 500 });
   }
-}
+);

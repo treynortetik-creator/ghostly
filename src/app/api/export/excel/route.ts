@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as XLSX from 'xlsx';
 import { createClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 import { getDateRangeForScope, type ExportScope } from '@/lib/export-helpers';
 
 /* ============================================
@@ -12,11 +12,8 @@ import { getDateRangeForScope, type ExportScope } from '@/lib/export-helpers';
    expenses, and summary.
    ============================================ */
 
-export async function GET(request: NextRequest) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'export/excel' },
+  async (request: NextRequest) => {
     const { searchParams } = new URL(request.url);
     const scope = (searchParams.get('scope') || 'year') as ExportScope;
     const fiscalYear = parseInt(searchParams.get('fiscal_year') || '2026', 10);
@@ -108,7 +105,6 @@ export async function GET(request: NextRequest) {
     }
 
     // When filtering by quarter, also restrict expenses to filtered events only
-    // This prevents expenses from unrelated events leaking in via date range overlap
     if (scope === 'quarter') {
       const filteredEventIds = new Set(filteredEvents.map(e => e.id));
       allExpenses = allExpenses.filter(e =>
@@ -342,11 +338,5 @@ export async function GET(request: NextRequest) {
         'Content-Disposition': `attachment; filename="${filename}"`,
       },
     });
-  } catch (error) {
-    console.error('Excel export error:', error);
-    return NextResponse.json(
-      { error: 'Failed to generate Excel export' },
-      { status: 500 }
-    );
   }
-}
+);

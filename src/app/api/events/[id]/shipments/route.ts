@@ -7,18 +7,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 const validStatuses = ['pending', 'in_transit', 'delivered', 'returned', 'issue'];
 
-export async function GET(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'events/shipments' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id: eventId } = await context.params;
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
@@ -42,18 +38,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
       shipments: shipments || [],
       meta: { total: (shipments || []).length },
     });
-  } catch (err) {
-    console.error('Event shipments API error:', err);
-    logError('Failed to fetch event shipments', { error: err as Error, source: 'api/events/[id]/shipments', context: { method: 'GET' } });
-    return NextResponse.json({ error: 'Failed to fetch event shipments' }, { status: 500 });
   }
-}
+);
 
-export async function POST(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const POST = withApiHandler({ permission: 'write', resource: 'events/shipments' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id: eventId } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -103,9 +92,5 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (error) throw error;
 
     return NextResponse.json(shipment, { status: 201 });
-  } catch (err) {
-    console.error('Create event shipment error:', err);
-    logError('Failed to create event shipment', { error: err as Error, source: 'api/events/[id]/shipments', context: { method: 'POST' } });
-    return NextResponse.json({ error: 'Failed to create event shipment' }, { status: 500 });
   }
-}
+);

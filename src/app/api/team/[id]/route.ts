@@ -8,17 +8,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
-import { logAudit, getActor } from '@/lib/audit';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-export async function GET(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'team/[id]' },
+  async (_request: NextRequest, context: RouteContext) => {
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -34,18 +29,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     return NextResponse.json(data);
-  } catch (err) {
-    console.error('Get team member error:', err);
-    logError('Failed to get team member', { error: err as Error, source: 'api/team/[id]', context: { method: 'GET' } });
-    return NextResponse.json({ error: 'Failed to get team member' }, { status: 500 });
   }
-}
+);
 
-export async function PUT(request: NextRequest, context: RouteContext) {
-  const deniedPut = requirePermission(request, 'write');
-  if (deniedPut) return deniedPut;
-
-  try {
+export const PUT = withApiHandler({ permission: 'write', resource: 'team/[id]' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -71,34 +59,20 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'Team member not found' }, { status: 404 });
     }
 
-    // Audit log (non-blocking)
-    try {
-      const { actor, actor_type } = await getActor(request);
-      logAudit({
-        entity_type: 'team_member',
-        entity_id: id,
-        action: 'update',
-        changes: null,
-        actor,
-        actor_type,
-      });
-    } catch (e) {
-      console.error('Audit log failed:', e);
-    }
+    // Audit log
+    await auditMutation(request, {
+      entity_type: 'team_member',
+      entity_id: id,
+      action: 'update',
+      changes: null,
+    });
 
     return NextResponse.json(data);
-  } catch (err) {
-    console.error('Update team member error:', err);
-    logError('Failed to update team member', { error: err as Error, source: 'api/team/[id]', context: { method: 'PUT' } });
-    return NextResponse.json({ error: 'Failed to update team member' }, { status: 500 });
   }
-}
+);
 
-export async function DELETE(request: NextRequest, context: RouteContext) {
-  const deniedDel = requirePermission(request, 'write');
-  if (deniedDel) return deniedDel;
-
-  try {
+export const DELETE = withApiHandler({ permission: 'write', resource: 'team/[id]' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -114,25 +88,14 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'Team member not found' }, { status: 404 });
     }
 
-    // Audit log (non-blocking)
-    try {
-      const { actor, actor_type } = await getActor(request);
-      logAudit({
-        entity_type: 'team_member',
-        entity_id: id,
-        action: 'delete',
-        changes: null,
-        actor,
-        actor_type,
-      });
-    } catch (e) {
-      console.error('Audit log failed:', e);
-    }
+    // Audit log
+    await auditMutation(request, {
+      entity_type: 'team_member',
+      entity_id: id,
+      action: 'delete',
+      changes: null,
+    });
 
     return NextResponse.json({ message: 'Team member deleted' });
-  } catch (err) {
-    console.error('Delete team member error:', err);
-    logError('Failed to delete team member', { error: err as Error, source: 'api/team/[id]', context: { method: 'DELETE' } });
-    return NextResponse.json({ error: 'Failed to delete team member' }, { status: 500 });
   }
-}
+);

@@ -7,22 +7,17 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { logError } from '@/lib/error-logger';
 import type { ExpenseSource } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
 import { withIdempotency } from '@/lib/idempotency';
-import { logAudit, getActor } from '@/lib/audit';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 
 // ============================================
 // GET /api/expenses
 // ============================================
 
-export async function GET(request: NextRequest) {
-  try {
-    const denied = requirePermission(request, 'read');
-    if (denied) return denied;
-
+export const GET = withApiHandler({ permission: 'read', resource: 'expenses' },
+  async (request: NextRequest) => {
     const { searchParams } = new URL(request.url);
 
     // Parse filter parameters
@@ -39,7 +34,7 @@ export async function GET(request: NextRequest) {
     const sortOrder = searchParams.get('sort_order') || 'desc'; // asc, desc
 
     // Parse pagination parameters
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+    const page = Math.min(10000, Math.max(1, parseInt(searchParams.get('page') || '1', 10)));
     const perPage = Math.min(200, Math.max(1, parseInt(searchParams.get('per_page') || '50', 10)));
     const from = (page - 1) * perPage;
     const to = from + perPage - 1;
@@ -240,25 +235,15 @@ export async function GET(request: NextRequest) {
         total_pages: Math.ceil(total / perPage),
       },
     });
-  } catch (err) {
-    console.error('Expenses API error:', err);
-    logError('Failed to fetch expenses', { error: err as Error, source: 'api/expenses', context: { method: 'GET' } });
-    return NextResponse.json(
-      { error: 'Failed to fetch expenses' },
-      { status: 500 }
-    );
   }
-}
+);
 
 // ============================================
 // POST /api/expenses
 // ============================================
 
-export const POST = withIdempotency(async function POST(request: NextRequest) {
-  try {
-    const denied = requirePermission(request, 'write');
-    if (denied) return denied;
-
+export const POST = withIdempotency(withApiHandler({ permission: 'write', resource: 'expenses' },
+  async (request: NextRequest) => {
     const body = await request.json();
 
     // Validate required fields
@@ -403,27 +388,13 @@ export const POST = withIdempotency(async function POST(request: NextRequest) {
     };
 
     // Audit log (non-blocking)
-    try {
-      const { actor, actor_type } = await getActor(request);
-      logAudit({
-        entity_type: 'expense',
-        entity_id: newExpense.id,
-        action: 'create',
-        changes: null,
-        actor,
-        actor_type,
-      });
-    } catch (e) {
-      console.error('Audit log failed:', e);
-    }
+    await auditMutation(request, {
+      entity_type: 'expense',
+      entity_id: newExpense.id,
+      action: 'create',
+      changes: null,
+    });
 
     return NextResponse.json(response, { status: 201 });
-  } catch (err) {
-    console.error('Create expense error:', err);
-    logError('Failed to create expense', { error: err as Error, source: 'api/expenses', context: { method: 'POST' } });
-    return NextResponse.json(
-      { error: 'Failed to create expense' },
-      { status: 500 }
-    );
   }
-});
+));

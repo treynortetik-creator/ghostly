@@ -7,8 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 import type { QuarterType } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
 
@@ -47,11 +46,8 @@ export interface DashboardSummary {
 // API HANDLER
 // ============================================
 
-export async function GET(request: NextRequest) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'dashboard/summary' },
+  async () => {
     const supabase = await createClient();
 
     // Fetch settings to determine fiscal year
@@ -193,12 +189,5 @@ export async function GET(request: NextRequest) {
     };
 
     return NextResponse.json(summary);
-  } catch (err) {
-    console.error('Dashboard summary error:', err);
-    logError('Failed to fetch dashboard summary', { error: err as Error, source: 'api/dashboard', context: { method: 'GET' } });
-    return NextResponse.json(
-      { error: 'Failed to fetch dashboard summary' },
-      { status: 500 }
-    );
   }
-}
+);

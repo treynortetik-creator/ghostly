@@ -2,25 +2,16 @@
  * Generate Event Reminders
  *
  * POST /api/events/:id/reminders/generate - Generate reminders from cadence template
- *
- * Takes event's date_start + its type's cadence template and creates
- * event_reminder rows with computed reminder_date = date_start + offset_days.
- *
- * Body: { template_id?: string } — if omitted, uses the default template for the event's type.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-export async function POST(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const POST = withApiHandler({ permission: 'write', resource: 'events/reminders' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id: eventId } = await context.params;
     const body = await request.json().catch(() => ({}));
     const supabase = await createClient();
@@ -127,9 +118,5 @@ export async function POST(request: NextRequest, context: RouteContext) {
         event_start_date: event.date_start,
       },
     }, { status: 201 });
-  } catch (err) {
-    console.error('Generate reminders error:', err);
-    logError('Failed to generate reminders', { error: err as Error, source: 'api/events/[id]/reminders/generate', context: { method: 'POST' } });
-    return NextResponse.json({ error: 'Failed to generate reminders' }, { status: 500 });
   }
-}
+);

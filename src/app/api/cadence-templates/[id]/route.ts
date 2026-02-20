@@ -8,16 +8,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-export async function GET(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'cadence-templates' },
+  async (_request: NextRequest, context: RouteContext) => {
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -44,18 +40,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
       milestones: milestones || [],
       milestone_count: (milestones || []).length,
     });
-  } catch (err) {
-    console.error('Get cadence template error:', err);
-    logError('Failed to get cadence template', { error: err as Error, source: 'api/cadence-templates/[id]', context: { method: 'GET' } });
-    return NextResponse.json({ error: 'Failed to get cadence template' }, { status: 500 });
   }
-}
+);
 
-export async function PUT(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const PUT = withApiHandler({ permission: 'write', resource: 'cadence-templates' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -77,18 +66,11 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     }
 
     return NextResponse.json(data);
-  } catch (err) {
-    console.error('Update cadence template error:', err);
-    logError('Failed to update cadence template', { error: err as Error, source: 'api/cadence-templates/[id]', context: { method: 'PUT' } });
-    return NextResponse.json({ error: 'Failed to update cadence template' }, { status: 500 });
   }
-}
+);
 
-export async function DELETE(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const DELETE = withApiHandler({ permission: 'write', resource: 'cadence-templates' },
+  async (_request: NextRequest, context: RouteContext) => {
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -100,9 +82,5 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     if (error) throw error;
 
     return NextResponse.json({ message: 'Cadence template deleted', id });
-  } catch (err) {
-    console.error('Delete cadence template error:', err);
-    logError('Failed to delete cadence template', { error: err as Error, source: 'api/cadence-templates/[id]', context: { method: 'DELETE' } });
-    return NextResponse.json({ error: 'Failed to delete cadence template' }, { status: 500 });
   }
-}
+);

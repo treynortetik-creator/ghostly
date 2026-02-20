@@ -6,8 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/permissions';
-import { logError } from '@/lib/error-logger';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 import path from 'path';
 import fs from 'fs/promises';
 
@@ -20,16 +19,11 @@ function getUploadBasePath(): string {
   return path.join(process.cwd(), UPLOAD_DIR);
 }
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
-}
+type RouteContext = { params: Promise<{ id: string }> };
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
-  try {
-    const denied = requirePermission(request, 'read');
-    if (denied) return denied;
-
-    const { id } = await params;
+export const GET = withApiHandler({ permission: 'read', resource: 'documents' },
+  async (request: NextRequest, context: RouteContext) => {
+    const { id } = await context.params;
     const supabase = await createClient();
 
     const { data: doc, error } = await supabase
@@ -72,6 +66,15 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    // Audit log the download
+    await auditMutation(request, {
+      entity_type: 'document',
+      entity_id: id,
+      action: 'download',
+      changes: null,
+      metadata: { filename: doc.original_filename },
+    });
+
     // Read file and stream it back
     const fileBuffer = await fs.readFile(filePath);
 
@@ -85,12 +88,5 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         'Cache-Control': 'private, max-age=3600',
       },
     });
-  } catch (err) {
-    console.error('Download document error:', err);
-    logError('Failed to download document', { error: err as Error, source: 'api/documents/[id]/download', context: { method: 'GET' } });
-    return NextResponse.json(
-      { error: 'Failed to download document' },
-      { status: 500 }
-    );
   }
-}
+);

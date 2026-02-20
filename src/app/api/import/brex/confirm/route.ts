@@ -8,8 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { ExpenseSource } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/permissions';
-import { logError } from '@/lib/error-logger';
+import { withApiHandler } from '@/lib/api-helpers';
 import { logAudit, getActor } from '@/lib/audit';
 
 // ============================================
@@ -40,11 +39,8 @@ interface ImportResult {
 // API HANDLER
 // ============================================
 
-export async function POST(request: NextRequest) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const POST = withApiHandler({ permission: 'write', resource: 'import/brex/confirm' },
+  async (request: NextRequest) => {
     const supabase = await createClient();
     const body = await request.json();
     const { transactions } = body as { transactions: TransactionToImport[] };
@@ -249,12 +245,5 @@ export async function POST(request: NextRequest) {
       summary,
       expenses: createdExpenses,
     });
-  } catch (error) {
-    console.error('Brex import confirm error:', error);
-    logError('Failed to confirm Brex import', { error: error as Error, source: 'api/import/brex/confirm', context: { method: 'POST' } });
-    return NextResponse.json(
-      { error: 'Failed to confirm import' },
-      { status: 500 }
-    );
   }
-}
+);

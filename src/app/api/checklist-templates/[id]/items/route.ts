@@ -6,19 +6,15 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 import type { ChecklistPhase } from '@/types/database';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 const validPhases: ChecklistPhase[] = ['pre_event', 'day_of', 'post_event'];
 
-export async function POST(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const POST = withApiHandler({ permission: 'write', resource: 'checklist-template-items' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id: templateId } = await context.params;
     const body = await request.json();
 
@@ -49,9 +45,5 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (error) throw error;
 
     return NextResponse.json(data, { status: 201 });
-  } catch (err) {
-    console.error('Add template item error:', err);
-    logError('Failed to add template item', { error: err as Error, source: 'api/checklist-templates/[id]/items', context: { method: 'POST' } });
-    return NextResponse.json({ error: 'Failed to add template item' }, { status: 500 });
   }
-}
+);

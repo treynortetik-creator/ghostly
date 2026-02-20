@@ -9,24 +9,18 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/permissions';
-import { logError } from '@/lib/error-logger';
-import { logAudit, getActor } from '@/lib/audit';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 import type { AuditEntityType } from '@/lib/audit';
+
+type RouteContext = { params: Promise<{ id: string }> };
 
 // ============================================
 // GET /api/event-types/[id]
 // ============================================
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
-    const { id } = await params;
+export const GET = withApiHandler({ permission: 'read', resource: 'event-types/[id]' },
+  async (_request: NextRequest, context: RouteContext) => {
+    const { id } = await context.params;
     const supabase = await createClient();
 
     const { data: eventType, error } = await supabase
@@ -43,29 +37,16 @@ export async function GET(
     }
 
     return NextResponse.json(eventType);
-  } catch (error) {
-    console.error('Get event type error:', error);
-    logError('Failed to fetch event type', { error: error as Error, source: 'api/event-types/[id]', context: { method: 'GET' } });
-    return NextResponse.json(
-      { error: 'Failed to fetch event type' },
-      { status: 500 }
-    );
   }
-}
+);
 
 // ============================================
 // PUT /api/event-types/[id]
 // ============================================
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const deniedPut = requirePermission(request, 'write');
-  if (deniedPut) return deniedPut;
-
-  try {
-    const { id } = await params;
+export const PUT = withApiHandler({ permission: 'write', resource: 'event-types/[id]' },
+  async (request: NextRequest, context: RouteContext) => {
+    const { id } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
 
@@ -149,45 +130,25 @@ export async function PUT(
     if (updateError) throw updateError;
 
     // Audit log (non-blocking)
-    try {
-      const { actor, actor_type } = await getActor(request);
-      logAudit({
-        entity_type: 'event' as AuditEntityType,
-        entity_id: id,
-        action: 'update',
-        changes: null,
-        actor,
-        actor_type,
-        metadata: { sub_type: 'event_type' },
-      });
-    } catch (e) {
-      console.error('Audit log failed:', e);
-    }
+    await auditMutation(request, {
+      entity_type: 'event' as AuditEntityType,
+      entity_id: id,
+      action: 'update',
+      changes: null,
+      metadata: { sub_type: 'event_type' },
+    });
 
     return NextResponse.json(updated);
-  } catch (error) {
-    console.error('Update event type error:', error);
-    logError('Failed to update event type', { error: error as Error, source: 'api/event-types/[id]', context: { method: 'PUT' } });
-    return NextResponse.json(
-      { error: 'Failed to update event type' },
-      { status: 500 }
-    );
   }
-}
+);
 
 // ============================================
 // DELETE /api/event-types/[id]
 // ============================================
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const deniedDel = requirePermission(request, 'write');
-  if (deniedDel) return deniedDel;
-
-  try {
-    const { id } = await params;
+export const DELETE = withApiHandler({ permission: 'write', resource: 'event-types/[id]' },
+  async (request: NextRequest, context: RouteContext) => {
+    const { id } = await context.params;
     const supabase = await createClient();
 
     // Archive instead of delete (soft delete)
@@ -209,28 +170,14 @@ export async function DELETE(
     }
 
     // Audit log (non-blocking)
-    try {
-      const { actor, actor_type } = await getActor(request);
-      logAudit({
-        entity_type: 'event' as AuditEntityType,
-        entity_id: id,
-        action: 'delete',
-        changes: null,
-        actor,
-        actor_type,
-        metadata: { sub_type: 'event_type' },
-      });
-    } catch (e) {
-      console.error('Audit log failed:', e);
-    }
+    await auditMutation(request, {
+      entity_type: 'event' as AuditEntityType,
+      entity_id: id,
+      action: 'delete',
+      changes: null,
+      metadata: { sub_type: 'event_type' },
+    });
 
     return NextResponse.json({ message: 'Event type archived', event_type: archived });
-  } catch (error) {
-    console.error('Archive event type error:', error);
-    logError('Failed to archive event type', { error: error as Error, source: 'api/event-types/[id]', context: { method: 'DELETE' } });
-    return NextResponse.json(
-      { error: 'Failed to archive event type' },
-      { status: 500 }
-    );
   }
-}
+);

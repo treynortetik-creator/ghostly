@@ -8,11 +8,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
 import { withIdempotency } from '@/lib/idempotency';
-import { logAudit, getActor } from '@/lib/audit';
-import type { EventType, QuarterType, EventTypeRecord } from '@/types/database';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import type { QuarterType, EventTypeRecord } from '@/types/database';
 
 interface EventWithTotals {
   id: string;
@@ -48,11 +46,8 @@ interface EventWithTotals {
 // GET /api/events
 // ============================================
 
-export async function GET(request: NextRequest) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'events' },
+  async (request: NextRequest) => {
     const { searchParams } = new URL(request.url);
 
     // Parse filter parameters
@@ -196,165 +191,143 @@ export async function GET(request: NextRequest) {
         total_pages: Math.ceil(total / perPage),
       },
     });
-  } catch (err) {
-    console.error('Events API error:', err);
-    logError('Failed to fetch events', { error: err as Error, source: 'api/events', context: { method: 'GET' } });
-    return NextResponse.json(
-      { error: 'Failed to fetch events' },
-      { status: 500 }
-    );
   }
-}
+);
 
 // ============================================
 // POST /api/events
 // ============================================
 
-export const POST = withIdempotency(async function POST(request: NextRequest) {
-  const deniedPost = requirePermission(request, 'write');
-  if (deniedPost) return deniedPost;
+export const POST = withIdempotency(
+  withApiHandler({ permission: 'write', resource: 'events' },
+    async (request: NextRequest) => {
+      const body = await request.json();
 
-  try {
-    const body = await request.json();
+      // Validate required fields
+      const requiredFields = ['name', 'event_type_id', 'quarter', 'budget_amount'];
+      for (const field of requiredFields) {
+        if (body[field] === undefined || body[field] === null || body[field] === '') {
+          return NextResponse.json(
+            { error: `Missing required field: ${field}` },
+            { status: 400 }
+          );
+        }
+      }
 
-    // Validate required fields
-    const requiredFields = ['name', 'event_type_id', 'quarter', 'budget_amount'];
-    for (const field of requiredFields) {
-      if (body[field] === undefined || body[field] === null || body[field] === '') {
+      // Validate input lengths
+      if (String(body.name).length > 200) {
         return NextResponse.json(
-          { error: `Missing required field: ${field}` },
+          { error: 'Event name must be 200 characters or fewer' },
           { status: 400 }
         );
       }
-    }
 
-    // Validate input lengths
-    if (String(body.name).length > 200) {
-      return NextResponse.json(
-        { error: 'Event name must be 200 characters or fewer' },
-        { status: 400 }
-      );
-    }
+      // Validate quarter
+      if (!['Q1', 'Q2', 'Q3', 'Q4', 'TBD'].includes(body.quarter)) {
+        return NextResponse.json(
+          { error: 'Invalid quarter. Must be one of: Q1, Q2, Q3, Q4, TBD' },
+          { status: 400 }
+        );
+      }
 
-    // Validate quarter
-    if (!['Q1', 'Q2', 'Q3', 'Q4', 'TBD'].includes(body.quarter)) {
-      return NextResponse.json(
-        { error: 'Invalid quarter. Must be one of: Q1, Q2, Q3, Q4, TBD' },
-        { status: 400 }
-      );
-    }
+      // Validate budget_amount is a positive number
+      const budgetAmount = parseFloat(body.budget_amount);
+      if (isNaN(budgetAmount) || budgetAmount < 0) {
+        return NextResponse.json(
+          { error: 'Invalid budget_amount. Must be a positive number' },
+          { status: 400 }
+        );
+      }
 
-    // Validate budget_amount is a positive number
-    const budgetAmount = parseFloat(body.budget_amount);
-    if (isNaN(budgetAmount) || budgetAmount < 0) {
-      return NextResponse.json(
-        { error: 'Invalid budget_amount. Must be a positive number' },
-        { status: 400 }
-      );
-    }
+      const supabase = await createClient();
 
-    const supabase = await createClient();
+      // Validate that event_type_id exists in event_types table
+      const { data: eventType, error: eventTypeError } = await supabase
+        .from('event_types')
+        .select('id, name')
+        .eq('id', body.event_type_id)
+        .single();
 
-    // Validate that event_type_id exists in event_types table
-    const { data: eventType, error: eventTypeError } = await supabase
-      .from('event_types')
-      .select('id, name')
-      .eq('id', body.event_type_id)
-      .single();
+      if (eventTypeError || !eventType) {
+        return NextResponse.json(
+          { error: 'Invalid event_type_id. Event type not found.' },
+          { status: 400 }
+        );
+      }
 
-    if (eventTypeError || !eventType) {
-      return NextResponse.json(
-        { error: 'Invalid event_type_id. Event type not found.' },
-        { status: 400 }
-      );
-    }
+      // Coerce empty strings to null for nullable typed columns (uuid, date)
+      const fiscalYearId = body.fiscal_year_id?.trim() || null;
+      const dateStart = body.date_start?.trim() || null;
+      const dateEnd = body.date_end?.trim() || null;
 
-    // Coerce empty strings to null for nullable typed columns (uuid, date)
-    const fiscalYearId = body.fiscal_year_id?.trim() || null;
-    const dateStart = body.date_start?.trim() || null;
-    const dateEnd = body.date_end?.trim() || null;
+      // Duplicate check: prevent same event name within same fiscal year
+      let dupeQuery = supabase
+        .from('events')
+        .select('id, name')
+        .eq('name', body.name)
+        .is('deleted_at', null);
+      if (fiscalYearId) {
+        dupeQuery = dupeQuery.eq('fiscal_year_id', fiscalYearId);
+      } else {
+        dupeQuery = dupeQuery.is('fiscal_year_id', null);
+      }
+      const { data: existing } = await dupeQuery.limit(1);
+      if (existing && existing.length > 0) {
+        return NextResponse.json(
+          { error: `Duplicate event: "${body.name}" already exists${fiscalYearId ? ' in this fiscal year' : ''}. Existing ID: ${existing[0].id}` },
+          { status: 409 }
+        );
+      }
 
-    // Duplicate check: prevent same event name within same fiscal year
-    let dupeQuery = supabase
-      .from('events')
-      .select('id, name')
-      .eq('name', body.name)
-      .is('deleted_at', null);
-    if (fiscalYearId) {
-      dupeQuery = dupeQuery.eq('fiscal_year_id', fiscalYearId);
-    } else {
-      dupeQuery = dupeQuery.is('fiscal_year_id', null);
-    }
-    const { data: existing } = await dupeQuery.limit(1);
-    if (existing && existing.length > 0) {
-      return NextResponse.json(
-        { error: `Duplicate event: "${body.name}" already exists${fiscalYearId ? ' in this fiscal year' : ''}. Existing ID: ${existing[0].id}` },
-        { status: 409 }
-      );
-    }
+      const { data: newEvent, error: insertError } = await supabase
+        .from('events')
+        .insert({
+          name: body.name,
+          event_type_id: body.event_type_id,
+          quarter: body.quarter as QuarterType,
+          fiscal_year_id: fiscalYearId,
+          date_start: dateStart,
+          date_end: dateEnd,
+          location: body.location || null,
+          budget_amount: budgetAmount,
+          expansion_goal: parseInt(body.expansion_goal) || 0,
+          net_new_goal: parseInt(body.net_new_goal) || 0,
+          approach_notes: body.approach_notes || null,
+          marketing_notes: body.marketing_notes || null,
+          sales_notes: body.sales_notes || null,
+        })
+        .select('*, event_types(*)')
+        .single();
 
-    const { data: newEvent, error: insertError } = await supabase
-      .from('events')
-      .insert({
-        name: body.name,
-        event_type_id: body.event_type_id,
-        quarter: body.quarter as QuarterType,
-        fiscal_year_id: fiscalYearId,
-        date_start: dateStart,
-        date_end: dateEnd,
-        location: body.location || null,
-        budget_amount: budgetAmount,
-        expansion_goal: parseInt(body.expansion_goal) || 0,
-        net_new_goal: parseInt(body.net_new_goal) || 0,
-        approach_notes: body.approach_notes || null,
-        marketing_notes: body.marketing_notes || null,
-        sales_notes: body.sales_notes || null,
-      })
-      .select('*, event_types(*)')
-      .single();
+      if (insertError) throw insertError;
 
-    if (insertError) throw insertError;
+      // Extract event_types join result and rename to event_type_record
+      const { event_types, ...eventData } = newEvent as typeof newEvent & { event_types: EventTypeRecord | null };
 
-    // Extract event_types join result and rename to event_type_record
-    const { event_types, ...eventData } = newEvent as typeof newEvent & { event_types: EventTypeRecord | null };
-
-    // Audit log (non-blocking)
-    try {
-      const { actor, actor_type } = await getActor(request);
-      logAudit({
+      // Audit log (non-blocking)
+      await auditMutation(request, {
         entity_type: 'event',
         entity_id: newEvent.id,
         action: 'create',
         changes: null,
-        actor,
-        actor_type,
       });
-    } catch (e) {
-      console.error('Audit log failed:', e);
-    }
 
-    return NextResponse.json({
-      ...eventData,
-      event_type_record: event_types ?? null,
-      budget_amount: newEvent.budget_amount ?? 0,
-      expansion_goal: newEvent.expansion_goal ?? 0,
-      net_new_goal: newEvent.net_new_goal ?? 0,
-      pipeline_generated: newEvent.pipeline_generated ?? 0,
-      revenue_closed: newEvent.revenue_closed ?? 0,
-      leads_generated: newEvent.leads_generated ?? 0,
-      meetings_booked: newEvent.meetings_booked ?? 0,
-      opportunities_created: newEvent.opportunities_created ?? 0,
-      roi_notes: newEvent.roi_notes ?? null,
-      actual_spent: 0,
-      remaining: newEvent.budget_amount ?? 0,
-      expense_count: 0,
-    }, { status: 201 });
-  } catch (err) {
-    console.error('Create event error:', err);
-    logError('Failed to create event', { error: err as Error, source: 'api/events', context: { method: 'POST' } });
-    return NextResponse.json(
-      { error: 'Failed to create event' },
-      { status: 500 }
-    );
-  }
-});
+      return NextResponse.json({
+        ...eventData,
+        event_type_record: event_types ?? null,
+        budget_amount: newEvent.budget_amount ?? 0,
+        expansion_goal: newEvent.expansion_goal ?? 0,
+        net_new_goal: newEvent.net_new_goal ?? 0,
+        pipeline_generated: newEvent.pipeline_generated ?? 0,
+        revenue_closed: newEvent.revenue_closed ?? 0,
+        leads_generated: newEvent.leads_generated ?? 0,
+        meetings_booked: newEvent.meetings_booked ?? 0,
+        opportunities_created: newEvent.opportunities_created ?? 0,
+        roi_notes: newEvent.roi_notes ?? null,
+        actual_spent: 0,
+        remaining: newEvent.budget_amount ?? 0,
+        expense_count: 0,
+      }, { status: 201 });
+    }
+  )
+);

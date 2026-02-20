@@ -1,38 +1,41 @@
+/**
+ * The Counting House - Error Logs API
+ *
+ * GET    /api/admin/errors - List error logs (admin only)
+ * POST   /api/admin/errors - Log an error from client (admin only)
+ * DELETE /api/admin/errors - Clear error logs (admin only)
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { getErrorLogs, clearErrorLogs, logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
-export async function GET(request: NextRequest) {
-  const denied = requirePermission(request, 'admin');
-  if (denied) return denied;
+export const GET = withApiHandler({ permission: 'admin', resource: 'admin/errors' },
+  async (request: NextRequest) => {
+    // Additional session check (admin must be a real user, not API key)
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
 
-  // Check authentication
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    const { searchParams } = new URL(request.url);
+    const level = searchParams.get('level') as 'error' | 'warn' | 'info' | null;
+    const source = searchParams.get('source');
+    const limit = searchParams.get('limit');
+
+    const logs = getErrorLogs({
+      level: level || undefined,
+      source: source || undefined,
+      limit: limit ? parseInt(limit, 10) : 100,
+    });
+
+    return NextResponse.json({ logs, total: logs.length });
   }
+);
 
-  const { searchParams } = new URL(request.url);
-  const level = searchParams.get('level') as 'error' | 'warn' | 'info' | null;
-  const source = searchParams.get('source');
-  const limit = searchParams.get('limit');
-
-  const logs = getErrorLogs({
-    level: level || undefined,
-    source: source || undefined,
-    limit: limit ? parseInt(limit, 10) : 100,
-  });
-
-  return NextResponse.json({ logs, total: logs.length });
-}
-
-export async function POST(request: NextRequest) {
-  const deniedPost = requirePermission(request, 'admin');
-  if (deniedPost) return deniedPost;
-
-  // Allow logging errors from client
-  try {
+export const POST = withApiHandler({ permission: 'admin', resource: 'admin/errors' },
+  async (request: NextRequest) => {
     const body = await request.json();
     const entry = logError(body.message, {
       level: body.level || 'error',
@@ -41,20 +44,18 @@ export async function POST(request: NextRequest) {
       url: body.url,
     });
     return NextResponse.json({ success: true, id: entry.id });
-  } catch {
-    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
-}
+);
 
-export async function DELETE(request: NextRequest) {
-  const deniedDel = requirePermission(request, 'admin');
-  if (deniedDel) return deniedDel;
+export const DELETE = withApiHandler({ permission: 'admin', resource: 'admin/errors' },
+  async () => {
+    // Additional session check (admin must be a real user, not API key)
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
 
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    clearErrorLogs();
+    return NextResponse.json({ success: true });
   }
-
-  clearErrorLogs();
-  return NextResponse.json({ success: true });
-}
+);

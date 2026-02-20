@@ -7,18 +7,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
 // ============================================
 // GET /api/stats
 // ============================================
 
-export async function GET(request: NextRequest) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'stats' },
+  async (_request: NextRequest) => {
     const supabase = await createClient();
 
     // Get active fiscal year from app_settings
@@ -160,12 +156,5 @@ export async function GET(request: NextRequest) {
       events_by_quarter: eventsByQuarter,
       top_vendors: topVendors,
     });
-  } catch (err) {
-    console.error('Stats API error:', err);
-    logError('Failed to fetch stats', { error: err as Error, source: 'api/stats', context: { method: 'GET' } });
-    return NextResponse.json(
-      { error: 'Failed to fetch stats' },
-      { status: 500 }
-    );
   }
-}
+);

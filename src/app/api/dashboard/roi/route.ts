@@ -4,11 +4,10 @@
  * GET /api/dashboard/roi - Aggregate ROI across all events
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
-import type { EventType, EventTypeRecord } from '@/types/database';
+import { withApiHandler } from '@/lib/api-helpers';
+import type { EventTypeRecord } from '@/types/database';
 
 interface EventROIRow {
   id: string;
@@ -24,11 +23,8 @@ interface EventROIRow {
   roi_ratio: number | null;
 }
 
-export async function GET(request: NextRequest) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'dashboard/roi' },
+  async () => {
     const supabase = await createClient();
 
     // Fetch all non-deleted events with event_types join
@@ -144,12 +140,5 @@ export async function GET(request: NextRequest) {
       events: eventRows,
       by_event_type: byEventType,
     });
-  } catch (error) {
-    console.error('ROI Dashboard API error:', error);
-    logError('Failed to fetch ROI dashboard', { error: error as Error, source: 'api/dashboard/roi', context: { method: 'GET' } });
-    return NextResponse.json(
-      { error: 'Failed to fetch ROI dashboard data' },
-      { status: 500 }
-    );
   }
-}
+);

@@ -10,9 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
-import { logAudit, getActor } from '@/lib/audit';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 import { subDays, addDays, parseISO } from 'date-fns';
 import type { ChecklistPhase } from '@/types/database';
 
@@ -30,11 +28,8 @@ const TIER_COLUMN_MAP: Record<string, string> = {
 
 const PIPELINE_TEMPLATE_NAME = 'Event Pipeline Template';
 
-export async function POST(request: NextRequest, context: RouteContext) {
-  const deniedPost = requirePermission(request, 'write');
-  if (deniedPost) return deniedPost;
-
-  try {
+export const POST = withApiHandler({ permission: 'write', resource: 'events/checklist' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id: eventId } = await context.params;
     const supabase = await createClient();
 
@@ -175,23 +170,18 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (insertError) throw insertError;
 
     // 8. Audit log (non-blocking)
-    try {
-      const { actor, actor_type } = await getActor(request);
-      logAudit({
-        entity_type: 'event',
-        entity_id: eventId,
-        action: 'create',
-        changes: null,
-        actor,
-        actor_type,
-        metadata: {
-          sub_type: 'pipeline_tasks_generated',
-          tier: event.tier,
-          items_added: inserted?.length || 0,
-          items_skipped: itemsSkipped,
-        },
-      });
-    } catch (e) { console.error('Audit log failed:', e); }
+    await auditMutation(request, {
+      entity_type: 'event',
+      entity_id: eventId,
+      action: 'create',
+      changes: null,
+      metadata: {
+        sub_type: 'pipeline_tasks_generated',
+        tier: event.tier,
+        items_added: inserted?.length || 0,
+        items_skipped: itemsSkipped,
+      },
+    });
 
     // 9. Return result
     return NextResponse.json({
@@ -200,16 +190,5 @@ export async function POST(request: NextRequest, context: RouteContext) {
       items_skipped: itemsSkipped,
       items: inserted || [],
     }, { status: 201 });
-  } catch (err) {
-    console.error('Generate pipeline tasks error:', err);
-    logError('Failed to generate pipeline tasks', {
-      error: err as Error,
-      source: 'api/events/[id]/checklist/generate',
-      context: { method: 'POST' },
-    });
-    return NextResponse.json(
-      { error: 'Failed to generate pipeline tasks' },
-      { status: 500 }
-    );
   }
-}
+);

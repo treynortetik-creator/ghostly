@@ -8,18 +8,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string; shipmentId: string }> };
 
 const validStatuses = ['pending', 'in_transit', 'delivered', 'returned', 'issue'];
 
-export async function GET(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'events/shipments' },
+  async (_request: NextRequest, context: RouteContext) => {
     const { id: eventId, shipmentId } = await context.params;
     const supabase = await createClient();
 
@@ -36,18 +32,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     return NextResponse.json(shipment);
-  } catch (err) {
-    console.error('Get shipment error:', err);
-    logError('Failed to fetch shipment', { error: err as Error, source: 'api/events/[id]/shipments/[shipmentId]', context: { method: 'GET' } });
-    return NextResponse.json({ error: 'Failed to fetch shipment' }, { status: 500 });
   }
-}
+);
 
-export async function PUT(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const PUT = withApiHandler({ permission: 'write', resource: 'events/shipments' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id: eventId, shipmentId } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -64,7 +53,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     if (body.carrier !== undefined) updates.carrier = body.carrier?.trim() || null;
     if (body.tracking_number !== undefined) updates.tracking_number = body.tracking_number?.trim() || null;
     if (body.tracking_url !== undefined) updates.tracking_url = body.tracking_url?.trim() || null;
-    
+
     if (body.status !== undefined) {
       if (!validStatuses.includes(body.status)) {
         return NextResponse.json({ error: `status must be one of: ${validStatuses.join(', ')}` }, { status: 400 });
@@ -98,18 +87,11 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     }
 
     return NextResponse.json(shipment);
-  } catch (err) {
-    console.error('Update shipment error:', err);
-    logError('Failed to update shipment', { error: err as Error, source: 'api/events/[id]/shipments/[shipmentId]', context: { method: 'PUT' } });
-    return NextResponse.json({ error: 'Failed to update shipment' }, { status: 500 });
   }
-}
+);
 
-export async function DELETE(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const DELETE = withApiHandler({ permission: 'write', resource: 'events/shipments' },
+  async (_request: NextRequest, context: RouteContext) => {
     const { id: eventId, shipmentId } = await context.params;
     const supabase = await createClient();
 
@@ -127,9 +109,5 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     }
 
     return NextResponse.json({ message: 'Shipment deleted', id: shipmentId });
-  } catch (err) {
-    console.error('Delete shipment error:', err);
-    logError('Failed to delete shipment', { error: err as Error, source: 'api/events/[id]/shipments/[shipmentId]', context: { method: 'DELETE' } });
-    return NextResponse.json({ error: 'Failed to delete shipment' }, { status: 500 });
   }
-}
+);

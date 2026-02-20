@@ -7,18 +7,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
 // ============================================
 // GET /api/audit-log
 // ============================================
 
-export async function GET(request: NextRequest) {
-  const denied = requirePermission(request, 'admin');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'admin', resource: 'audit-log' },
+  async (request: NextRequest) => {
     const { searchParams } = new URL(request.url);
 
     // Parse filter parameters
@@ -67,12 +63,5 @@ export async function GET(request: NextRequest) {
         total_pages: Math.ceil(total / perPage),
       },
     });
-  } catch (err) {
-    console.error('Audit log API error:', err);
-    logError('Failed to fetch audit log', { error: err as Error, source: 'api/audit-log', context: { method: 'GET' } });
-    return NextResponse.json(
-      { error: 'Failed to fetch audit log' },
-      { status: 500 }
-    );
   }
-}
+);

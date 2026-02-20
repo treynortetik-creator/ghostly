@@ -7,16 +7,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string; assignmentId: string }> };
 
-export async function PUT(request: NextRequest, context: RouteContext) {
-  try {
-    const denied = requirePermission(request, 'write');
-    if (denied) return denied;
-
+export const PUT = withApiHandler({ permission: 'write', resource: 'events/team' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id: eventId, assignmentId } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -38,18 +34,11 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     }
 
     return NextResponse.json(data);
-  } catch (err) {
-    console.error('Update assignment error:', err);
-    logError('Failed to update assignment', { error: err as Error, source: 'api/events/[id]/team/[assignmentId]', context: { method: 'PUT' } });
-    return NextResponse.json({ error: 'Failed to update assignment' }, { status: 500 });
   }
-}
+);
 
-export async function DELETE(request: NextRequest, context: RouteContext) {
-  try {
-    const denied = requirePermission(request, 'write');
-    if (denied) return denied;
-
+export const DELETE = withApiHandler({ permission: 'write', resource: 'events/team' },
+  async (_request: NextRequest, context: RouteContext) => {
     const { id: eventId, assignmentId } = await context.params;
     const supabase = await createClient();
 
@@ -62,9 +51,5 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     if (error) throw error;
 
     return NextResponse.json({ message: 'Assignment removed' });
-  } catch (err) {
-    console.error('Remove assignment error:', err);
-    logError('Failed to remove assignment', { error: err as Error, source: 'api/events/[id]/team/[assignmentId]', context: { method: 'DELETE' } });
-    return NextResponse.json({ error: 'Failed to remove assignment' }, { status: 500 });
   }
-}
+);

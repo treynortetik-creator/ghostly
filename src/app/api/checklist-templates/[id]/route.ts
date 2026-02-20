@@ -8,16 +8,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-export async function GET(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'checklist-templates' },
+  async (_request: NextRequest, context: RouteContext) => {
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -44,18 +40,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
       items: items || [],
       item_count: (items || []).length,
     });
-  } catch (err) {
-    console.error('Get template error:', err);
-    logError('Failed to get template', { error: err as Error, source: 'api/checklist-templates/[id]', context: { method: 'GET' } });
-    return NextResponse.json({ error: 'Failed to get template' }, { status: 500 });
   }
-}
+);
 
-export async function PUT(request: NextRequest, context: RouteContext) {
-  const deniedPut = requirePermission(request, 'write');
-  if (deniedPut) return deniedPut;
-
-  try {
+export const PUT = withApiHandler({ permission: 'write', resource: 'checklist-templates' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -78,18 +67,11 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     }
 
     return NextResponse.json(data);
-  } catch (err) {
-    console.error('Update template error:', err);
-    logError('Failed to update template', { error: err as Error, source: 'api/checklist-templates/[id]', context: { method: 'PUT' } });
-    return NextResponse.json({ error: 'Failed to update template' }, { status: 500 });
   }
-}
+);
 
-export async function DELETE(request: NextRequest, context: RouteContext) {
-  const deniedDel = requirePermission(request, 'write');
-  if (deniedDel) return deniedDel;
-
-  try {
+export const DELETE = withApiHandler({ permission: 'write', resource: 'checklist-templates' },
+  async (_request: NextRequest, context: RouteContext) => {
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -106,9 +88,5 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     }
 
     return NextResponse.json({ message: 'Template deleted' });
-  } catch (err) {
-    console.error('Delete template error:', err);
-    logError('Failed to delete template', { error: err as Error, source: 'api/checklist-templates/[id]', context: { method: 'DELETE' } });
-    return NextResponse.json({ error: 'Failed to delete template' }, { status: 500 });
   }
-}
+);

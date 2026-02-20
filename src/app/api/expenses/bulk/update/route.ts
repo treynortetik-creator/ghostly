@@ -6,12 +6,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
-import type { ExpenseSource } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
 import { withIdempotency } from '@/lib/idempotency';
 import { logAudit, getActor, computeChanges } from '@/lib/audit';
+import { withApiHandler } from '@/lib/api-helpers';
 
 const MAX_UPDATES_PER_REQUEST = 100;
 
@@ -84,11 +82,8 @@ function validateUpdateItem(item: UpdateInput): string[] {
 // PUT /api/expenses/bulk/update
 // ============================================
 
-export const PUT = withIdempotency(async function PUT(request: NextRequest) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const PUT = withIdempotency(withApiHandler({ permission: 'write', resource: 'expenses/bulk/update' },
+  async (request: NextRequest) => {
     const body = await request.json();
 
     // Validate top-level structure
@@ -403,12 +398,5 @@ export const PUT = withIdempotency(async function PUT(request: NextRequest) {
       },
       ...(hasErrors ? { results: itemResults } : {}),
     }, { status: hasErrors ? 207 : 200 });
-  } catch (err) {
-    console.error('Bulk update expenses error:', err);
-    logError('Failed to bulk update expenses', { error: err as Error, source: 'api/expenses/bulk/update', context: { method: 'PUT' } });
-    return NextResponse.json(
-      { error: 'Failed to update expenses' },
-      { status: 500 }
-    );
   }
-});
+));

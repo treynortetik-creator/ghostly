@@ -44,7 +44,7 @@ export async function queueWebhookEvent(eventType: string, data: Record<string, 
       data,
     };
 
-    // Insert delivery records
+    // Insert delivery records and get IDs back
     const deliveries = matching.map(w => ({
       webhook_id: w.id,
       event_type: eventType,
@@ -52,11 +52,19 @@ export async function queueWebhookEvent(eventType: string, data: Record<string, 
       status: 'pending',
     }));
 
-    await supabase.from('webhook_deliveries').insert(deliveries);
+    const { data: inserted } = await supabase
+      .from('webhook_deliveries')
+      .insert(deliveries)
+      .select('id, webhook_id');
 
-    // Fire-and-forget: attempt immediate delivery
-    for (const webhook of matching) {
-      deliverWebhook(webhook.id, webhook.url, webhook.secret, payload).catch(() => {});
+    if (!inserted) return;
+
+    // Fire-and-forget: attempt immediate delivery using delivery IDs
+    for (const delivery of inserted) {
+      const webhook = matching.find(w => w.id === delivery.webhook_id);
+      if (webhook) {
+        deliverWebhook(delivery.id, webhook.url, webhook.secret, payload).catch(() => {});
+      }
     }
   } catch (err) {
     console.error('Webhook queue error:', err);
@@ -64,7 +72,7 @@ export async function queueWebhookEvent(eventType: string, data: Record<string, 
 }
 
 async function deliverWebhook(
-  webhookId: string,
+  deliveryId: string,
   url: string,
   secret: string | null,
   payload: WebhookPayload
@@ -97,11 +105,7 @@ async function deliverWebhook(
         response_body: (await res.text()).substring(0, 1000),
         attempts: 1,
       })
-      .eq('webhook_id', webhookId)
-      .eq('event_type', payload.event_type)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false })
-      .limit(1);
+      .eq('id', deliveryId);
   } catch (err) {
     await supabase.from('webhook_deliveries')
       .update({
@@ -109,10 +113,6 @@ async function deliverWebhook(
         response_body: err instanceof Error ? err.message : 'Delivery failed',
         attempts: 1,
       })
-      .eq('webhook_id', webhookId)
-      .eq('event_type', payload.event_type)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false })
-      .limit(1);
+      .eq('id', deliveryId);
   }
 }

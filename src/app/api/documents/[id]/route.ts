@@ -8,24 +8,18 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logAudit, getActor } from '@/lib/audit';
-import { requirePermission } from '@/lib/permissions';
-import { logError } from '@/lib/error-logger';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
-}
+type RouteContext = { params: Promise<{ id: string }> };
 
 // ============================================
 // GET /api/documents/:id
 // ============================================
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
-  try {
-    const denied = requirePermission(request, 'read');
-    if (denied) return denied;
-
-    const { id } = await params;
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export const GET = withApiHandler({ permission: 'read', resource: 'documents' },
+  async (_request: NextRequest, context: RouteContext) => {
+    const { id } = await context.params;
     const supabase = await createClient();
 
     const { data: doc, error } = await supabase
@@ -48,26 +42,16 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       event_name: eventRel?.name || null,
       expense_vendor: expenseRel?.vendor || null,
     });
-  } catch (err) {
-    console.error('Get document error:', err);
-    logError('Failed to get document', { error: err as Error, source: 'api/documents/[id]', context: { method: 'GET' } });
-    return NextResponse.json(
-      { error: 'Failed to get document' },
-      { status: 500 }
-    );
   }
-}
+);
 
 // ============================================
 // DELETE /api/documents/:id
 // ============================================
 
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
-  try {
-    const denied = requirePermission(request, 'write');
-    if (denied) return denied;
-
-    const { id } = await params;
+export const DELETE = withApiHandler({ permission: 'write', resource: 'documents' },
+  async (request: NextRequest, context: RouteContext) => {
+    const { id } = await context.params;
     const supabase = await createClient();
 
     // Check document exists
@@ -96,31 +80,17 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     }
 
     // Audit log
-    try {
-      const { actor, actor_type } = await getActor(request);
-      logAudit({
-        entity_type: 'document',
-        entity_id: id,
-        action: 'delete',
-        changes: null,
-        actor,
-        actor_type,
-        metadata: { filename: existing.filename },
-      });
-    } catch (e) {
-      console.error('Audit log failed:', e);
-    }
+    await auditMutation(request, {
+      entity_type: 'document',
+      entity_id: id,
+      action: 'delete',
+      changes: null,
+      metadata: { filename: existing.filename },
+    });
 
     return NextResponse.json({
       message: 'Document deleted successfully',
       id,
     });
-  } catch (err) {
-    console.error('Delete document error:', err);
-    logError('Failed to delete document', { error: err as Error, source: 'api/documents/[id]', context: { method: 'DELETE' } });
-    return NextResponse.json(
-      { error: 'Failed to delete document' },
-      { status: 500 }
-    );
   }
-}
+);

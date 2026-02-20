@@ -8,18 +8,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string; noteId: string }> };
 
 const validNoteTypes = ['competitor_alert', 'general', 'logistics', 'budget', 'post_event'];
 
-export async function GET(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'events/notes' },
+  async (_request: NextRequest, context: RouteContext) => {
     const { id: eventId, noteId } = await context.params;
     const supabase = await createClient();
 
@@ -36,18 +32,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     return NextResponse.json(note);
-  } catch (err) {
-    console.error('Get note error:', err);
-    logError('Failed to fetch note', { error: err as Error, source: 'api/events/[id]/notes/[noteId]', context: { method: 'GET' } });
-    return NextResponse.json({ error: 'Failed to fetch note' }, { status: 500 });
   }
-}
+);
 
-export async function PATCH(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const PATCH = withApiHandler({ permission: 'write', resource: 'events/notes' },
+  async (request: NextRequest, context: RouteContext) => {
     const { id: eventId, noteId } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -62,7 +51,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     if (body.title !== undefined) updates.title = body.title?.trim() || null;
-    
+
     if (body.note_type !== undefined) {
       if (!validNoteTypes.includes(body.note_type)) {
         return NextResponse.json({ error: `note_type must be one of: ${validNoteTypes.join(', ')}` }, { status: 400 });
@@ -91,18 +80,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     return NextResponse.json(note);
-  } catch (err) {
-    console.error('Update note error:', err);
-    logError('Failed to update note', { error: err as Error, source: 'api/events/[id]/notes/[noteId]', context: { method: 'PATCH' } });
-    return NextResponse.json({ error: 'Failed to update note' }, { status: 500 });
   }
-}
+);
 
-export async function DELETE(request: NextRequest, context: RouteContext) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const DELETE = withApiHandler({ permission: 'write', resource: 'events/notes' },
+  async (_request: NextRequest, context: RouteContext) => {
     const { id: eventId, noteId } = await context.params;
     const supabase = await createClient();
 
@@ -120,9 +102,5 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     }
 
     return NextResponse.json({ message: 'Note deleted', id: noteId });
-  } catch (err) {
-    console.error('Delete note error:', err);
-    logError('Failed to delete note', { error: err as Error, source: 'api/events/[id]/notes/[noteId]', context: { method: 'DELETE' } });
-    return NextResponse.json({ error: 'Failed to delete note' }, { status: 500 });
   }
-}
+);

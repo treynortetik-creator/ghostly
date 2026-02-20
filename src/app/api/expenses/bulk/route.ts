@@ -6,12 +6,11 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
 import type { ExpenseSource } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
 import { withIdempotency } from '@/lib/idempotency';
 import { logAudit, getActor } from '@/lib/audit';
+import { withApiHandler } from '@/lib/api-helpers';
 
 const MAX_EXPENSES_PER_REQUEST = 100;
 
@@ -95,11 +94,8 @@ function validateExpenseItem(item: ExpenseInput, index: number): string[] {
 // POST /api/expenses/bulk
 // ============================================
 
-export const POST = withIdempotency(async function POST(request: NextRequest) {
-  const denied = requirePermission(request, 'write');
-  if (denied) return denied;
-
-  try {
+export const POST = withIdempotency(withApiHandler({ permission: 'write', resource: 'expenses/bulk' },
+  async (request: NextRequest) => {
     const body = await request.json();
 
     // Validate top-level structure
@@ -285,12 +281,5 @@ export const POST = withIdempotency(async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (err) {
-    console.error('Bulk create expenses error:', err);
-    logError('Failed to bulk create expenses', { error: err as Error, source: 'api/expenses/bulk', context: { method: 'POST' } });
-    return NextResponse.json(
-      { error: 'Failed to create expenses' },
-      { status: 500 }
-    );
   }
-});
+));

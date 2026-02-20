@@ -7,16 +7,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logError } from '@/lib/error-logger';
-import { requirePermission } from '@/lib/permissions';
+import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 import { withIdempotency } from '@/lib/idempotency';
-import { logAudit, getActor } from '@/lib/audit';
 
-export async function GET(request: NextRequest) {
-  const denied = requirePermission(request, 'read');
-  if (denied) return denied;
-
-  try {
+export const GET = withApiHandler({ permission: 'read', resource: 'team' },
+  async (request: NextRequest) => {
     const { searchParams } = new URL(request.url);
     const modifiedAfter = searchParams.get('modified_after');
     const idsParam = searchParams.get('ids');
@@ -62,64 +57,48 @@ export async function GET(request: NextRequest) {
         filters_applied: filters,
       },
     });
-  } catch (err) {
-    console.error('Team API error:', err);
-    logError('Failed to fetch team members', { error: err as Error, source: 'api/team', context: { method: 'GET' } });
-    return NextResponse.json({ error: 'Failed to fetch team members' }, { status: 500 });
   }
-}
+);
 
-export const POST = withIdempotency(async function POST(request: NextRequest) {
-  const deniedPost = requirePermission(request, 'write');
-  if (deniedPost) return deniedPost;
+export const POST = withIdempotency(
+  withApiHandler({ permission: 'write', resource: 'team' },
+    async (request: NextRequest) => {
+      const body = await request.json();
 
-  try {
-    const body = await request.json();
+      if (!body.name || String(body.name).trim() === '') {
+        return NextResponse.json({ error: 'Name is required' }, { status: 400 });
+      }
 
-    if (!body.name || String(body.name).trim() === '') {
-      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
-    }
+      if (String(body.name).length > 200) {
+        return NextResponse.json({ error: 'Name must be 200 characters or fewer' }, { status: 400 });
+      }
 
-    if (String(body.name).length > 200) {
-      return NextResponse.json({ error: 'Name must be 200 characters or fewer' }, { status: 400 });
-    }
+      const supabase = await createClient();
 
-    const supabase = await createClient();
+      const { data, error } = await supabase
+        .from('team_members')
+        .insert({
+          name: body.name.trim(),
+          email: body.email?.trim() || null,
+          phone: body.phone?.trim() || null,
+          default_role: body.default_role?.trim() || null,
+          is_active: body.is_active !== false,
+          notes: body.notes?.trim() || null,
+        })
+        .select()
+        .single();
 
-    const { data, error } = await supabase
-      .from('team_members')
-      .insert({
-        name: body.name.trim(),
-        email: body.email?.trim() || null,
-        phone: body.phone?.trim() || null,
-        default_role: body.default_role?.trim() || null,
-        is_active: body.is_active !== false,
-        notes: body.notes?.trim() || null,
-      })
-      .select()
-      .single();
+      if (error) throw error;
 
-    if (error) throw error;
-
-    // Audit log (non-blocking)
-    try {
-      const { actor, actor_type } = await getActor(request);
-      logAudit({
+      // Audit log
+      await auditMutation(request, {
         entity_type: 'team_member',
         entity_id: data.id,
         action: 'create',
         changes: null,
-        actor,
-        actor_type,
       });
-    } catch (e) {
-      console.error('Audit log failed:', e);
-    }
 
-    return NextResponse.json(data, { status: 201 });
-  } catch (err) {
-    console.error('Create team member error:', err);
-    logError('Failed to create team member', { error: err as Error, source: 'api/team', context: { method: 'POST' } });
-    return NextResponse.json({ error: 'Failed to create team member' }, { status: 500 });
-  }
-});
+      return NextResponse.json(data, { status: 201 });
+    }
+  )
+);
