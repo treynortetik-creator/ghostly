@@ -71,8 +71,8 @@ function QuarterCard({ data }: { data: QuarterData }) {
     return value.toLocaleString("en-US", {
       style: "currency",
       currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     });
   };
 
@@ -136,7 +136,7 @@ function QuarterCard({ data }: { data: QuarterData }) {
 
         {/* Stats */}
         <div
-          className="mt-3 pt-3 border-t border-wood-medium/15 space-y-2 overflow-hidden"
+          className="mt-3 pt-3 border-t border-wood-medium/15 space-y-2"
           data-oid="r2v2cfn"
         >
           <div
@@ -147,7 +147,7 @@ function QuarterCard({ data }: { data: QuarterData }) {
               Spent
             </span>
             <span
-              className="font-medium text-xs tabular-nums text-ink-black truncate"
+              className="font-medium text-xs tabular-nums text-ink-black"
               data-oid="t9hhtd6"
             >
               {formatCurrency(data.actual)}
@@ -161,7 +161,7 @@ function QuarterCard({ data }: { data: QuarterData }) {
               Budget
             </span>
             <span
-              className="font-medium text-xs tabular-nums text-ink-black truncate"
+              className="font-medium text-xs tabular-nums text-ink-black"
               data-oid="4_5c_g4"
             >
               {formatCurrency(data.budget)}
@@ -175,7 +175,7 @@ function QuarterCard({ data }: { data: QuarterData }) {
               Remaining
             </span>
             <span
-              className={`font-medium text-xs tabular-nums truncate ${getStatusColor()}`}
+              className={`font-medium text-xs tabular-nums ${getStatusColor()}`}
               data-oid="y8sfdov"
             >
               {formatCurrency(remaining)}
