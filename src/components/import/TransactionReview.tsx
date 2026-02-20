@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatDateMedium } from "@/lib/format";
 import {
   AssignmentSelector,
   type AssignmentOption,
@@ -137,14 +137,6 @@ export function TransactionReview({
     status: ParsedTransaction["status"],
   ) => {
     onUpdateTransaction(id, { status });
-  };
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
   };
 
   const SortIcon = ({ column }: { column: "date" | "amount" | "vendor" }) => {
@@ -381,7 +373,7 @@ export function TransactionReview({
                         className="px-3 py-3 text-sm text-ink-black whitespace-nowrap"
                         data-oid="df_1luc"
                       >
-                        {formatDate(transaction.date)}
+                        {formatDateMedium(transaction.date)}
                       </td>
 
                       {/* Vendor */}
@@ -598,7 +590,7 @@ export function TransactionReview({
                                         transaction.duplicateOf.amount,
                                       )}{" "}
                                       on{" "}
-                                      {formatDate(transaction.duplicateOf.date)}
+                                      {formatDateMedium(transaction.duplicateOf.date)}
                                     </p>
                                   </div>
                                 </div>

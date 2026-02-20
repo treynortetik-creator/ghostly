@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Package, Plus, RefreshCw, Trash2, Edit3, ExternalLink, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
+import { formatDateMedium } from '@/lib/format';
 
 /* ============================================
    EVENT SHIPMENTS TAB
@@ -78,15 +79,6 @@ function generateTrackingUrl(carrier: string | null, trackingNumber: string | nu
     default:
       return null;
   }
-}
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return 'Not set';
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
 }
 
 export function EventShipmentsTab({ eventId }: EventShipmentsTabProps) {
@@ -384,10 +376,10 @@ export function EventShipmentsTab({ eventId }: EventShipmentsTabProps) {
                           <div><span className="font-medium">To:</span> {shipment.shipped_to}</div>
                         )}
                         {shipment.ship_date && (
-                          <div><span className="font-medium">Shipped:</span> {formatDate(shipment.ship_date)}</div>
+                          <div><span className="font-medium">Shipped:</span> {formatDateMedium(shipment.ship_date)}</div>
                         )}
                         {shipment.estimated_delivery && (
-                          <div><span className="font-medium">Est. Delivery:</span> {formatDate(shipment.estimated_delivery)}</div>
+                          <div><span className="font-medium">Est. Delivery:</span> {formatDateMedium(shipment.estimated_delivery)}</div>
                         )}
                         {shipment.tracking_number && (
                           <div className="col-span-2"><span className="font-medium">Tracking:</span> {shipment.tracking_number}</div>
@@ -403,7 +395,7 @@ export function EventShipmentsTab({ eventId }: EventShipmentsTabProps) {
                       <div className="flex items-center gap-3 mt-2 text-xs text-sepia">
                         <span className="font-medium">{shipment.created_by}</span>
                         <span>·</span>
-                        <span>{formatDate(shipment.created_at)}</span>
+                        <span>{formatDateMedium(shipment.created_at)}</span>
                       </div>
                     </div>
 

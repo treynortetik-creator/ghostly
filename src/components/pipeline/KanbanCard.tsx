@@ -3,7 +3,6 @@
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { MapPin, Calendar, GripVertical } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import {
@@ -11,7 +10,7 @@ import {
   eventTierLabels,
   type EventTier,
 } from '@/types/database';
-import { formatCurrencyCompact } from '@/lib/format';
+import { formatCurrencyCompact, formatDateMedium, formatDateShort } from '@/lib/format';
 import type { BoardEvent } from './KanbanBoard';
 
 interface KanbanCardProps {
@@ -21,15 +20,15 @@ interface KanbanCardProps {
 
 function formatDateRange(start: string | null, end: string | null): string {
   if (!start) return 'TBD';
-  const startDate = parseISO(start);
   if (!end || end === start) {
-    return format(startDate, 'MMM d, yyyy');
+    return formatDateMedium(start);
   }
-  const endDate = parseISO(end);
+  const startDate = new Date(start + 'T00:00:00');
+  const endDate = new Date(end + 'T00:00:00');
   if (startDate.getMonth() === endDate.getMonth() && startDate.getFullYear() === endDate.getFullYear()) {
-    return `${format(startDate, 'MMM d')}-${format(endDate, 'd, yyyy')}`;
+    return `${formatDateShort(start)}-${endDate.getDate()}, ${endDate.getFullYear()}`;
   }
-  return `${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d, yyyy')}`;
+  return `${formatDateShort(start)} - ${formatDateMedium(end)}`;
 }
 
 function CountdownBadge({ daysUntil }: { daysUntil: number | null }) {

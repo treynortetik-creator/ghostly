@@ -48,7 +48,7 @@ import { EventNotesTab } from "@/components/events/EventNotesTab";
 import { EventShipmentsTab } from "@/components/events/EventShipmentsTab";
 import { EventPostEventTab } from "@/components/events/EventPostEventTab";
 import { EventDocumentsTab } from "@/components/documents/EventDocumentsTab";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatDateLong } from "@/lib/format";
 import type { Expense, FiscalYear, EventWithTotals, EventTier, ShippingHandler } from "@/types/database";
 import { eventTypeLabels, quarterLabels, tierColors, eventTierLabels, eventStageLabels } from "@/types/database";
 
@@ -220,20 +220,10 @@ export default function EventDetailPage({ params }: PageProps) {
     }
   };
 
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return "TBD";
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
   const formatDateRange = () => {
     if (!event?.date_start) return "Dates to be determined";
-    const start = formatDate(event.date_start);
-    const end = event.date_end ? formatDate(event.date_end) : null;
+    const start = formatDateLong(event.date_start);
+    const end = event.date_end ? formatDateLong(event.date_end) : null;
     if (end && start !== end) {
       return `${start} - ${end}`;
     }

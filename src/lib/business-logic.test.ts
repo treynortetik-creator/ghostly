@@ -14,6 +14,9 @@ import {
   formatCurrency,
   formatCurrencyCompact,
   sanitizeCurrency,
+  formatDateShort,
+  formatDateMedium,
+  formatDateLong,
 } from './format';
 
 // ============================================
@@ -251,6 +254,44 @@ describe('format utilities', () => {
     });
     it('keeps only one decimal point', () => {
       expect(sanitizeCurrency('12.34.56')).toBe('12.3456');
+    });
+  });
+});
+
+// ============================================
+// DATE FORMAT UTILITIES
+// ============================================
+
+describe('date format utilities', () => {
+  const testDate = '2026-03-15';
+
+  describe('formatDateShort', () => {
+    it('formats as short month + day', () => {
+      expect(formatDateShort(testDate)).toBe('Mar 15');
+    });
+    it('returns "\u2014" for null', () => {
+      expect(formatDateShort(null)).toBe('\u2014');
+    });
+    it('returns "\u2014" for undefined', () => {
+      expect(formatDateShort(undefined)).toBe('\u2014');
+    });
+  });
+
+  describe('formatDateMedium', () => {
+    it('formats with month, day, year', () => {
+      expect(formatDateMedium(testDate)).toBe('Mar 15, 2026');
+    });
+    it('returns "\u2014" for null', () => {
+      expect(formatDateMedium(null)).toBe('\u2014');
+    });
+  });
+
+  describe('formatDateLong', () => {
+    it('formats with weekday, full month, day, year', () => {
+      expect(formatDateLong(testDate)).toBe('Sun, March 15, 2026');
+    });
+    it('returns "TBD" for null', () => {
+      expect(formatDateLong(null)).toBe('TBD');
     });
   });
 });

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ClipboardCheck, Plus, RefreshCw, Trash2, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { formatDateMedium } from '@/lib/format';
 
 /* ============================================
    EVENT POST-EVENT TAB
@@ -38,17 +39,6 @@ const debriefSections = [
   { title: 'Key Contacts Made', key: 'contacts_made', placeholder: 'Important new contacts or relationships formed' },
   { title: 'Follow-up Actions', key: 'follow_up', placeholder: 'Required next steps and action items' },
 ];
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-}
 
 export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
   const [notes, setNotes] = useState<EventNote[]>([]);
@@ -299,7 +289,7 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
                       <div className="flex items-center gap-3 mt-2 text-xs text-sepia">
                         <span className="font-medium">{note.author}</span>
                         <span>·</span>
-                        <span>{formatDate(note.created_at)}</span>
+                        <span>{formatDateMedium(note.created_at)}</span>
                       </div>
                     </div>
 

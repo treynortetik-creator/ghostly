@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Download, Trash2, FileText, File, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { formatDateShort } from "@/lib/format";
 
 interface DocumentItem {
   id: string;
@@ -30,14 +31,6 @@ function formatFileSize(bytes: number): string {
 function getFileIcon(mimeType: string) {
   if (mimeType === "application/pdf") return "📄";
   return "📝";
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
 }
 
 export function DocumentList({
@@ -104,7 +97,7 @@ export function DocumentList({
                 <p className="text-xs text-sepia/70">
                   {formatFileSize(doc.file_size_bytes)} ·{" "}
                   Uploaded by {doc.uploaded_by === "user" ? "you" : doc.uploaded_by} ·{" "}
-                  {formatDate(doc.created_at)}
+                  {formatDateShort(doc.created_at)}
                 </p>
               </div>
             </div>

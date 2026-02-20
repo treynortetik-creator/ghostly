@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Bell, RefreshCw, AlertTriangle, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
+import { formatDateLong } from '@/lib/format';
 import type { EventReminder, ReminderStatus } from '@/types/database';
 
 /* ============================================
@@ -47,15 +48,6 @@ function getStatusLabel(reminder: EventReminder): string {
     return 'Past Due';
   }
   return statusConfig[reminder.status]?.label || 'Pending';
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
 }
 
 export function EventRemindersTab({ eventId, eventDateStart }: EventRemindersTabProps) {
@@ -232,7 +224,7 @@ export function EventRemindersTab({ eventId, eventDateStart }: EventRemindersTab
               <div className="flex items-center gap-4 flex-1 min-w-0">
                 <div className="text-right min-w-[130px]">
                   <p className="text-sm font-medium tabular-nums text-ink-black">
-                    {formatDate(reminder.reminder_date)}
+                    {formatDateLong(reminder.reminder_date)}
                   </p>
                 </div>
                 <div className="min-w-0 flex-1">

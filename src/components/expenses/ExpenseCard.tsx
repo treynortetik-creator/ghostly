@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Calendar, Tag, FileText, CreditCard, PencilLine } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatDateMedium } from "@/lib/format";
 import type { ExpenseWithRelations } from "@/types/database";
 
 /* ============================================
@@ -48,14 +48,6 @@ export function ExpenseCard({
   onEdit,
   onDelete,
 }: ExpenseCardProps) {
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
   const SourceIcon = sourceIcons[expense.source_type] || PencilLine;
   const TargetIcon = expense.target_type === "event" ? Calendar : Tag;
 
@@ -120,7 +112,7 @@ export function ExpenseCard({
                 data-oid="t0m7ie4"
               >
                 <Calendar className="w-3.5 h-3.5" data-oid="4vpe0ms" />
-                {formatDate(expense.expense_date)}
+                {formatDateMedium(expense.expense_date)}
               </span>
               <span className="text-wood-medium/30" data-oid="15ckp9r">
                 |

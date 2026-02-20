@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { MessageSquare, Pin, PinOff, Trash2, Plus, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
+import { formatDateMedium } from '@/lib/format';
 
 /* ============================================
    EVENT NOTES TAB
@@ -44,17 +45,6 @@ const noteTypeOptions = [
   { value: 'logistics', label: 'Logistics' },
   { value: 'budget', label: 'Budget' },
 ];
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-}
 
 export function EventNotesTab({ eventId }: EventNotesTabProps) {
   const [notes, setNotes] = useState<EventNote[]>([]);
@@ -240,7 +230,7 @@ export function EventNotesTab({ eventId }: EventNotesTabProps) {
                       <div className="flex items-center gap-3 mt-2 text-xs text-sepia">
                         <span className="font-medium">{note.author}</span>
                         <span>·</span>
-                        <span>{formatDate(note.created_at)}</span>
+                        <span>{formatDateMedium(note.created_at)}</span>
                       </div>
                     </div>
 

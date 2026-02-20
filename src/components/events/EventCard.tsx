@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatDateShort } from "@/lib/format";
 import type { Expense, EventWithTotals } from "@/types/database";
 
 /* ============================================
@@ -52,18 +52,10 @@ export function EventCard({
 }: EventCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return null;
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  };
-
   const formatDateRange = () => {
     if (!event.date_start) return "Date TBD";
-    const start = formatDate(event.date_start);
-    const end = event.date_end ? formatDate(event.date_end) : null;
+    const start = formatDateShort(event.date_start);
+    const end = event.date_end ? formatDateShort(event.date_end) : null;
     if (end && start !== end) {
       return `${start} - ${end}`;
     }
@@ -299,13 +291,7 @@ export function EventCard({
                       {formatCurrency(expense.amount)}
                     </span>
                     <p className="text-xs text-sepia" data-oid="hk8mody">
-                      {new Date(expense.expense_date).toLocaleDateString(
-                        "en-US",
-                        {
-                          month: "short",
-                          day: "numeric",
-                        },
-                      )}
+                      {formatDateShort(expense.expense_date)}
                     </p>
                   </div>
                 </div>

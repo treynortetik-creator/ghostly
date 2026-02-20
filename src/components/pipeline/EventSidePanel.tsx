@@ -1,8 +1,8 @@
 'use client';
 
 import { X, MapPin, ExternalLink } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
 import Link from 'next/link';
+import { formatDateMedium, formatDateShort } from '@/lib/format';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import {
   tierColors,
@@ -33,17 +33,17 @@ interface EventSidePanelProps {
 }
 
 function formatDateRange(start: string, end: string | null): string {
-  const startDate = parseISO(start);
   if (!end || end === start) {
-    return format(startDate, 'MMM d, yyyy');
+    return formatDateMedium(start);
   }
-  const endDate = parseISO(end);
+  const startDate = new Date(start + 'T00:00:00');
+  const endDate = new Date(end + 'T00:00:00');
   // Same month
   if (startDate.getMonth() === endDate.getMonth() && startDate.getFullYear() === endDate.getFullYear()) {
-    return `${format(startDate, 'MMM d')}-${format(endDate, 'd, yyyy')}`;
+    return `${formatDateShort(start)}-${endDate.getDate()}, ${endDate.getFullYear()}`;
   }
   // Different months
-  return `${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d, yyyy')}`;
+  return `${formatDateShort(start)} - ${formatDateMedium(end)}`;
 }
 
 export function EventSidePanel({ event, onClose }: EventSidePanelProps) {
