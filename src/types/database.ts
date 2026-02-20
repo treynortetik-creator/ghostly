@@ -558,21 +558,21 @@ export const eventTierLabels: Record<EventTier, string> = {
 };
 
 export const tierColors: Record<EventTier, { bg: string; text: string; border: string }> = {
-  executive: { bg: 'bg-red-100', text: 'text-red-800', border: 'border-red-300' },
-  national_t1: { bg: 'bg-orange-100', text: 'text-orange-800', border: 'border-orange-300' },
-  national_t2: { bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-300' },
-  state_t1: { bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-blue-300' },
-  state_t2: { bg: 'bg-sky-100', text: 'text-sky-800', border: 'border-sky-300' },
-  customer_partner: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-300' },
+  executive: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-300', border: 'border-red-300 dark:border-red-800' },
+  national_t1: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-800 dark:text-orange-300', border: 'border-orange-300 dark:border-orange-800' },
+  national_t2: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300', border: 'border-yellow-300 dark:border-yellow-800' },
+  state_t1: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-300', border: 'border-blue-300 dark:border-blue-800' },
+  state_t2: { bg: 'bg-sky-100 dark:bg-sky-900/30', text: 'text-sky-800 dark:text-sky-300', border: 'border-sky-300 dark:border-sky-800' },
+  customer_partner: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300', border: 'border-green-300 dark:border-green-800' },
 };
 
 export const tierBarColors: Record<EventTier, string> = {
-  executive: 'bg-red-500',
-  national_t1: 'bg-orange-500',
-  national_t2: 'bg-yellow-500',
-  state_t1: 'bg-blue-500',
-  state_t2: 'bg-sky-400',
-  customer_partner: 'bg-green-500',
+  executive: 'bg-red-500 dark:bg-red-600',
+  national_t1: 'bg-orange-500 dark:bg-orange-600',
+  national_t2: 'bg-yellow-500 dark:bg-yellow-500',
+  state_t1: 'bg-blue-500 dark:bg-blue-600',
+  state_t2: 'bg-sky-400 dark:bg-sky-500',
+  customer_partner: 'bg-green-500 dark:bg-green-600',
 };
 
 // ============================================

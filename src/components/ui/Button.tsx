@@ -28,6 +28,10 @@ const buttonVariants = cva(
           shadow-md hover:shadow-lg
           hover:from-[#4a2a1a] hover:to-wood-dark
           active:from-[#2d1a0e] active:to-[#1f1108]
+          dark:from-[#c4b898] dark:to-[#a89878]
+          dark:text-[#1a1612] dark:border-[#7a6350]/50
+          dark:hover:from-[#d4c9b0] dark:hover:to-[#c4b898]
+          dark:active:from-[#a89878] dark:active:to-[#9a8a6a]
         `,
 
         /* Secondary - Light parchment */
@@ -37,6 +41,10 @@ const buttonVariants = cva(
           shadow-sm hover:shadow-md
           hover:from-parchment-dark hover:to-[#ddd5c3]
           active:from-[#ddd5c3] active:to-parchment-dark
+          dark:from-[#2e281f] dark:to-[#242018]
+          dark:text-[#d4c9b0] dark:border-[#7a6350]/40
+          dark:hover:from-[#3a3228] dark:hover:to-[#2e281f]
+          dark:active:from-[#242018] dark:active:to-[#1e1a14]
         `,
 
         /* Ghost - Minimal, for nav items */
@@ -44,6 +52,9 @@ const buttonVariants = cva(
           bg-transparent text-wood-dark
           hover:bg-wood-medium/10 hover:text-wood-dark
           active:bg-wood-medium/20
+          dark:text-[#d4c9b0]
+          dark:hover:bg-[#7a6350]/15 dark:hover:text-[#d4c9b0]
+          dark:active:bg-[#7a6350]/25
         `,
 
         /* Outline - Bordered */
@@ -52,6 +63,9 @@ const buttonVariants = cva(
           text-wood-dark
           hover:bg-wood-medium/10
           active:bg-wood-medium/20
+          dark:border-[#7a6350] dark:text-[#d4c9b0]
+          dark:hover:bg-[#7a6350]/15
+          dark:active:bg-[#7a6350]/25
         `,
 
         /* Destructive - Ledger red for danger actions */
@@ -61,6 +75,10 @@ const buttonVariants = cva(
           shadow-md hover:shadow-lg
           hover:from-[#9b2d0a] hover:to-ink-red
           active:from-[#6b1d00] active:to-[#4a1400]
+          dark:from-[#c44425] dark:to-[#9b2d0a]
+          dark:text-[#fce8e0] dark:border-[#c44425]/40
+          dark:hover:from-[#d4553a] dark:hover:to-[#c44425]
+          dark:active:from-[#9b2d0a] dark:active:to-[#7a2008]
         `,
 
         /* Success - Ledger green for confirmations */
@@ -70,6 +88,10 @@ const buttonVariants = cva(
           shadow-md hover:shadow-lg
           hover:from-[#1f5733] hover:to-ink-green
           active:from-[#123620] active:to-[#0d2617]
+          dark:from-[#2d8a5e] dark:to-[#1f6344]
+          dark:text-[#e0f5ea] dark:border-[#2d8a5e]/40
+          dark:hover:from-[#35a06e] dark:hover:to-[#2d8a5e]
+          dark:active:from-[#1f6344] dark:active:to-[#174a33]
         `,
 
         /* Gold - Accent button for special actions */
@@ -79,6 +101,10 @@ const buttonVariants = cva(
           shadow-md hover:shadow-lg
           hover:from-[#c9970d] hover:to-ink-gold
           active:from-[#8a6508] active:to-[#6b4e06]
+          dark:from-[#d4a017] dark:to-[#b8860b]
+          dark:text-[#1a1612] dark:border-[#d4a017]/40
+          dark:hover:from-[#e0b020] dark:hover:to-[#d4a017]
+          dark:active:from-[#b8860b] dark:active:to-[#8a6508]
         `,
 
         /* Link - Text-only link style */
@@ -86,6 +112,7 @@ const buttonVariants = cva(
           bg-transparent text-ink-gold underline-offset-4
           hover:underline hover:text-wood-dark
           p-0 h-auto
+          dark:text-[#d4a017] dark:hover:text-[#d4c9b0]
         `,
       },
       size: {

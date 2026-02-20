@@ -55,18 +55,18 @@ const levelConfig = {
   warn: {
     icon: AlertTriangle,
     label: "Warning",
-    bgColor: "bg-amber-500/10",
-    borderColor: "border-amber-500/30",
-    textColor: "text-amber-600",
-    badgeBg: "bg-amber-500",
+    bgColor: "bg-amber-500/10 dark:bg-amber-900/20",
+    borderColor: "border-amber-500/30 dark:border-amber-700/40",
+    textColor: "text-amber-600 dark:text-amber-400",
+    badgeBg: "bg-amber-500 dark:bg-amber-600",
   },
   info: {
     icon: Info,
     label: "Info",
-    bgColor: "bg-blue-500/10",
-    borderColor: "border-blue-500/30",
-    textColor: "text-blue-600",
-    badgeBg: "bg-blue-500",
+    bgColor: "bg-blue-500/10 dark:bg-blue-900/20",
+    borderColor: "border-blue-500/30 dark:border-blue-700/40",
+    textColor: "text-blue-600 dark:text-blue-400",
+    badgeBg: "bg-blue-500 dark:bg-blue-600",
   },
 };
 

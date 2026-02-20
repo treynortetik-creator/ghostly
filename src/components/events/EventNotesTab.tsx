@@ -33,7 +33,7 @@ interface EventNotesTabProps {
 }
 
 const noteTypeConfig: Record<string, { label: string; className: string }> = {
-  competitor_alert: { label: '🎯 Competitor Alert', className: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
+  competitor_alert: { label: '🎯 Competitor Alert', className: 'bg-amber-500/15 text-amber-400 border-amber-500/30 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700/40' },
   general: { label: 'General', className: 'bg-wood-medium/15 text-sepia border-wood-medium/30' },
   logistics: { label: 'Logistics', className: 'bg-ink-green/15 text-ink-green border-ink-green/30' },
   budget: { label: 'Budget', className: 'bg-ink-gold/15 text-ink-gold border-ink-gold/30' },
@@ -205,7 +205,7 @@ export function EventNotesTab({ eventId }: EventNotesTabProps) {
             return (
               <Card
                 key={note.id}
-                className={isCompetitorAlert ? 'border-amber-500/30 bg-amber-500/5' : ''}
+                className={isCompetitorAlert ? 'border-amber-500/30 bg-amber-500/5 dark:border-amber-700/40 dark:bg-amber-900/10' : ''}
               >
                 <CardContent className="py-3">
                   <div className="flex items-start justify-between gap-3">

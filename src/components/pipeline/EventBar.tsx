@@ -26,7 +26,7 @@ export function EventBar({
 }: EventBarProps) {
   const bgColor = tier && tier in tierBarColors
     ? tierBarColors[tier as EventTier]
-    : 'bg-gray-400';
+    : 'bg-gray-400 dark:bg-gray-600';
 
   const left = `${(startCol / 7) * 100}%`;
   const width = `${((endCol - startCol + 1) / 7) * 100}%`;

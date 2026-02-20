@@ -40,11 +40,11 @@ interface EventShipmentsTabProps {
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-  pending: { label: 'Pending', className: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30' },
-  in_transit: { label: 'In Transit', className: 'bg-blue-500/15 text-blue-400 border-blue-500/30' },
-  delivered: { label: 'Delivered', className: 'bg-green-500/15 text-green-400 border-green-500/30' },
-  returned: { label: 'Returned', className: 'bg-gray-500/15 text-gray-400 border-gray-500/30' },
-  issue: { label: 'Issue', className: 'bg-red-500/15 text-red-400 border-red-500/30' },
+  pending: { label: 'Pending', className: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700/40' },
+  in_transit: { label: 'In Transit', className: 'bg-blue-500/15 text-blue-400 border-blue-500/30 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700/40' },
+  delivered: { label: 'Delivered', className: 'bg-green-500/15 text-green-400 border-green-500/30 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700/40' },
+  returned: { label: 'Returned', className: 'bg-gray-500/15 text-gray-400 border-gray-500/30 dark:bg-gray-800/30 dark:text-gray-300 dark:border-gray-600/40' },
+  issue: { label: 'Issue', className: 'bg-red-500/15 text-red-400 border-red-500/30 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700/40' },
 };
 
 const statusOptions = [
