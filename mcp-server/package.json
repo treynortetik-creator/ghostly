@@ -1,0 +1,26 @@
+{
+  "name": "shindig-mcp",
+  "version": "0.1.0",
+  "description": "Shindig MCP Server — expose Counting House event management to AI clients via Model Context Protocol",
+  "main": "dist/index.js",
+  "bin": {
+    "shindig-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
