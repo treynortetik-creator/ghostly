@@ -136,10 +136,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             `}
           >
             <h1 className="font-serif text-lg font-semibold tracking-wide text-parchment dark:text-sidebar-foreground whitespace-nowrap">
-              The Counting House
+              Ghostly
             </h1>
             <span className="text-[10px] text-parchment/50 dark:text-sidebar-foreground/50 tracking-widest uppercase -mt-0.5 whitespace-nowrap">
-              Est. MMXXIV
+              ghostly.ai
             </span>
           </div>
         </div>
@@ -295,7 +295,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Menu className="w-5 h-5" />
           </button>
           <h1 className="font-serif text-lg font-semibold tracking-wide text-parchment dark:text-sidebar-foreground">
-            The Counting House
+            Ghostly
           </h1>
           {/* Spacer for centering */}
           <div className="w-10" />
@@ -324,10 +324,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
                 <div className="flex flex-col">
                   <h1 className="font-serif text-lg font-semibold tracking-wide text-parchment dark:text-sidebar-foreground">
-                    The Counting House
+                    Ghostly
                   </h1>
                   <span className="text-[10px] text-parchment/50 dark:text-sidebar-foreground/50 tracking-widest uppercase -mt-0.5">
-                    Est. MMXXIV
+                    ghostly.ai
                   </span>
                 </div>
               </div>

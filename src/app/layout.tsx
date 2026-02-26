@@ -22,8 +22,8 @@ const playfairDisplay = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "The Counting House",
-  description: "Budget tracking for SafelyYou events - Victorian bookkeeper style",
+  title: "Ghostly",
+  description: "AI-powered event financial management for B2B event marketing teams",
   icons: {
     icon: [
       { url: "/favicon.ico" },
