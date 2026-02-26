@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * Shindig MCP Server
+ * Ghostly MCP Server
  *
- * Exposes Counting House event management functionality as MCP tools
+ * Exposes Ghostly event management functionality as MCP tools
  * for use with Claude Desktop, Cursor, and other MCP-compatible AI clients.
  *
  * Required env vars:
- *   COUNTING_HOUSE_URL      - Base URL of your Counting House instance
- *   COUNTING_HOUSE_API_KEY  - API key from Counting House Settings → API Keys
+ *   COUNTING_HOUSE_URL      - Base URL of your Ghostly instance
+ *   COUNTING_HOUSE_API_KEY  - API key from Ghostly Settings → API Keys
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -79,7 +79,7 @@ async function countingHouseRequest(
 // ─── MCP Server ───────────────────────────────────────────────────────────────
 
 const server = new McpServer({
-  name: "shindig-mcp",
+  name: "ghostly-mcp",
   version: "0.1.0",
 });
 
@@ -443,7 +443,7 @@ server.tool(
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("Shindig MCP Server running on stdio");
+  console.error("Ghostly MCP Server running on stdio");
 }
 
 main().catch((err) => {

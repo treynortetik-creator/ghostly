@@ -61,16 +61,16 @@ export default function LoginPage() {
           </div>
 
           <h1 className="text-4xl font-serif font-bold text-wood-dark tracking-wide">
-            The Counting House
+            Ghostly
           </h1>
 
-          {/* Victorian flourish */}
+          {/* flourish */}
           <div className="mt-3 flourish">
-            <span className="text-xs tracking-widest text-sepia uppercase">Est. MMXXIV</span>
+            <span className="text-xs tracking-widest text-sepia uppercase">ghostly.ai</span>
           </div>
 
           <p className="mt-4 text-sepia text-sm italic">
-            A Ledger for the Modern Bookkeeper
+            The invisible AI agent running your events.
           </p>
         </div>
 

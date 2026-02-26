@@ -435,7 +435,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 themselves.&rdquo;
               </p>
               <p className="text-xs text-sepia/40 dark:text-muted-foreground/40">
-                The Counting House &middot; FY {new Date().getFullYear()}
+                Ghostly &middot; FY {new Date().getFullYear()}
               </p>
             </div>
           </div>

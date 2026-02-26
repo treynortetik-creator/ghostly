@@ -1,10 +1,10 @@
 {
-  "name": "shindig-mcp",
+  "name": "ghostly-mcp",
   "version": "0.1.0",
-  "description": "Shindig MCP Server — expose Counting House event management to AI clients via Model Context Protocol",
+  "description": "Ghostly MCP Server — expose Ghostly event management to AI clients via Model Context Protocol",
   "main": "dist/index.js",
   "bin": {
-    "shindig-mcp": "dist/index.js"
+    "ghostly-mcp": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",
