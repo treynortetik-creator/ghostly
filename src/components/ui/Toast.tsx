@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CheckCircle, XCircle, AlertTriangle, X } from "lucide-react";
 
 interface ToastMessage {
@@ -26,11 +26,11 @@ export function useToast() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const toast = {
+  const toast = useMemo(() => ({
     success: (message: string) => addToast("success", message),
     error: (message: string) => addToast("error", message),
     warning: (message: string) => addToast("warning", message),
-  };
+  }), [addToast]);
 
   return { toasts, removeToast, toast };
 }
