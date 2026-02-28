@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Receipt, Plus, RefreshCw } from "lucide-react";
+import { Receipt, Plus, RefreshCw, Upload, Download } from "lucide-react";
 import { AppShell } from "@/components/layout";
 import { Button } from "@/components/ui/Button";
 import { useToast, ToastContainer } from "@/components/ui/Toast";
@@ -357,15 +357,31 @@ function ExpensesPageContent() {
 
         <div className="flex items-center gap-3">
           <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push("/import")}
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            Import
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push("/export")}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </Button>
+
+          <Button
             variant="secondary"
             size="sm"
             onClick={fetchData}
             disabled={isLoading}
-           
           >
             <RefreshCw
               className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
-             
             />
             Refresh
           </Button>
@@ -380,7 +396,6 @@ function ExpensesPageContent() {
               }, 0);
             }}
             leftIcon={<Plus className="w-4 h-4" />}
-           
           >
             Add Expense
           </Button>
