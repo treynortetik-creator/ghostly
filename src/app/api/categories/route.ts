@@ -10,6 +10,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withIdempotency } from '@/lib/idempotency';
 import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
+import { parsePagination, paginationMeta, paginationRange } from '@/lib/pagination';
+import { VALIDATION } from '@/lib/validation';
 
 interface CategoryWithTotals {
   id: string;
@@ -40,10 +42,8 @@ export const GET = withApiHandler({ permission: 'read', resource: 'categories' }
     const idsParam = searchParams.get('ids');
 
     // Parse pagination parameters
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
-    const perPage = Math.min(200, Math.max(1, parseInt(searchParams.get('per_page') || '50', 10)));
-    const from = (page - 1) * perPage;
-    const to = from + perPage - 1;
+    const pagination = parsePagination(searchParams);
+    const { from, to } = paginationRange(pagination);
 
     // Validate modified_after if provided
     if (modifiedAfter && isNaN(Date.parse(modifiedAfter))) {
@@ -124,12 +124,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'categories' }
         total,
         filters_applied: filters,
       },
-      pagination: {
-        page,
-        per_page: perPage,
-        total,
-        total_pages: Math.ceil(total / perPage),
-      },
+      pagination: paginationMeta(total, pagination),
     });
   }
 );
@@ -156,9 +151,9 @@ export const POST = withIdempotency(
       }
 
       // Validate input lengths
-      if (String(body.name).length > 200) {
+      if (String(body.name).length > VALIDATION.NAME_MAX_LENGTH) {
         return NextResponse.json(
-          { error: 'Category name must be 200 characters or fewer' },
+          { error: `Category name must be ${VALIDATION.NAME_MAX_LENGTH} characters or fewer` },
           { status: 400 }
         );
       }

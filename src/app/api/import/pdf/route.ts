@@ -25,10 +25,21 @@ interface PDFParseResult {
   info: Record<string, unknown>;
 }
 
+/** PDF parsing timeout in milliseconds (default: 30 seconds) */
+const PDF_PARSE_TIMEOUT_MS = 30_000;
+
 async function parsePDF(buffer: Buffer): Promise<PDFParseResult> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const pdfParse = require('pdf-parse');
-  return pdfParse(buffer);
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(
+      () => reject(new Error(`PDF parsing timed out after ${PDF_PARSE_TIMEOUT_MS / 1000} seconds`)),
+      PDF_PARSE_TIMEOUT_MS
+    );
+  });
+
+  return Promise.race([pdfParse(buffer), timeoutPromise]);
 }
 
 // ============================================
@@ -345,16 +356,26 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/pdf'
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Parse PDF
+    // Parse PDF (with timeout protection)
     let pdfData;
     try {
       pdfData = await parsePDF(buffer);
     } catch (error) {
+      const err = error as Error;
+      const isTimeout = err.message?.includes('timed out');
       console.error('PDF parse error:', error);
-      logError('PDF parse failed', { error: error as Error, source: 'api/import/pdf' });
+      logError(isTimeout ? 'PDF parse timed out' : 'PDF parse failed', {
+        error: err,
+        source: 'api/import/pdf',
+        context: { fileName: file.name, fileSize: file.size, isTimeout },
+      });
       return NextResponse.json(
-        { error: 'Failed to parse PDF file' },
-        { status: 422 }
+        {
+          error: isTimeout
+            ? 'PDF parsing timed out. The file may be too complex or large to process.'
+            : 'Failed to parse PDF file',
+        },
+        { status: isTimeout ? 504 : 422 }
       );
     }
 

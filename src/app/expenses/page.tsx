@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Receipt, Plus, RefreshCw } from "lucide-react";
 import { AppShell } from "@/components/layout";
 import { Button } from "@/components/ui/Button";
 import { useToast, ToastContainer } from "@/components/ui/Toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ExpenseList } from "@/components/expenses/ExpenseList";
+import type { ExpenseFiltersState } from "@/components/expenses/ExpenseFilters";
 import {
   ExpenseForm,
   ExpenseFormData,
@@ -46,7 +48,37 @@ interface CategoriesApiResponse {
   meta: { total: number };
 }
 
-export default function ExpensesPage() {
+function ExpensesPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Read initial filter values from URL search params
+  const initialFiltersFromUrl: Partial<ExpenseFiltersState> = {
+    ...(searchParams.get("event_id") ? { event_id: searchParams.get("event_id")! } : {}),
+    ...(searchParams.get("category_id") ? { category_id: searchParams.get("category_id")! } : {}),
+    ...(searchParams.get("date_start") ? { date_start: searchParams.get("date_start")! } : {}),
+    ...(searchParams.get("date_end") ? { date_end: searchParams.get("date_end")! } : {}),
+    ...(searchParams.get("vendor") ? { vendor: searchParams.get("vendor")! } : {}),
+    ...(searchParams.get("source_type") ? { source_type: searchParams.get("source_type") as ExpenseFiltersState["source_type"] } : {}),
+  };
+
+  // Sync filter changes to URL search params
+  const handleFiltersSync = useCallback(
+    (filters: ExpenseFiltersState) => {
+      const params = new URLSearchParams();
+      if (filters.event_id) params.set("event_id", filters.event_id);
+      if (filters.category_id) params.set("category_id", filters.category_id);
+      if (filters.date_start) params.set("date_start", filters.date_start);
+      if (filters.date_end) params.set("date_end", filters.date_end);
+      if (filters.vendor) params.set("vendor", filters.vendor);
+      if (filters.source_type !== "all") params.set("source_type", filters.source_type);
+
+      const queryString = params.toString();
+      router.replace(queryString ? `/expenses?${queryString}` : "/expenses", { scroll: false });
+    },
+    [router],
+  );
+
   const [expenses, setExpenses] = useState<ExpenseWithRelations[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [categories, setCategories] = useState<BudgetCategory[]>([]);
@@ -388,7 +420,8 @@ export default function ExpensesPage() {
         onEdit={handleEditExpense}
         onDelete={handleDeleteExpense}
         onBulkDelete={handleBulkDeleteExpenses}
-       
+        initialFilters={initialFiltersFromUrl}
+        onFiltersSync={handleFiltersSync}
       />
 
       {/* Footer Info */}
@@ -403,5 +436,13 @@ export default function ExpensesPage() {
         </div>
       )}
     </AppShell>
+  );
+}
+
+export default function ExpensesPage() {
+  return (
+    <Suspense>
+      <ExpensesPageContent />
+    </Suspense>
   );
 }

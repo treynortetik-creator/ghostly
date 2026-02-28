@@ -50,11 +50,13 @@ export function withApiHandler(
       return await handler(request, context);
     } catch (error) {
       const method = request.method;
+      const requestId = request.headers.get('x-request-id') || undefined;
       console.error(`${options.resource} API error (${method}):`, error);
       logError(`Failed ${method} ${options.resource}`, {
         error: error as Error,
         source: `api/${options.resource}`,
         context: { method },
+        requestId,
       });
       return NextResponse.json(
         { error: `Failed to process ${options.resource} request` },

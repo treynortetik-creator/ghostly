@@ -10,9 +10,12 @@ import { createClient } from '@/lib/supabase/server';
 import { getSession } from '@/lib/auth';
 import type { Json } from '@/types/database';
 
-export type AuditEntityType = 'expense' | 'event' | 'category' | 'team_member' | 'document' | 'api_key' | 'webhook' | 'reminder';
-export type AuditAction = 'create' | 'update' | 'delete' | 'download' | 'check' | 'send';
-export type AuditActorType = 'user' | 'agent';
+export type AuditEntityType = 'expense' | 'event' | 'category' | 'team_member' | 'document' | 'api_key' | 'webhook' | 'reminder' | 'auth';
+export type AuditAction = 'create' | 'update' | 'delete' | 'download' | 'check' | 'send' | 'login_success' | 'login_failure' | 'login_rate_limited' | 'api_key_auth';
+export type AuditActorType = 'user' | 'agent' | 'system';
+
+/** Sentinel UUID for auth-related audit entries (login, API key usage, etc.) */
+export const AUTH_ENTITY_ID = '00000000-0000-0000-0000-000000000000';
 
 export interface AuditParams {
   entity_type: AuditEntityType;
@@ -67,6 +70,42 @@ export function computeChanges(
   }
 
   return Object.keys(changes).length > 0 ? changes : null;
+}
+
+/**
+ * Fire-and-forget audit log via Supabase REST API.
+ * Works in Edge runtime (middleware) without the SSR client.
+ * Never throws — swallows all errors silently.
+ */
+export function logAuditRest(params: AuditParams): void {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.warn('Audit REST: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set');
+    return;
+  }
+
+  fetch(`${supabaseUrl}/rest/v1/audit_log`, {
+    method: 'POST',
+    headers: {
+      'apikey': supabaseServiceKey,
+      'Authorization': `Bearer ${supabaseServiceKey}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal',
+    },
+    body: JSON.stringify({
+      entity_type: params.entity_type,
+      entity_id: params.entity_id,
+      action: params.action,
+      changes: params.changes ?? null,
+      actor: params.actor,
+      actor_type: params.actor_type,
+      metadata: params.metadata ?? null,
+    }),
+  }).catch((err) => {
+    console.error('Audit REST log failed:', err);
+  });
 }
 
 /**

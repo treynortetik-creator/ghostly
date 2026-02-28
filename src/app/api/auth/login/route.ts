@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyCredentials, createToken, setAuthCookie } from '@/lib/auth';
-
-// In-memory rate limiting: IP -> { count, resetTime }
-const loginAttempts = new Map<string, { count: number; resetTime: number }>();
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { logAudit, AUTH_ENTITY_ID } from '@/lib/audit';
 
 const MAX_ATTEMPTS = 5;
 const WINDOW_MS = 60 * 1000; // 1 minute
@@ -15,34 +14,31 @@ function getClientIp(request: NextRequest): string {
   );
 }
 
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const entry = loginAttempts.get(ip);
-
-  // Lazy cleanup: remove expired entries when we check
-  if (loginAttempts.size > 100) {
-    for (const [key, val] of loginAttempts) {
-      if (now > val.resetTime) loginAttempts.delete(key);
-    }
-  }
-
-  if (!entry || now > entry.resetTime) {
-    loginAttempts.set(ip, { count: 1, resetTime: now + WINDOW_MS });
-    return false;
-  }
-
-  entry.count++;
-  return entry.count > MAX_ATTEMPTS;
-}
-
 export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request);
 
-    if (isRateLimited(ip)) {
+    const rateCheck = await checkRateLimit(`login:${ip}`, MAX_ATTEMPTS, WINDOW_MS);
+
+    if (!rateCheck.allowed) {
+      // Audit: rate-limited login attempt (fire-and-forget)
+      logAudit({
+        entity_type: 'auth',
+        entity_id: AUTH_ENTITY_ID,
+        action: 'login_rate_limited',
+        actor: 'unknown',
+        actor_type: 'system',
+        metadata: { ip },
+      });
+
       return NextResponse.json(
         { error: 'Too many login attempts. Please try again later.' },
-        { status: 429 }
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((rateCheck.resetAt.getTime() - Date.now()) / 1000)),
+          },
+        }
       );
     }
 
@@ -59,6 +55,16 @@ export async function POST(request: NextRequest) {
 
     // Verify credentials against env vars
     if (!verifyCredentials(username, password)) {
+      // Audit: failed login attempt (fire-and-forget)
+      logAudit({
+        entity_type: 'auth',
+        entity_id: AUTH_ENTITY_ID,
+        action: 'login_failure',
+        actor: username,
+        actor_type: 'user',
+        metadata: { ip, attempted_username: username },
+      });
+
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
@@ -70,6 +76,16 @@ export async function POST(request: NextRequest) {
 
     // Set the auth cookie
     await setAuthCookie(token);
+
+    // Audit: successful login (fire-and-forget)
+    logAudit({
+      entity_type: 'auth',
+      entity_id: AUTH_ENTITY_ID,
+      action: 'login_success',
+      actor: username,
+      actor_type: 'user',
+      metadata: { ip },
+    });
 
     return NextResponse.json(
       { success: true, message: 'Logged in successfully' },

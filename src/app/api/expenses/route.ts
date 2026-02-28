@@ -11,6 +11,8 @@ import type { ExpenseSource } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
 import { withIdempotency } from '@/lib/idempotency';
 import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
+import { parsePagination, paginationMeta, paginationRange } from '@/lib/pagination';
+import { VALIDATION, VALID_EXPENSE_SOURCE_TYPES } from '@/lib/validation';
 
 // ============================================
 // GET /api/expenses
@@ -35,10 +37,9 @@ export const GET = withApiHandler({ permission: 'read', resource: 'expenses' },
     const sortOrder = searchParams.get('sort_order') || 'desc'; // asc, desc
 
     // Parse pagination parameters
-    const page = Math.min(10000, Math.max(1, parseInt(searchParams.get('page') || '1', 10)));
-    const perPage = Math.min(200, Math.max(1, parseInt(searchParams.get('per_page') || '50', 10)));
-    const from = (page - 1) * perPage;
-    const to = from + perPage - 1;
+    const pagination = parsePagination(searchParams);
+    const { page } = pagination;
+    const { from, to } = paginationRange(pagination);
 
     // Validate modified_after if provided
     if (modifiedAfter && isNaN(Date.parse(modifiedAfter))) {
@@ -231,12 +232,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'expenses' },
         filters_applied: filters,
         sort: { by: sortBy, order: sortOrder },
       },
-      pagination: {
-        page,
-        per_page: perPage,
-        total,
-        total_pages: Math.ceil(total / perPage),
-      },
+      pagination: paginationMeta(total, pagination),
     });
   }
 );
@@ -262,15 +258,15 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
     }
 
     // Validate input lengths
-    if (body.vendor && String(body.vendor).length > 200) {
+    if (body.vendor && String(body.vendor).length > VALIDATION.VENDOR_MAX_LENGTH) {
       return NextResponse.json(
-        { error: 'Vendor name must be 200 characters or fewer' },
+        { error: `Vendor name must be ${VALIDATION.VENDOR_MAX_LENGTH} characters or fewer` },
         { status: 400 }
       );
     }
-    if (body.memo && String(body.memo).length > 2000) {
+    if (body.memo && String(body.memo).length > VALIDATION.MEMO_MAX_LENGTH) {
       return NextResponse.json(
-        { error: 'Memo must be 2000 characters or fewer' },
+        { error: `Memo must be ${VALIDATION.MEMO_MAX_LENGTH} characters or fewer` },
         { status: 400 }
       );
     }
@@ -303,9 +299,8 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
     }
 
     // Validate source_type
-    const validSourceTypes: ExpenseSource[] = ['manual', 'brex', 'pdf'];
     const sourceType = body.source_type || 'manual';
-    if (!validSourceTypes.includes(sourceType)) {
+    if (!VALID_EXPENSE_SOURCE_TYPES.includes(sourceType)) {
       return NextResponse.json(
         { error: 'Invalid source_type. Must be one of: manual, brex, pdf' },
         { status: 400 }

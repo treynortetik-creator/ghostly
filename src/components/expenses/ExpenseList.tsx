@@ -57,6 +57,10 @@ export interface ExpenseListProps {
   onDelete?: (expense: ExpenseWithRelations) => void;
   /** Callback for bulk delete */
   onBulkDelete?: (expenses: ExpenseWithRelations[]) => void;
+  /** Initial filter values (from URL params) */
+  initialFilters?: Partial<ExpenseFiltersState>;
+  /** Called when filter state changes, for URL sync */
+  onFiltersSync?: (filters: ExpenseFiltersState) => void;
 }
 
 const initialFilters: ExpenseFiltersState = {
@@ -78,8 +82,13 @@ export function ExpenseList({
   onEdit,
   onDelete,
   onBulkDelete,
+  initialFilters: initialFiltersProp,
+  onFiltersSync,
 }: ExpenseListProps) {
-  const [filters, setFilters] = useState<ExpenseFiltersState>(initialFilters);
+  const [filters, setFilters] = useState<ExpenseFiltersState>({
+    ...initialFilters,
+    ...initialFiltersProp,
+  });
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
@@ -210,17 +219,21 @@ export function ExpenseList({
   // Handle filter changes
   const handleFiltersChange = (newFilters: ExpenseFiltersState) => {
     setFilters(newFilters);
+    onFiltersSync?.(newFilters);
   };
 
   const handleClearFilters = () => {
     setFilters(initialFilters);
+    onFiltersSync?.(initialFilters);
   };
 
   const handleRemoveFilter = (field: keyof ExpenseFiltersState) => {
-    setFilters((prev) => ({
-      ...prev,
+    const updated = {
+      ...filters,
       [field]: field === "source_type" ? "all" : "",
-    }));
+    };
+    setFilters(updated);
+    onFiltersSync?.(updated);
   };
 
   // Handle sort

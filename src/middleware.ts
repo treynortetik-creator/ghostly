@@ -4,6 +4,45 @@ import { jwtVerify } from 'jose';
 // Cookie name must match the one in auth.ts
 const AUTH_COOKIE_NAME = 'ghostly-token';
 
+/** Sentinel UUID for auth-related audit entries (matches AUTH_ENTITY_ID in audit.ts) */
+const AUTH_ENTITY_ID = '00000000-0000-0000-0000-000000000000';
+
+/**
+ * Fire-and-forget audit log via Supabase REST API (Edge-compatible).
+ * Used in middleware where we can't import the SSR-based audit module.
+ */
+function logAuditFromMiddleware(params: {
+  action: string;
+  actor: string;
+  actor_type: string;
+  metadata?: Record<string, unknown> | null;
+}): void {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !supabaseServiceKey) return;
+
+  fetch(`${supabaseUrl}/rest/v1/audit_log`, {
+    method: 'POST',
+    headers: {
+      'apikey': supabaseServiceKey,
+      'Authorization': `Bearer ${supabaseServiceKey}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal',
+    },
+    body: JSON.stringify({
+      entity_type: 'auth',
+      entity_id: AUTH_ENTITY_ID,
+      action: params.action,
+      changes: null,
+      actor: params.actor,
+      actor_type: params.actor_type,
+      metadata: params.metadata ?? null,
+    }),
+  }).catch((err) => {
+    console.error('Middleware audit log failed:', err);
+  });
+}
+
 // Routes that don't require authentication
 const PUBLIC_ROUTES = ['/login'];
 
@@ -135,8 +174,19 @@ async function validateApiKeyInMiddleware(rawKey: string): Promise<{
   };
 }
 
+/**
+ * Set X-Request-ID on a response for client correlation.
+ */
+function withRequestId(response: NextResponse, requestId: string): NextResponse {
+  response.headers.set('X-Request-ID', requestId);
+  return response;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Generate a unique request ID for tracing
+  const requestId = crypto.randomUUID();
 
   // Default organization ID for backward-compatible single-tenant mode
   const DEFAULT_ORG_ID = '00000000-0000-0000-0000-000000000001';
@@ -149,6 +199,9 @@ export async function middleware(request: NextRequest) {
   requestHeaders.delete('x-auth-api-key-id');
   requestHeaders.delete('x-organization-id');
 
+  // Set request ID on the request for downstream route handlers / logging
+  requestHeaders.set('x-request-id', requestId);
+
   // Allow public routes without authentication
   if (isPublicRoute(pathname)) {
     if (pathname === '/login') {
@@ -156,11 +209,14 @@ export async function middleware(request: NextRequest) {
       if (token) {
         const isValid = await verifyTokenFromCookie(token);
         if (isValid) {
-          return NextResponse.redirect(new URL('/', request.url));
+          return withRequestId(NextResponse.redirect(new URL('/', request.url)), requestId);
         }
       }
     }
-    return NextResponse.next({ request: { headers: requestHeaders } });
+    return withRequestId(
+      NextResponse.next({ request: { headers: requestHeaders } }),
+      requestId
+    );
   }
 
   // For API routes, check x-api-key header first
@@ -171,9 +227,12 @@ export async function middleware(request: NextRequest) {
       const result = await validateApiKeyInMiddleware(apiKeyHeader);
 
       if (!result.valid) {
-        return NextResponse.json(
-          { error: result.error, code: result.errorCode },
-          { status: result.status || 401 }
+        return withRequestId(
+          NextResponse.json(
+            { error: result.error, code: result.errorCode },
+            { status: result.status || 401 }
+          ),
+          requestId
         );
       }
 
@@ -184,9 +243,23 @@ export async function middleware(request: NextRequest) {
       requestHeaders.set('x-auth-api-key-id', result.apiKeyId!);
       requestHeaders.set('x-organization-id', result.organizationId || DEFAULT_ORG_ID);
 
-      return NextResponse.next({
-        request: { headers: requestHeaders },
+      // Audit: API key auth usage (fire-and-forget)
+      logAuditFromMiddleware({
+        action: 'api_key_auth',
+        actor: result.agentName!,
+        actor_type: 'agent',
+        metadata: {
+          api_key_id: result.apiKeyId,
+          pathname,
+          method: request.method,
+          request_id: requestId,
+        },
       });
+
+      return withRequestId(
+        NextResponse.next({ request: { headers: requestHeaders } }),
+        requestId
+      );
     }
 
     // No API key — fall through to cookie auth for API routes
@@ -197,12 +270,18 @@ export async function middleware(request: NextRequest) {
 
   if (!token) {
     if (pathname.startsWith('/api/')) {
-      return NextResponse.json(
-        { error: 'Authentication required', code: 'AUTH_REQUIRED' },
-        { status: 401 }
+      return withRequestId(
+        NextResponse.json(
+          { error: 'Authentication required', code: 'AUTH_REQUIRED' },
+          { status: 401 }
+        ),
+        requestId
       );
     }
-    return NextResponse.redirect(new URL('/login', request.url));
+    return withRequestId(
+      NextResponse.redirect(new URL('/login', request.url)),
+      requestId
+    );
   }
 
   // Verify the token
@@ -210,24 +289,28 @@ export async function middleware(request: NextRequest) {
 
   if (!isValid) {
     if (pathname.startsWith('/api/')) {
-      return NextResponse.json(
-        { error: 'Invalid or expired token', code: 'AUTH_INVALID_TOKEN' },
-        { status: 401 }
+      return withRequestId(
+        NextResponse.json(
+          { error: 'Invalid or expired token', code: 'AUTH_INVALID_TOKEN' },
+          { status: 401 }
+        ),
+        requestId
       );
     }
 
     const response = NextResponse.redirect(new URL('/login', request.url));
     response.cookies.delete(AUTH_COOKIE_NAME);
-    return response;
+    return withRequestId(response, requestId);
   }
 
   // Cookie auth valid — pass auth context via headers
   requestHeaders.set('x-auth-type', 'cookie');
   requestHeaders.set('x-organization-id', DEFAULT_ORG_ID);
 
-  return NextResponse.next({
-    request: { headers: requestHeaders },
-  });
+  return withRequestId(
+    NextResponse.next({ request: { headers: requestHeaders } }),
+    requestId
+  );
 }
 
 // Configure which paths the middleware runs on

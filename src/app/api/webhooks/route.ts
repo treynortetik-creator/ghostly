@@ -9,17 +9,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
+import { VALID_WEBHOOK_EVENT_TYPES } from '@/lib/validation';
 
-const VALID_EVENT_TYPES = [
-  'expense.created',
-  'expense.updated',
-  'expense.deleted',
-  'event.created',
-  'event.updated',
-  'event.deleted',
-  'budget.threshold_reached',
-  '*',
-];
+const VALID_EVENT_TYPES: readonly string[] = VALID_WEBHOOK_EVENT_TYPES;
 
 /**
  * SSRF protection: block webhook URLs pointing at internal/private networks.

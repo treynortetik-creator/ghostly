@@ -7,11 +7,13 @@
  * - error_logs older than 30 days
  * - expired idempotency_keys
  * - orphaned files from soft-deleted documents (deleted > 7 days ago)
+ * - expired rate_limit_entries (older than 1 hour)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
+import { cleanupRateLimitEntries } from '@/lib/rate-limiter';
 import path from 'path';
 import fs from 'fs/promises';
 
@@ -156,6 +158,14 @@ export const POST = withApiHandler({ permission: 'admin', resource: 'admin/clean
         ...(results.orphaned_files.errors || []),
         ...fileErrors,
       ];
+    }
+
+    // 4. Clean expired rate_limit_entries (older than 1 hour)
+    try {
+      const rateLimitDeleted = await cleanupRateLimitEntries();
+      results.rate_limit_entries = { deleted: rateLimitDeleted };
+    } catch (rlErr) {
+      results.rate_limit_entries = { deleted: 0, errors: [(rlErr as Error).message] };
     }
 
     // Audit log

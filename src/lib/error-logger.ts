@@ -18,6 +18,7 @@ export interface ErrorLogEntry {
   source: string; // e.g., 'api', 'client', 'import'
   userId?: string;
   url?: string;
+  requestId?: string;
 }
 
 // In-memory fallback store
@@ -33,6 +34,7 @@ export function logError(
     source?: string;
     userId?: string;
     url?: string;
+    requestId?: string;
   } = {}
 ): ErrorLogEntry {
   const entry: ErrorLogEntry = {
@@ -45,6 +47,7 @@ export function logError(
     source: options.source || 'unknown',
     userId: options.userId,
     url: options.url,
+    requestId: options.requestId,
   };
 
   // Keep in-memory copy
@@ -53,8 +56,9 @@ export function logError(
     errorLogs.length = MAX_LOGS;
   }
 
-  // Always log to console for Railway logs
-  console.error(`[${entry.level.toUpperCase()}] ${entry.source}: ${message}`, options.context || '');
+  // Always log to console for Railway logs (include request ID for correlation)
+  const reqIdPrefix = entry.requestId ? `[${entry.requestId}] ` : '';
+  console.error(`${reqIdPrefix}[${entry.level.toUpperCase()}] ${entry.source}: ${message}`, options.context || '');
 
   // Write to Supabase asynchronously (fire-and-forget)
   persistToSupabase(entry).catch((err) => {
@@ -66,11 +70,17 @@ export function logError(
 
 async function persistToSupabase(entry: ErrorLogEntry): Promise<void> {
   const supabase = await createClient();
+
+  // Merge request ID into context for DB persistence
+  const contextWithRequestId = entry.requestId
+    ? { ...(entry.context || {}), request_id: entry.requestId }
+    : entry.context;
+
   const { error } = await supabase.from('error_logs').insert({
     level: entry.level,
     message: entry.message,
     stack: entry.stack || null,
-    context: (entry.context ?? null) as Json,
+    context: (contextWithRequestId ?? null) as Json,
     source: entry.source,
     user_id: entry.userId || null,
     url: entry.url || null,

@@ -10,6 +10,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withIdempotency } from '@/lib/idempotency';
 import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
+import { parsePagination, paginationMeta, paginationRange } from '@/lib/pagination';
+import { VALIDATION, VALID_QUARTERS } from '@/lib/validation';
 import type { QuarterType, EventTypeRecord } from '@/types/database';
 
 interface EventWithTotals {
@@ -62,19 +64,19 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events' },
     const search = searchParams.get('search')?.trim() || null;
 
     // Parse pagination parameters (supports both page-based and offset-based)
-    const perPage = Math.min(200, Math.max(1, parseInt(searchParams.get('per_page') || '50', 10) || 50));
+    const basePagination = parsePagination(searchParams);
     const offsetParam = searchParams.get('offset');
-    const pageParam = searchParams.get('page');
-    let from: number;
     let page: number;
+    let from: number;
     if (offsetParam !== null) {
       from = Math.max(0, parseInt(offsetParam, 10) || 0);
-      page = Math.floor(from / perPage) + 1;
+      page = Math.floor(from / basePagination.pageSize) + 1;
     } else {
-      page = Math.max(1, parseInt(pageParam || '1', 10) || 1);
-      from = (page - 1) * perPage;
+      page = basePagination.page;
+      from = basePagination.offset;
     }
-    const to = from + perPage - 1;
+    const pagination = { page, pageSize: basePagination.pageSize, offset: from };
+    const to = from + pagination.pageSize - 1;
 
     // Validate modified_after if provided
     if (modifiedAfter && isNaN(Date.parse(modifiedAfter))) {
@@ -187,11 +189,8 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events' },
         filters_applied: filters,
       },
       pagination: {
-        page,
-        per_page: perPage,
+        ...paginationMeta(total, pagination),
         offset: from,
-        total,
-        total_pages: Math.ceil(total / perPage),
       },
     });
   }
@@ -219,15 +218,15 @@ export const POST = withIdempotency(
       }
 
       // Validate input lengths
-      if (String(body.name).length > 200) {
+      if (String(body.name).length > VALIDATION.NAME_MAX_LENGTH) {
         return NextResponse.json(
-          { error: 'Event name must be 200 characters or fewer' },
+          { error: `Event name must be ${VALIDATION.NAME_MAX_LENGTH} characters or fewer` },
           { status: 400 }
         );
       }
 
       // Validate quarter
-      if (!['Q1', 'Q2', 'Q3', 'Q4', 'TBD'].includes(body.quarter)) {
+      if (!(VALID_QUARTERS as readonly string[]).includes(body.quarter)) {
         return NextResponse.json(
           { error: 'Invalid quarter. Must be one of: Q1, Q2, Q3, Q4, TBD' },
           { status: 400 }

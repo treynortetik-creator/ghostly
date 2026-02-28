@@ -36,11 +36,18 @@ export interface EventListProps {
   onFiltersChange?: (filters: {
     typeId: string | "all";
     quarter: QuarterType | "all";
+    search: string;
   }) => void;
   /** Show search input */
   showSearch?: boolean;
   /** Group events by quarter */
   groupByQuarter?: boolean;
+  /** Initial filter values (from URL params) */
+  initialTypeId?: string | "all";
+  /** Initial quarter filter (from URL params) */
+  initialQuarter?: QuarterType | "all";
+  /** Initial search query (from URL params) */
+  initialSearch?: string;
 }
 
 export function EventList({
@@ -52,12 +59,15 @@ export function EventList({
   onFiltersChange,
   showSearch = true,
   groupByQuarter = false,
+  initialTypeId = "all",
+  initialQuarter = "all",
+  initialSearch = "",
 }: EventListProps) {
-  const [selectedTypeId, setSelectedTypeId] = useState<string | "all">("all");
+  const [selectedTypeId, setSelectedTypeId] = useState<string | "all">(initialTypeId);
   const [selectedQuarter, setSelectedQuarter] = useState<QuarterType | "all">(
-    "all",
+    initialQuarter,
   );
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [eventTypes, setEventTypes] = useState<EventTypeRecord[]>([]);
 
   // Fetch event types for display in pills
@@ -146,19 +156,24 @@ export function EventList({
   // Handle filter changes
   const handleTypeChange = (typeId: string | "all") => {
     setSelectedTypeId(typeId);
-    onFiltersChange?.({ typeId, quarter: selectedQuarter });
+    onFiltersChange?.({ typeId, quarter: selectedQuarter, search: searchQuery });
   };
 
   const handleQuarterChange = (quarter: QuarterType | "all") => {
     setSelectedQuarter(quarter);
-    onFiltersChange?.({ typeId: selectedTypeId, quarter });
+    onFiltersChange?.({ typeId: selectedTypeId, quarter, search: searchQuery });
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    onFiltersChange?.({ typeId: selectedTypeId, quarter: selectedQuarter, search: value });
   };
 
   const handleClearFilters = () => {
     setSelectedTypeId("all");
     setSelectedQuarter("all");
     setSearchQuery("");
-    onFiltersChange?.({ typeId: "all", quarter: "all" });
+    onFiltersChange?.({ typeId: "all", quarter: "all", search: "" });
   };
 
   // Calculate totals
@@ -247,7 +262,7 @@ export function EventList({
               type="text"
               placeholder="Search events..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="
                 pl-10 pr-4 py-2 rounded-md w-full lg:w-64
                 bg-background border border-border

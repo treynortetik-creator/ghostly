@@ -23,6 +23,8 @@ import {
   Monitor,
   ChevronLeft,
   ChevronRight,
+  Webhook,
+  ScrollText,
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/components/providers";
@@ -42,10 +44,12 @@ const navItems: NavItem[] = [
   { name: "Expenses", href: "/expenses", icon: Receipt },
   { name: "Team", href: "/team", icon: Users },
   { name: "ROI", href: "/roi", icon: TrendingUp },
+  { name: "Webhooks", href: "/webhooks", icon: Webhook },
   { name: "Import", href: "/import", icon: Upload },
   { name: "Export", href: "/export", icon: Download },
   { name: "Settings", href: "/settings", icon: Settings },
   { name: "Admin", href: "/admin", icon: Shield },
+  { name: "Audit Log", href: "/admin/audit", icon: ScrollText },
 ];
 
 const SIDEBAR_KEY = "sidebar-collapsed";

@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
+import { parsePagination, paginationMeta, paginationRange } from '@/lib/pagination';
 
 // ============================================
 // GET /api/audit-log
@@ -27,10 +28,8 @@ export const GET = withApiHandler({ permission: 'admin', resource: 'audit-log' }
     const to = searchParams.get('to');
 
     // Parse pagination parameters
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
-    const perPage = Math.min(200, Math.max(1, parseInt(searchParams.get('per_page') || '50', 10)));
-    const rangeFrom = (page - 1) * perPage;
-    const rangeTo = rangeFrom + perPage - 1;
+    const pagination = parsePagination(searchParams);
+    const { from: rangeFrom, to: rangeTo } = paginationRange(pagination);
 
     const supabase = await createClient();
 
@@ -58,12 +57,7 @@ export const GET = withApiHandler({ permission: 'admin', resource: 'audit-log' }
     return NextResponse.json({
       entries: entries || [],
       meta: { total },
-      pagination: {
-        page,
-        per_page: perPage,
-        total,
-        total_pages: Math.ceil(total / perPage),
-      },
+      pagination: paginationMeta(total, pagination),
     });
   }
 );

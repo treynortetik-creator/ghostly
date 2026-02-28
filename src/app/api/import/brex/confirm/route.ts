@@ -39,6 +39,8 @@ interface ImportResult {
 // API HANDLER
 // ============================================
 
+const MAX_TRANSACTIONS_PER_REQUEST = 100;
+
 export const POST = withApiHandler({ permission: 'write', resource: 'import/brex/confirm' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
@@ -56,6 +58,13 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/brex
     if (transactions.length === 0) {
       return NextResponse.json(
         { error: 'No transactions to import' },
+        { status: 400 }
+      );
+    }
+
+    if (transactions.length > MAX_TRANSACTIONS_PER_REQUEST) {
+      return NextResponse.json(
+        { error: `Maximum ${MAX_TRANSACTIONS_PER_REQUEST} transactions per request` },
         { status: 400 }
       );
     }
@@ -128,16 +137,28 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/brex
     const createdExpenses: Record<string, unknown>[] = [];
     const now = new Date().toISOString();
 
-    // Batch soft-delete replacements
+    // Batch soft-delete replacements (with rollback tracking)
     const replaceIds = transactions
       .filter(txn => txn.status === 'replace' && txn.replaceExpenseId)
       .map(txn => txn.replaceExpenseId!);
 
+    let softDeletedIds: string[] = [];
+
     if (replaceIds.length > 0) {
-      await supabase
+      const { data: deletedRows, error: deleteError } = await supabase
         .from('expenses')
         .update({ deleted_at: now })
-        .in('id', replaceIds);
+        .in('id', replaceIds)
+        .select('id');
+
+      if (deleteError) {
+        return NextResponse.json(
+          { error: 'Failed to soft-delete replaced expenses', details: deleteError.message },
+          { status: 500 }
+        );
+      }
+
+      softDeletedIds = (deletedRows || []).map((r: { id: string }) => r.id);
     }
 
     // Build all insert rows
@@ -164,7 +185,19 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/brex
       .select('*, events(name), budget_categories(name)');
 
     if (insertError || !newExpenses) {
-      // If batch insert fails entirely, mark all as error
+      // Insert failed — rollback the soft-deletes to restore original expenses
+      if (softDeletedIds.length > 0) {
+        const { error: rollbackError } = await supabase
+          .from('expenses')
+          .update({ deleted_at: null })
+          .in('id', softDeletedIds);
+
+        if (rollbackError) {
+          console.error('CRITICAL: Failed to rollback soft-deleted expenses after insert failure:', rollbackError);
+        }
+      }
+
+      // Mark all as error
       for (const txn of transactions) {
         results.push({
           success: false,

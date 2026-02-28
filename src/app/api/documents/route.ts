@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logAudit, getActor } from '@/lib/audit';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
+import { parsePagination, paginationMeta, paginationRange } from '@/lib/pagination';
 import { MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_LABEL } from '@/lib/constants';
 import path from 'path';
 import fs from 'fs/promises';
@@ -97,10 +98,8 @@ export const GET = withApiHandler({ permission: 'read', resource: 'documents' },
     const expenseId = searchParams.get('expense_id');
     const unlinked = searchParams.get('unlinked') === 'true';
     const modifiedAfter = searchParams.get('modified_after');
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
-    const perPage = Math.min(100, Math.max(1, parseInt(searchParams.get('per_page') || '20', 10)));
-    const from = (page - 1) * perPage;
-    const to = from + perPage - 1;
+    const pagination = parsePagination(searchParams, 20, 100);
+    const { from, to } = paginationRange(pagination);
 
     // Validate modified_after if provided
     if (modifiedAfter && isNaN(Date.parse(modifiedAfter))) {
@@ -153,12 +152,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'documents' },
 
     return NextResponse.json({
       documents,
-      pagination: {
-        page,
-        per_page: perPage,
-        total,
-        total_pages: Math.ceil(total / perPage),
-      },
+      pagination: paginationMeta(total, pagination),
     });
   }
 );
