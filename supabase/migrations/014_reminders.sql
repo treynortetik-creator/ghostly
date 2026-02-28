@@ -18,7 +18,7 @@ CREATE TABLE reminder_log (
   channel TEXT NOT NULL DEFAULT 'slack'
 );
 
-CREATE INDEX idx_reminder_log_dedup ON reminder_log(reminder_type, entity_id, (sent_at::date));
+CREATE INDEX idx_reminder_log_dedup ON reminder_log(reminder_type, entity_id, sent_at);
 
 -- Default reminder configs
 INSERT INTO reminder_config (reminder_type, days_before) VALUES
