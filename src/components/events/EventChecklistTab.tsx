@@ -13,10 +13,16 @@ import type {
   ChecklistPhase,
 } from "@/types/database";
 
+interface PhaseConfig {
+  id: string;
+  label: string;
+  sort_order: number;
+}
+
 interface ChecklistData {
   items: (EventChecklistItem & { assignee?: TeamMember | null })[];
   grouped: Record<
-    ChecklistPhase,
+    string,
     (EventChecklistItem & { assignee?: TeamMember | null })[]
   >;
   total: number;
@@ -37,9 +43,16 @@ const CATEGORY_FILTERS = [
   { label: "Post-Event", value: "post-event" },
 ] as const;
 
+const DEFAULT_PHASES: PhaseConfig[] = [
+  { id: 'pre_event', label: 'Pre-Event', sort_order: 0 },
+  { id: 'day_of', label: 'Day Of', sort_order: 1 },
+  { id: 'post_event', label: 'Post-Event', sort_order: 2 },
+];
+
 export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
   const [data, setData] = useState<ChecklistData | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [phases, setPhases] = useState<PhaseConfig[]>(DEFAULT_PHASES);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
@@ -47,6 +60,21 @@ export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateMessage, setGenerateMessage] = useState<{ type: "success" | "error" | "warning"; text: string } | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+
+  // Fetch configured phases from settings
+  const fetchPhases = useCallback(async () => {
+    try {
+      const res = await fetch("/api/settings");
+      if (res.ok) {
+        const settingsData = await res.json();
+        if (settingsData.checklist_phases && Array.isArray(settingsData.checklist_phases)) {
+          setPhases(settingsData.checklist_phases);
+        }
+      }
+    } catch {
+      // Use defaults
+    }
+  }, []);
 
   const fetchChecklist = useCallback(async () => {
     try {
@@ -67,7 +95,8 @@ export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
   useEffect(() => {
     fetchChecklist();
     fetchTeamMembers();
-  }, [fetchChecklist, fetchTeamMembers]);
+    fetchPhases();
+  }, [fetchChecklist, fetchTeamMembers, fetchPhases]);
 
   const handleToggle = async (itemId: string, completed: boolean) => {
     await fetch(`/api/events/${eventId}/checklist/${itemId}`, {
@@ -258,14 +287,14 @@ export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
         </div>
       ) : (
         <div className="space-y-4">
-          {(["pre_event", "day_of", "post_event"] as ChecklistPhase[]).map(
-            (phase) => (
+          {phases.sort((a, b) => a.sort_order - b.sort_order).map(
+            (phaseConfig) => (
               <ChecklistSection
-                key={phase}
-                phase={phase}
-                items={filterByCategory(data?.grouped[phase] || [])}
+                key={phaseConfig.id}
+                phase={phaseConfig.id as ChecklistPhase}
+                phaseLabel={phaseConfig.label}
+                items={filterByCategory(data?.grouped[phaseConfig.id] || [])}
                 onToggle={handleToggle}
-               
               />
             ),
           )}

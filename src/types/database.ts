@@ -618,6 +618,51 @@ export type Json =
   | Json[];
 
 // ============================================
+// AGENT TABLES
+// ============================================
+
+/**
+ * Agent chat session
+ */
+export interface ChatSession {
+  id: string;
+  organization_id: string;
+  user_id: string | null;
+  title: string | null;
+  event_id: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+/**
+ * Agent chat message
+ */
+export interface ChatMessage {
+  id: string;
+  session_id: string;
+  role: 'user' | 'assistant' | 'system' | 'tool';
+  content: string | null;
+  tool_calls: Record<string, unknown>[] | null;
+  tool_results: Record<string, unknown>[] | null;
+  created_at: string | null;
+}
+
+/**
+ * Agent settings per organization
+ */
+export interface AgentSettings {
+  organization_id: string;
+  agent_name: string | null;
+  agent_focus: string | null;
+  heartbeat_enabled: boolean | null;
+  heartbeat_time: string | null;
+  notification_channel: string | null;
+  connected_integrations: Record<string, unknown> | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+// ============================================
 // SUPABASE DATABASE TYPE HELPER
 // ============================================
 
@@ -1670,6 +1715,129 @@ export interface Database {
             foreignKeyName: 'webhook_deliveries_webhook_id_fkey';
             columns: ['webhook_id'];
             referencedRelation: 'webhooks';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      chat_sessions: {
+        Row: {
+          id: string;
+          organization_id: string;
+          user_id: string | null;
+          title: string | null;
+          event_id: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          user_id?: string | null;
+          title?: string | null;
+          event_id?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          user_id?: string | null;
+          title?: string | null;
+          event_id?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'chat_sessions_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'chat_sessions_event_id_fkey';
+            columns: ['event_id'];
+            referencedRelation: 'events';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      chat_messages: {
+        Row: {
+          id: string;
+          session_id: string;
+          role: string;
+          content: string | null;
+          tool_calls: Record<string, unknown>[] | null;
+          tool_results: Record<string, unknown>[] | null;
+          created_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          session_id: string;
+          role: string;
+          content?: string | null;
+          tool_calls?: Record<string, unknown>[] | null;
+          tool_results?: Record<string, unknown>[] | null;
+          created_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          session_id?: string;
+          role?: string;
+          content?: string | null;
+          tool_calls?: Record<string, unknown>[] | null;
+          tool_results?: Record<string, unknown>[] | null;
+          created_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'chat_messages_session_id_fkey';
+            columns: ['session_id'];
+            referencedRelation: 'chat_sessions';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      agent_settings: {
+        Row: {
+          organization_id: string;
+          agent_name: string | null;
+          agent_focus: string | null;
+          heartbeat_enabled: boolean | null;
+          heartbeat_time: string | null;
+          notification_channel: string | null;
+          connected_integrations: Record<string, unknown> | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          organization_id: string;
+          agent_name?: string | null;
+          agent_focus?: string | null;
+          heartbeat_enabled?: boolean | null;
+          heartbeat_time?: string | null;
+          notification_channel?: string | null;
+          connected_integrations?: Record<string, unknown> | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          organization_id?: string;
+          agent_name?: string | null;
+          agent_focus?: string | null;
+          heartbeat_enabled?: boolean | null;
+          heartbeat_time?: string | null;
+          notification_channel?: string | null;
+          connected_integrations?: Record<string, unknown> | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'agent_settings_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
             referencedColumns: ['id'];
           }
         ];

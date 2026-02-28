@@ -179,6 +179,8 @@ function EventsPageContent() {
         initialQuarter={initialQuarter}
         initialSearch={initialSearch}
         onFiltersChange={handleFiltersChange}
+        selectable={true}
+        onBulkActionComplete={fetchEvents}
       />
 
       {/* Footer Info */}

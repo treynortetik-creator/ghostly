@@ -35,6 +35,34 @@ interface PromptsResponse {
 }
 
 // ============================================
+// Configurable org settings keys
+// ============================================
+
+/** Keys for JSONB settings stored as separate app_settings rows */
+const ORG_CONFIG_KEYS = [
+  'checklist_phases',
+  'note_types',
+  'saved_filters',
+] as const;
+type OrgConfigKey = typeof ORG_CONFIG_KEYS[number];
+
+/** Default checklist phases */
+const DEFAULT_CHECKLIST_PHASES = [
+  { id: 'pre_event', label: 'Pre-Event', sort_order: 0 },
+  { id: 'day_of', label: 'Day Of', sort_order: 1 },
+  { id: 'post_event', label: 'Post-Event', sort_order: 2 },
+];
+
+/** Default note types */
+const DEFAULT_NOTE_TYPES = [
+  { id: 'general', label: 'General', sort_order: 0 },
+  { id: 'competitor_alert', label: 'Competitor Alert', sort_order: 1 },
+  { id: 'logistics', label: 'Logistics', sort_order: 2 },
+  { id: 'budget', label: 'Budget', sort_order: 3 },
+  { id: 'post_event', label: 'Post-Event', sort_order: 4 },
+];
+
+// ============================================
 // GET /api/settings
 // ============================================
 
@@ -89,13 +117,19 @@ export const GET = withApiHandler({ permission: 'admin', resource: 'settings' },
       fiscalYear = fyData;
     }
 
-    // Fetch custom AI prompts
-    const prompts = await fetchPrompts(supabase, orgId);
+    // Fetch custom AI prompts and org configs in parallel
+    const [prompts, orgConfigs] = await Promise.all([
+      fetchPrompts(supabase, orgId),
+      fetchOrgConfigs(supabase, orgId),
+    ]);
 
     return NextResponse.json({
       settings,
       fiscal_year: fiscalYear,
       prompts,
+      checklist_phases: orgConfigs.checklist_phases || DEFAULT_CHECKLIST_PHASES,
+      note_types: orgConfigs.note_types || DEFAULT_NOTE_TYPES,
+      saved_filters: orgConfigs.saved_filters || [],
     });
   }
 );
@@ -234,8 +268,41 @@ export const PUT = withApiHandler({ permission: 'admin', resource: 'settings' },
       fiscalYear = fyData;
     }
 
-    // Fetch updated prompts
-    const prompts = await fetchPrompts(supabase, orgId);
+    // Handle org config updates (checklist_phases, note_types, saved_filters)
+    for (const key of ORG_CONFIG_KEYS) {
+      if (body[key] !== undefined) {
+        if (body[key] === null) {
+          // Delete (reset to default)
+          await supabase
+            .from('app_settings')
+            .delete()
+            .eq('organization_id', orgId)
+            .eq('key', key);
+        } else {
+          // Upsert the config
+          const { error: configError } = await supabase
+            .from('app_settings')
+            .upsert({
+              organization_id: orgId,
+              key,
+              value: body[key] as unknown as Json,
+              updated_at: new Date().toISOString(),
+            }, {
+              onConflict: 'organization_id,key',
+            });
+
+          if (configError) {
+            console.error(`Config upsert error for ${key}:`, configError);
+          }
+        }
+      }
+    }
+
+    // Fetch updated prompts and org configs
+    const [prompts, orgConfigs] = await Promise.all([
+      fetchPrompts(supabase, orgId),
+      fetchOrgConfigs(supabase, orgId),
+    ]);
 
     // Audit log
     await auditMutation(request, {
@@ -250,6 +317,9 @@ export const PUT = withApiHandler({ permission: 'admin', resource: 'settings' },
       settings: updatedSettings,
       fiscal_year: fiscalYear,
       prompts,
+      checklist_phases: orgConfigs.checklist_phases || DEFAULT_CHECKLIST_PHASES,
+      note_types: orgConfigs.note_types || DEFAULT_NOTE_TYPES,
+      saved_filters: orgConfigs.saved_filters || [],
       message: 'Settings updated successfully',
     });
   }
@@ -328,4 +398,39 @@ async function fetchPrompts(supabase: Awaited<ReturnType<typeof createClient>>, 
   }
 
   return prompts;
+}
+
+// ============================================
+// Helper: Fetch org config settings
+// ============================================
+
+interface OrgConfigs {
+  checklist_phases: unknown[] | null;
+  note_types: unknown[] | null;
+  saved_filters: unknown[] | null;
+}
+
+async function fetchOrgConfigs(supabase: Awaited<ReturnType<typeof createClient>>, orgId: string): Promise<OrgConfigs> {
+  const { data: rows } = await supabase
+    .from('app_settings')
+    .select('key, value')
+    .eq('organization_id', orgId)
+    .in('key', [...ORG_CONFIG_KEYS]);
+
+  const configs: OrgConfigs = {
+    checklist_phases: null,
+    note_types: null,
+    saved_filters: null,
+  };
+
+  if (rows) {
+    for (const row of rows) {
+      const key = row.key as OrgConfigKey;
+      if (key in configs) {
+        configs[key] = row.value as unknown[] | null;
+      }
+    }
+  }
+
+  return configs;
 }

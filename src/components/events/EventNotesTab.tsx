@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { MessageSquare, Pin, PinOff, Trash2, Plus, AlertTriangle, RefreshCw } from 'lucide-react';
+import { MessageSquare, Pin, PinOff, Trash2, Plus, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -33,27 +33,52 @@ interface EventNotesTabProps {
   eventId: string;
 }
 
-const noteTypeConfig: Record<string, { label: string; className: string }> = {
-  competitor_alert: { label: '🎯 Competitor Alert', className: 'bg-amber-500/15 text-amber-400 border-amber-500/30 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700/40' },
-  general: { label: 'General', className: 'bg-spectral/10 text-muted-foreground border-border' },
-  logistics: { label: 'Logistics', className: 'bg-emerald-400/10 text-emerald-400 border-emerald-400/30' },
-  budget: { label: 'Budget', className: 'bg-spectral/10 text-spectral border-spectral' },
+/** Static styling overrides for known note types */
+const noteTypeStyles: Record<string, string> = {
+  competitor_alert: 'bg-amber-500/15 text-amber-400 border-amber-500/30 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700/40',
+  logistics: 'bg-emerald-400/10 text-emerald-400 border-emerald-400/30',
+  budget: 'bg-spectral/10 text-spectral border-spectral',
 };
 
-const noteTypeOptions = [
-  { value: 'general', label: 'General' },
-  { value: 'competitor_alert', label: 'Competitor Alert' },
-  { value: 'logistics', label: 'Logistics' },
-  { value: 'budget', label: 'Budget' },
+const defaultStyle = 'bg-spectral/10 text-muted-foreground border-border';
+
+interface NoteTypeConfig {
+  id: string;
+  label: string;
+  sort_order: number;
+}
+
+const DEFAULT_NOTE_TYPES: NoteTypeConfig[] = [
+  { id: 'general', label: 'General', sort_order: 0 },
+  { id: 'competitor_alert', label: 'Competitor Alert', sort_order: 1 },
+  { id: 'logistics', label: 'Logistics', sort_order: 2 },
+  { id: 'budget', label: 'Budget', sort_order: 3 },
+  { id: 'post_event', label: 'Post-Event', sort_order: 4 },
 ];
 
 export function EventNotesTab({ eventId }: EventNotesTabProps) {
   const [notes, setNotes] = useState<EventNote[]>([]);
+  const [noteTypes, setNoteTypes] = useState<NoteTypeConfig[]>(DEFAULT_NOTE_TYPES);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newNote, setNewNote] = useState({ content: '', title: '', note_type: 'general', author: 'Treynor' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  // Fetch configured note types from settings
+  const fetchNoteTypes = useCallback(async () => {
+    try {
+      const res = await fetch('/api/settings');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.note_types && Array.isArray(data.note_types)) {
+          setNoteTypes(data.note_types);
+        }
+      }
+    } catch {
+      // Use defaults
+    }
+  }, []);
 
   const fetchNotes = useCallback(async () => {
     try {
@@ -69,7 +94,8 @@ export function EventNotesTab({ eventId }: EventNotesTabProps) {
 
   useEffect(() => {
     fetchNotes();
-  }, [fetchNotes]);
+    fetchNoteTypes();
+  }, [fetchNotes, fetchNoteTypes]);
 
   const handleAddNote = async () => {
     if (!newNote.content.trim()) return;
@@ -173,8 +199,8 @@ export function EventNotesTab({ eventId }: EventNotesTabProps) {
                   onChange={(e) => setNewNote({ ...newNote, note_type: e.target.value })}
                   className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground focus:border-spectral focus:outline-none"
                 >
-                  {noteTypeOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  {noteTypes.sort((a, b) => a.sort_order - b.sort_order).map((nt) => (
+                    <option key={nt.id} value={nt.id}>{nt.label}</option>
                   ))}
                 </select>
               </div>
@@ -210,7 +236,8 @@ export function EventNotesTab({ eventId }: EventNotesTabProps) {
       ) : (
         <div className="space-y-3">
           {notes.map((note) => {
-            const typeConfig = noteTypeConfig[note.note_type] || noteTypeConfig.general;
+            const typeLabel = noteTypes.find(nt => nt.id === note.note_type)?.label || note.note_type;
+            const typeStyle = noteTypeStyles[note.note_type] || defaultStyle;
             const isCompetitorAlert = note.note_type === 'competitor_alert';
 
             return (
@@ -226,8 +253,8 @@ export function EventNotesTab({ eventId }: EventNotesTabProps) {
                         {note.pinned && (
                           <Pin className="w-3.5 h-3.5 text-spectral flex-shrink-0" />
                         )}
-                        <span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full border ${typeConfig.className}`}>
-                          {typeConfig.label}
+                        <span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full border ${typeStyle}`}>
+                          {isCompetitorAlert ? `🎯 ${typeLabel}` : typeLabel}
                         </span>
                         {note.title && (
                           <span className="text-sm font-semibold text-foreground truncate">{note.title}</span>

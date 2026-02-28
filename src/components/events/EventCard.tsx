@@ -33,6 +33,12 @@ export interface EventCardProps {
   onClick?: () => void;
   /** Show compact version without some details */
   compact?: boolean;
+  /** Whether to show a selection checkbox */
+  selectable?: boolean;
+  /** Whether this card is currently selected */
+  selected?: boolean;
+  /** Called when selection changes */
+  onSelectionChange?: (eventId: string, selected: boolean) => void;
 }
 
 const typeColorClasses: Record<string, string> = {
@@ -49,6 +55,9 @@ export function EventCard({
   expandable = false,
   onClick,
   compact = false,
+  selectable = false,
+  selected = false,
+  onSelectionChange,
 }: EventCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -75,10 +84,27 @@ export function EventCard({
         transition-all duration-200
         ${onClick ? "hover:shadow-lg cursor-pointer" : ""}
         ${isExpanded ? "ring-1 ring-border" : ""}
+        ${selected ? "ring-2 ring-spectral bg-spectral/5" : ""}
       `}
-     
+
     >
       <CardContent className={compact ? "py-3" : "py-4"}>
+        <div className={selectable ? "flex items-start gap-3" : ""}>
+          {/* Selection checkbox */}
+          {selectable && (
+            <div className="pt-1 shrink-0">
+              <input
+                type="checkbox"
+                checked={selected}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onSelectionChange?.(event.id, e.target.checked);
+                }}
+                className="w-4 h-4 rounded border-border text-spectral focus:ring-spectral/50 cursor-pointer accent-spectral"
+              />
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
         {/* Main content - clickable area */}
         <Link href={`/events/${event.id}`} className="block">
           <div
@@ -308,6 +334,8 @@ export function EventCard({
             </div>
           </div>
         )}
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

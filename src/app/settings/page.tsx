@@ -12,6 +12,8 @@ import {
   Calendar,
   FolderOpen,
   Bot,
+  ListChecks,
+  MessageSquare,
 } from "lucide-react";
 import { AppShell } from "@/components/layout";
 import { Button } from "@/components/ui/Button";
@@ -28,7 +30,9 @@ import {
   ModelSelector,
   PromptEditor,
   EventTypesSection,
+  ConfigurableListSection,
 } from "@/components/settings";
+import type { ConfigItem } from "@/components/settings";
 import { DEFAULT_CSV_PROMPT, DEFAULT_PDF_PROMPT } from "@/lib/openrouter";
 import type { FiscalYear } from "@/types/database";
 import { formatCurrency } from "@/lib/format";
@@ -58,6 +62,8 @@ interface SettingsApiResponse {
     csv_categorization: string | null;
     pdf_extraction: string | null;
   };
+  checklist_phases?: ConfigItem[];
+  note_types?: ConfigItem[];
 }
 
 interface BudgetSummary {
@@ -92,6 +98,12 @@ export default function SettingsPage() {
     null,
   );
 
+  // Configurable phases and note types
+  const [checklistPhases, setChecklistPhases] = useState<ConfigItem[]>([]);
+  const [originalChecklistPhases, setOriginalChecklistPhases] = useState<ConfigItem[]>([]);
+  const [noteTypes, setNoteTypes] = useState<ConfigItem[]>([]);
+  const [originalNoteTypes, setOriginalNoteTypes] = useState<ConfigItem[]>([]);
+
   // UI state
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -105,7 +117,9 @@ export default function SettingsPage() {
       settings.openrouter_model !== originalSettings.openrouter_model ||
       settings.total_budget !== originalSettings.total_budget ||
       prompts.csv_categorization !== originalPrompts?.csv_categorization ||
-      prompts.pdf_extraction !== originalPrompts?.pdf_extraction);
+      prompts.pdf_extraction !== originalPrompts?.pdf_extraction ||
+      JSON.stringify(checklistPhases) !== JSON.stringify(originalChecklistPhases) ||
+      JSON.stringify(noteTypes) !== JSON.stringify(originalNoteTypes));
 
   // Fetch current settings and budget summary
   const fetchSettings = useCallback(async () => {
@@ -138,6 +152,15 @@ export default function SettingsPage() {
       };
       setPrompts(fetchedPrompts);
       setOriginalPrompts(fetchedPrompts);
+
+      // Load configurable phases and note types
+      const phases = (data.checklist_phases || []) as ConfigItem[];
+      setChecklistPhases(phases);
+      setOriginalChecklistPhases(phases);
+
+      const types = (data.note_types || []) as ConfigItem[];
+      setNoteTypes(types);
+      setOriginalNoteTypes(types);
 
       // Calculate budget summary
       if (eventsRes.ok && categoriesRes.ok) {
@@ -191,6 +214,8 @@ export default function SettingsPage() {
           openrouter_model: settings.openrouter_model,
           total_budget: parseFloat(settings.total_budget) || 0,
           prompts,
+          checklist_phases: checklistPhases,
+          note_types: noteTypes,
         }),
       });
 
@@ -215,6 +240,14 @@ export default function SettingsPage() {
       setPrompts(updatedPrompts);
       setOriginalPrompts(updatedPrompts);
 
+      const updatedPhases = (data.checklist_phases || []) as ConfigItem[];
+      setChecklistPhases(updatedPhases);
+      setOriginalChecklistPhases(updatedPhases);
+
+      const updatedNoteTypes = (data.note_types || []) as ConfigItem[];
+      setNoteTypes(updatedNoteTypes);
+      setOriginalNoteTypes(updatedNoteTypes);
+
       setSuccessMessage("Settings saved successfully");
 
       // Clear success message after 3 seconds
@@ -231,6 +264,8 @@ export default function SettingsPage() {
     if (originalSettings) {
       setSettings(originalSettings);
       if (originalPrompts) setPrompts(originalPrompts);
+      setChecklistPhases(originalChecklistPhases);
+      setNoteTypes(originalNoteTypes);
       setError(null);
       setSuccessMessage(null);
     }
@@ -415,6 +450,27 @@ export default function SettingsPage() {
              
             />
           )}
+
+          {/* Configurable Phases & Types */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ConfigurableListSection
+              title="Checklist Phases"
+              description="Phases used to organize checklist items for events"
+              icon={<ListChecks className="w-5 h-5" />}
+              items={checklistPhases}
+              onChange={setChecklistPhases}
+              disabled={isSaving}
+            />
+
+            <ConfigurableListSection
+              title="Note Types"
+              description="Categories used to classify event notes"
+              icon={<MessageSquare className="w-5 h-5" />}
+              items={noteTypes}
+              onChange={setNoteTypes}
+              disabled={isSaving}
+            />
+          </div>
 
           {/* Budget Overview */}
           {budgetSummary &&

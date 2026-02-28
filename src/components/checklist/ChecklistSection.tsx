@@ -13,12 +13,15 @@ import { checklistPhaseLabels } from "@/types/database";
 
 interface ChecklistSectionProps {
   phase: ChecklistPhase;
+  /** Optional label override (from configurable phases) */
+  phaseLabel?: string;
   items: (EventChecklistItem & { assignee?: TeamMember | null })[];
   onToggle: (itemId: string, completed: boolean) => void;
 }
 
 export function ChecklistSection({
   phase,
+  phaseLabel,
   items,
   onToggle,
 }: ChecklistSectionProps) {
@@ -51,7 +54,7 @@ export function ChecklistSection({
             className="text-sm font-semibold text-foreground"
            
           >
-            {checklistPhaseLabels[phase]}
+            {phaseLabel || checklistPhaseLabels[phase] || phase}
           </h4>
         </div>
         <span

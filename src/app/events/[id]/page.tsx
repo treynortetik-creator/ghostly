@@ -21,6 +21,7 @@ import {
   Package,
   ClipboardCheck,
   Truck,
+  Copy,
 } from "lucide-react";
 import { AppShell } from "@/components/layout";
 import { Button } from "@/components/ui/Button";
@@ -83,6 +84,11 @@ export default function EventDetailPage({ params }: PageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showCloneDialog, setShowCloneDialog] = useState(false);
+  const [cloneName, setCloneName] = useState("");
+  const [cloneDateStart, setCloneDateStart] = useState("");
+  const [cloneDateEnd, setCloneDateEnd] = useState("");
+  const [isCloning, setIsCloning] = useState(false);
   const { toasts, removeToast, toast } = useToast();
   const [activeTab, setActiveTab] = useState<
     "details" | "documents" | "team" | "checklist" | "reminders" | "notes" | "shipments" | "post_event" | "roi"
@@ -162,6 +168,42 @@ export default function EventDetailPage({ params }: PageProps) {
       setIsDeleting(false);
       setShowDeleteConfirm(false);
     }
+  };
+
+  // Handle clone event
+  const handleCloneEvent = async () => {
+    setIsCloning(true);
+    try {
+      const response = await fetch(`/api/events/${id}/clone`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: cloneName || undefined,
+          date_start: cloneDateStart || undefined,
+          date_end: cloneDateEnd || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to clone event");
+      }
+
+      const newEvent = await response.json();
+      setShowCloneDialog(false);
+      router.push(`/events/${newEvent.id}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to clone event");
+    } finally {
+      setIsCloning(false);
+    }
+  };
+
+  const openCloneDialog = () => {
+    setCloneName(event ? `${event.name} (Copy)` : "");
+    setCloneDateStart("");
+    setCloneDateEnd("");
+    setShowCloneDialog(true);
   };
 
   const formatDateRange = () => {
@@ -362,9 +404,16 @@ export default function EventDetailPage({ params }: PageProps) {
 
           <Button
             variant="secondary"
+            onClick={openCloneDialog}
+            leftIcon={<Copy className="w-4 h-4" />}
+          >
+            Clone
+          </Button>
+
+          <Button
+            variant="secondary"
             onClick={() => setIsEditing(true)}
             leftIcon={<Edit className="w-4 h-4" />}
-           
           >
             Edit
           </Button>
@@ -373,7 +422,6 @@ export default function EventDetailPage({ params }: PageProps) {
             variant="destructive"
             onClick={() => setShowDeleteConfirm(true)}
             leftIcon={<Trash2 className="w-4 h-4" />}
-           
           >
             Delete
           </Button>
@@ -423,6 +471,78 @@ export default function EventDetailPage({ params }: PageProps) {
                  
                 >
                   Delete Event
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Clone Dialog */}
+      {showCloneDialog && (
+        <Card className="mb-6 border-spectral">
+          <CardContent className="py-4">
+            <h3 className="text-lg font-semibold text-foreground mb-4">
+              Clone Event
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-1 block">
+                  New Event Name
+                </label>
+                <input
+                  type="text"
+                  value={cloneName}
+                  onChange={(e) => setCloneName(e.target.value)}
+                  placeholder="Enter a name for the cloned event"
+                  className="w-full px-3 py-2 rounded-md bg-background border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral transition-colors"
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground mb-1 block">
+                    Start Date (optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={cloneDateStart}
+                    onChange={(e) => setCloneDateStart(e.target.value)}
+                    className="w-full px-3 py-2 rounded-md bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground mb-1 block">
+                    End Date (optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={cloneDateEnd}
+                    onChange={(e) => setCloneDateEnd(e.target.value)}
+                    className="w-full px-3 py-2 rounded-md bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral transition-colors"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Cloning will copy event settings, budget, team assignments, and checklist items (reset to incomplete).
+                Expenses, ROI data, and completed statuses will not be copied.
+              </p>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowCloneDialog(false)}
+                  disabled={isCloning}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleCloneEvent}
+                  isLoading={isCloning}
+                  leftIcon={<Copy className="w-4 h-4" />}
+                >
+                  Clone Event
                 </Button>
               </div>
             </div>

@@ -25,10 +25,15 @@ import {
   ChevronRight,
   Webhook,
   ScrollText,
+  MessageCircle,
+  Bot,
 } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { useTheme } from "@/components/providers";
 import type { Theme } from "@/components/providers";
+import { SearchCommand } from "@/components/search/SearchCommand";
+
+const ChatPanel = lazy(() => import("@/components/agent/ChatPanel"));
 
 interface NavItem {
   name: string;
@@ -48,6 +53,7 @@ const navItems: NavItem[] = [
   { name: "Import", href: "/import", icon: Upload },
   { name: "Export", href: "/export", icon: Download },
   { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Agent", href: "/settings/agent", icon: Bot },
   { name: "Admin", href: "/admin", icon: Shield },
   { name: "Audit Log", href: "/admin/audit", icon: ScrollText },
 ];
@@ -73,6 +79,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+
+  // Extract event_id from URL if on an event detail page (e.g. /events/[uuid])
+  const eventIdMatch = pathname.match(/^\/events\/([0-9a-f-]{36})/);
+  const currentEventId = eventIdMatch ? eventIdMatch[1] : null;
 
   // Read collapse state from localStorage on mount
   useEffect(() => {
@@ -198,6 +209,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Bottom section */}
         <div className="mt-auto px-3 pb-3 space-y-1 shrink-0">
           <div className="h-px bg-gradient-to-r from-transparent via-spectral/15 to-transparent mb-2" />
+
+          {/* Search (Cmd+K) */}
+          <SearchCommand collapsed={isCollapsed} />
 
           {/* Theme toggle */}
           <button
@@ -372,6 +386,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="mt-auto px-3 pb-3 space-y-1 shrink-0">
               <div className="h-px bg-gradient-to-r from-transparent via-spectral/15 to-transparent mb-2" />
 
+              {/* Search (Cmd+K) */}
+              <SearchCommand />
+
               {/* Theme toggle */}
               <button
                 onClick={cycleTheme}
@@ -426,6 +443,35 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </footer>
       </div>
+
+      {/* ===== Agent Chat Button & Panel ===== */}
+      <button
+        onClick={() => setChatOpen(true)}
+        className={`
+          fixed bottom-6 right-6 z-40
+          w-14 h-14 rounded-full
+          bg-gradient-to-br from-spectral to-spectral/80
+          text-white shadow-lg shadow-spectral/25
+          hover:shadow-xl hover:shadow-spectral/30
+          hover:from-spectral-light hover:to-spectral
+          active:scale-95
+          transition-all duration-200
+          flex items-center justify-center
+          ${chatOpen ? "scale-0 opacity-0" : "scale-100 opacity-100"}
+        `}
+        aria-label="Open AI assistant"
+        title="Chat with Ghostly AI"
+      >
+        <MessageCircle className="w-6 h-6" />
+      </button>
+
+      <Suspense fallback={null}>
+        <ChatPanel
+          isOpen={chatOpen}
+          onClose={() => setChatOpen(false)}
+          eventId={currentEventId}
+        />
+      </Suspense>
     </div>
   );
 }

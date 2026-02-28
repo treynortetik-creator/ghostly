@@ -20,6 +20,7 @@ import {
   ExpenseFilterPills,
   type ExpenseFiltersState,
 } from "./ExpenseFilters";
+import { SavedFilters } from "@/components/filters/SavedFilters";
 import type {
   Event,
   BudgetCategory,
@@ -333,14 +334,30 @@ export function ExpenseList({
            
           />
 
-          {/* Filter pills */}
-          <ExpenseFilterPills
-            filters={filters}
-            events={events}
-            categories={categories}
-            onRemoveFilter={handleRemoveFilter}
-           
-          />
+          {/* Filter pills + saved presets */}
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <ExpenseFilterPills
+              filters={filters}
+              events={events}
+              categories={categories}
+              onRemoveFilter={handleRemoveFilter}
+            />
+            <SavedFilters
+              page="expenses"
+              currentParams={filters as unknown as Record<string, string>}
+              onApply={(params) => {
+                const restored: ExpenseFiltersState = {
+                  event_id: params.event_id || "",
+                  category_id: params.category_id || "",
+                  date_start: params.date_start || "",
+                  date_end: params.date_end || "",
+                  vendor: params.vendor || "",
+                  source_type: (params.source_type as ExpenseFiltersState["source_type"]) || "all",
+                };
+                handleFiltersChange(restored);
+              }}
+            />
+          </div>
         </>
       )}
 
