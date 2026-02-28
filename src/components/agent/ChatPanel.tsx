@@ -57,11 +57,14 @@ interface ChatSession {
 }
 
 interface SSEEvent {
-  type: "session" | "tool_call" | "text" | "done";
+  type: "session" | "tool_call" | "text" | "done" | "context" | "compacted";
   session_id?: string;
   content?: string;
   name?: string;
   arguments?: string;
+  used?: number;
+  limit?: number;
+  percent?: number;
 }
 
 interface ChatPanelProps {
@@ -153,6 +156,8 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
   >([]);
   const [showSessions, setShowSessions] = useState(false);
   const [agentName, setAgentName] = useState("Ghostly");
+  const [contextPercent, setContextPercent] = useState(0);
+  const [showCompactedDivider, setShowCompactedDivider] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -221,6 +226,8 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
     setStreamingToolCalls([]);
     setShowSessions(false);
     setInput("");
+    setContextPercent(0);
+    setShowCompactedDivider(false);
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
@@ -314,6 +321,12 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
                 fullContent += event.content;
                 setStreamingContent(fullContent);
               }
+            } else if (event.type === "context") {
+              if (typeof event.percent === "number") {
+                setContextPercent(event.percent);
+              }
+            } else if (event.type === "compacted") {
+              setShowCompactedDivider(true);
             } else if (event.type === "done") {
               if (fullContent) {
                 const assistantMsg: ChatMessage = {
@@ -459,6 +472,25 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
           </div>
         </div>
 
+        {/* Context Bar */}
+        {contextPercent >= 50 && (
+          <div
+            className="shrink-0 relative h-[2px] bg-border"
+            title={`Context: ${contextPercent}% — auto-compacts at 80%`}
+          >
+            <div
+              className={`absolute inset-y-0 left-0 transition-all duration-500 ${
+                contextPercent >= 80
+                  ? "bg-red-500"
+                  : contextPercent >= 65
+                    ? "bg-amber-500"
+                    : "bg-green-500"
+              }`}
+              style={{ width: `${Math.min(contextPercent, 100)}%` }}
+            />
+          </div>
+        )}
+
         {/* Session List */}
         {showSessions && (
           <div className="border-b border-border bg-card/60 backdrop-blur-sm max-h-64 overflow-y-auto shrink-0">
@@ -543,6 +575,16 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
                   </button>
                 ))}
               </div>
+            </div>
+          )}
+
+          {showCompactedDivider && messages.length > 0 && (
+            <div className="flex items-center gap-2 my-3">
+              <div className="flex-1 h-px bg-amber-500/30" />
+              <span className="text-[10px] text-amber-500/70 whitespace-nowrap">
+                Context refreshed — summary retained
+              </span>
+              <div className="flex-1 h-px bg-amber-500/30" />
             </div>
           )}
 

@@ -51,6 +51,57 @@ interface ToolCall {
 // Max tool-call rounds to prevent runaway loops
 const MAX_TOOL_ROUNDS = 8;
 
+// Context window management
+const CONTEXT_LIMIT = 196000;
+const COMPACTION_THRESHOLD = 0.80;
+
+/**
+ * Generate a compaction summary of the conversation so far.
+ * Sends the conversation history to Claude with a summarization prompt.
+ */
+async function generateCompactionSummary(
+  historyRows: Array<{ role: string; content: string | null; tool_calls: unknown; tool_results: unknown }>,
+  apiKey: string,
+  baseUrl: string,
+): Promise<string> {
+  const conversationText = historyRows
+    .filter((row) => row.role === 'user' || (row.role === 'assistant' && row.content))
+    .map((row) => `${row.role}: ${row.content ?? ''}`)
+    .join('\n');
+
+  const response = await fetch(`${OPENROUTER_API_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || baseUrl,
+      'X-Title': 'Ghostly Agent',
+    },
+    body: JSON.stringify({
+      model: AGENT_MODEL,
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a conversation summarizer. Produce a concise summary (under 500 words) of the following conversation. Preserve key facts, decisions, data points, and action items. Do not add commentary — just summarize.',
+        },
+        {
+          role: 'user',
+          content: conversationText,
+        },
+      ],
+      temperature: 0.2,
+      max_tokens: 1500,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Compaction summary request failed: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content || '';
+}
+
 export async function POST(request: NextRequest) {
   // Manual permission check (can't use withApiHandler because we return a streaming Response)
   const denied = requirePermission(request, 'write');
@@ -77,6 +128,9 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     // ─── Load or create session ──────────────────────────────────────────
+    let sessionContextTokens = 0;
+    let existingContextSummary: string | null = null;
+
     if (!session_id) {
       const { data: newSession, error: sessionError } = await supabase
         .from('chat_sessions')
@@ -93,7 +147,7 @@ export async function POST(request: NextRequest) {
     } else {
       const { data: existingSession, error: sessionError } = await supabase
         .from('chat_sessions')
-        .select('id')
+        .select('id, context_tokens_used, context_summary')
         .eq('id', session_id)
         .eq('organization_id', orgId)
         .single();
@@ -101,6 +155,9 @@ export async function POST(request: NextRequest) {
       if (sessionError || !existingSession) {
         return NextResponse.json({ error: 'Session not found' }, { status: 404 });
       }
+      // Carry forward existing context state
+      sessionContextTokens = existingSession.context_tokens_used ?? 0;
+      existingContextSummary = existingSession.context_summary ?? null;
     }
 
     // ─── Load conversation history ───────────────────────────────────────
@@ -110,6 +167,34 @@ export async function POST(request: NextRequest) {
       .eq('session_id', session_id)
       .order('created_at', { ascending: true })
       .limit(50);
+
+    // ─── Auto-compaction check ─────────────────────────────────────────
+    let didCompact = false;
+    let contextSummary: string | null = existingContextSummary;
+
+    if (
+      sessionContextTokens > CONTEXT_LIMIT * COMPACTION_THRESHOLD &&
+      !existingContextSummary &&
+      historyRows &&
+      historyRows.length > 0
+    ) {
+      try {
+        const protocol = request.headers.get('x-forwarded-proto') || 'http';
+        const host = request.headers.get('host') || 'localhost:3000';
+        const compactionBaseUrl = `${protocol}://${host}`;
+        contextSummary = await generateCompactionSummary(historyRows, apiKey, compactionBaseUrl);
+        if (contextSummary) {
+          await supabase
+            .from('chat_sessions')
+            .update({ context_summary: contextSummary })
+            .eq('id', session_id);
+          didCompact = true;
+        }
+      } catch (err) {
+        console.error('Compaction summary generation failed:', err);
+        // Continue without compaction — non-fatal
+      }
+    }
 
     // ─── Load agent settings ─────────────────────────────────────────────
     const { data: settings } = await supabase
@@ -147,8 +232,20 @@ export async function POST(request: NextRequest) {
       { role: 'system', content: systemPrompt },
     ];
 
+    // If we have a context summary, inject it and only use recent history
+    if (contextSummary) {
+      messages.push({
+        role: 'system',
+        content: `[Previous conversation summary]\n${contextSummary}`,
+      });
+    }
+
+    const historyToUse = contextSummary
+      ? (historyRows ?? []).slice(-10)
+      : (historyRows ?? []);
+
     // Add history
-    for (const row of historyRows ?? []) {
+    for (const row of historyToUse) {
       if (row.role === 'assistant' && row.tool_calls) {
         messages.push({
           role: 'assistant',
@@ -203,6 +300,7 @@ export async function POST(request: NextRequest) {
     const toolCallMessages: Array<{ role: string; content: string | null; tool_calls?: ToolCall[] }> = [];
     let finalContent = '';
     let toolRounds = 0;
+    let lastPromptTokens = 0;
 
     const openRouterTools = toolsToOpenRouterFormat();
 
@@ -235,6 +333,11 @@ export async function POST(request: NextRequest) {
       }
 
       const orData = await orResponse.json();
+
+      if (orData.usage?.prompt_tokens) {
+        lastPromptTokens = orData.usage.prompt_tokens;
+      }
+
       const choice = orData.choices?.[0];
 
       if (!choice) {
@@ -334,6 +437,13 @@ export async function POST(request: NextRequest) {
       content: finalContent,
     });
 
+    if (lastPromptTokens > 0) {
+      await supabase
+        .from('chat_sessions')
+        .update({ context_tokens_used: lastPromptTokens })
+        .eq('id', session_id);
+    }
+
     // ─── Stream the response via SSE ─────────────────────────────────────
     const encoder = new TextEncoder();
 
@@ -343,6 +453,27 @@ export async function POST(request: NextRequest) {
         controller.enqueue(
           encoder.encode(`data: ${JSON.stringify({ type: 'session', session_id })}\n\n`)
         );
+
+        // Send context usage info
+        const contextLimit = 196000;
+        const contextPercent = contextLimit > 0
+          ? Math.round((lastPromptTokens / contextLimit) * 100)
+          : 0;
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({
+            type: 'context',
+            used: lastPromptTokens,
+            limit: contextLimit,
+            percent: contextPercent,
+          })}\n\n`)
+        );
+
+        // Send compaction event if context was compacted this round
+        if (didCompact) {
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify({ type: 'compacted' })}\n\n`)
+          );
+        }
 
         // Send tool call info if any
         for (const tcm of toolCallMessages) {

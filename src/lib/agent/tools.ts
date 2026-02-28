@@ -399,7 +399,40 @@ export const agentTools: AgentTool[] = [
     },
   },
 
-  // 10. search
+  // 10. get_session_history
+  {
+    name: 'get_session_history',
+    description:
+      'Search chat message history across sessions. Can filter by session ID and keyword. Returns matching messages with session titles. Useful for recalling previous conversations or finding information discussed earlier.',
+    parameters: {
+      type: 'object',
+      properties: {
+        session_id: {
+          type: 'string',
+          description: 'Optional: limit to a specific session UUID',
+        },
+        search: {
+          type: 'string',
+          description: 'Optional: keyword to search for in message content',
+        },
+        limit: {
+          type: 'number',
+          description: 'Number of messages to return (default 20, max 50)',
+        },
+      },
+    },
+    execute: async (args, ctx) => {
+      const params = new URLSearchParams();
+      if (args.session_id) params.set('session_id', String(args.session_id));
+      if (args.search) params.set('search', String(args.search));
+      if (args.limit) params.set('limit', String(args.limit));
+
+      const result = await internalFetch(ctx, 'GET', `/api/agent/tools/session-history?${params.toString()}`);
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 11. search
   {
     name: 'search',
     description:

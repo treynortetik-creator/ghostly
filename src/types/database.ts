@@ -655,7 +655,8 @@ export interface AgentSettings {
   agent_name: string | null;
   agent_focus: string | null;
   heartbeat_enabled: boolean | null;
-  heartbeat_time: string | null;
+  heartbeat_interval: number;
+  heartbeat_prompt: string;
   notification_channel: string | null;
   connected_integrations: Record<string, unknown> | null;
   created_at: string | null;
@@ -1726,6 +1727,8 @@ export interface Database {
           user_id: string | null;
           title: string | null;
           event_id: string | null;
+          context_tokens_used: number;
+          context_summary: string | null;
           created_at: string | null;
           updated_at: string | null;
         };
@@ -1735,6 +1738,8 @@ export interface Database {
           user_id?: string | null;
           title?: string | null;
           event_id?: string | null;
+          context_tokens_used?: number;
+          context_summary?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
         };
@@ -1744,6 +1749,8 @@ export interface Database {
           user_id?: string | null;
           title?: string | null;
           event_id?: string | null;
+          context_tokens_used?: number;
+          context_summary?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
         };
@@ -1805,7 +1812,8 @@ export interface Database {
           agent_name: string | null;
           agent_focus: string | null;
           heartbeat_enabled: boolean | null;
-          heartbeat_time: string | null;
+          heartbeat_interval: number;
+          heartbeat_prompt: string;
           notification_channel: string | null;
           connected_integrations: Record<string, unknown> | null;
           created_at: string | null;
@@ -1816,7 +1824,8 @@ export interface Database {
           agent_name?: string | null;
           agent_focus?: string | null;
           heartbeat_enabled?: boolean | null;
-          heartbeat_time?: string | null;
+          heartbeat_interval?: number;
+          heartbeat_prompt?: string;
           notification_channel?: string | null;
           connected_integrations?: Record<string, unknown> | null;
           created_at?: string | null;
@@ -1827,7 +1836,8 @@ export interface Database {
           agent_name?: string | null;
           agent_focus?: string | null;
           heartbeat_enabled?: boolean | null;
-          heartbeat_time?: string | null;
+          heartbeat_interval?: number;
+          heartbeat_prompt?: string;
           notification_channel?: string | null;
           connected_integrations?: Record<string, unknown> | null;
           created_at?: string | null;
@@ -1885,6 +1895,50 @@ export interface Database {
         Relationships: [
           {
             foreignKeyName: 'agent_cron_jobs_organization_id_fkey';
+            columns: ['organization_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      notifications: {
+        Row: {
+          id: string;
+          organization_id: string;
+          type: 'agent_message' | 'budget_alert' | 'task_reminder' | 'custom_reminder';
+          title: string;
+          message: string;
+          metadata: Record<string, unknown>;
+          is_read: boolean;
+          dismissed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          type: 'agent_message' | 'budget_alert' | 'task_reminder' | 'custom_reminder';
+          title: string;
+          message: string;
+          metadata?: Record<string, unknown>;
+          is_read?: boolean;
+          dismissed_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          type?: 'agent_message' | 'budget_alert' | 'task_reminder' | 'custom_reminder';
+          title?: string;
+          message?: string;
+          metadata?: Record<string, unknown>;
+          is_read?: boolean;
+          dismissed_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'notifications_organization_id_fkey';
             columns: ['organization_id'];
             isOneToOne: false;
             referencedRelation: 'organizations';
