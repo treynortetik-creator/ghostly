@@ -43,7 +43,8 @@ interface AgentSettingsData {
   agent_name: string;
   agent_focus: string;
   heartbeat_enabled: boolean;
-  heartbeat_time: string;
+  heartbeat_interval: number;
+  heartbeat_prompt: string;
   notification_channel: string;
 }
 
@@ -64,9 +65,21 @@ const defaultSettings: AgentSettingsData = {
   agent_name: "Ghostly",
   agent_focus: "",
   heartbeat_enabled: false,
-  heartbeat_time: "07:00",
+  heartbeat_interval: 60,
+  heartbeat_prompt: "Check for any upcoming deadlines, overdue tasks, or budget alerts. Summarize anything that needs attention.",
   notification_channel: "in_app",
 };
+
+const HEARTBEAT_INTERVALS: { value: number; label: string }[] = [
+  { value: 15, label: "Every 15 minutes" },
+  { value: 30, label: "Every 30 minutes" },
+  { value: 60, label: "Every hour" },
+  { value: 120, label: "Every 2 hours" },
+  { value: 240, label: "Every 4 hours" },
+  { value: 480, label: "Every 8 hours" },
+  { value: 720, label: "Every 12 hours" },
+  { value: 1440, label: "Every 24 hours" },
+];
 
 /* ============================================
    Schedule Presets
@@ -286,7 +299,8 @@ export default function AgentSettingsPage() {
     (settings.agent_name !== originalSettings.agent_name ||
       settings.agent_focus !== originalSettings.agent_focus ||
       settings.heartbeat_enabled !== originalSettings.heartbeat_enabled ||
-      settings.heartbeat_time !== originalSettings.heartbeat_time ||
+      settings.heartbeat_interval !== originalSettings.heartbeat_interval ||
+      settings.heartbeat_prompt !== originalSettings.heartbeat_prompt ||
       settings.notification_channel !== originalSettings.notification_channel);
 
   /* ---------- Fetch agent settings ---------- */
@@ -301,7 +315,8 @@ export default function AgentSettingsPage() {
         agent_name: data.settings.agent_name || "Ghostly",
         agent_focus: data.settings.agent_focus || "",
         heartbeat_enabled: data.settings.heartbeat_enabled || false,
-        heartbeat_time: data.settings.heartbeat_time || "07:00",
+        heartbeat_interval: data.settings.heartbeat_interval ?? 60,
+        heartbeat_prompt: data.settings.heartbeat_prompt || defaultSettings.heartbeat_prompt,
         notification_channel: data.settings.notification_channel || "in_app",
       };
       setSettings(s);
@@ -354,7 +369,8 @@ export default function AgentSettingsPage() {
         agent_name: data.settings.agent_name || "Ghostly",
         agent_focus: data.settings.agent_focus || "",
         heartbeat_enabled: data.settings.heartbeat_enabled || false,
-        heartbeat_time: data.settings.heartbeat_time || "07:00",
+        heartbeat_interval: data.settings.heartbeat_interval ?? 60,
+        heartbeat_prompt: data.settings.heartbeat_prompt || defaultSettings.heartbeat_prompt,
         notification_channel: data.settings.notification_channel || "in_app",
       };
       setSettings(updated);
@@ -571,12 +587,12 @@ export default function AgentSettingsPage() {
             )}
           </Card>
 
-          {/* ========== Daily Heartbeat ========== */}
+          {/* ========== Heartbeat ========== */}
           <Card>
             <SectionHeader
               icon={<Clock className="w-5 h-5" />}
-              title="Daily Heartbeat"
-              description="Get a daily summary of events, overdue tasks, and budget alerts"
+              title="Heartbeat"
+              description="Periodic check-ins where the agent looks for tasks that need attention"
               collapsed={collapsed.heartbeat}
               onToggle={() => toggleSection("heartbeat")}
             />
@@ -584,9 +600,9 @@ export default function AgentSettingsPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-foreground">Enable Daily Heartbeat</p>
+                    <p className="text-sm font-medium text-foreground">Enable Heartbeat</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Receive an automated daily briefing from your agent
+                      The agent will periodically check in to see if there are tasks that need attention
                     </p>
                   </div>
                   <button
@@ -601,7 +617,7 @@ export default function AgentSettingsPage() {
                     `}
                     role="switch"
                     aria-checked={settings.heartbeat_enabled}
-                    aria-label="Toggle daily heartbeat"
+                    aria-label="Toggle heartbeat"
                   >
                     <span
                       className={`
@@ -613,22 +629,50 @@ export default function AgentSettingsPage() {
                   </button>
                 </div>
                 {settings.heartbeat_enabled && (
-                  <div>
-                    <label htmlFor="heartbeat_time" className="block text-sm font-medium text-foreground mb-1.5">
-                      Delivery Time
-                    </label>
-                    <input
-                      type="time"
-                      id="heartbeat_time"
-                      value={settings.heartbeat_time}
-                      onChange={(e) => setSettings((prev) => ({ ...prev, heartbeat_time: e.target.value }))}
-                      className="w-40 px-3 py-2 rounded-md bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral transition-colors disabled:opacity-50"
-                      disabled={isSaving}
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Time in your local timezone when the daily briefing is sent.
-                    </p>
-                  </div>
+                  <>
+                    <div>
+                      <label htmlFor="heartbeat_interval" className="block text-sm font-medium text-foreground mb-1.5">
+                        Check-in Interval
+                      </label>
+                      <select
+                        id="heartbeat_interval"
+                        value={settings.heartbeat_interval}
+                        onChange={(e) => setSettings((prev) => ({ ...prev, heartbeat_interval: Number(e.target.value) }))}
+                        className="w-full max-w-sm px-3 py-2 rounded-md bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral transition-colors disabled:opacity-50"
+                        disabled={isSaving}
+                      >
+                        {HEARTBEAT_INTERVALS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        How often the agent checks in for new work.
+                      </p>
+                    </div>
+                    <div>
+                      <label htmlFor="heartbeat_prompt" className="block text-sm font-medium text-foreground mb-1.5">
+                        Heartbeat Prompt
+                      </label>
+                      <textarea
+                        id="heartbeat_prompt"
+                        value={settings.heartbeat_prompt}
+                        onChange={(e) => setSettings((prev) => ({ ...prev, heartbeat_prompt: e.target.value }))}
+                        maxLength={2000}
+                        rows={3}
+                        placeholder="e.g., Check for any upcoming deadlines, overdue tasks, or budget alerts. Summarize anything that needs attention."
+                        className="w-full px-3 py-2 rounded-md bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral transition-colors resize-y min-h-[80px] disabled:opacity-50"
+                        disabled={isSaving}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Instructions for what the agent should look for during each check-in.
+                        {settings.heartbeat_prompt.length > 0 && (
+                          <span className="ml-2 text-spectral">{settings.heartbeat_prompt.length}/2000</span>
+                        )}
+                      </p>
+                    </div>
+                  </>
                 )}
               </CardContent>
             )}

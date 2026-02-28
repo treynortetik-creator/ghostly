@@ -77,16 +77,26 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'agent-settin
       updates.heartbeat_enabled = !!body.heartbeat_enabled;
     }
 
-    if (body.heartbeat_time !== undefined) {
-      // Validate time format HH:MM
-      const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-      if (!timeRegex.test(body.heartbeat_time)) {
+    if (body.heartbeat_interval !== undefined) {
+      const interval = Number(body.heartbeat_interval);
+      if (!Number.isInteger(interval) || interval < 15 || interval > 1440) {
         return NextResponse.json(
-          { error: 'Invalid heartbeat time format. Use HH:MM (24-hour)' },
+          { error: 'Heartbeat interval must be between 15 and 1440 minutes' },
           { status: 400 }
         );
       }
-      updates.heartbeat_time = body.heartbeat_time;
+      updates.heartbeat_interval = interval;
+    }
+
+    if (body.heartbeat_prompt !== undefined) {
+      const prompt = String(body.heartbeat_prompt).trim();
+      if (prompt.length === 0 || prompt.length > 2000) {
+        return NextResponse.json(
+          { error: 'Heartbeat prompt must be 1-2000 characters' },
+          { status: 400 }
+        );
+      }
+      updates.heartbeat_prompt = prompt;
     }
 
     if (body.notification_channel !== undefined) {
