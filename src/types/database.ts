@@ -1842,6 +1842,56 @@ export interface Database {
           }
         ];
       };
+      agent_cron_jobs: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          schedule_preset: string;
+          cron_expression: string;
+          agent_prompt: string;
+          enabled: boolean;
+          last_run_at: string | null;
+          next_run_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          schedule_preset?: string;
+          cron_expression: string;
+          agent_prompt: string;
+          enabled?: boolean;
+          last_run_at?: string | null;
+          next_run_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          name?: string;
+          schedule_preset?: string;
+          cron_expression?: string;
+          agent_prompt?: string;
+          enabled?: boolean;
+          last_run_at?: string | null;
+          next_run_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'agent_cron_jobs_organization_id_fkey';
+            columns: ['organization_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
     };
     Views: {
       [_ in never]: never;

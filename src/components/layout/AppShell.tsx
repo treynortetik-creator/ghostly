@@ -165,9 +165,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Navigation items */}
         <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
           {navItems.map((item) => {
-            const isActive =
-              pathname === item.href ||
-              (item.href !== "/" && pathname.startsWith(item.href + "/"));
+            const isExact = pathname === item.href;
+            const isPrefix =
+              item.href !== "/" && pathname.startsWith(item.href + "/");
+            // Don't highlight a parent route if a more specific child nav item matches
+            const hasMoreSpecificMatch =
+              isPrefix &&
+              navItems.some(
+                (other) =>
+                  other.href !== item.href &&
+                  other.href.startsWith(item.href + "/") &&
+                  (pathname === other.href ||
+                    pathname.startsWith(other.href + "/"))
+              );
+            const isActive = isExact || (isPrefix && !hasMoreSpecificMatch);
             const Icon = item.icon;
 
             return (
@@ -355,9 +366,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {/* Navigation */}
             <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
               {navItems.map((item) => {
-                const isActive =
-                  pathname === item.href ||
-                  (item.href !== "/" && pathname.startsWith(item.href));
+                const isExact = pathname === item.href;
+                const isPrefix =
+                  item.href !== "/" && pathname.startsWith(item.href + "/");
+                const hasMoreSpecificMatch =
+                  isPrefix &&
+                  navItems.some(
+                    (other) =>
+                      other.href !== item.href &&
+                      other.href.startsWith(item.href + "/") &&
+                      (pathname === other.href ||
+                        pathname.startsWith(other.href + "/"))
+                  );
+                const isActive = isExact || (isPrefix && !hasMoreSpecificMatch);
                 const Icon = item.icon;
 
                 return (
