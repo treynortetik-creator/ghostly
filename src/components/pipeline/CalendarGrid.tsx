@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useDroppable } from '@dnd-kit/core';
 import {
   startOfMonth,
   endOfMonth,
@@ -163,6 +164,70 @@ function computeWeekBars(
   return segments;
 }
 
+// ─── Droppable Day Cell ─────────────────────────────────────────────────────
+
+function DroppableDayCell({
+  date,
+  inMonth,
+  taskEntry,
+  popoverDate,
+  onTogglePopover,
+}: {
+  date: Date;
+  inMonth: boolean;
+  taskEntry?: TaskDateEntry;
+  popoverDate: string | null;
+  onTogglePopover: (dateKey: string) => void;
+}) {
+  const dateKey = format(date, 'yyyy-MM-dd');
+  const today = isToday(date);
+
+  const { setNodeRef, isOver } = useDroppable({
+    id: `day-${dateKey}`,
+    data: { date: dateKey },
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`border-r border-b border-border p-1 relative transition-colors ${
+        !inMonth ? 'bg-card/50' : ''
+      } ${today ? 'ring-2 ring-spectral/50 ring-inset' : ''} ${
+        isOver ? 'bg-spectral/15 ring-2 ring-spectral ring-inset' : ''
+      }`}
+    >
+      <span
+        className={`text-xs font-medium ${
+          !inMonth ? 'text-muted-foreground/60' : today ? 'text-spectral font-bold' : 'text-muted-foreground'
+        }`}
+      >
+        {date.getDate()}
+      </span>
+
+      {/* Task marker */}
+      {taskEntry && taskEntry.count > 0 && (
+        <>
+          <TaskMarker
+            count={taskEntry.count}
+            onClick={(e) => {
+              e.stopPropagation();
+              onTogglePopover(dateKey);
+            }}
+          />
+          {popoverDate === dateKey && (
+            <TaskPopover
+              tasks={taskEntry.tasks}
+              onClose={() => onTogglePopover(dateKey)}
+            />
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── Calendar Grid ──────────────────────────────────────────────────────────
+
 export function CalendarGrid({
   events,
   taskDates,
@@ -170,6 +235,10 @@ export function CalendarGrid({
   onEventClick,
 }: CalendarGridProps) {
   const [popoverDate, setPopoverDate] = useState<string | null>(null);
+
+  const togglePopover = (dateKey: string) => {
+    setPopoverDate((prev) => (prev === dateKey ? null : dateKey));
+  };
 
   // Generate all dates for the calendar grid
   const { weekRows } = useMemo(() => {
@@ -226,47 +295,18 @@ export function CalendarGrid({
 
         return (
           <div key={weekIdx} className="grid grid-cols-7 relative" style={{ minHeight: '120px' }}>
-            {/* Day cells */}
+            {/* Droppable day cells */}
             {week.map((date, dayIdx) => {
-              const inMonth = isSameMonth(date, currentMonth);
-              const today = isToday(date);
               const dateKey = format(date, 'yyyy-MM-dd');
-              const taskEntry = taskDates[dateKey];
-
               return (
-                <div
+                <DroppableDayCell
                   key={dayIdx}
-                  className={`border-r border-b border-border p-1 relative ${
-                    !inMonth ? 'bg-card/50' : ''
-                  } ${today ? 'ring-2 ring-spectral/50 ring-inset' : ''}`}
-                >
-                  <span
-                    className={`text-xs font-medium ${
-                      !inMonth ? 'text-muted-foreground/60' : today ? 'text-spectral font-bold' : 'text-muted-foreground'
-                    }`}
-                  >
-                    {date.getDate()}
-                  </span>
-
-                  {/* Task marker */}
-                  {taskEntry && taskEntry.count > 0 && (
-                    <>
-                      <TaskMarker
-                        count={taskEntry.count}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setPopoverDate(popoverDate === dateKey ? null : dateKey);
-                        }}
-                      />
-                      {popoverDate === dateKey && (
-                        <TaskPopover
-                          tasks={taskEntry.tasks}
-                          onClose={() => setPopoverDate(null)}
-                        />
-                      )}
-                    </>
-                  )}
-                </div>
+                  date={date}
+                  inMonth={isSameMonth(date, currentMonth)}
+                  taskEntry={taskDates[dateKey]}
+                  popoverDate={popoverDate}
+                  onTogglePopover={togglePopover}
+                />
               );
             })}
 

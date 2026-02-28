@@ -1,12 +1,24 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Loader2, RefreshCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2, RefreshCw, GripVertical, ChevronDown } from 'lucide-react';
 import { format, addMonths, subMonths } from 'date-fns';
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  closestCorners,
+} from '@dnd-kit/core';
+import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 import { AppShell } from '@/components/layout';
 import { CalendarGrid } from './CalendarGrid';
 import { EventSidePanel, type CalendarEvent } from './EventSidePanel';
-import { KanbanBoard, type BoardEvent, type BoardStages } from './KanbanBoard';
+import { KanbanBoard, type BoardEvent, type BoardStageKey, type BoardStages } from './KanbanBoard';
 
 type ViewMode = 'calendar' | 'board';
 
@@ -33,6 +45,44 @@ interface BoardApiResponse {
   totals: Record<string, number>;
 }
 
+interface UnscheduledEvent {
+  id: string;
+  name: string;
+  tier: string | null;
+  stage: string | null;
+  location: string | null;
+}
+
+// ─── Draggable Event Item (for schedule panel) ──────────────────────────────
+
+function DraggableEventItem({ event }: { event: UnscheduledEvent }) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: `schedule-${event.id}`,
+    data: { eventId: event.id, eventName: event.name },
+  });
+
+  const style = transform
+    ? { transform: CSS.Translate.toString(transform) }
+    : undefined;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      className={`flex items-center gap-2 px-2 py-1.5 rounded bg-card/80 border border-border
+        cursor-grab active:cursor-grabbing hover:border-spectral/40 transition-colors
+        ${isDragging ? 'opacity-30' : ''}`}
+    >
+      <GripVertical className="w-3 h-3 text-muted-foreground/60 flex-shrink-0" />
+      <span className="text-xs text-foreground truncate">{event.name}</span>
+    </div>
+  );
+}
+
+// ─── Pipeline Client ────────────────────────────────────────────────────────
+
 export function PipelineClient() {
   const [view, setView] = useState<ViewMode>('calendar');
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -41,6 +91,11 @@ export function PipelineClient() {
   const [taskDates, setTaskDates] = useState<Record<string, TaskDateEntry>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Calendar scheduling state
+  const [unscheduledEvents, setUnscheduledEvents] = useState<UnscheduledEvent[]>([]);
+  const [scheduleOpen, setScheduleOpen] = useState(true);
+  const [draggedEvent, setDraggedEvent] = useState<{ id: string; name: string } | null>(null);
 
   // Board state
   const [boardStages, setBoardStages] = useState<BoardStages>({
@@ -53,6 +108,11 @@ export function PipelineClient() {
   const [boardLoading, setBoardLoading] = useState(false);
   const [boardError, setBoardError] = useState<string | null>(null);
   const boardFetched = useRef(false);
+
+  // DnD sensors (shared between calendar and board contexts)
+  const calendarSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  );
 
   const fetchCalendarData = useCallback(async (month: Date) => {
     setIsLoading(true);
@@ -71,6 +131,28 @@ export function PipelineClient() {
       setError('Failed to load calendar data. Please try again.');
     } finally {
       setIsLoading(false);
+    }
+  }, []);
+
+  const fetchUnscheduledEvents = useCallback(async () => {
+    try {
+      const res = await fetch('/api/events?per_page=50&sort_by=name&sort_order=asc');
+      if (!res.ok) return;
+      const data = await res.json();
+      const allEvents = (data.events || []) as Array<Record<string, unknown>>;
+      // Filter to events without dates set
+      const unscheduled = allEvents
+        .filter((e) => !e.date_start)
+        .map((e) => ({
+          id: e.id as string,
+          name: e.name as string,
+          tier: (e.tier as string) ?? null,
+          stage: (e.stage as string) ?? null,
+          location: (e.location as string) ?? null,
+        }));
+      setUnscheduledEvents(unscheduled);
+    } catch {
+      // Silently fail — panel just won't show events
     }
   }, []);
 
@@ -96,35 +178,81 @@ export function PipelineClient() {
   useEffect(() => {
     if (view === 'calendar') {
       fetchCalendarData(currentMonth);
+      fetchUnscheduledEvents();
     } else if (view === 'board' && !boardFetched.current) {
       fetchBoardData();
     }
-  }, [currentMonth, view, fetchCalendarData, fetchBoardData]);
+  }, [currentMonth, view, fetchCalendarData, fetchUnscheduledEvents, fetchBoardData]);
+
+  // ─── Calendar drag handlers ─────────────────────────────────────────────
+
+  const handleCalendarDragStart = useCallback((event: DragStartEvent) => {
+    const data = event.active.data.current;
+    if (data?.eventId) {
+      setDraggedEvent({ id: data.eventId as string, name: data.eventName as string });
+    }
+  }, []);
+
+  const handleCalendarDragEnd = useCallback(async (event: DragEndEvent) => {
+    setDraggedEvent(null);
+    const { active, over } = event;
+    if (!over) return;
+
+    const overId = over.id as string;
+    if (!overId.startsWith('day-')) return;
+
+    const targetDate = overId.replace('day-', '');
+    const eventId = (active.data.current?.eventId as string) ?? '';
+    if (!eventId) return;
+
+    // Remove from unscheduled list optimistically
+    setUnscheduledEvents((prev) => prev.filter((e) => e.id !== eventId));
+
+    try {
+      const res = await fetch(`/api/events/${eventId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date_start: targetDate, date_end: targetDate }),
+      });
+      if (!res.ok) throw new Error('Failed to schedule event');
+      // Refresh calendar to show the newly scheduled event
+      fetchCalendarData(currentMonth);
+    } catch (err) {
+      console.error('Schedule error:', err);
+      // Re-fetch to restore state
+      fetchUnscheduledEvents();
+    }
+  }, [currentMonth, fetchCalendarData, fetchUnscheduledEvents]);
+
+  // ─── Board drag handlers ────────────────────────────────────────────────
 
   const handleStageChange = useCallback(async (eventId: string, newStage: string) => {
-    // Optimistic update: move the card locally
-    const prevStages = { ...boardStages };
-    let movedEvent: BoardEvent | null = null;
+    const validStages: BoardStageKey[] = ['confirmed', 'in_progress', 'ready', 'active', 'debrief'];
+    if (!validStages.includes(newStage as BoardStageKey)) return;
 
-    // Find and remove from current stage
-    const updatedStages = { ...boardStages } as Record<string, BoardEvent[]>;
-    for (const stageKey of Object.keys(updatedStages)) {
-      const idx = updatedStages[stageKey].findIndex((e) => e.id === eventId);
-      if (idx !== -1) {
-        movedEvent = { ...updatedStages[stageKey][idx], stage: newStage };
-        updatedStages[stageKey] = [
-          ...updatedStages[stageKey].slice(0, idx),
-          ...updatedStages[stageKey].slice(idx + 1),
-        ];
-        break;
+    let prevSnapshot: BoardStages | null = null;
+
+    // Optimistic update using functional state to avoid stale closures
+    setBoardStages((prev) => {
+      prevSnapshot = prev;
+      let movedEvent: BoardEvent | null = null;
+      const updated = {} as Record<string, BoardEvent[]>;
+
+      for (const key of validStages) {
+        const list = prev[key];
+        const idx = list.findIndex((e) => e.id === eventId);
+        if (idx !== -1) {
+          movedEvent = { ...list[idx], stage: newStage };
+          updated[key] = [...list.slice(0, idx), ...list.slice(idx + 1)];
+        } else {
+          updated[key] = [...list];
+        }
       }
-    }
 
-    if (!movedEvent) return;
-
-    // Add to new stage
-    updatedStages[newStage] = [...(updatedStages[newStage] || []), movedEvent];
-    setBoardStages(updatedStages as BoardStages);
+      if (!movedEvent) return prev;
+      updated[newStage] = [...updated[newStage], movedEvent];
+      return updated as BoardStages;
+    });
 
     // Persist to server
     try {
@@ -133,15 +261,12 @@ export function PipelineClient() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ stage: newStage }),
       });
-      if (!res.ok) {
-        throw new Error('Failed to update event stage');
-      }
+      if (!res.ok) throw new Error('Failed to update event stage');
     } catch (err) {
       console.error('Stage change error:', err);
-      // Revert on failure
-      setBoardStages(prevStages);
+      if (prevSnapshot) setBoardStages(prevSnapshot);
     }
-  }, [boardStages]);
+  }, []);
 
   const handlePrevMonth = () => setCurrentMonth((m) => subMonths(m, 1));
   const handleNextMonth = () => setCurrentMonth((m) => addMonths(m, 1));
@@ -242,12 +367,56 @@ export function PipelineClient() {
                 </button>
               </div>
             ) : (
-              <CalendarGrid
-                events={events}
-                taskDates={taskDates}
-                currentMonth={currentMonth}
-                onEventClick={setSelectedEvent}
-              />
+              <DndContext
+                sensors={calendarSensors}
+                collisionDetection={closestCorners}
+                onDragStart={handleCalendarDragStart}
+                onDragEnd={handleCalendarDragEnd}
+              >
+                <div className="flex gap-4">
+                  {/* Calendar */}
+                  <div className="flex-1 min-w-0">
+                    <CalendarGrid
+                      events={events}
+                      taskDates={taskDates}
+                      currentMonth={currentMonth}
+                      onEventClick={setSelectedEvent}
+                    />
+                  </div>
+
+                  {/* Unscheduled events panel */}
+                  {unscheduledEvents.length > 0 && (
+                    <div className="w-48 flex-shrink-0">
+                      <button
+                        onClick={() => setScheduleOpen((o) => !o)}
+                        className="flex items-center justify-between w-full px-3 py-2 text-xs font-semibold text-phantom bg-ghost-dark rounded-t-lg"
+                      >
+                        <span>Unscheduled ({unscheduledEvents.length})</span>
+                        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${scheduleOpen ? '' : '-rotate-90'}`} />
+                      </button>
+                      {scheduleOpen && (
+                        <div className="space-y-1 p-2 bg-card/50 border border-t-0 border-border rounded-b-lg max-h-[500px] overflow-y-auto">
+                          {unscheduledEvents.map((ev) => (
+                            <DraggableEventItem key={ev.id} event={ev} />
+                          ))}
+                          <p className="text-[10px] text-muted-foreground/60 text-center mt-2 px-1">
+                            Drag onto a date to schedule
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Drag overlay */}
+                <DragOverlay dropAnimation={null}>
+                  {draggedEvent && (
+                    <div className="px-3 py-1.5 bg-spectral text-white text-xs rounded shadow-lg">
+                      {draggedEvent.name}
+                    </div>
+                  )}
+                </DragOverlay>
+              </DndContext>
             )}
           </>
         ) : (
