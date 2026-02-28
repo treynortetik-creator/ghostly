@@ -25,15 +25,13 @@ import {
   ChevronRight,
   Webhook,
   ScrollText,
-  MessageCircle,
   Bot,
 } from "lucide-react";
-import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/components/providers";
 import type { Theme } from "@/components/providers";
 import { SearchCommand } from "@/components/search/SearchCommand";
-
-const ChatPanel = lazy(() => import("@/components/agent/ChatPanel"));
+import FloatingDock from "@/components/layout/FloatingDock";
 
 interface NavItem {
   name: string;
@@ -79,8 +77,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
-
   // Extract event_id from URL if on an event detail page (e.g. /events/[uuid])
   const eventIdMatch = pathname.match(/^\/events\/([0-9a-f-]{36})/);
   const currentEventId = eventIdMatch ? eventIdMatch[1] : null;
@@ -465,34 +461,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </footer>
       </div>
 
-      {/* ===== Agent Chat Button & Panel ===== */}
-      <button
-        onClick={() => setChatOpen(true)}
-        className={`
-          fixed bottom-6 right-6 z-40
-          w-14 h-14 rounded-full
-          bg-gradient-to-br from-spectral to-spectral/80
-          text-white shadow-lg shadow-spectral/25
-          hover:shadow-xl hover:shadow-spectral/30
-          hover:from-spectral-light hover:to-spectral
-          active:scale-95
-          transition-all duration-200
-          flex items-center justify-center
-          ${chatOpen ? "scale-0 opacity-0" : "scale-100 opacity-100"}
-        `}
-        aria-label="Open AI assistant"
-        title="Chat with Ghostly AI"
-      >
-        <MessageCircle className="w-6 h-6" />
-      </button>
-
-      <Suspense fallback={null}>
-        <ChatPanel
-          isOpen={chatOpen}
-          onClose={() => setChatOpen(false)}
-          eventId={currentEventId}
-        />
-      </Suspense>
+      {/* ===== Floating Dock (Notifications + Chat) ===== */}
+      <FloatingDock eventId={currentEventId} />
     </div>
   );
 }
