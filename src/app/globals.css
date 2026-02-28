@@ -91,7 +91,7 @@
 
   /* Phantom - Text and contrast */
   --phantom: #1A1025;
-  --phantom-dark: #6B5F82;
+  --phantom-dark: #5A4F70;
 
   /* Spectral - Purple accents */
   --spectral: #7C3AED;
@@ -117,7 +117,7 @@
   --secondary: #EFEDF5;
   --secondary-foreground: #1A1025;
   --muted: #EFEDF5;
-  --muted-foreground: #6B5F82;
+  --muted-foreground: #5A4F70;
   --accent: #8B5CF6;
   --accent-foreground: #F8F7FC;
   --destructive: #F87171;

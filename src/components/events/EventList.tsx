@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { Calendar, AlertTriangle, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { EventCard } from "./EventCard";
 import { EventFilters, FilterPills } from "./EventFilters";
 import { formatCurrency } from "@/lib/format";
@@ -175,16 +176,16 @@ export function EventList({
   // Loading state
   if (isLoading) {
     return (
-      <div className="space-y-4" data-oid="c4vl7k1">
+      <div className="space-y-4">
         <div
           className="h-12 bg-spectral/10 rounded animate-pulse"
-          data-oid="f21x_be"
+         
         />
         {[1, 2, 3, 4, 5].map((i) => (
           <div
             key={i}
             className="h-24 bg-spectral/10 rounded-lg animate-pulse"
-            data-oid="p3nle8e"
+           
           />
         ))}
       </div>
@@ -194,23 +195,23 @@ export function EventList({
   // Error state
   if (error) {
     return (
-      <Card className="bg-red-400/10 border-destructive/20" data-oid="nz46xca">
-        <CardContent className="py-12" data-oid="wr4.6bw">
+      <Card className="bg-red-400/10 border-destructive/20">
+        <CardContent className="py-12">
           <div
             className="flex flex-col items-center justify-center text-center"
-            data-oid="x..mit2"
+           
           >
             <AlertTriangle
               className="w-12 h-12 text-destructive mb-4"
-              data-oid="kh2xw.q"
+             
             />
             <h3
               className="text-xl font-semibold text-destructive mb-2"
-              data-oid="err9::2"
+             
             >
               Failed to Load Events
             </h3>
-            <p className="text-muted-foreground" data-oid="hr_n547">
+            <p className="text-muted-foreground">
               {error}
             </p>
           </div>
@@ -220,11 +221,11 @@ export function EventList({
   }
 
   return (
-    <div className="space-y-4" data-oid="s05vcts">
+    <div className="space-y-4">
       {/* Filters and Search */}
       <div
         className="flex flex-col lg:flex-row lg:items-center justify-between gap-4"
-        data-oid="6u81cxe"
+       
       >
         <EventFilters
           selectedTypeId={selectedTypeId}
@@ -233,14 +234,14 @@ export function EventList({
           onQuarterChange={handleQuarterChange}
           onClearFilters={handleClearFilters}
           activeFilterCount={activeFilterCount}
-          data-oid="h18p5f1"
+         
         />
 
         {showSearch && (
-          <div className="relative" data-oid="s397ru-">
+          <div className="relative">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
-              data-oid="py0uo0n"
+             
             />
             <input
               type="text"
@@ -254,7 +255,7 @@ export function EventList({
                 focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral
                 transition-colors duration-200
               "
-              data-oid="k6de68r"
+             
             />
           </div>
         )}
@@ -267,48 +268,48 @@ export function EventList({
         selectedQuarter={selectedQuarter}
         onRemoveType={() => handleTypeChange("all")}
         onRemoveQuarter={() => handleQuarterChange("all")}
-        data-oid="04d_:l9"
+       
       />
 
       {/* Summary stats */}
       <div
         className="flex flex-wrap items-center gap-4 py-3 px-4 bg-card rounded-lg border border-border"
-        data-oid="g6t2llt"
+       
       >
-        <span className="text-sm text-muted-foreground" data-oid="embdgzy">
-          <span className="font-semibold text-foreground" data-oid="0hl1hvr">
+        <span className="text-sm text-muted-foreground">
+          <span className="font-semibold text-foreground">
             {totals.count}
           </span>{" "}
           events
         </span>
-        <span className="text-muted-foreground/30" data-oid="3um0i2f">
+        <span className="text-muted-foreground/30">
           |
         </span>
-        <span className="text-sm text-muted-foreground" data-oid="nbq1ehy">
+        <span className="text-sm text-muted-foreground">
           Budget:{" "}
           <span
             className="font-semibold tabular-nums text-foreground"
-            data-oid="vwm_xss"
+           
           >
             {formatCurrency(totals.budget)}
           </span>
         </span>
-        <span className="text-muted-foreground/30" data-oid="bxu9hcs">
+        <span className="text-muted-foreground/30">
           |
         </span>
-        <span className="text-sm text-muted-foreground" data-oid="y_96eoc">
+        <span className="text-sm text-muted-foreground">
           Spent:{" "}
           <span
             className="font-semibold tabular-nums text-foreground"
-            data-oid="oh-0jeh"
+           
           >
             {formatCurrency(totals.actual)}
           </span>
         </span>
-        <span className="text-muted-foreground/30" data-oid="usf_tfl">
+        <span className="text-muted-foreground/30">
           |
         </span>
-        <span className="text-sm text-muted-foreground" data-oid=":wo3i.j">
+        <span className="text-sm text-muted-foreground">
           Remaining:{" "}
           <span
             className={`font-semibold tabular-nums ${
@@ -316,7 +317,7 @@ export function EventList({
                 ? "text-destructive"
                 : "text-emerald-400"
             }`}
-            data-oid="bfmla.d"
+           
           >
             {formatCurrency(totals.budget - totals.actual)}
           </span>
@@ -325,33 +326,22 @@ export function EventList({
 
       {/* Events list */}
       {filteredEvents.length === 0 ? (
-        <Card data-oid="bvrkc.l">
-          <CardContent className="py-12" data-oid="qqdw1mu">
-            <div
-              className="flex flex-col items-center justify-center text-center"
-              data-oid="hhl-fcg"
-            >
-              <Calendar
-                className="w-12 h-12 text-muted-foreground/60 mb-4"
-                data-oid="lh610j0"
-              />
-              <h3
-                className="text-xl font-semibold text-foreground mb-2"
-                data-oid="0jgf8t8"
-              >
-                No Events Found
-              </h3>
-              <p className="text-muted-foreground" data-oid="9.bb6w7">
-                {searchQuery || activeFilterCount > 0
+        <Card>
+          <CardContent>
+            <EmptyState
+              icon={<Calendar className="w-12 h-12" />}
+              title="No Events Found"
+              description={
+                searchQuery || activeFilterCount > 0
                   ? "Try adjusting your filters or search query."
-                  : "No events have been registered yet."}
-              </p>
-            </div>
+                  : "No events have been registered yet."
+              }
+            />
           </CardContent>
         </Card>
       ) : groupByQuarter && groupedEvents ? (
         // Grouped by quarter
-        <div className="space-y-6" data-oid="uh2.bo3">
+        <div className="space-y-6">
           {(["Q1", "Q2", "Q3", "Q4", "TBD"] as QuarterType[]).map((quarter) => {
             const quarterEvents = groupedEvents[quarter];
             if (quarterEvents.length === 0) return null;
@@ -366,37 +356,37 @@ export function EventList({
             );
 
             return (
-              <div key={quarter} data-oid="g3tl3__">
+              <div key={quarter}>
                 <div
                   className="flex items-center justify-between mb-3"
-                  data-oid="bkh_-yk"
+                 
                 >
                   <h3
                     className="text-lg font-semibold text-foreground"
-                    data-oid="bbw7e:0"
+                   
                   >
                     {quarter === "TBD" ? "To Be Determined" : quarter}
                   </h3>
-                  <div className="text-sm text-muted-foreground" data-oid="03g1nzi">
-                    <span className="tabular-nums" data-oid="f:623t3">
+                  <div className="text-sm text-muted-foreground">
+                    <span className="tabular-nums">
                       {formatCurrency(quarterSpent)}
                     </span>
-                    <span className="mx-1" data-oid="z2oj8sc">
+                    <span className="mx-1">
                       /
                     </span>
-                    <span className="tabular-nums" data-oid="6c00exf">
+                    <span className="tabular-nums">
                       {formatCurrency(quarterTotal)}
                     </span>
                   </div>
                 </div>
-                <div className="space-y-3" data-oid="mitn2l9">
+                <div className="space-y-3">
                   {quarterEvents.map((event) => (
                     <EventCard
                       key={event.id}
                       event={event}
                       expenses={expensesByEvent[event.id]}
                       expandable={expandable}
-                      data-oid="kfjpfm5"
+                     
                     />
                   ))}
                 </div>
@@ -406,14 +396,14 @@ export function EventList({
         </div>
       ) : (
         // Flat list
-        <div className="space-y-3" data-oid="cib4az.">
+        <div className="space-y-3">
           {filteredEvents.map((event) => (
             <EventCard
               key={event.id}
               event={event}
               expenses={expensesByEvent[event.id]}
               expandable={expandable}
-              data-oid="iu2emu2"
+             
             />
           ))}
         </div>

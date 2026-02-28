@@ -82,12 +82,14 @@ const buttonVariants = cva(
         success: `
           bg-gradient-to-b from-emerald-500 to-emerald-600
           text-white border border-emerald-500/50
-          shadow-md hover:shadow-lg
+          shadow-md hover:shadow-lg hover:shadow-emerald-500/20
           hover:from-emerald-400 hover:to-emerald-500
           active:from-emerald-600 active:to-emerald-700
-          dark:from-emerald-500 dark:to-emerald-600
+          dark:from-emerald-600 dark:to-emerald-700
           dark:text-white dark:border-emerald-500/30
-          dark:hover:from-emerald-400 dark:hover:to-emerald-500
+          dark:hover:from-emerald-500 dark:hover:to-emerald-600
+          dark:hover:shadow-emerald-500/25
+          dark:active:from-emerald-700 dark:active:to-emerald-800
         `,
 
         /* Accent - Spectral to ether gradient for special actions */
@@ -100,6 +102,8 @@ const buttonVariants = cva(
           dark:from-spectral dark:to-ether
           dark:text-white dark:border-spectral/30
           dark:hover:from-spectral-light dark:hover:to-ether-light
+          dark:hover:shadow-spectral/25
+          dark:active:from-spectral/70 dark:active:to-ether/70
         `,
 
         /* Link - Text-only link style */
@@ -159,10 +163,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || isLoading}
         {...props}
-        data-oid=":d9uc.f"
+       
       >
         {isLoading ? (
-          <LoadingSpinner className="w-4 h-4" data-oid="ogllmbh" />
+          <LoadingSpinner className="w-4 h-4" />
         ) : (
           leftIcon
         )}
@@ -182,7 +186,7 @@ function LoadingSpinner({ className }: { className?: string }) {
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
-      data-oid="7:hij5y"
+     
     >
       <circle
         className="opacity-25"
@@ -191,14 +195,14 @@ function LoadingSpinner({ className }: { className?: string }) {
         r="10"
         stroke="currentColor"
         strokeWidth="4"
-        data-oid="ouh75ac"
+       
       />
 
       <path
         className="opacity-75"
         fill="currentColor"
         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-        data-oid="vzs73ni"
+       
       />
     </svg>
   );
@@ -214,7 +218,7 @@ export interface IconButtonProps
 const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
   ({ icon, size = "icon", ...props }, ref) => {
     return (
-      <Button ref={ref} size={size} {...props} data-oid="o_8ii8_">
+      <Button ref={ref} size={size} {...props}>
         {icon}
       </Button>
     );
@@ -239,7 +243,7 @@ function ButtonGroup({ children, className }: ButtonGroupProps) {
         "[&>button:not(:first-child)]:-ml-px",
         className,
       )}
-      data-oid="y22pd4i"
+     
     >
       {children}
     </div>

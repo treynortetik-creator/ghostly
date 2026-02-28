@@ -177,7 +177,7 @@ export function EventTypesSection({
         onCancel={() => setShowForm(false)}
         isLoading={isSaving}
         mode="create"
-        data-oid="s55nt_5"
+       
       />
     );
   }
@@ -191,7 +191,7 @@ export function EventTypesSection({
         onCancel={() => setEditingType(null)}
         isLoading={isSaving}
         mode="edit"
-        data-oid="rp2y:4-"
+       
       />
     );
   }
@@ -208,19 +208,19 @@ export function EventTypesSection({
       onConfirm={() => { if (archiveConfirmId) handleArchive(archiveConfirmId); }}
       onCancel={() => setArchiveConfirmId(null)}
     />
-    <Card data-oid="x26aqn1">
-      <CardHeader data-oid="qgczujg">
-        <div className="flex items-center justify-between" data-oid="x7d5.b2">
-          <div className="flex items-center gap-3" data-oid="chh78wg">
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
             <div
               className="p-2 rounded-md bg-spectral/10 text-spectral"
-              data-oid="ugojhwx"
+             
             >
-              <Layers className="w-5 h-5" data-oid="d_bheg6" />
+              <Layers className="w-5 h-5" />
             </div>
-            <div data-oid="7ydi38i">
-              <CardTitle data-oid="zoiszqr">Event Type Budgets</CardTitle>
-              <CardDescription data-oid="7a49ih0">
+            <div>
+              <CardTitle>Event Type Budgets</CardTitle>
+              <CardDescription>
                 Budget allocations by event category for the selected fiscal
                 year
               </CardDescription>
@@ -231,70 +231,70 @@ export function EventTypesSection({
             size="sm"
             onClick={() => setShowForm(true)}
             disabled={disabled || !fiscalYearId}
-            leftIcon={<Plus className="w-4 h-4" data-oid="cef0rtw" />}
-            data-oid="_5_2-hn"
+            leftIcon={<Plus className="w-4 h-4" />}
+           
           >
             Add Type
           </Button>
         </div>
       </CardHeader>
-      <CardContent data-oid="wv7nmi5">
+      <CardContent>
         {isLoading && (
-          <div className="text-center py-8 text-muted-foreground" data-oid="89-j-rk">
+          <div className="text-center py-8 text-muted-foreground">
             Loading event types...
           </div>
         )}
 
         {error && (
-          <div className="text-center py-8 text-destructive" data-oid="lsjz:p2">
+          <div className="text-center py-8 text-destructive">
             {error}
           </div>
         )}
 
         {!isLoading && !error && eventTypes.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground" data-oid="4n2q7at">
+          <div className="text-center py-8 text-muted-foreground">
             No event types configured for this fiscal year.
           </div>
         )}
 
         {!isLoading && !error && eventTypes.length > 0 && (
-          <div className="space-y-2" data-oid="c8-m5ck">
+          <div className="space-y-2">
             {eventTypes.map((et) => (
               <div
                 key={et.id}
                 className="flex items-center gap-3 p-3 rounded-lg bg-background border border-border hover:border-border transition-colors group"
-                data-oid="q58.wpr"
+               
               >
-                <div className="flex-1 min-w-0" data-oid="tc5.5ho">
-                  <div className="flex items-center gap-2" data-oid="r53ylp.">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
                     <span
                       className="font-medium text-foreground"
-                      data-oid="2x9wea8"
+                     
                     >
                       {et.name}
                     </span>
-                    <span className="text-xs text-muted-foreground" data-oid="wjfwerf">
+                    <span className="text-xs text-muted-foreground">
                       ({et.event_count} event{et.event_count !== 1 ? "s" : ""})
                     </span>
                   </div>
                   {et.description && (
                     <p
                       className="text-xs text-muted-foreground truncate"
-                      data-oid="eax95_8"
+                     
                     >
                       {et.description}
                     </p>
                   )}
                 </div>
 
-                <div className="text-right" data-oid="215i0fe">
+                <div className="text-right">
                   <p
                     className="font-medium text-spectral tabular-nums"
-                    data-oid="5va0_nw"
+                   
                   >
                     {formatCurrencyCompact(et.budget_amount)}
                   </p>
-                  <p className="text-xs text-muted-foreground" data-oid="ive67h8">
+                  <p className="text-xs text-muted-foreground">
                     {formatCurrencyCompact(et.actual_spent)} spent
                   </p>
                 </div>
@@ -302,7 +302,7 @@ export function EventTypesSection({
                 <div
                   className="relative"
                   data-menu-container
-                  data-oid="qhbb_un"
+                 
                 >
                   <button
                     onClick={(e) => {
@@ -314,16 +314,16 @@ export function EventTypesSection({
                     aria-expanded={openMenu === et.id}
                     aria-haspopup="true"
                     aria-label={`Actions for ${et.name}`}
-                    data-oid="5qo88i9"
+                   
                   >
-                    <MoreVertical className="w-4 h-4" data-oid="dp7l8ii" />
+                    <MoreVertical className="w-4 h-4" />
                   </button>
 
                   {openMenu === et.id && (
                     <div
                       role="menu"
                       className="absolute right-0 top-full mt-1 w-36 bg-background border border-border rounded-lg shadow-lg z-50"
-                      data-oid="mps8.8a"
+                     
                     >
                       <button
                         role="menuitem"
@@ -332,9 +332,9 @@ export function EventTypesSection({
                           setOpenMenu(null);
                         }}
                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-spectral-light/30 rounded-t-lg transition-colors"
-                        data-oid="ln-d-ya"
+                       
                       >
-                        <Pencil className="w-4 h-4" data-oid="jmrkxhu" />
+                        <Pencil className="w-4 h-4" />
                         Edit
                       </button>
                       <button
@@ -344,9 +344,9 @@ export function EventTypesSection({
                           setOpenMenu(null);
                         }}
                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-red-400/10 rounded-b-lg transition-colors"
-                        data-oid="me4pro5"
+                       
                       >
-                        <Archive className="w-4 h-4" data-oid="9fxc06:" />
+                        <Archive className="w-4 h-4" />
                         Archive
                       </button>
                     </div>

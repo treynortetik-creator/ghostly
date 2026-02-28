@@ -60,7 +60,7 @@ function EventTypeIcon({
 }) {
   const normalizedName = typeName.toLowerCase();
   const IconComponent = eventTypeIcons[normalizedName] || CalendarDays;
-  return <IconComponent className={className} data-oid="1n--7_s" />;
+  return <IconComponent className={className} />;
 }
 
 function EventTypeRow({ data }: { data: EventTypeData }) {
@@ -82,37 +82,37 @@ function EventTypeRow({ data }: { data: EventTypeData }) {
   return (
     <div
       className="p-4 rounded-lg bg-background border border-border hover:border-border transition-colors"
-      data-oid="czilw_:"
+     
     >
       {/* Header Row */}
-      <div className="flex items-start justify-between mb-3" data-oid="9kilj00">
-        <div className="flex items-center gap-3" data-oid="yznbn:y">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-3">
           <div
             className="p-2 rounded-md bg-spectral/10 text-muted-foreground"
-            data-oid="czazt85"
+           
           >
             <EventTypeIcon
               typeName={data.type}
               className="w-5 h-5"
-              data-oid="q9:ytht"
+             
             />
           </div>
-          <div data-oid="23h4ygx">
-            <h4 className="font-semibold text-foreground" data-oid="g6d9c3d">
+          <div>
+            <h4 className="font-semibold text-foreground">
               {data.type} Events
             </h4>
             {data.description && (
-              <p className="text-xs text-muted-foreground" data-oid="uw_at-f">
+              <p className="text-xs text-muted-foreground">
                 {data.description}
               </p>
             )}
           </div>
         </div>
-        <div className={`text-right ${getStatusColor()}`} data-oid="3pqh2g3">
-          <p className="font-medium text-lg tabular-nums" data-oid="krv6s8n">
+        <div className={`text-right ${getStatusColor()}`}>
+          <p className="font-medium text-lg tabular-nums">
             {formatCurrency(remaining)}
           </p>
-          <p className="text-xs" data-oid="ptwig9p">
+          <p className="text-xs">
             remaining
           </p>
         </div>
@@ -124,37 +124,37 @@ function EventTypeRow({ data }: { data: EventTypeData }) {
         max={data.budget}
         size="md"
         animated={isOverBudget}
-        data-oid=".__uwpt"
+       
       />
 
       {/* Stats Row */}
       <div
         className="flex items-center justify-between mt-3 pt-3 border-t border-border text-sm"
-        data-oid="mp:xt9h"
+       
       >
-        <div data-oid="eqb2tc.">
-          <span className="text-muted-foreground" data-oid="x3:e4mv">
+        <div>
+          <span className="text-muted-foreground">
             Spent:{" "}
           </span>
           <span
             className="font-medium tabular-nums text-foreground"
-            data-oid="47kxbkw"
+           
           >
             {formatCurrency(data.actual)}
           </span>
         </div>
-        <div data-oid="6ymekcr">
-          <span className="text-muted-foreground" data-oid="aua1l08">
+        <div>
+          <span className="text-muted-foreground">
             Budget:{" "}
           </span>
           <span
             className="font-medium tabular-nums text-foreground"
-            data-oid="hlr59f9"
+           
           >
             {formatCurrency(data.budget)}
           </span>
         </div>
-        <div className={`font-medium ${getStatusColor()}`} data-oid="75hc.ua">
+        <div className={`font-medium ${getStatusColor()}`}>
           {percentage.toFixed(0)}% used
         </div>
       </div>
@@ -171,28 +171,28 @@ export function EventTypeSummary({ data, className }: EventTypeSummaryProps) {
   const totalActual = activeEventTypes.reduce((sum, d) => sum + d.actual, 0);
 
   return (
-    <Card className={className} data-oid="w5iwyht">
-      <CardHeader data-oid="nmm5yl8">
-        <div className="flex items-center justify-between" data-oid="vttc-ej">
-          <div data-oid="_d2:7tm">
-            <CardTitle data-oid="hjspl4q">Budget by Event Type</CardTitle>
-            <CardDescription data-oid="wk8pg5g">
+    <Card className={className}>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Budget by Event Type</CardTitle>
+            <CardDescription>
               Spending breakdown across {activeEventTypes.length} event
               categories
             </CardDescription>
           </div>
-          <div className="text-right" data-oid="u.qofrm">
-            <p className="text-sm text-muted-foreground" data-oid="ntufiez">
+          <div className="text-right">
+            <p className="text-sm text-muted-foreground">
               Events Total
             </p>
             <p
               className="font-bold text-lg text-foreground tabular-nums"
-              data-oid="1maqpn4"
+             
             >
               {formatCurrency(totalActual)}
               <span
                 className="text-muted-foreground font-normal text-sm"
-                data-oid="m5f5f61"
+               
               >
                 {" "}
                 /{" "}
@@ -202,12 +202,12 @@ export function EventTypeSummary({ data, className }: EventTypeSummaryProps) {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4" data-oid="dataarl">
+      <CardContent className="space-y-4">
         {activeEventTypes.map((eventType) => (
           <EventTypeRow
             key={eventType.id}
             data={eventType}
-            data-oid="9is2om5"
+           
           />
         ))}
       </CardContent>

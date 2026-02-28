@@ -58,43 +58,43 @@ export function TeamMemberForm({
   return (
     <div
       className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-      data-oid="7i2:cui"
+     
     >
       <div
         className="bg-background rounded-lg border border-border glass-shadow w-full max-w-lg"
-        data-oid="f6cipc5"
+       
       >
         <div
           className="px-6 py-4 border-b border-border flex items-center justify-between"
-          data-oid="xuzc.mq"
+         
         >
           <h2
             className="text-xl font-semibold text-foreground"
-            data-oid="ne7o2e-"
+           
           >
             {member ? "Edit Staff Member" : "Appoint New Staff"}
           </h2>
           <button
             onClick={onCancel}
             className="text-muted-foreground hover:text-foreground"
-            data-oid="sy2o1a1"
+           
           >
-            <X className="w-5 h-5" data-oid="aoai:bj" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         <form
           onSubmit={handleSubmit}
           className="px-6 py-4 space-y-4"
-          data-oid="gqv77b_"
+         
         >
-          <div data-oid="a2qylp9">
+          <div>
             <label
               className="block text-sm font-medium text-foreground mb-1"
-              data-oid=".q9uydj"
+             
             >
               Name{" "}
-              <span className="text-destructive" data-oid="oknmhsb">
+              <span className="text-destructive">
                 *
               </span>
             </label>
@@ -105,14 +105,14 @@ export function TeamMemberForm({
               required
               className="w-full px-3 py-2 bg-card border border-border rounded-md text-foreground placeholder-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-spectral focus:border-transparent"
               placeholder="Full name"
-              data-oid=":95cnki"
+             
             />
           </div>
 
-          <div data-oid="bces_xh">
+          <div>
             <label
               className="block text-sm font-medium text-foreground mb-1"
-              data-oid="nljb6m6"
+             
             >
               Role
             </label>
@@ -122,15 +122,15 @@ export function TeamMemberForm({
               onChange={(e) => setDefaultRole(e.target.value)}
               className="w-full px-3 py-2 bg-card border border-border rounded-md text-foreground placeholder-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-spectral focus:border-transparent"
               placeholder="e.g., Event Marketing Manager"
-              data-oid="ae31ckj"
+             
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4" data-oid="90x03ur">
-            <div data-oid="akv9mx3">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
               <label
                 className="block text-sm font-medium text-foreground mb-1"
-                data-oid="6p5czzv"
+               
               >
                 Email
               </label>
@@ -140,13 +140,13 @@ export function TeamMemberForm({
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-3 py-2 bg-card border border-border rounded-md text-foreground placeholder-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-spectral focus:border-transparent"
                 placeholder="email@safelyou.com"
-                data-oid="5i_vyzp"
+               
               />
             </div>
-            <div data-oid="23m4x9q">
+            <div>
               <label
                 className="block text-sm font-medium text-foreground mb-1"
-                data-oid="3.90gx6"
+               
               >
                 Phone
               </label>
@@ -156,15 +156,15 @@ export function TeamMemberForm({
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full px-3 py-2 bg-card border border-border rounded-md text-foreground placeholder-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-spectral focus:border-transparent"
                 placeholder="(555) 123-4567"
-                data-oid="p3.a0k_"
+               
               />
             </div>
           </div>
 
-          <div data-oid="rvri6qp">
+          <div>
             <label
               className="block text-sm font-medium text-foreground mb-1"
-              data-oid="cdeq1n1"
+             
             >
               Notes
             </label>
@@ -174,41 +174,41 @@ export function TeamMemberForm({
               rows={2}
               className="w-full px-3 py-2 bg-card border border-border rounded-md text-foreground placeholder-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-spectral focus:border-transparent resize-none"
               placeholder="Additional notes..."
-              data-oid="1.qg.7f"
+             
             />
           </div>
 
           {member && (
-            <div className="flex items-center gap-2" data-oid="kj6w_u3">
+            <div className="flex items-center gap-2">
               <input
                 type="checkbox"
                 id="is_active"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
                 className="rounded border-border"
-                data-oid="ivnf7-p"
+               
               />
 
               <label
                 htmlFor="is_active"
                 className="text-sm text-foreground"
-                data-oid="oq67kxp"
+               
               >
                 Active member
               </label>
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-2" data-oid="r0_17s8">
+          <div className="flex justify-end gap-3 pt-2">
             <Button
               variant="secondary"
               onClick={onCancel}
               type="button"
-              data-oid="pmdh_qk"
+             
             >
               Cancel
             </Button>
-            <Button type="submit" isLoading={isLoading} data-oid="vp7_ghl">
+            <Button type="submit" isLoading={isLoading}>
               {member ? "Update" : "Appoint"}
             </Button>
           </div>

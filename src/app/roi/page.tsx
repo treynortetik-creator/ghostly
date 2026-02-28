@@ -122,31 +122,31 @@ export default function ROIDashboardPage() {
 
   if (loading) {
     return (
-      <AppShell data-oid="vuo9.t0">
-        <div className="animate-pulse space-y-6" data-oid="8x.7mzd">
+      <AppShell>
+        <div className="animate-pulse space-y-6">
           <div
             className="h-9 w-64 bg-spectral/10 rounded mb-2"
-            data-oid="kx-kref"
+           
           />
           <div
             className="h-5 w-80 bg-spectral/10 rounded"
-            data-oid="k8i38_r"
+           
           />
           <div
             className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"
-            data-oid="-42572-"
+           
           >
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
                 className="h-32 bg-spectral/10 rounded-lg"
-                data-oid="gom.gos"
+               
               />
             ))}
           </div>
           <div
             className="h-96 bg-spectral/10 rounded-lg"
-            data-oid="wanfkf1"
+           
           />
         </div>
       </AppShell>
@@ -155,32 +155,32 @@ export default function ROIDashboardPage() {
 
   if (error || !data) {
     return (
-      <AppShell data-oid="jy2313y">
-        <Card className="bg-red-400/10 border-destructive/20" data-oid="t_k6otu">
-          <CardContent className="py-12" data-oid="tg41oej">
+      <AppShell>
+        <Card className="bg-red-400/10 border-destructive/20">
+          <CardContent className="py-12">
             <div
               className="flex flex-col items-center justify-center text-center"
-              data-oid="4kpo1oh"
+             
             >
               <AlertTriangle
                 className="w-12 h-12 text-destructive mb-4"
-                data-oid="grl7zjg"
+               
               />
               <h3
                 className="text-xl font-semibold text-destructive mb-2"
-                data-oid="ym4lp9i"
+               
               >
                 Failed to Load ROI Dashboard
               </h3>
-              <p className="text-muted-foreground mb-6" data-oid="swlknaw">
+              <p className="text-muted-foreground mb-6">
                 {error || "No data available"}
               </p>
               <Button
                 variant="secondary"
                 onClick={fetchData}
-                data-oid="z:ng8n5"
+               
               >
-                <RefreshCw className="w-4 h-4 mr-2" data-oid="y.c.zx7" />
+                <RefreshCw className="w-4 h-4 mr-2" />
                 Try Again
               </Button>
             </div>
@@ -191,20 +191,20 @@ export default function ROIDashboardPage() {
   }
 
   return (
-    <AppShell data-oid="0fd2rj8">
+    <AppShell>
       {/* Page Header */}
       <div
         className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-8"
-        data-oid="d8np9kr"
+       
       >
-        <div data-oid="5wcog6x">
+        <div>
           <h1
             className="text-3xl font-bold text-foreground"
-            data-oid="xek0g.-"
+           
           >
             Return on Investment
           </h1>
-          <p className="mt-1 text-muted-foreground" data-oid="6_usjq2">
+          <p className="mt-1 text-muted-foreground">
             Event ROI performance across {data.totals.event_count} events
           </p>
         </div>
@@ -212,41 +212,41 @@ export default function ROIDashboardPage() {
           variant="secondary"
           size="sm"
           onClick={fetchData}
-          data-oid="o74c6_c"
+         
         >
-          <RefreshCw className="w-4 h-4 mr-2" data-oid="f-_vc3-" />
+          <RefreshCw className="w-4 h-4 mr-2" />
           Refresh
         </Button>
       </div>
 
-      <div className="space-y-8" data-oid="g7wqp-w">
+      <div className="space-y-8">
         {/* Summary Cards */}
         <div
           className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"
-          data-oid="h7o501b"
+         
         >
           <StatCard
             title="Total Spend"
             value={formatCurrency(data.totals.total_spent)}
             subtitle={`${data.totals.event_count} events`}
-            icon={<DollarSign className="w-5 h-5" data-oid="fnj_zmh" />}
-            data-oid="w20dioj"
+            icon={<DollarSign className="w-5 h-5" />}
+           
           />
 
           <StatCard
             title="Total Pipeline"
             value={formatCurrency(data.totals.total_pipeline)}
             subtitle={`${data.totals.total_leads} leads generated`}
-            icon={<Briefcase className="w-5 h-5" data-oid="d3lhz-g" />}
-            data-oid="ri.mmn0"
+            icon={<Briefcase className="w-5 h-5" />}
+           
           />
 
           <StatCard
             title="Total Revenue"
             value={formatCurrency(data.totals.total_revenue)}
             subtitle={`${data.totals.total_opportunities} opportunities`}
-            icon={<TrendingUp className="w-5 h-5" data-oid="knogshh" />}
-            data-oid="h6q3gpd"
+            icon={<TrendingUp className="w-5 h-5" />}
+           
           />
 
           <StatCard
@@ -262,124 +262,124 @@ export default function ROIDashboardPage() {
                 : "No spend data"
             }
             trend={roiTrend(data.totals.overall_roi_ratio)}
-            icon={<TrendingUp className="w-5 h-5" data-oid=".5vw7gm" />}
-            data-oid="94-mams"
+            icon={<TrendingUp className="w-5 h-5" />}
+           
           />
         </div>
 
         {/* Event Type Breakdown */}
-        <Card data-oid="y:570l_">
-          <CardHeader data-oid="umoc-7o">
-            <CardTitle data-oid="jkec1bn">ROI by Event Type</CardTitle>
-            <CardDescription data-oid="l1-1prz">
+        <Card>
+          <CardHeader>
+            <CardTitle>ROI by Event Type</CardTitle>
+            <CardDescription>
               Performance breakdown across event categories
             </CardDescription>
           </CardHeader>
-          <CardContent data-oid="_f2fit1">
+          <CardContent>
             {data.by_event_type.length === 0 ? (
-              <p className="text-center text-muted-foreground py-4" data-oid="q3s2dmx">
+              <p className="text-center text-muted-foreground py-4">
                 No event data available.
               </p>
             ) : (
-              <div className="overflow-x-auto" data-oid="243j68n">
-                <table className="w-full text-sm" data-oid="vd1vt6-">
-                  <thead data-oid="f1i.plo">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
                     <tr
                       className="border-b border-border"
-                      data-oid="i1kwjyn"
+                     
                     >
                       <th
                         className="text-left py-2 pr-4 font-medium text-foreground"
-                        data-oid="v4zolie"
+                       
                       >
                         Type
                       </th>
                       <th
                         className="text-right py-2 px-3 font-medium text-foreground"
-                        data-oid="oieg.6f"
+                       
                       >
                         Events
                       </th>
                       <th
                         className="text-right py-2 px-3 font-medium text-foreground"
-                        data-oid="x3abbmy"
+                       
                       >
                         Spent
                       </th>
                       <th
                         className="text-right py-2 px-3 font-medium text-foreground"
-                        data-oid="ysb1.1h"
+                       
                       >
                         Pipeline
                       </th>
                       <th
                         className="text-right py-2 px-3 font-medium text-foreground"
-                        data-oid="3tii3q6"
+                       
                       >
                         Revenue
                       </th>
                       <th
                         className="text-right py-2 px-3 font-medium text-foreground"
-                        data-oid=":q_c8u9"
+                       
                       >
                         Leads
                       </th>
                       <th
                         className="text-right py-2 pl-3 font-medium text-foreground"
-                        data-oid="5wpi5w0"
+                       
                       >
                         ROI
                       </th>
                     </tr>
                   </thead>
-                  <tbody data-oid="vqlnh9u">
+                  <tbody>
                     {data.by_event_type.map((row) => (
                       <tr
                         key={row.event_type || 'unknown'}
                         className="border-b border-border hover:bg-background/50"
-                        data-oid="rz3s8nl"
+                       
                       >
-                        <td className="py-3 pr-4" data-oid="lq9rqye">
+                        <td className="py-3 pr-4">
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium border ${typeColorClasses[row.event_type?.toLowerCase?.()] || 'bg-muted-foreground/15 text-muted-foreground border-muted-foreground/30'}`}
-                            data-oid="nva0wc1"
+                           
                           >
                             {row.event_type || 'Uncategorized'}
                           </span>
                         </td>
                         <td
                           className="text-right py-3 px-3 tabular-nums"
-                          data-oid="cgcgolg"
+                         
                         >
                           {row.event_count}
                         </td>
                         <td
                           className="text-right py-3 px-3 tabular-nums"
-                          data-oid="c7qhlvt"
+                         
                         >
                           {formatCurrency(row.total_spent)}
                         </td>
                         <td
                           className="text-right py-3 px-3 tabular-nums"
-                          data-oid="xvazba:"
+                         
                         >
                           {formatCurrency(row.total_pipeline)}
                         </td>
                         <td
                           className="text-right py-3 px-3 tabular-nums"
-                          data-oid="d5foa9b"
+                         
                         >
                           {formatCurrency(row.total_revenue)}
                         </td>
                         <td
                           className="text-right py-3 px-3 tabular-nums"
-                          data-oid="0maj4yz"
+                         
                         >
                           {row.total_leads}
                         </td>
                         <td
                           className={`text-right py-3 pl-3 tabular-nums font-semibold ${roiCellColor(row.roi_ratio)}`}
-                          data-oid="xmsgx4x"
+                         
                         >
                           {formatPercent(row.roi_ratio)}
                         </td>
@@ -393,134 +393,134 @@ export default function ROIDashboardPage() {
         </Card>
 
         {/* Events Table sorted by ROI */}
-        <Card data-oid="t8l70cb">
-          <CardHeader data-oid="b27azn:">
-            <CardTitle data-oid=".58hs85">Event Performance</CardTitle>
-            <CardDescription data-oid="tbbnd1_">
+        <Card>
+          <CardHeader>
+            <CardTitle>Event Performance</CardTitle>
+            <CardDescription>
               All events sorted by ROI (best performing first)
             </CardDescription>
           </CardHeader>
-          <CardContent data-oid="80hs8:1">
+          <CardContent>
             {data.events.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8" data-oid="w8x3yq8">
+              <p className="text-center text-muted-foreground py-8">
                 No events found.
               </p>
             ) : (
-              <div className="overflow-x-auto" data-oid="o1959w.">
-                <table className="w-full text-sm" data-oid="tstu2k:">
-                  <thead data-oid="aynirkj">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
                     <tr
                       className="border-b border-border"
-                      data-oid="w3g2rl6"
+                     
                     >
                       <th
                         className="text-left py-2 pr-4 font-medium text-foreground"
-                        data-oid="6t60g5o"
+                       
                       >
                         Event
                       </th>
                       <th
                         className="text-right py-2 px-3 font-medium text-foreground"
-                        data-oid="j0rbzu."
+                       
                       >
                         Spent
                       </th>
                       <th
                         className="text-right py-2 px-3 font-medium text-foreground"
-                        data-oid="eozr683"
+                       
                       >
                         Pipeline
                       </th>
                       <th
                         className="text-right py-2 px-3 font-medium text-foreground"
-                        data-oid="v3jui7o"
+                       
                       >
                         Revenue
                       </th>
                       <th
                         className="text-right py-2 px-3 font-medium text-foreground"
-                        data-oid=".6v:_lj"
+                       
                       >
                         Leads
                       </th>
                       <th
                         className="text-right py-2 px-3 font-medium text-foreground"
-                        data-oid="fvc8k1d"
+                       
                       >
                         Meetings
                       </th>
                       <th
                         className="text-right py-2 pl-3 font-medium text-foreground"
-                        data-oid="497:bym"
+                       
                       >
                         ROI
                       </th>
                     </tr>
                   </thead>
-                  <tbody data-oid="cc4m7p5">
+                  <tbody>
                     {data.events.map((event) => (
                       <tr
                         key={event.id}
                         className="border-b border-border hover:bg-background/50"
-                        data-oid="i_1bpek"
+                       
                       >
-                        <td className="py-3 pr-4" data-oid="p3fuggo">
+                        <td className="py-3 pr-4">
                           <div
                             className="flex items-center gap-2"
-                            data-oid="1rz-akh"
+                           
                           >
                             <Link
                               href={`/events/${event.id}`}
                               className="font-medium text-foreground hover:text-spectral transition-colors"
-                              data-oid="2g8hx5t"
+                             
                             >
                               {event.name}
                             </Link>
                             <ArrowUpRight
                               className="w-3 h-3 text-muted-foreground/60"
-                              data-oid="-l:5:oc"
+                             
                             />
                           </div>
                           <span
                             className={`inline-flex items-center mt-1 px-2 py-0.5 rounded text-xs font-medium border ${typeColorClasses[event.event_type_record?.name?.toLowerCase() ?? ''] || 'bg-muted-foreground/15 text-muted-foreground border-muted-foreground/30'}`}
-                            data-oid="3dal06v"
+                           
                           >
                             {event.event_type_record?.name ?? 'Uncategorized'}
                           </span>
                         </td>
                         <td
                           className="text-right py-3 px-3 tabular-nums"
-                          data-oid="mwvq11f"
+                         
                         >
                           {formatCurrency(event.actual_spent)}
                         </td>
                         <td
                           className="text-right py-3 px-3 tabular-nums"
-                          data-oid="rinbgc4"
+                         
                         >
                           {formatCurrency(event.pipeline_generated)}
                         </td>
                         <td
                           className="text-right py-3 px-3 tabular-nums"
-                          data-oid="s7ymgqk"
+                         
                         >
                           {formatCurrency(event.revenue_closed)}
                         </td>
                         <td
                           className="text-right py-3 px-3 tabular-nums"
-                          data-oid="_zuf.af"
+                         
                         >
                           {event.leads_generated}
                         </td>
                         <td
                           className="text-right py-3 px-3 tabular-nums"
-                          data-oid="pk9a609"
+                         
                         >
                           {event.meetings_booked}
                         </td>
                         <td
                           className={`text-right py-3 pl-3 tabular-nums font-semibold ${roiCellColor(event.roi_ratio)}`}
-                          data-oid="cob-lv:"
+                         
                         >
                           {formatPercent(event.roi_ratio)}
                         </td>

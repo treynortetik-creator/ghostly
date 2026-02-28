@@ -76,18 +76,18 @@ export function EventCard({
         ${onClick ? "hover:shadow-lg cursor-pointer" : ""}
         ${isExpanded ? "ring-1 ring-border" : ""}
       `}
-      data-oid="28pq_em"
+     
     >
-      <CardContent className={compact ? "py-3" : "py-4"} data-oid="y3:2aj3">
+      <CardContent className={compact ? "py-3" : "py-4"}>
         {/* Main content - clickable area */}
-        <Link href={`/events/${event.id}`} className="block" data-oid="iw5qd2r">
+        <Link href={`/events/${event.id}`} className="block">
           <div
             className="flex flex-col lg:flex-row lg:items-center gap-4"
-            data-oid="y2i26if"
+           
           >
             {/* Left section: Name, type badge, and meta */}
-            <div className="flex-1 min-w-0" data-oid="-cnxzep">
-              <div className="flex items-start gap-3" data-oid="w6izsnv">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start gap-3">
                 {/* Expandable toggle (if applicable) */}
                 {expandable && event.expense_count > 0 && (
                   <button
@@ -100,25 +100,25 @@ export function EventCard({
                     aria-label={
                       isExpanded ? "Collapse expenses" : "Expand expenses"
                     }
-                    data-oid="tnf7qzk"
+                   
                   >
                     {isExpanded ? (
-                      <ChevronDown className="w-4 h-4" data-oid="zt-bow:" />
+                      <ChevronDown className="w-4 h-4" />
                     ) : (
-                      <ChevronRight className="w-4 h-4" data-oid="ix5lfp6" />
+                      <ChevronRight className="w-4 h-4" />
                     )}
                   </button>
                 )}
 
-                <div className="flex-1 min-w-0" data-oid="14-a_6i">
+                <div className="flex-1 min-w-0">
                   {/* Event name and type */}
                   <div
                     className="flex flex-wrap items-center gap-2 mb-1"
-                    data-oid="9f8gkpk"
+                   
                   >
                     <h3
                       className="font-semibold text-foreground truncate"
-                      data-oid="vyp_d6z"
+                     
                     >
                       {event.name}
                     </h3>
@@ -128,14 +128,14 @@ export function EventCard({
                           inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border
                           ${typeColorClasses[event.event_type_record?.name?.toLowerCase() ?? ''] || "bg-muted-foreground/15 text-muted-foreground border-muted-foreground/30"}
                         `}
-                        data-oid="p6:y021"
+                       
                       >
                         {event.event_type_record.name}
                       </span>
                     )}
                     <span
                       className="text-xs font-medium text-muted-foreground bg-card px-2 py-0.5 rounded border border-border"
-                      data-oid="l-ed822"
+                     
                     >
                       {event.quarter}
                     </span>
@@ -145,21 +145,21 @@ export function EventCard({
                   {!compact && (
                     <div
                       className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground"
-                      data-oid="f2tug:p"
+                     
                     >
                       <span
                         className="inline-flex items-center gap-1"
-                        data-oid="2ecpa6j"
+                       
                       >
-                        <Calendar className="w-3.5 h-3.5" data-oid="-fzder5" />
+                        <Calendar className="w-3.5 h-3.5" />
                         {formatDateRange()}
                       </span>
                       {event.location && (
                         <span
                           className="inline-flex items-center gap-1"
-                          data-oid=".squrta"
+                         
                         >
-                          <MapPin className="w-3.5 h-3.5" data-oid="j1en2ox" />
+                          <MapPin className="w-3.5 h-3.5" />
                           {event.location}
                         </span>
                       )}
@@ -174,15 +174,15 @@ export function EventCard({
               (event.expansion_goal > 0 || event.net_new_goal > 0) && (
                 <div
                   className="hidden xl:flex items-center gap-4 text-sm"
-                  data-oid=":bif73x"
+                 
                 >
                   {event.expansion_goal > 0 && (
                     <div
                       className="flex items-center gap-1.5 text-muted-foreground"
-                      data-oid="723rau7"
+                     
                     >
-                      <Target className="w-4 h-4" data-oid="zoqjomt" />
-                      <span className="tabular-nums" data-oid="zk.2oyp">
+                      <Target className="w-4 h-4" />
+                      <span className="tabular-nums">
                         {event.expansion_goal} exp
                       </span>
                     </div>
@@ -190,13 +190,13 @@ export function EventCard({
                   {event.net_new_goal > 0 && (
                     <div
                       className="flex items-center gap-1.5 text-muted-foreground"
-                      data-oid=".2af96e"
+                     
                     >
                       <Target
                         className="w-4 h-4 text-emerald-400"
-                        data-oid="y2x41mk"
+                       
                       />
-                      <span className="tabular-nums" data-oid="fwf3q82">
+                      <span className="tabular-nums">
                         {event.net_new_goal} new
                       </span>
                     </div>
@@ -205,12 +205,12 @@ export function EventCard({
               )}
 
             {/* Right section: Budget progress */}
-            <div className="lg:w-64 xl:w-80" data-oid="xjle1hi">
+            <div className="lg:w-64 xl:w-80">
               <div
                 className="flex items-center justify-between mb-1.5 text-sm"
-                data-oid="trhrw7u"
+               
               >
-                <span className="text-muted-foreground" data-oid="zqhx_4c">
+                <span className="text-muted-foreground">
                   {formatCurrency(event.actual_spent)} of{" "}
                   {formatCurrency(event.budget_amount)}
                 </span>
@@ -219,7 +219,7 @@ export function EventCard({
                     font-medium tabular-nums
                     ${event.remaining < 0 ? "text-destructive" : event.remaining < event.budget_amount * 0.2 ? "text-spectral" : "text-emerald-400"}
                   `}
-                  data-oid="tl.cj1p"
+                 
                 >
                   {event.remaining >= 0
                     ? formatCurrency(event.remaining)
@@ -231,15 +231,15 @@ export function EventCard({
                 value={event.actual_spent}
                 max={event.budget_amount}
                 size="sm"
-                data-oid="_o31nsb"
+               
               />
 
               {!compact && event.expense_count > 0 && (
                 <div
                   className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground"
-                  data-oid="qrhupo_"
+                 
                 >
-                  <Receipt className="w-3 h-3" data-oid="uhbxf_c" />
+                  <Receipt className="w-3 h-3" />
                   {event.expense_count} expense
                   {event.expense_count !== 1 ? "s" : ""}
                 </div>
@@ -252,45 +252,45 @@ export function EventCard({
         {expandable && isExpanded && expenses.length > 0 && (
           <div
             className="mt-4 pt-4 border-t border-border"
-            data-oid="x.2in9-"
+           
           >
             <h4
               className="text-sm font-medium text-foreground mb-3"
-              data-oid="aejjr3h"
+             
             >
               Expenses ({expenses.length})
             </h4>
-            <div className="space-y-2" data-oid="f572789">
+            <div className="space-y-2">
               {expenses.slice(0, 5).map((expense) => (
                 <div
                   key={expense.id}
                   className="flex items-center justify-between py-2 px-3 bg-background/50 rounded text-sm"
-                  data-oid="7zd:i56"
+                 
                 >
-                  <div className="flex-1 min-w-0" data-oid="4itwv_i">
+                  <div className="flex-1 min-w-0">
                     <span
                       className="font-medium text-foreground"
-                      data-oid="t_et412"
+                     
                     >
                       {expense.vendor || "Unknown Vendor"}
                     </span>
                     {expense.memo && (
                       <p
                         className="text-muted-foreground text-xs truncate mt-0.5"
-                        data-oid="s6_i4za"
+                       
                       >
                         {expense.memo}
                       </p>
                     )}
                   </div>
-                  <div className="text-right ml-4" data-oid="velyudf">
+                  <div className="text-right ml-4">
                     <span
                       className="font-medium tabular-nums text-foreground"
-                      data-oid="d_w6e:2"
+                     
                     >
                       {formatCurrency(expense.amount)}
                     </span>
-                    <p className="text-xs text-muted-foreground" data-oid="hk8mody">
+                    <p className="text-xs text-muted-foreground">
                       {formatDateShort(expense.expense_date)}
                     </p>
                   </div>
@@ -300,7 +300,7 @@ export function EventCard({
                 <Link
                   href={`/events/${event.id}`}
                   className="block text-center py-2 text-sm text-spectral hover:text-foreground transition-colors"
-                  data-oid="p6r6:la"
+                 
                 >
                   View all {expenses.length} expenses
                 </Link>

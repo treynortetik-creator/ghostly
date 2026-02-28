@@ -99,37 +99,37 @@ export default function EventsPage() {
   });
 
   return (
-    <AppShell data-oid="6ks2gaf">
+    <AppShell>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
       {/* Page Header */}
       <div
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
-        data-oid="wa.lzf9"
+       
       >
-        <div data-oid="hsjmlip">
+        <div>
           <h1
             className="text-3xl font-bold text-foreground flex items-center gap-3"
-            data-oid="qfgfujw"
+           
           >
-            <Calendar className="w-8 h-8 text-spectral" data-oid="0s4j:z." />
+            <Calendar className="w-8 h-8 text-spectral" />
             The Event Ledger
           </h1>
-          <p className="mt-1 text-muted-foreground" data-oid="3-0ey.i">
+          <p className="mt-1 text-muted-foreground">
             FY 2026 Events &middot; As of {formattedDate}
           </p>
         </div>
 
-        <div className="flex items-center gap-3" data-oid="tie.4j9">
+        <div className="flex items-center gap-3">
           <Button
             variant="secondary"
             size="sm"
             onClick={fetchEvents}
             disabled={isLoading}
-            data-oid="in34b05"
+           
           >
             <RefreshCw
               className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
-              data-oid="jvqimi-"
+             
             />
             Refresh
           </Button>
@@ -137,8 +137,8 @@ export default function EventsPage() {
           <Button
             variant="primary"
             onClick={() => setShowCreateForm(true)}
-            leftIcon={<Plus className="w-4 h-4" data-oid="2ompy-i" />}
-            data-oid=":s7-a3n"
+            leftIcon={<Plus className="w-4 h-4" />}
+           
           >
             Add Event
           </Button>
@@ -147,13 +147,13 @@ export default function EventsPage() {
 
       {/* Create Event Form (Modal-like) */}
       {showCreateForm && (
-        <div className="mb-8" data-oid="n-ina1r">
+        <div className="mb-8">
           <EventForm
             mode="create"
             onSubmit={handleCreateEvent}
             onCancel={() => setShowCreateForm(false)}
             isLoading={isCreating}
-            data-oid="m1jdotw"
+           
           />
         </div>
       )}
@@ -166,16 +166,16 @@ export default function EventsPage() {
         expandable={false}
         showSearch={true}
         groupByQuarter={false}
-        data-oid="tggnq1d"
+       
       />
 
       {/* Footer Info */}
       {!isLoading && !error && events.length > 0 && (
         <div
           className="text-center py-6 mt-8 border-t border-border"
-          data-oid="qf.l20z"
+         
         >
-          <p className="text-xs text-muted-foreground/60" data-oid="f15.15f">
+          <p className="text-xs text-muted-foreground/60">
             Click on any event to view full details and manage expenses.
           </p>
         </div>

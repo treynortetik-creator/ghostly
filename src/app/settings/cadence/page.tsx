@@ -58,7 +58,7 @@ function offsetColor(days: number): string {
 }
 
 const notifyChannelLabels: Record<NotifyChannel, string> = {
-  scrooge: 'AI Agent',
+  agent: 'AI Agent',
   in_app: 'In-App',
   both: 'Both',
 };
@@ -694,7 +694,7 @@ export default function CadenceRegistryPage() {
                                         disabled={isSavingMilestone}
                                       >
                                         <option value="in_app">In-App</option>
-                                        <option value="scrooge">AI Agent</option>
+                                        <option value="agent">AI Agent</option>
                                         <option value="both">Both</option>
                                       </select>
                                     </div>
@@ -810,7 +810,7 @@ export default function CadenceRegistryPage() {
                                   disabled={isSavingMilestone}
                                 >
                                   <option value="in_app">In-App</option>
-                                  <option value="scrooge">AI Agent</option>
+                                  <option value="agent">AI Agent</option>
                                   <option value="both">Both</option>
                                 </select>
                               </div>

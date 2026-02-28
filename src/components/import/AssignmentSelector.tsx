@@ -100,7 +100,7 @@ export function AssignmentSelector({
     <div
       ref={containerRef}
       className={cn("relative", className)}
-      data-oid="4r3o8c:"
+     
     >
       {/* Selected Value Display / Trigger */}
       <button
@@ -115,29 +115,29 @@ export function AssignmentSelector({
           disabled && "opacity-50 cursor-not-allowed",
           isOpen && "ring-2 ring-spectral/30 border-border",
         )}
-        data-oid="z5qupg1"
+       
       >
         {/* Icon */}
         {value ? (
           value.type === "event" ? (
             <Calendar
               className="w-4 h-4 text-spectral shrink-0"
-              data-oid="jofsl-c"
+             
             />
           ) : (
             <FolderOpen
               className="w-4 h-4 text-emerald-400 shrink-0"
-              data-oid="e0.w27b"
+             
             />
           )
         ) : (
-          <span className="w-4 h-4" data-oid="y4uy9kp" />
+          <span className="w-4 h-4" />
         )}
 
         {/* Value Display */}
         <span
           className={cn("flex-1 truncate", !value && "text-muted-foreground/60")}
-          data-oid="3uyu63y"
+         
         >
           {value ? value.name : placeholder}
         </span>
@@ -151,11 +151,11 @@ export function AssignmentSelector({
               getConfidenceColor(aiConfidence),
             )}
             title={`AI suggested with ${aiConfidence ? Math.round(aiConfidence * 100) : "?"}% confidence`}
-            data-oid="r-6gdhe"
+           
           >
-            <Sparkles className="w-3 h-3" data-oid="-1b5jws" />
+            <Sparkles className="w-3 h-3" />
             {aiConfidence && (
-              <span className="font-medium" data-oid="agerw77">
+              <span className="font-medium">
                 {getConfidenceLabel(aiConfidence)}
               </span>
             )}
@@ -167,9 +167,9 @@ export function AssignmentSelector({
           <button
             onClick={handleClear}
             className="p-0.5 text-muted-foreground/60 hover:text-destructive transition-colors"
-            data-oid="t0w202-"
+           
           >
-            <X className="w-3.5 h-3.5" data-oid="zodpv_l" />
+            <X className="w-3.5 h-3.5" />
           </button>
         )}
 
@@ -179,7 +179,7 @@ export function AssignmentSelector({
             "w-4 h-4 text-muted-foreground transition-transform",
             isOpen && "rotate-180",
           )}
-          data-oid="4-bsjnb"
+         
         />
       </button>
 
@@ -191,12 +191,12 @@ export function AssignmentSelector({
             "bg-card border border-border rounded-md shadow-lg",
             "max-h-64 overflow-hidden",
           )}
-          data-oid="nai.vkx"
+         
         >
           {/* Search Input */}
           <div
             className="px-2 pb-2 border-b border-border"
-            data-oid="qjdn6po"
+           
           >
             <input
               ref={inputRef}
@@ -210,18 +210,18 @@ export function AssignmentSelector({
                 "focus:outline-none focus:ring-1 focus:ring-spectral/30",
               )}
               autoFocus
-              data-oid="3cs.b1w"
+             
             />
           </div>
 
           {/* Options List */}
-          <div className="overflow-y-auto max-h-48" data-oid="xbibnfv">
+          <div className="overflow-y-auto max-h-48">
             {/* Events Group */}
             {events.length > 0 && (
-              <div data-oid="agdd.u8">
+              <div>
                 <div
                   className="px-3 py-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider bg-spectral/10"
-                  data-oid="4zwq-ol"
+                 
                 >
                   Events
                 </div>
@@ -234,19 +234,19 @@ export function AssignmentSelector({
                       "hover:bg-spectral/10 transition-colors",
                       value?.id === option.id && "bg-spectral/10",
                     )}
-                    data-oid="a34do.n"
+                   
                   >
                     <Calendar
                       className="w-4 h-4 text-spectral shrink-0"
-                      data-oid="ng88zsq"
+                     
                     />
-                    <span className="flex-1 truncate" data-oid="9yrnpy8">
+                    <span className="flex-1 truncate">
                       {option.name}
                     </span>
                     {option.quarter && (
                       <span
                         className="text-xs text-muted-foreground/60"
-                        data-oid="q6jwipd"
+                       
                       >
                         {option.quarter}
                       </span>
@@ -258,10 +258,10 @@ export function AssignmentSelector({
 
             {/* Categories Group */}
             {categories.length > 0 && (
-              <div data-oid="3icdzxw">
+              <div>
                 <div
                   className="px-3 py-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider bg-spectral/10"
-                  data-oid="c10ygjb"
+                 
                 >
                   Budget Categories
                 </div>
@@ -274,13 +274,13 @@ export function AssignmentSelector({
                       "hover:bg-emerald-400/10 transition-colors",
                       value?.id === option.id && "bg-emerald-400/10",
                     )}
-                    data-oid="9pdq04."
+                   
                   >
                     <FolderOpen
                       className="w-4 h-4 text-emerald-400 shrink-0"
-                      data-oid="z67znb:"
+                     
                     />
-                    <span className="flex-1 truncate" data-oid="kzsqgp3">
+                    <span className="flex-1 truncate">
                       {option.name}
                     </span>
                   </button>
@@ -292,7 +292,7 @@ export function AssignmentSelector({
             {filteredOptions.length === 0 && (
               <div
                 className="px-3 py-4 text-center text-sm text-muted-foreground/60"
-                data-oid="jbr0zxq"
+               
               >
                 No matching options found
               </div>

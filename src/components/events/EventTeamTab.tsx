@@ -51,14 +51,14 @@ export function EventTeamTab({ eventId }: EventTeamTabProps) {
 
   if (isLoading) {
     return (
-      <div className="py-8 text-center text-muted-foreground" data-oid="e042sln">
+      <div className="py-8 text-center text-muted-foreground">
         Loading team...
       </div>
     );
   }
 
   return (
-    <div className="space-y-4" data-oid="m_s7ijb">
+    <div className="space-y-4">
       <ConfirmDialog
         open={removeConfirmId !== null}
         title="Remove Team Member"
@@ -68,59 +68,59 @@ export function EventTeamTab({ eventId }: EventTeamTabProps) {
         onConfirm={() => { if (removeConfirmId) handleRemove(removeConfirmId); }}
         onCancel={() => setRemoveConfirmId(null)}
       />
-      <div className="flex items-center justify-between" data-oid="dr73x1a">
+      <div className="flex items-center justify-between">
         <h3
           className="text-lg font-semibold text-foreground"
-          data-oid="x8--6a6"
+         
         >
           Assigned Staff ({assignments.length})
         </h3>
         <Button
           variant="secondary"
           size="sm"
-          leftIcon={<UserPlus className="w-4 h-4" data-oid="lixgnv3" />}
+          leftIcon={<UserPlus className="w-4 h-4" />}
           onClick={() => setShowAssignModal(true)}
-          data-oid="l-f1zcy"
+         
         >
           Assign Member
         </Button>
       </div>
 
       {assignments.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground" data-oid="bsj-yun">
-          <p className="" data-oid="82rvft2">
+        <div className="text-center py-8 text-muted-foreground">
+          <p className="">
             No staff assigned to this affair
           </p>
-          <p className="text-sm mt-1" data-oid="oi_yo4k">
+          <p className="text-sm mt-1">
             Assign team members to track who&apos;s attending.
           </p>
         </div>
       ) : (
-        <div className="grid gap-3 md:grid-cols-2" data-oid="d:ufylf">
+        <div className="grid gap-3 md:grid-cols-2">
           {assignments.map((a) => (
-            <Card key={a.id} data-oid="s6v.kvw">
+            <Card key={a.id}>
               <CardContent
                 className="py-3 flex items-center justify-between"
-                data-oid="kshopqr"
+               
               >
-                <div className="flex items-center gap-3" data-oid="waluk-u">
+                <div className="flex items-center gap-3">
                   <div
                     className="w-9 h-9 rounded-full bg-spectral/10 flex items-center justify-center"
-                    data-oid="::xzaut"
+                   
                   >
                     <User
                       className="w-4 h-4 text-muted-foreground"
-                      data-oid="30xj_-s"
+                     
                     />
                   </div>
-                  <div data-oid="2vkeueq">
+                  <div>
                     <p
                       className="text-sm font-medium text-foreground"
-                      data-oid="xngr-79"
+                     
                     >
                       {a.team_member?.name || "Unknown"}
                     </p>
-                    <p className="text-xs text-muted-foreground" data-oid="l4jwkz6">
+                    <p className="text-xs text-muted-foreground">
                       {a.event_role ||
                         a.team_member?.default_role ||
                         "No role assigned"}
@@ -130,9 +130,9 @@ export function EventTeamTab({ eventId }: EventTeamTabProps) {
                 <button
                   onClick={() => setRemoveConfirmId(a.id)}
                   className="text-muted-foreground/60 hover:text-destructive transition-colors"
-                  data-oid="rx5bxtt"
+                 
                 >
-                  <Trash2 className="w-4 h-4" data-oid="1rqcai:" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </CardContent>
             </Card>
@@ -149,7 +149,7 @@ export function EventTeamTab({ eventId }: EventTeamTabProps) {
             fetchTeam();
           }}
           onCancel={() => setShowAssignModal(false)}
-          data-oid="u1sm8cj"
+         
         />
       )}
     </div>

@@ -9,3 +9,6 @@ export type { CardProps, CardHeaderProps, CardFooterProps, StatCardProps } from 
 
 export { ProgressBar, BudgetProgress, MiniProgress } from './ProgressBar';
 export type { ProgressBarProps, BudgetProgressProps, MiniProgressProps } from './ProgressBar';
+
+export { EmptyState } from './EmptyState';
+export type { EmptyStateProps } from './EmptyState';

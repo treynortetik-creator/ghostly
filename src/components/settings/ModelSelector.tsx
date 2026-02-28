@@ -110,23 +110,23 @@ export function ModelSelector({
   }, []);
 
   return (
-    <Card className="model-selector" data-oid="o.8b5j2">
-      <CardHeader divider={false} className="pb-2" data-oid="l4n9pb.">
+    <Card className="model-selector">
+      <CardHeader divider={false} className="pb-2">
         <CardTitle
           className="text-lg flex items-center gap-2"
-          data-oid="7otjv-y"
+         
         >
-          <Bot className="w-5 h-5 text-spectral" data-oid="anvr9t." />
+          <Bot className="w-5 h-5 text-spectral" />
           AI Model
         </CardTitle>
-        <p className="text-sm text-muted-foreground mt-1" data-oid="8_f57g.">
+        <p className="text-sm text-muted-foreground mt-1">
           Select the model for automatic transaction categorization
         </p>
       </CardHeader>
 
-      <CardContent data-oid="dsh-0vg">
+      <CardContent>
         {/* Dropdown Trigger */}
-        <div className="relative" data-oid="lnxfgi4">
+        <div className="relative">
           <button
             type="button"
             onClick={() => !disabled && setIsOpen(!isOpen)}
@@ -143,33 +143,33 @@ export function ModelSelector({
               }
               ${isOpen ? "border-spectral ring-1 ring-spectral/30" : ""}
             `}
-            data-oid="nhscnm9"
+           
           >
             <span
               className="flex items-center gap-2 flex-1 min-w-0"
-              data-oid="cnwnxzm"
+             
             >
               {isLoading ? (
-                <span className="text-muted-foreground" data-oid="wa47vl4">
+                <span className="text-muted-foreground">
                   Loading models...
                 </span>
               ) : selectedModel ? (
-                <span className="truncate" data-oid=":blosv8">
+                <span className="truncate">
                   {selectedModel.name || selectedModel.id}
                 </span>
               ) : value ? (
-                <span className="truncate" data-oid="-g8zvb0">
+                <span className="truncate">
                   {value}
                 </span>
               ) : (
-                <span className="text-muted-foreground" data-oid="vhvie9.">
+                <span className="text-muted-foreground">
                   Select a model
                 </span>
               )}
             </span>
             <ChevronDown
               className={`w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
-              data-oid="lbd5.u-"
+             
             />
           </button>
 
@@ -178,12 +178,12 @@ export function ModelSelector({
             <div
               className="absolute top-full left-0 right-0 mt-1 z-10
               bg-background border border-border rounded-md shadow-lg"
-              data-oid="5udoe-p"
+             
             >
               {/* Search & Filter */}
               <div
                 className="p-3 border-b border-border space-y-2"
-                data-oid="-ogo2yz"
+               
               >
                 <input
                   type="text"
@@ -193,10 +193,10 @@ export function ModelSelector({
                   className="w-full px-3 py-2 bg-card border border-border
                     rounded text-sm text-foreground
                     focus:outline-none focus:ring-1 focus:ring-spectral"
-                  data-oid="ek017e6"
+                 
                 />
 
-                <div className="flex gap-2" data-oid=".q70aj2">
+                <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => setFilter("recommended")}
@@ -205,7 +205,7 @@ export function ModelSelector({
                         ? "bg-spectral text-foreground"
                         : "bg-spectral/10 text-muted-foreground hover:bg-spectral/10"
                     }`}
-                    data-oid="dcl45vc"
+                   
                   >
                     Recommended
                   </button>
@@ -217,7 +217,7 @@ export function ModelSelector({
                         ? "bg-spectral text-foreground"
                         : "bg-spectral/10 text-muted-foreground hover:bg-spectral/10"
                     }`}
-                    data-oid="cd7is:k"
+                   
                   >
                     All Models
                   </button>
@@ -225,11 +225,11 @@ export function ModelSelector({
               </div>
 
               {/* Model Options */}
-              <div className="max-h-64 overflow-y-auto" data-oid="tjoi3-5">
+              <div className="max-h-64 overflow-y-auto">
                 {filteredModels.length === 0 ? (
                   <div
                     className="px-4 py-6 text-center text-muted-foreground"
-                    data-oid="bqaqvgy"
+                   
                   >
                     No models found
                   </div>
@@ -255,56 +255,56 @@ export function ModelSelector({
                               : "hover:bg-spectral/10"
                           }
                         `}
-                        data-oid="dgg9rs:"
+                       
                       >
                         <div
                           className="flex items-center justify-between"
-                          data-oid="5e3-ric"
+                         
                         >
                           <span
                             className="font-medium text-foreground flex items-center gap-2"
-                            data-oid="i26ef9c"
+                           
                           >
                             {model.name || model.id}
                             {isRecommended && (
                               <Zap
                                 className="w-3 h-3 text-spectral"
-                                data-oid="oc0dfua"
+                               
                               />
                             )}
                           </span>
                           {model.id === value && (
                             <Check
                               className="w-4 h-4 text-spectral flex-shrink-0"
-                              data-oid="ysm9v46"
+                             
                             />
                           )}
                         </div>
                         <div
                           className="flex items-center gap-3 mt-1 text-xs text-muted-foreground"
-                          data-oid="4rd4zf."
+                         
                         >
                           <span
                             className="flex items-center gap-1"
-                            data-oid="o1zhyt-"
+                           
                           >
                             <DollarSign
                               className="w-3 h-3"
-                              data-oid="l6tm6:d"
+                             
                             />
                             {formatPrice(model.pricing.prompt)}/1K tokens
                           </span>
-                          <span className="text-muted-foreground/60" data-oid="oj9q2-u">
+                          <span className="text-muted-foreground/60">
                             |
                           </span>
-                          <span data-oid="z11vvj9">
+                          <span>
                             {(model.context_length / 1000).toFixed(0)}K context
                           </span>
                         </div>
                         {model.description && (
                           <p
                             className="text-xs text-muted-foreground/60 mt-1 line-clamp-1"
-                            data-oid="oc:qzp8"
+                           
                           >
                             {model.description}
                           </p>
@@ -322,10 +322,10 @@ export function ModelSelector({
         {error && (
           <div
             className="mt-2 flex items-center gap-2 text-sm text-destructive"
-            data-oid="s80:3x5"
+           
           >
-            <AlertCircle className="w-4 h-4" data-oid="xzqnz4k" />
-            <span data-oid="1:p4amg">{error}</span>
+            <AlertCircle className="w-4 h-4" />
+            <span>{error}</span>
           </div>
         )}
 
@@ -333,41 +333,41 @@ export function ModelSelector({
         {selectedModel && !isOpen && (
           <div
             className="mt-3 p-3 bg-spectral/10 rounded border border-border"
-            data-oid="9ruzrkq"
+           
           >
             <div
               className="flex items-center justify-between text-sm"
-              data-oid="o75ubml"
+             
             >
-              <span className="text-muted-foreground" data-oid="6snl_4g">
+              <span className="text-muted-foreground">
                 Model ID:
               </span>
               <code
                 className="text-foreground font-mono text-xs bg-card px-2 py-0.5 rounded"
-                data-oid="gpo9jqa"
+               
               >
                 {selectedModel.id}
               </code>
             </div>
             <div
               className="flex items-center justify-between text-sm mt-2"
-              data-oid="i5j914e"
+             
             >
-              <span className="text-muted-foreground" data-oid="zd19v4i">
+              <span className="text-muted-foreground">
                 Cost per 1K input tokens:
               </span>
-              <span className="text-foreground" data-oid="v8.q1tz">
+              <span className="text-foreground">
                 {formatPrice(selectedModel.pricing.prompt)}
               </span>
             </div>
             <div
               className="flex items-center justify-between text-sm mt-1"
-              data-oid="v488e6t"
+             
             >
-              <span className="text-muted-foreground" data-oid="zrwn5kl">
+              <span className="text-muted-foreground">
                 Cost per 1K output tokens:
               </span>
-              <span className="text-foreground" data-oid="60f8tnv">
+              <span className="text-foreground">
                 {formatPrice(selectedModel.pricing.completion)}
               </span>
             </div>
@@ -375,7 +375,7 @@ export function ModelSelector({
         )}
 
         {/* Help Text */}
-        <p className="mt-3 text-xs text-muted-foreground/60" data-oid="5dmjv9w">
+        <p className="mt-3 text-xs text-muted-foreground/60">
           Recommended models offer the best balance of speed, accuracy, and cost
           for categorization tasks.
         </p>

@@ -1,5 +1,5 @@
 /**
- * The Firm - Team Member by ID API
+ * Ghostly - Team Member by ID API
  *
  * GET /api/team/:id - Get single team member
  * PUT /api/team/:id - Update team member

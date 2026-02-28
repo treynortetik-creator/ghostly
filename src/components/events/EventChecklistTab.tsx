@@ -138,7 +138,7 @@ export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
 
   if (isLoading) {
     return (
-      <div className="py-8 text-center text-muted-foreground" data-oid="pecs0im">
+      <div className="py-8 text-center text-muted-foreground">
         Loading checklist...
       </div>
     );
@@ -149,13 +149,13 @@ export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
   const progressPercent = total > 0 ? (completed / total) * 100 : 0;
 
   return (
-    <div className="space-y-4" data-oid="82h0hww">
+    <div className="space-y-4">
       {/* Header with progress */}
-      <div className="flex items-center justify-between" data-oid="-nmyq2m">
-        <div className="flex items-center gap-3" data-oid="4p:snnu">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
           <h3
             className="text-lg font-semibold text-foreground"
-            data-oid=".qegadb"
+           
           >
             Task Ledger
           </h3>
@@ -166,13 +166,13 @@ export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
                   ? "bg-emerald-400/10 text-emerald-400"
                   : "bg-spectral/10 text-muted-foreground"
               }`}
-              data-oid="da8jzp0"
+             
             >
               {completed}/{total}
             </span>
           )}
         </div>
-        <div className="flex gap-2" data-oid="obmyq1v">
+        <div className="flex gap-2">
           <Button
             variant="accent"
             size="sm"
@@ -185,18 +185,18 @@ export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
           <Button
             variant="secondary"
             size="sm"
-            leftIcon={<FileText className="w-4 h-4" data-oid="zo:c_of" />}
+            leftIcon={<FileText className="w-4 h-4" />}
             onClick={() => setShowTemplateModal(true)}
-            data-oid="01k:yfl"
+           
           >
             Apply Template
           </Button>
           <Button
             variant="secondary"
             size="sm"
-            leftIcon={<Plus className="w-4 h-4" data-oid="rlp6m26" />}
+            leftIcon={<Plus className="w-4 h-4" />}
             onClick={() => setShowAddForm(true)}
-            data-oid="8xa9qvk"
+           
           >
             Add Task
           </Button>
@@ -220,7 +220,7 @@ export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
 
       {/* Progress bar */}
       {total > 0 && (
-        <ProgressBar value={progressPercent} max={100} data-oid="daxu08a" />
+        <ProgressBar value={progressPercent} max={100} />
       )}
 
       {/* Category filter pills */}
@@ -244,20 +244,20 @@ export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
 
       {/* Checklist sections */}
       {total === 0 ? (
-        <div className="text-center py-8 text-muted-foreground" data-oid="0qwcj9x">
+        <div className="text-center py-8 text-muted-foreground">
           <ListChecks
             className="w-10 h-10 mx-auto mb-3 text-muted-foreground/60"
-            data-oid="5a-vcan"
+           
           />
-          <p className="" data-oid="fcq2q4m">
+          <p className="">
             No tasks on the ledger
           </p>
-          <p className="text-sm mt-1" data-oid="txrh9h9">
+          <p className="text-sm mt-1">
             Apply a template or add individual tasks to begin.
           </p>
         </div>
       ) : (
-        <div className="space-y-4" data-oid="nw-l:e_">
+        <div className="space-y-4">
           {(["pre_event", "day_of", "post_event"] as ChecklistPhase[]).map(
             (phase) => (
               <ChecklistSection
@@ -265,7 +265,7 @@ export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
                 phase={phase}
                 items={filterByCategory(data?.grouped[phase] || [])}
                 onToggle={handleToggle}
-                data-oid="t5s.1fo"
+               
               />
             ),
           )}
@@ -279,7 +279,7 @@ export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
           onSave={handleAddItem}
           onCancel={() => setShowAddForm(false)}
           isLoading={isAdding}
-          data-oid="zttw1pv"
+         
         />
       )}
 
@@ -291,7 +291,7 @@ export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
             fetchChecklist();
           }}
           onCancel={() => setShowTemplateModal(false)}
-          data-oid="nbvvs6s"
+         
         />
       )}
     </div>

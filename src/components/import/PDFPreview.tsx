@@ -107,27 +107,27 @@ export function PDFPreview({
   };
 
   return (
-    <div className={cn("space-y-6", className)} data-oid="xdufe3b">
+    <div className={cn("space-y-6", className)}>
       {/* File Info Card */}
-      <Card data-oid="n57tz7f">
-        <CardHeader className="pb-3" data-oid="6svphv4">
+      <Card>
+        <CardHeader className="pb-3">
           <CardTitle
             className="flex items-center gap-2 text-lg"
-            data-oid="xt4ndt6"
+           
           >
-            <FileText className="w-5 h-5 text-spectral" data-oid="uh_oxbh" />
+            <FileText className="w-5 h-5 text-spectral" />
             Uploaded Document
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-0" data-oid="zy90fjf">
+        <CardContent className="pt-0">
           <div
             className="flex items-center justify-between text-sm"
-            data-oid="fprwhrc"
+           
           >
-            <span className="font-medium text-foreground" data-oid="4p7y.:z">
+            <span className="font-medium text-foreground">
               {fileName}
             </span>
-            <span className="text-muted-foreground" data-oid="vbpndck">
+            <span className="text-muted-foreground">
               {pageCount} {pageCount === 1 ? "page" : "pages"}
             </span>
           </div>
@@ -135,34 +135,34 @@ export function PDFPreview({
       </Card>
 
       {/* Extracted Data Card */}
-      <Card elevated data-oid="u:_5q7k">
-        <CardHeader data-oid="dykuqs7">
-          <CardTitle className="flex items-center gap-2" data-oid="rfaz:7g">
-            <Edit3 className="w-5 h-5 text-spectral" data-oid="qywp_9:" />
+      <Card elevated>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Edit3 className="w-5 h-5 text-spectral" />
             Extracted Information
           </CardTitle>
-          <p className="text-sm text-muted-foreground mt-1" data-oid="v89geon">
+          <p className="text-sm text-muted-foreground mt-1">
             Review and edit the extracted details. Fields marked with low
             confidence may need manual correction.
           </p>
         </CardHeader>
-        <CardContent className="space-y-6" data-oid="ltr3::l">
+        <CardContent className="space-y-6">
           {/* Vendor Field */}
-          <div className="space-y-2" data-oid="i.e:gjh">
+          <div className="space-y-2">
             <div
               className="flex items-center justify-between"
-              data-oid="ua6_lkg"
+             
             >
               <label
                 className="flex items-center gap-2 text-sm font-medium text-foreground"
-                data-oid="ll13d33"
+               
               >
-                <Building2 className="w-4 h-4 text-muted-foreground" data-oid=":q4wqrt" />
+                <Building2 className="w-4 h-4 text-muted-foreground" />
                 Vendor / Company
               </label>
               <ConfidenceBadge
                 level={extractedData.confidence.vendor}
-                data-oid="qck826t"
+               
               />
             </div>
             <input
@@ -176,32 +176,32 @@ export function PDFPreview({
                 "focus:outline-none focus:ring-2 focus:ring-spectral/30 focus:border-border",
                 "placeholder:text-muted-foreground/60",
               )}
-              data-oid="nr16tlv"
+             
             />
           </div>
 
           {/* Amount Field */}
-          <div className="space-y-2" data-oid="i2p:.2g">
+          <div className="space-y-2">
             <div
               className="flex items-center justify-between"
-              data-oid=":-8ifs."
+             
             >
               <label
                 className="flex items-center gap-2 text-sm font-medium text-foreground"
-                data-oid="6d3l-j-"
+               
               >
-                <DollarSign className="w-4 h-4 text-muted-foreground" data-oid="m1.t7yf" />
+                <DollarSign className="w-4 h-4 text-muted-foreground" />
                 Amount
               </label>
               <ConfidenceBadge
                 level={extractedData.confidence.amount}
-                data-oid="e.zxxrz"
+               
               />
             </div>
-            <div className="relative" data-oid="gfxc0mt">
+            <div className="relative">
               <span
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                data-oid="wgp0.93"
+               
               >
                 $
               </span>
@@ -218,32 +218,32 @@ export function PDFPreview({
                   "focus:outline-none focus:ring-2 focus:ring-spectral/30 focus:border-border",
                   "placeholder:text-muted-foreground/60",
                 )}
-                data-oid="9u39rtj"
+               
               />
             </div>
             {amount && parseFloat(amount) > 0 && (
-              <p className="text-xs text-muted-foreground" data-oid="_wl3nbv">
+              <p className="text-xs text-muted-foreground">
                 {formatCurrency(parseFloat(amount))}
               </p>
             )}
           </div>
 
           {/* Date Field */}
-          <div className="space-y-2" data-oid="fek2t7r">
+          <div className="space-y-2">
             <div
               className="flex items-center justify-between"
-              data-oid="we.rdn2"
+             
             >
               <label
                 className="flex items-center gap-2 text-sm font-medium text-foreground"
-                data-oid="_c3p8k7"
+               
               >
-                <Calendar className="w-4 h-4 text-muted-foreground" data-oid="ug.6685" />
+                <Calendar className="w-4 h-4 text-muted-foreground" />
                 Expense Date
               </label>
               <ConfidenceBadge
                 level={extractedData.confidence.date}
-                data-oid="pgswdqe"
+               
               />
             </div>
             <input
@@ -255,31 +255,31 @@ export function PDFPreview({
                 "bg-background border border-border",
                 "focus:outline-none focus:ring-2 focus:ring-spectral/30 focus:border-border",
               )}
-              data-oid="o:tse86"
+             
             />
           </div>
         </CardContent>
       </Card>
 
       {/* Raw Text Preview (collapsed by default) */}
-      <details className="group" data-oid="9q-d0rf">
+      <details className="group">
         <summary
           className="cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
-          data-oid="jgwpm-t"
+         
         >
           <span
             className="transform transition-transform group-open:rotate-90"
-            data-oid="9gbhzhd"
+           
           >
             &#9654;
           </span>
           View extracted text
         </summary>
-        <Card className="mt-2" data-oid="4u:ossq">
-          <CardContent className="py-4" data-oid="i77wqaf">
+        <Card className="mt-2">
+          <CardContent className="py-4">
             <pre
               className="text-xs text-muted-foreground whitespace-pre-wrap font-mono bg-background p-3 rounded border border-border max-h-48 overflow-y-auto"
-              data-oid="8v4a30u"
+             
             >
               {extractedData.rawText || "No text extracted"}
             </pre>
@@ -338,9 +338,9 @@ function ConfidenceBadge({
         badge.border,
         badge.text,
       )}
-      data-oid="9ngmbpq"
+     
     >
-      <Icon className="w-3 h-3" data-oid="zqnk7b0" />
+      <Icon className="w-3 h-3" />
       {badge.label}
     </span>
   );

@@ -1,5 +1,5 @@
 /**
- * The Firm - Apply Checklist Template to Event
+ * Ghostly - Apply Checklist Template to Event
  *
  * POST /api/events/:id/checklist/apply-template - Apply a template's items to this event
  */

@@ -111,20 +111,20 @@ export function CategoryForm({
   const errorClasses = "text-xs text-destructive mt-1";
 
   return (
-    <Card data-oid="t9r9fd8">
-      <CardHeader data-oid="u51yqys">
-        <CardTitle data-oid="tdgft_p">
+    <Card>
+      <CardHeader>
+        <CardTitle>
           {mode === "create" ? "Create New Category" : "Edit Category Details"}
         </CardTitle>
       </CardHeader>
 
-      <form onSubmit={handleSubmit} data-oid="d5uspoq">
-        <CardContent className="space-y-6" data-oid="woamav5">
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-6">
           {/* Category Name */}
-          <div data-oid="3egwnir">
-            <label htmlFor="name" className={labelClasses} data-oid="okelwke">
+          <div>
+            <label htmlFor="name" className={labelClasses}>
               Category Name{" "}
-              <span className="text-destructive" data-oid="y-k:9:4">
+              <span className="text-destructive">
                 *
               </span>
             </label>
@@ -136,32 +136,32 @@ export function CategoryForm({
               className={inputClasses}
               placeholder="e.g., Exhibit Properties"
               disabled={isLoading}
-              data-oid="rtmd_0."
+             
             />
 
             {errors.name && (
-              <p className={errorClasses} data-oid="1-o32uz">
+              <p className={errorClasses}>
                 {errors.name}
               </p>
             )}
           </div>
 
           {/* Budget Amount */}
-          <div data-oid="je29gly">
+          <div>
             <label
               htmlFor="budget_amount"
               className={labelClasses}
-              data-oid="6i.r:v0"
+             
             >
               Budget Amount{" "}
-              <span className="text-destructive" data-oid="ibg2wy:">
+              <span className="text-destructive">
                 *
               </span>
             </label>
-            <div className="relative" data-oid="23lxoqx">
+            <div className="relative">
               <span
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                data-oid="csav8lh"
+               
               >
                 $
               </span>
@@ -178,22 +178,22 @@ export function CategoryForm({
                 className={`${inputClasses} pl-7`}
                 placeholder="0.00"
                 disabled={isLoading}
-                data-oid="p3_7mti"
+               
               />
             </div>
             {errors.budget_amount && (
-              <p className={errorClasses} data-oid="72xz.dg">
+              <p className={errorClasses}>
                 {errors.budget_amount}
               </p>
             )}
           </div>
 
           {/* Description */}
-          <div data-oid="bw3ccrw">
+          <div>
             <label
               htmlFor="description"
               className={labelClasses}
-              data-oid="pxwshz7"
+             
             >
               Description
             </label>
@@ -204,18 +204,18 @@ export function CategoryForm({
               className={`${inputClasses} min-h-[100px] resize-y`}
               placeholder="Describe what this budget category covers..."
               disabled={isLoading}
-              data-oid="0i5fqes"
+             
             />
           </div>
         </CardContent>
 
-        <CardFooter className="flex justify-end gap-3" data-oid="w7k5kei">
+        <CardFooter className="flex justify-end gap-3">
           <Button
             type="button"
             variant="secondary"
             onClick={onCancel}
             disabled={isLoading}
-            data-oid="hazozdu"
+           
           >
             Cancel
           </Button>
@@ -223,7 +223,7 @@ export function CategoryForm({
             type="submit"
             variant="primary"
             isLoading={isLoading}
-            data-oid=".5y461a"
+           
           >
             {mode === "create" ? "Create Category" : "Save Changes"}
           </Button>

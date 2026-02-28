@@ -1,5 +1,5 @@
 /**
- * The Firm - Generate Pipeline Tasks from Template
+ * Ghostly - Generate Pipeline Tasks from Template
  *
  * POST /api/events/:id/checklist/generate
  *

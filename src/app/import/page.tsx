@@ -71,23 +71,23 @@ const importOptions: ImportOption[] = [
 
 export default function ImportHubPage() {
   return (
-    <AppShell data-oid="gst0fc6">
+    <AppShell>
       {/* Page Header */}
-      <div className="mb-8" data-oid="5h23zm_">
+      <div className="mb-8">
         <h1
           className="text-3xl font-bold text-foreground flex items-center gap-3"
-          data-oid="y6hjz-8"
+         
         >
-          <Upload className="w-8 h-8 text-spectral" data-oid="d0kmhti" />
+          <Upload className="w-8 h-8 text-spectral" />
           The Receiving Ledger
         </h1>
-        <p className="mt-1 text-muted-foreground" data-oid="vybupdh">
+        <p className="mt-1 text-muted-foreground">
           Import expenses from external sources into your ledger
         </p>
       </div>
 
       {/* Import Options Grid */}
-      <div className="grid gap-6 md:grid-cols-2" data-oid="gpevzg3">
+      <div className="grid gap-6 md:grid-cols-2">
         {importOptions.map((option) => {
           const Icon = option.icon;
 
@@ -96,52 +96,52 @@ export default function ImportHubPage() {
               key={option.title}
               elevated
               className={`relative ${!option.available ? "opacity-60" : ""}`}
-              data-oid=".0cf9c_"
+             
             >
               {/* Coming Soon Badge */}
               {!option.available && (
-                <div className="absolute top-4 right-4" data-oid="ils7ltn">
+                <div className="absolute top-4 right-4">
                   <span
                     className="px-2 py-1 text-xs font-medium bg-muted-foreground/15 text-muted-foreground rounded border border-muted-foreground/30"
-                    data-oid="ek4g_r-"
+                   
                   >
                     Coming Soon
                   </span>
                 </div>
               )}
 
-              <CardHeader data-oid="2gw8621">
-                <div className="flex items-start gap-4" data-oid="i13l50v">
+              <CardHeader>
+                <div className="flex items-start gap-4">
                   <div
                     className="p-3 rounded-lg bg-spectral/10 border border-border"
-                    data-oid="1802ymf"
+                   
                   >
                     <Icon
                       className="w-6 h-6 text-spectral"
-                      data-oid="ph3vjjr"
+                     
                     />
                   </div>
-                  <div className="flex-1" data-oid="x6a_zxw">
-                    <CardTitle data-oid="ehb.4u4">{option.title}</CardTitle>
-                    <CardDescription className="mt-1" data-oid="b7:bfgq">
+                  <div className="flex-1">
+                    <CardTitle>{option.title}</CardTitle>
+                    <CardDescription className="mt-1">
                       {option.description}
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
 
-              <CardContent className="pt-0" data-oid="_p27q-9">
+              <CardContent className="pt-0">
                 {/* Feature List */}
-                <ul className="space-y-2 mb-6" data-oid="14b8dxj">
+                <ul className="space-y-2 mb-6">
                   {option.details.map((detail, index) => (
                     <li
                       key={index}
                       className="flex items-start gap-2 text-sm text-muted-foreground"
-                      data-oid="-6:aroa"
+                     
                     >
                       <span
                         className="mt-1 w-1.5 h-1.5 rounded-full bg-spectral/10 shrink-0"
-                        data-oid="wm_1-ah"
+                       
                       />
                       {detail}
                     </li>
@@ -150,14 +150,14 @@ export default function ImportHubPage() {
 
                 {/* Action Button */}
                 {option.available ? (
-                  <Link href={option.href} data-oid="2y1g-3j">
+                  <Link href={option.href}>
                     <Button
                       variant="primary"
                       className="w-full"
                       rightIcon={
-                        <ArrowRight className="w-4 h-4" data-oid=":2b-27_" />
+                        <ArrowRight className="w-4 h-4" />
                       }
-                      data-oid="_4k0_xl"
+                     
                     >
                       Begin Import
                     </Button>
@@ -167,7 +167,7 @@ export default function ImportHubPage() {
                     variant="secondary"
                     className="w-full"
                     disabled
-                    data-oid="9hnymt:"
+                   
                   >
                     Available Soon
                   </Button>
@@ -179,33 +179,33 @@ export default function ImportHubPage() {
       </div>
 
       {/* Help Section */}
-      <Card className="mt-8" data-oid="kmg-se.">
-        <CardContent className="py-6" data-oid="rb4c7r.">
-          <div className="flex items-start gap-4" data-oid=".1bir32">
+      <Card className="mt-8">
+        <CardContent className="py-6">
+          <div className="flex items-start gap-4">
             <div
               className="p-2 rounded-lg bg-emerald-400/10 border border-emerald-400/20"
-              data-oid="bolgaqj"
+             
             >
               <FileSpreadsheet
                 className="w-5 h-5 text-emerald-400"
-                data-oid="hiti-53"
+               
               />
             </div>
-            <div data-oid="8mshtq3">
+            <div>
               <h3
                 className="font-semibold text-foreground"
-                data-oid="87z359t"
+               
               >
                 Brex CSV Format
               </h3>
-              <p className="mt-1 text-sm text-muted-foreground" data-oid="x_v3wmk">
+              <p className="mt-1 text-sm text-muted-foreground">
                 Export your transactions from Brex using their &ldquo;Export to
                 CSV&rdquo; feature. The expected columns are: Transaction date,
                 Amount, Merchant, and Memo.
               </p>
               <p
                 className="mt-2 text-xs text-muted-foreground/60 font-mono bg-background px-3 py-2 rounded border border-border"
-                data-oid="d4dk:24"
+               
               >
                 Transaction date, Amount, Original amount, Original currency,
                 Merchant, Memo, Expense status, Payment status
@@ -218,9 +218,9 @@ export default function ImportHubPage() {
       {/* Footer */}
       <div
         className="text-center py-6 mt-8 border-t border-border"
-        data-oid="zkvpt7:"
+       
       >
-        <p className="text-xs text-muted-foreground/60 italic" data-oid="1yrexh9">
+        <p className="text-xs text-muted-foreground/60 italic">
           &ldquo;A penny saved is a penny earned, but a penny tracked is wisdom
           discerned.&rdquo;
         </p>

@@ -1,5 +1,5 @@
 /**
- * The Firm - Checklist Template by ID
+ * Ghostly - Checklist Template by ID
  *
  * GET /api/checklist-templates/:id - Get template with items
  * PUT /api/checklist-templates/:id - Update template

@@ -289,7 +289,7 @@ server.tool(
   },
   async (input) => {
     try {
-      const result = await countingHouseRequest(
+      const result = await ghostlyRequest(
         "GET",
         `/api/events/${input.event_id}/summary`
       );

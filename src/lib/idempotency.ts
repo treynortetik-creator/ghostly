@@ -95,15 +95,24 @@ export function withIdempotency(handler: RouteHandler): RouteHandler {
     // Execute the actual handler
     const response = await handler(request);
 
-    // Cache the response
+    // Only cache successful (2xx) responses — error responses should not be
+    // replayed because the client should be able to retry after fixing the issue.
     const responseBody = await response.clone().json();
-    await supabase
-      .from('idempotency_keys')
-      .update({
-        status_code: response.status,
-        response_body: responseBody as Json,
-      })
-      .eq('key', idempotencyKey);
+    if (response.status >= 200 && response.status < 300) {
+      await supabase
+        .from('idempotency_keys')
+        .update({
+          status_code: response.status,
+          response_body: responseBody as Json,
+        })
+        .eq('key', idempotencyKey);
+    } else {
+      // Release the key so the client can retry with the same idempotency key
+      await supabase
+        .from('idempotency_keys')
+        .delete()
+        .eq('key', idempotencyKey);
+    }
 
     // Return the original response with the key echoed back
     return NextResponse.json(responseBody, {

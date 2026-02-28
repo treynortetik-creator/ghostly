@@ -177,19 +177,19 @@ export default function EventDetailPage({ params }: PageProps) {
   // Loading state
   if (isLoading) {
     return (
-      <AppShell data-oid="i.8vn8g">
-        <div className="animate-pulse space-y-6" data-oid="j::dphg">
+      <AppShell>
+        <div className="animate-pulse space-y-6">
           <div
             className="h-8 w-32 bg-spectral/10 rounded"
-            data-oid="g6l1vkk"
+           
           />
           <div
             className="h-64 bg-spectral/10 rounded-lg"
-            data-oid="uf--wh:"
+           
           />
           <div
             className="h-48 bg-spectral/10 rounded-lg"
-            data-oid="xnpc8j0"
+           
           />
         </div>
       </AppShell>
@@ -199,29 +199,29 @@ export default function EventDetailPage({ params }: PageProps) {
   // Error state
   if (error || !event) {
     return (
-      <AppShell data-oid="y5xt1z:">
-        <Card className="bg-red-400/10 border-destructive/20" data-oid="zz34g1i">
-          <CardContent className="py-12" data-oid="a72r24.">
+      <AppShell>
+        <Card className="bg-red-400/10 border-destructive/20">
+          <CardContent className="py-12">
             <div
               className="flex flex-col items-center justify-center text-center"
-              data-oid="eiy00uh"
+             
             >
               <AlertTriangle
                 className="w-12 h-12 text-destructive mb-4"
-                data-oid="dl:7ex5"
+               
               />
               <h3
                 className="text-xl font-semibold text-destructive mb-2"
-                data-oid="ifew_:t"
+               
               >
                 {error || "Event Not Found"}
               </h3>
-              <p className="text-muted-foreground mb-6" data-oid="rv-c:t7">
+              <p className="text-muted-foreground mb-6">
                 The requested event could not be loaded.
               </p>
-              <Link href="/events" data-oid="vh0.bqz">
-                <Button variant="secondary" data-oid=":z.3510">
-                  <ArrowLeft className="w-4 h-4 mr-2" data-oid="6a.s_qt" />
+              <Link href="/events">
+                <Button variant="secondary">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to Events
                 </Button>
               </Link>
@@ -235,15 +235,15 @@ export default function EventDetailPage({ params }: PageProps) {
   // Edit mode
   if (isEditing) {
     return (
-      <AppShell data-oid="o6xod29">
+      <AppShell>
         <ToastContainer toasts={toasts} removeToast={removeToast} />
-        <div className="mb-6" data-oid="lkjjng2">
+        <div className="mb-6">
           <Link
             href="/events"
             className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
-            data-oid="z-wlt:r"
+           
           >
-            <ArrowLeft className="w-4 h-4 mr-1" data-oid="aw_w2_k" />
+            <ArrowLeft className="w-4 h-4 mr-1" />
             Back to Events
           </Link>
         </div>
@@ -254,23 +254,23 @@ export default function EventDetailPage({ params }: PageProps) {
           onSubmit={handleUpdateEvent}
           onCancel={() => setIsEditing(false)}
           isLoading={isSaving}
-          data-oid=".lujdi3"
+         
         />
       </AppShell>
     );
   }
 
   return (
-    <AppShell data-oid="jek1nsg">
+    <AppShell>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
       {/* Back link */}
-      <div className="mb-6" data-oid="k8df1j-">
+      <div className="mb-6">
         <Link
           href="/events"
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
-          data-oid="0v0v.8a"
+         
         >
-          <ArrowLeft className="w-4 h-4 mr-1" data-oid="jxj6fw." />
+          <ArrowLeft className="w-4 h-4 mr-1" />
           Back to Events
         </Link>
       </div>
@@ -278,16 +278,16 @@ export default function EventDetailPage({ params }: PageProps) {
       {/* Event Header */}
       <div
         className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-8"
-        data-oid="iqqnr3m"
+       
       >
-        <div data-oid="jhmgbdy">
+        <div>
           <div
             className="flex flex-wrap items-center gap-3 mb-2"
-            data-oid="i74nzsv"
+           
           >
             <h1
               className="text-3xl font-bold text-foreground"
-              data-oid="blt_s1t"
+             
             >
               {event.name}
             </h1>
@@ -296,13 +296,13 @@ export default function EventDetailPage({ params }: PageProps) {
                 inline-flex items-center px-3 py-1 rounded text-sm font-medium border
                 ${typeColorClasses[event.event_type_record?.name?.toLowerCase() ?? ''] || 'bg-muted-foreground/15 text-muted-foreground border-muted-foreground/30'}
               `}
-              data-oid="r3culeu"
+             
             >
               {event.event_type_record?.name ?? 'Uncategorized'}
             </span>
             <span
               className="text-sm font-medium text-muted-foreground bg-card px-3 py-1 rounded border border-border"
-              data-oid="3-vigbk"
+             
             >
               {event.quarter}
             </span>
@@ -322,21 +322,21 @@ export default function EventDetailPage({ params }: PageProps) {
 
           <div
             className="flex flex-wrap items-center gap-4 text-muted-foreground"
-            data-oid="e_5o6fb"
+           
           >
             <span
               className="inline-flex items-center gap-1.5"
-              data-oid="lix1uus"
+             
             >
-              <Calendar className="w-4 h-4" data-oid="v7l-5k_" />
+              <Calendar className="w-4 h-4" />
               {formatDateRange()}
             </span>
             {event.location && (
               <span
                 className="inline-flex items-center gap-1.5"
-                data-oid="qut1vrc"
+               
               >
-                <MapPin className="w-4 h-4" data-oid="t_ort:r" />
+                <MapPin className="w-4 h-4" />
                 {event.location}
               </span>
             )}
@@ -349,22 +349,22 @@ export default function EventDetailPage({ params }: PageProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2" data-oid="73vv3mf">
+        <div className="flex items-center gap-2">
           <Button
             variant="secondary"
             size="sm"
             onClick={fetchEvent}
-            data-oid="-efdx9d"
+           
           >
-            <RefreshCw className="w-4 h-4 mr-2" data-oid="m.kmj6j" />
+            <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
 
           <Button
             variant="secondary"
             onClick={() => setIsEditing(true)}
-            leftIcon={<Edit className="w-4 h-4" data-oid="hwomj_4" />}
-            data-oid="8jm-kj6"
+            leftIcon={<Edit className="w-4 h-4" />}
+           
           >
             Edit
           </Button>
@@ -372,8 +372,8 @@ export default function EventDetailPage({ params }: PageProps) {
           <Button
             variant="destructive"
             onClick={() => setShowDeleteConfirm(true)}
-            leftIcon={<Trash2 className="w-4 h-4" data-oid="1c96hm-" />}
-            data-oid="vjmhznb"
+            leftIcon={<Trash2 className="w-4 h-4" />}
+           
           >
             Delete
           </Button>
@@ -384,34 +384,34 @@ export default function EventDetailPage({ params }: PageProps) {
       {showDeleteConfirm && (
         <Card
           className="mb-6 bg-red-400/10 border-destructive/30"
-          data-oid="c5y917:"
+         
         >
-          <CardContent className="py-4" data-oid="xocwg48">
+          <CardContent className="py-4">
             <div
               className="flex items-center justify-between"
-              data-oid=".q5bv4d"
+             
             >
-              <div className="flex items-center gap-3" data-oid="vm0h9_f">
+              <div className="flex items-center gap-3">
                 <AlertTriangle
                   className="w-5 h-5 text-destructive"
-                  data-oid="9_koao_"
+                 
                 />
-                <div data-oid="oki76:_">
-                  <p className="font-medium text-foreground" data-oid="bgh_1vc">
+                <div>
+                  <p className="font-medium text-foreground">
                     Are you sure you want to delete this event?
                   </p>
-                  <p className="text-sm text-muted-foreground" data-oid="wr4nlzl">
+                  <p className="text-sm text-muted-foreground">
                     This action can be undone by an administrator.
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2" data-oid="7i_s3zw">
+              <div className="flex items-center gap-2">
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={isDeleting}
-                  data-oid="wlr2aqi"
+                 
                 >
                   Cancel
                 </Button>
@@ -420,7 +420,7 @@ export default function EventDetailPage({ params }: PageProps) {
                   size="sm"
                   onClick={handleDeleteEvent}
                   isLoading={isDeleting}
-                  data-oid="nt181_3"
+                 
                 >
                   Delete Event
                 </Button>
@@ -432,10 +432,10 @@ export default function EventDetailPage({ params }: PageProps) {
 
       {/* Tab Navigation */}
       <div
-        className="flex gap-1 mb-6 border-b border-border"
+        className="flex gap-1 mb-6 border-b border-border overflow-x-auto whitespace-nowrap"
         role="tablist"
         aria-label="Event sections"
-        data-oid="_c-kyax"
+       
       >
         <button
           onClick={() => setActiveTab("details")}
@@ -448,11 +448,11 @@ export default function EventDetailPage({ params }: PageProps) {
           aria-selected={activeTab === "details"}
           aria-controls="panel-details"
           id="tab-details"
-          data-oid="e3a4d:."
+         
         >
           <DollarSign
             className="w-4 h-4 inline mr-1.5 -mt-0.5"
-            data-oid="cg0x.6n"
+           
           />
           Budget &amp; Details
         </button>
@@ -467,11 +467,11 @@ export default function EventDetailPage({ params }: PageProps) {
           aria-selected={activeTab === "documents"}
           aria-controls="panel-documents"
           id="tab-documents"
-          data-oid="doc-tab"
+         
         >
           <Paperclip
             className="w-4 h-4 inline mr-1.5 -mt-0.5"
-            data-oid="doc-ico"
+           
           />
           Documents
         </button>
@@ -486,9 +486,9 @@ export default function EventDetailPage({ params }: PageProps) {
           aria-selected={activeTab === "team"}
           aria-controls="panel-team"
           id="tab-team"
-          data-oid="nx3_n-a"
+         
         >
-          <Users className="w-4 h-4 inline mr-1.5 -mt-0.5" data-oid="0t42yf8" />
+          <Users className="w-4 h-4 inline mr-1.5 -mt-0.5" />
           Team
         </button>
         <button
@@ -502,11 +502,11 @@ export default function EventDetailPage({ params }: PageProps) {
           aria-selected={activeTab === "checklist"}
           aria-controls="panel-checklist"
           id="tab-checklist"
-          data-oid="sm:_6w3"
+         
         >
           <FileText
             className="w-4 h-4 inline mr-1.5 -mt-0.5"
-            data-oid="5.d-_24"
+           
           />
           Checklist
         </button>
@@ -521,11 +521,11 @@ export default function EventDetailPage({ params }: PageProps) {
           aria-selected={activeTab === "reminders"}
           aria-controls="panel-reminders"
           id="tab-reminders"
-          data-oid="rmnd-tab"
+         
         >
           <Bell
             className="w-4 h-4 inline mr-1.5 -mt-0.5"
-            data-oid="rmnd-ico"
+           
           />
           Reminders
         </button>
@@ -540,11 +540,11 @@ export default function EventDetailPage({ params }: PageProps) {
           aria-selected={activeTab === "notes"}
           aria-controls="panel-notes"
           id="tab-notes"
-          data-oid="note-tab"
+         
         >
           <MessageSquare
             className="w-4 h-4 inline mr-1.5 -mt-0.5"
-            data-oid="note-ico"
+           
           />
           Notes
         </button>
@@ -559,11 +559,11 @@ export default function EventDetailPage({ params }: PageProps) {
           aria-selected={activeTab === "shipments"}
           aria-controls="panel-shipments"
           id="tab-shipments"
-          data-oid="ship-tab"
+         
         >
           <Package
             className="w-4 h-4 inline mr-1.5 -mt-0.5"
-            data-oid="ship-ico"
+           
           />
           Shipments
         </button>
@@ -578,11 +578,11 @@ export default function EventDetailPage({ params }: PageProps) {
           aria-selected={activeTab === "post_event"}
           aria-controls="panel-post_event"
           id="tab-post_event"
-          data-oid="post-tab"
+         
         >
           <ClipboardCheck
             className="w-4 h-4 inline mr-1.5 -mt-0.5"
-            data-oid="post-ico"
+           
           />
           Post-Event
         </button>
@@ -597,11 +597,11 @@ export default function EventDetailPage({ params }: PageProps) {
           aria-selected={activeTab === "roi"}
           aria-controls="panel-roi"
           id="tab-roi"
-          data-oid="ajspqtn"
+         
         >
           <TrendingUp
             className="w-4 h-4 inline mr-1.5 -mt-0.5"
-            data-oid="x1h9yu8"
+           
           />
           ROI Tracking
         </button>
@@ -617,14 +617,14 @@ export default function EventDetailPage({ params }: PageProps) {
       {/* Team Tab */}
       {activeTab === "team" && (
         <div role="tabpanel" id="panel-team" aria-labelledby="tab-team">
-          <EventTeamTab eventId={id} data-oid=":q0a1fv" />
+          <EventTeamTab eventId={id} />
         </div>
       )}
 
       {/* Checklist Tab */}
       {activeTab === "checklist" && (
         <div role="tabpanel" id="panel-checklist" aria-labelledby="tab-checklist">
-          <EventChecklistTab eventId={id} tier={event.tier} data-oid="o:oscvv" />
+          <EventChecklistTab eventId={id} tier={event.tier} />
         </div>
       )}
 

@@ -280,7 +280,7 @@ export default function ExpensesPage() {
   const totalAmount = expenses.reduce((sum, e) => sum + e.amount, 0);
 
   return (
-    <AppShell data-oid="y46.1jg">
+    <AppShell>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
       <ConfirmDialog
         open={deleteTarget !== null}
@@ -307,33 +307,33 @@ export default function ExpensesPage() {
       {/* Page Header */}
       <div
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
-        data-oid="4s-68.."
+       
       >
-        <div data-oid="yd26zxz">
+        <div>
           <h1
             className="text-3xl font-bold text-foreground flex items-center gap-3"
-            data-oid="csaszdy"
+           
           >
-            <Receipt className="w-8 h-8 text-spectral" data-oid="9q60mf8" />
+            <Receipt className="w-8 h-8 text-spectral" />
             The Expense Register
           </h1>
-          <p className="mt-1 text-muted-foreground" data-oid="s200mmv">
+          <p className="mt-1 text-muted-foreground">
             FY 2026 Expenses &middot; {formatCurrency(totalAmount)} total
             &middot; As of {formattedDate}
           </p>
         </div>
 
-        <div className="flex items-center gap-3" data-oid="806s4oq">
+        <div className="flex items-center gap-3">
           <Button
             variant="secondary"
             size="sm"
             onClick={fetchData}
             disabled={isLoading}
-            data-oid="1g3v.op"
+           
           >
             <RefreshCw
               className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
-              data-oid="0w7vlrc"
+             
             />
             Refresh
           </Button>
@@ -347,8 +347,8 @@ export default function ExpensesPage() {
                 formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
               }, 0);
             }}
-            leftIcon={<Plus className="w-4 h-4" data-oid=":e:6wzz" />}
-            data-oid="_g5s899"
+            leftIcon={<Plus className="w-4 h-4" />}
+           
           >
             Add Expense
           </Button>
@@ -357,7 +357,7 @@ export default function ExpensesPage() {
 
       {/* Create/Edit Expense Form */}
       {(showCreateForm || editingExpense) && (
-        <div ref={formRef} className="mb-8" data-oid="dlk:19v">
+        <div ref={formRef} className="mb-8">
           <ExpenseForm
             key={editingExpense?.id ?? "create"}
             mode={editingExpense ? "edit" : "create"}
@@ -372,7 +372,7 @@ export default function ExpensesPage() {
               setEditingExpense(null);
             }}
             isLoading={isCreating}
-            data-oid=":tm:5fy"
+           
           />
         </div>
       )}
@@ -388,16 +388,16 @@ export default function ExpensesPage() {
         onEdit={handleEditExpense}
         onDelete={handleDeleteExpense}
         onBulkDelete={handleBulkDeleteExpenses}
-        data-oid="ze-fe5i"
+       
       />
 
       {/* Footer Info */}
       {!isLoading && !error && expenses.length > 0 && (
         <div
           className="text-center py-6 mt-8 border-t border-border"
-          data-oid="pj-d2zz"
+         
         >
-          <p className="text-xs text-muted-foreground/60" data-oid="a0tditr">
+          <p className="text-xs text-muted-foreground/60">
             Click on an event or category name to view its details.
           </p>
         </div>

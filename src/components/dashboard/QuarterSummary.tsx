@@ -80,12 +80,12 @@ function QuarterCard({ data }: { data: QuarterData }) {
   }
 
   return (
-    <div className="relative" data-oid="6vy9r1b">
+    <div className="relative">
       {/* Quarter Badge */}
-      <div className="absolute -top-3 left-4 z-10" data-oid="tkkz.:u">
+      <div className="absolute -top-3 left-4 z-10">
         <div
           className={`px-3 py-1 rounded-full ${config.color} text-white text-xs font-bold shadow-md`}
-          data-oid="s3_wurk"
+         
         >
           {config.label}
         </div>
@@ -93,25 +93,25 @@ function QuarterCard({ data }: { data: QuarterData }) {
 
       <div
         className="pt-4 p-4 rounded-lg bg-background border border-border hover:border-border transition-colors"
-        data-oid="dp58oog"
+       
       >
         {/* Header */}
         <div
           className="flex items-center justify-between mb-3"
-          data-oid="1gkexno"
+         
         >
           <div
             className="flex items-center gap-2 text-muted-foreground"
-            data-oid="m4bi:wd"
+           
           >
-            <Calendar className="w-4 h-4" data-oid="88pj.vh" />
-            <span className="text-sm" data-oid="99bp4rf">
+            <Calendar className="w-4 h-4" />
+            <span className="text-sm">
               {config.months}
             </span>
           </div>
           <div
             className={`text-sm font-medium ${getStatusColor()}`}
-            data-oid="erosism"
+           
           >
             {percentage.toFixed(0)}% used
           </div>
@@ -123,52 +123,52 @@ function QuarterCard({ data }: { data: QuarterData }) {
           max={data.budget}
           size="md"
           animated={isOverBudget}
-          data-oid="3l-9ih-"
+         
         />
 
         {/* Stats */}
         <div
           className="mt-3 pt-3 border-t border-border space-y-2"
-          data-oid="r2v2cfn"
+         
         >
           <div
             className="flex justify-between items-center gap-2"
-            data-oid="f9z:zjp"
+           
           >
-            <span className="text-xs text-muted-foreground shrink-0" data-oid="apsg3fz">
+            <span className="text-xs text-muted-foreground shrink-0">
               Spent
             </span>
             <span
               className="font-medium text-xs tabular-nums text-foreground"
-              data-oid="t9hhtd6"
+             
             >
               {formatCurrencyCompact(data.actual)}
             </span>
           </div>
           <div
             className="flex justify-between items-center gap-2"
-            data-oid="gk0lms-"
+           
           >
-            <span className="text-xs text-muted-foreground shrink-0" data-oid="ocgcled">
+            <span className="text-xs text-muted-foreground shrink-0">
               Budget
             </span>
             <span
               className="font-medium text-xs tabular-nums text-foreground"
-              data-oid="4_5c_g4"
+             
             >
               {formatCurrencyCompact(data.budget)}
             </span>
           </div>
           <div
             className="flex justify-between items-center gap-2"
-            data-oid="ybu9qq7"
+           
           >
-            <span className="text-xs text-muted-foreground shrink-0" data-oid="v20iz0q">
+            <span className="text-xs text-muted-foreground shrink-0">
               Remaining
             </span>
             <span
               className={`font-medium text-xs tabular-nums ${getStatusColor()}`}
-              data-oid="y8sfdov"
+             
             >
               {formatCurrencyCompact(remaining)}
             </span>
@@ -192,35 +192,35 @@ export function QuarterSummary({ data, className }: QuarterSummaryProps) {
   const tbdQuarter = activeQuarters.find((d) => d.quarter === "TBD");
 
   return (
-    <Card className={className} data-oid="g.hqo70">
-      <CardHeader data-oid="rgdyf:n">
-        <div className="flex items-center justify-between" data-oid="8kf53p8">
-          <div className="flex items-center gap-3" data-oid="6oxjxlf">
+    <Card className={className}>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
             <div
               className="p-2 rounded-md bg-spectral/10 text-muted-foreground"
-              data-oid="h5_2jrp"
+             
             >
-              <Clock className="w-5 h-5" data-oid=".em-a7q" />
+              <Clock className="w-5 h-5" />
             </div>
-            <div data-oid="joysop4">
-              <CardTitle data-oid="3vo2k2s">Budget by Quarter</CardTitle>
-              <CardDescription data-oid="e.:ekbn">
+            <div>
+              <CardTitle>Budget by Quarter</CardTitle>
+              <CardDescription>
                 FY 2026 spending timeline
               </CardDescription>
             </div>
           </div>
-          <div className="text-right" data-oid="li60weh">
-            <p className="text-sm text-muted-foreground" data-oid="1qnqh.y">
+          <div className="text-right">
+            <p className="text-sm text-muted-foreground">
               Total Allocated
             </p>
             <p
               className="font-bold text-lg text-foreground tabular-nums"
-              data-oid="7pohq5a"
+             
             >
               {formatCurrency(totalActual)}
               <span
                 className="text-muted-foreground font-normal text-sm"
-                data-oid=".mk1qgp"
+               
               >
                 {" "}
                 /{" "}
@@ -230,17 +230,17 @@ export function QuarterSummary({ data, className }: QuarterSummaryProps) {
           </div>
         </div>
       </CardHeader>
-      <CardContent data-oid="i_vbdws">
+      <CardContent>
         {/* Fiscal Quarters Grid */}
         <div
           className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6"
-          data-oid="gnuc4a2"
+         
         >
           {fiscalQuarters.map((quarter) => (
             <QuarterCard
               key={quarter.quarter}
               data={quarter}
-              data-oid="l-8ajam"
+             
             />
           ))}
         </div>
@@ -249,18 +249,18 @@ export function QuarterSummary({ data, className }: QuarterSummaryProps) {
         {tbdQuarter && (
           <div
             className="pt-4 border-t border-border"
-            data-oid="y-zzesp"
+           
           >
             <div
               className="flex items-center gap-2 mb-4 text-muted-foreground"
-              data-oid="f8f6g48"
+             
             >
-              <Clock className="w-4 h-4" data-oid="eui9h9t" />
-              <span className="text-sm font-medium" data-oid="tqozxgk">
+              <Clock className="w-4 h-4" />
+              <span className="text-sm font-medium">
                 Unscheduled Events
               </span>
             </div>
-            <QuarterCard data={tbdQuarter} data-oid="6bloz7g" />
+            <QuarterCard data={tbdQuarter} />
           </div>
         )}
       </CardContent>

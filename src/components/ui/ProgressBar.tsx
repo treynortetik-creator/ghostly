@@ -93,7 +93,7 @@ const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
           return (
             <span
               className="text-sm font-medium tabular-nums"
-              data-oid="kp42u.r"
+             
             >
               {percentage.toFixed(0)}%
             </span>
@@ -103,7 +103,7 @@ const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
           return (
             <span
               className="text-sm font-medium tabular-nums"
-              data-oid="v0wzx1q"
+             
             >
               {formatValue(value)} / {formatValue(max)}
             </span>
@@ -113,12 +113,12 @@ const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
           return (
             <div
               className="flex items-center justify-between text-sm"
-              data-oid="xe:3xoo"
+             
             >
-              <span className="font-medium tabular-nums" data-oid="j5i51u6">
+              <span className="font-medium tabular-nums">
                 {formatValue(value)} / {formatValue(max)}
               </span>
-              <span className="text-muted-foreground tabular-nums" data-oid="ys-y3yr">
+              <span className="text-muted-foreground tabular-nums">
                 {percentage.toFixed(0)}%
               </span>
             </div>
@@ -134,15 +134,15 @@ const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
         ref={ref}
         className={cn("w-full", className)}
         {...props}
-        data-oid="r5ozeij"
+       
       >
         {showLabel && labelFormat === "both" && (
-          <div className="mb-1.5" data-oid="kzeyr:e">
+          <div className="mb-1.5">
             {renderLabel()}
           </div>
         )}
 
-        <div className="flex items-center gap-3" data-oid="acj7kh.">
+        <div className="flex items-center gap-3">
           {/* Progress track */}
           <div
             className={cn(
@@ -150,7 +150,11 @@ const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
               getTrackColor(),
               sizeClasses[size],
             )}
-            data-oid="1nlsdrp"
+            role="progressbar"
+            aria-valuenow={value}
+            aria-valuemin={0}
+            aria-valuemax={max}
+            aria-label={showLabel ? undefined : "Progress"}
           >
             {/* Progress fill */}
             <div
@@ -160,7 +164,7 @@ const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
                 animated && isOverBudget && "animate-pulse",
               )}
               style={{ width: `${Math.min(percentage, 100)}%` }}
-              data-oid="tow.ipy"
+             
             />
           </div>
 
@@ -172,14 +176,14 @@ const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
         {isOverBudget && (
           <div
             className="mt-1.5 flex items-center gap-1.5 text-red-400 text-xs font-medium"
-            data-oid="a5w4z8d"
+           
           >
             <span
               className="inline-block w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse"
-              data-oid="-6tgk_f"
+             
             />
 
-            <span data-oid="4hlk.w4">
+            <span>
               Over by {formatValue(value - max)} (
               {overflowPercentage.toFixed(0)}%)
             </span>
@@ -225,65 +229,65 @@ const BudgetProgress = forwardRef<HTMLDivElement, BudgetProgressProps>(
           className,
         )}
         {...props}
-        data-oid="93ecm7s"
+       
       >
         {/* Header */}
         <div
           className="flex items-center justify-between mb-3"
-          data-oid="t3d8x_z"
+         
         >
-          <div className="flex items-center gap-2" data-oid="k7lks:x">
+          <div className="flex items-center gap-2">
             {icon && (
-              <span className="text-spectral" data-oid="oefuwir">
+              <span className="text-spectral">
                 {icon}
               </span>
             )}
-            <span className="font-medium text-foreground" data-oid="v1unod.">
+            <span className="font-medium text-foreground">
               {label}
             </span>
           </div>
           <span
             className={cn("text-xs font-medium", getStatusColor())}
-            data-oid="43p8kdn"
+           
           >
             {getStatusText()}
           </span>
         </div>
 
         {/* Progress Bar */}
-        <ProgressBar value={spent} max={budget} size="md" data-oid="is7hz78" />
+        <ProgressBar value={spent} max={budget} size="md" />
 
         {/* Stats */}
-        <div className="mt-3 grid grid-cols-3 gap-2 text-xs" data-oid="6q2pj:6">
-          <div data-oid="pf:k-:p">
-            <span className="text-muted-foreground block" data-oid="bvg-4eb">
+        <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+          <div>
+            <span className="text-muted-foreground block">
               Spent
             </span>
             <span
               className="font-medium tabular-nums text-foreground"
-              data-oid="9ho92fi"
+             
             >
               {formatCurrency(spent)}
             </span>
           </div>
-          <div className="text-center" data-oid=":pj0myx">
-            <span className="text-muted-foreground block" data-oid="rkh4ma.">
+          <div className="text-center">
+            <span className="text-muted-foreground block">
               Budget
             </span>
             <span
               className="font-medium tabular-nums text-foreground"
-              data-oid="rn0p1:2"
+             
             >
               {formatCurrency(budget)}
             </span>
           </div>
-          <div className="text-right" data-oid="pz9qg4k">
-            <span className="text-muted-foreground block" data-oid="xmkdt4x">
+          <div className="text-right">
+            <span className="text-muted-foreground block">
               Remaining
             </span>
             <span
               className={cn("font-medium tabular-nums", getStatusColor())}
-              data-oid="bzj.pmn"
+             
             >
               {formatCurrency(remaining)}
             </span>
@@ -318,24 +322,28 @@ const MiniProgress = forwardRef<HTMLDivElement, MiniProgressProps>(
         ref={ref}
         className={cn("inline-flex items-center gap-2", className)}
         {...props}
-        data-oid="-kwpp3m"
+       
       >
         {label && (
           <span
             className="text-xs text-muted-foreground whitespace-nowrap"
-            data-oid="kcxo2dh"
+           
           >
             {label}
           </span>
         )}
         <div
           className="w-16 h-1.5 rounded-full bg-muted overflow-hidden"
-          data-oid="6or3n-j"
+          role="progressbar"
+          aria-valuenow={value}
+          aria-valuemin={0}
+          aria-valuemax={max}
+          aria-label={label || "Progress"}
         >
           <div
             className={cn("h-full rounded-full transition-all", getColor())}
             style={{ width: `${Math.min(percentage, 100)}%` }}
-            data-oid=".6dr2mj"
+           
           />
         </div>
         <span
@@ -343,7 +351,7 @@ const MiniProgress = forwardRef<HTMLDivElement, MiniProgressProps>(
             "text-xs font-medium tabular-nums",
             isOverBudget ? "text-red-400" : "text-muted-foreground",
           )}
-          data-oid="zs9308i"
+         
         >
           {percentage.toFixed(0)}%
         </span>

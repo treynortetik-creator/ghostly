@@ -17,7 +17,7 @@ export function ChecklistItem({ item, onToggle }: ChecklistItemProps) {
       className={`flex items-start gap-3 px-4 py-3 border-b border-border last:border-b-0 transition-colors ${
         isCompleted ? "bg-emerald-400/10" : "hover:bg-card/50"
       }`}
-      data-oid="6kaj849"
+     
     >
       <button
         onClick={() => onToggle(item.id, !isCompleted)}
@@ -26,30 +26,30 @@ export function ChecklistItem({ item, onToggle }: ChecklistItemProps) {
             ? "bg-emerald-400 border-emerald-400 text-phantom"
             : "border-border hover:border-spectral"
         } flex items-center justify-center`}
-        data-oid="yfs.rd:"
+       
       >
-        {isCompleted && <Check className="w-3.5 h-3.5" data-oid="7-63f16" />}
+        {isCompleted && <Check className="w-3.5 h-3.5" />}
       </button>
 
-      <div className="flex-1 min-w-0" data-oid="mzntd-3">
+      <div className="flex-1 min-w-0">
         <p
           className={`text-sm ${isCompleted ? "line-through text-muted-foreground/60" : "text-foreground"}`}
-          data-oid="h857:_o"
+         
         >
           {item.title}
         </p>
         {item.description && (
-          <p className="text-xs text-muted-foreground/60 mt-0.5" data-oid=".ggygv:">
+          <p className="text-xs text-muted-foreground/60 mt-0.5">
             {item.description}
           </p>
         )}
-        <div className="flex items-center gap-3 mt-1.5" data-oid="odq_r:u">
+        <div className="flex items-center gap-3 mt-1.5">
           {assignee && (
             <span
               className="flex items-center gap-1 text-xs text-muted-foreground/60"
-              data-oid="97gmyuc"
+             
             >
-              <User className="w-3 h-3" data-oid="iv2mf1i" />
+              <User className="w-3 h-3" />
               {assignee.name}
             </span>
           )}
@@ -60,9 +60,9 @@ export function ChecklistItem({ item, onToggle }: ChecklistItemProps) {
                   ? "text-destructive"
                   : "text-muted-foreground/60"
               }`}
-              data-oid="x_xtcxg"
+             
             >
-              <Calendar className="w-3 h-3" data-oid="3k:ecqd" />
+              <Calendar className="w-3 h-3" />
               {new Date(item.due_date).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",

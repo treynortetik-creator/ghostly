@@ -133,17 +133,17 @@ export function ExportOptions({
   fiscalYear,
 }: ExportOptionsProps) {
   return (
-    <div className="space-y-6" data-oid="nw0f02u">
+    <div className="space-y-6">
       {/* Scope Selection */}
-      <Card elevated data-oid="ep9pbk6">
-        <CardHeader data-oid="2mwtadm">
-          <CardTitle data-oid=":ftsfuq">Export Scope</CardTitle>
-          <CardDescription data-oid="di-lo7k">
+      <Card elevated>
+        <CardHeader>
+          <CardTitle>Export Scope</CardTitle>
+          <CardDescription>
             Select the time period to include in your export
           </CardDescription>
         </CardHeader>
-        <CardContent data-oid="0xmxu9j">
-          <div className="grid gap-3 sm:grid-cols-2" data-oid="h4n1r0j">
+        <CardContent>
+          <div className="grid gap-3 sm:grid-cols-2">
             {scopeOptions.map((option) => {
               const Icon = option.icon;
               const isSelected = scope === option.value;
@@ -161,35 +161,35 @@ export function ExportOptions({
                         : "border-border hover:border-border hover:bg-background"
                     }
                   `}
-                  data-oid=":h3ztvd"
+                 
                 >
                   <div
                     className={`
                     p-2 rounded-lg shrink-0
                     ${isSelected ? "bg-spectral/10 text-spectral" : "bg-spectral/10 text-muted-foreground"}
                   `}
-                    data-oid="vadn-do"
+                   
                   >
-                    <Icon className="w-5 h-5" data-oid="x-mduj6" />
+                    <Icon className="w-5 h-5" />
                   </div>
-                  <div className="flex-1 min-w-0" data-oid="-kfncyv">
-                    <div className="flex items-center gap-2" data-oid="_s.x9su">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
                       <span
                         className={`font-medium ${isSelected ? "text-foreground" : "text-muted-foreground"}`}
-                        data-oid="s44f3-z"
+                       
                       >
                         {option.label}
                       </span>
                       {isSelected && (
                         <div
                           className="w-2 h-2 rounded-full bg-spectral"
-                          data-oid="e4g9fin"
+                         
                         />
                       )}
                     </div>
                     <p
                       className="text-xs text-muted-foreground/60 mt-0.5"
-                      data-oid="ou-5c:9"
+                     
                     >
                       {option.description}
                     </p>
@@ -203,15 +203,15 @@ export function ExportOptions({
           {scope === "quarter" && (
             <div
               className="mt-6 pt-6 border-t border-border"
-              data-oid="7hmoi:i"
+             
             >
               <label
                 className="block text-sm font-medium text-muted-foreground mb-3"
-                data-oid="5socxgj"
+               
               >
                 Select Quarter
               </label>
-              <div className="grid grid-cols-4 gap-2" data-oid="mgbjpxb">
+              <div className="grid grid-cols-4 gap-2">
                 {quarters.map((q) => (
                   <button
                     key={q.value}
@@ -224,17 +224,17 @@ export function ExportOptions({
                           : "border-border hover:border-border text-muted-foreground"
                       }
                     `}
-                    data-oid="ndysrpv"
+                   
                   >
                     <span
                       className="font-semibold"
-                      data-oid=".4qrews"
+                     
                     >
                       {q.label}
                     </span>
                     <p
                       className="text-[10px] text-muted-foreground/60 mt-0.5"
-                      data-oid="47ek1f."
+                     
                     >
                       {q.months}
                     </p>
@@ -243,7 +243,7 @@ export function ExportOptions({
               </div>
               <p
                 className="text-xs text-muted-foreground/60 mt-2 italic"
-                data-oid="rlmjwk3"
+               
               >
                 Fiscal Year {fiscalYear}: {quarter} (
                 {quarters.find((q) => q.value === quarter)?.months})
@@ -254,11 +254,11 @@ export function ExportOptions({
           {scope === "month" && (
             <div
               className="mt-6 pt-6 border-t border-border"
-              data-oid="8.1_aew"
+             
             >
               <label
                 className="block text-sm font-medium text-muted-foreground mb-3"
-                data-oid="2_g2ba."
+               
               >
                 Select Month
               </label>
@@ -269,10 +269,10 @@ export function ExportOptions({
                   bg-background text-foreground font-medium
                   focus:border-spectral focus:ring-2 focus:ring-spectral/20 focus:outline-none
                   transition-all"
-                data-oid="lvtrvnu"
+               
               >
                 {months.map((m) => (
-                  <option key={m.value} value={m.value} data-oid="lfmq2le">
+                  <option key={m.value} value={m.value}>
                     {m.label} {fiscalYear}
                   </option>
                 ))}
@@ -283,19 +283,19 @@ export function ExportOptions({
           {scope === "custom" && (
             <div
               className="mt-6 pt-6 border-t border-border"
-              data-oid="e97nh53"
+             
             >
               <label
                 className="block text-sm font-medium text-muted-foreground mb-3"
-                data-oid="wx03haf"
+               
               >
                 Custom Date Range
               </label>
-              <div className="grid gap-4 sm:grid-cols-2" data-oid="-1.8:3l">
-                <div data-oid="ydfou57">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
                   <label
                     className="block text-xs text-muted-foreground/60 mb-1"
-                    data-oid="1nogicg"
+                   
                   >
                     Start Date
                   </label>
@@ -307,13 +307,13 @@ export function ExportOptions({
                       bg-background text-foreground
                       focus:border-spectral focus:ring-2 focus:ring-spectral/20 focus:outline-none
                       transition-all"
-                    data-oid="zhf5ar9"
+                   
                   />
                 </div>
-                <div data-oid="_276zsk">
+                <div>
                   <label
                     className="block text-xs text-muted-foreground/60 mb-1"
-                    data-oid="01fk9jb"
+                   
                   >
                     End Date
                   </label>
@@ -325,7 +325,7 @@ export function ExportOptions({
                       bg-background text-foreground
                       focus:border-spectral focus:ring-2 focus:ring-spectral/20 focus:outline-none
                       transition-all"
-                    data-oid="4bo.b-5"
+                   
                   />
                 </div>
               </div>
@@ -335,15 +335,15 @@ export function ExportOptions({
       </Card>
 
       {/* Format Selection */}
-      <Card elevated data-oid="z52lrf5">
-        <CardHeader data-oid="8cgk2c6">
-          <CardTitle data-oid="054tjnh">Export Format</CardTitle>
-          <CardDescription data-oid="ebixe:n">
+      <Card elevated>
+        <CardHeader>
+          <CardTitle>Export Format</CardTitle>
+          <CardDescription>
             Choose the file format for your export
           </CardDescription>
         </CardHeader>
-        <CardContent data-oid=":rhxgj5">
-          <div className="grid gap-3 sm:grid-cols-2" data-oid="a81ebol">
+        <CardContent>
+          <div className="grid gap-3 sm:grid-cols-2">
             {formatOptions.map((option) => {
               const Icon = option.icon;
               const isSelected = format === option.value;
@@ -361,35 +361,35 @@ export function ExportOptions({
                         : "border-border hover:border-border hover:bg-background"
                     }
                   `}
-                  data-oid="cxkemid"
+                 
                 >
                   <div
                     className={`
                     p-2 rounded-lg shrink-0
                     ${isSelected ? "bg-emerald-400/10 text-emerald-400" : "bg-spectral/10 text-muted-foreground"}
                   `}
-                    data-oid="8m9gmoi"
+                   
                   >
-                    <Icon className="w-5 h-5" data-oid="200oz39" />
+                    <Icon className="w-5 h-5" />
                   </div>
-                  <div className="flex-1 min-w-0" data-oid="jyaozxi">
-                    <div className="flex items-center gap-2" data-oid="ysvgim-">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
                       <span
                         className={`font-medium ${isSelected ? "text-foreground" : "text-muted-foreground"}`}
-                        data-oid="a:kvee9"
+                       
                       >
                         {option.label}
                       </span>
                       {isSelected && (
                         <div
                           className="w-2 h-2 rounded-full bg-emerald-400"
-                          data-oid="j_mdb_7"
+                         
                         />
                       )}
                     </div>
                     <p
                       className="text-xs text-muted-foreground/60 mt-0.5"
-                      data-oid="bzc60r_"
+                     
                     >
                       {option.description}
                     </p>
@@ -402,72 +402,72 @@ export function ExportOptions({
           {/* Format Details */}
           <div
             className="mt-4 p-4 rounded-lg bg-background border border-border"
-            data-oid="aaukb16"
+           
           >
             {format === "csv" ? (
-              <div className="flex items-start gap-3" data-oid="4ed11--">
+              <div className="flex items-start gap-3">
                 <FileText
                   className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5"
-                  data-oid="d_it_zf"
+                 
                 />
-                <div data-oid="7zney2b">
-                  <p className="text-sm text-muted-foreground" data-oid="764xxl.">
+                <div>
+                  <p className="text-sm text-muted-foreground">
                     A single CSV file with all expense records. Compatible with
                     Excel, Google Sheets, and other spreadsheet applications.
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="flex items-start gap-3" data-oid="nuvp1xj">
+              <div className="flex items-start gap-3">
                 <FileSpreadsheet
                   className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5"
-                  data-oid="c4:k2iu"
+                 
                 />
-                <div data-oid="uo2ycyl">
-                  <p className="text-sm text-muted-foreground" data-oid="pxc8w3g">
+                <div>
+                  <p className="text-sm text-muted-foreground">
                     An Excel workbook with multiple worksheets:
                   </p>
                   <ul
                     className="mt-2 space-y-1 text-xs text-muted-foreground/60"
-                    data-oid="nf72012"
+                   
                   >
-                    <li className="flex items-center gap-2" data-oid="dwkf.p5">
+                    <li className="flex items-center gap-2">
                       <span
                         className="w-1 h-1 rounded-full bg-spectral"
-                        data-oid="3j8thls"
+                       
                       />
-                      <span data-oid="dfaplu-">
-                        <strong data-oid="xbpph1d">Summary</strong> - Grand
+                      <span>
+                        <strong>Summary</strong> - Grand
                         totals and overview
                       </span>
                     </li>
-                    <li className="flex items-center gap-2" data-oid="w2ugr3j">
+                    <li className="flex items-center gap-2">
                       <span
                         className="w-1 h-1 rounded-full bg-spectral"
-                        data-oid="5_alae8"
+                       
                       />
-                      <span data-oid="q-1zqef">
-                        <strong data-oid="6r:bu.y">Events</strong> - Event
+                      <span>
+                        <strong>Events</strong> - Event
                         budgets and actuals
                       </span>
                     </li>
-                    <li className="flex items-center gap-2" data-oid="gypsdug">
+                    <li className="flex items-center gap-2">
                       <span
                         className="w-1 h-1 rounded-full bg-spectral"
-                        data-oid="6xzl3fb"
+                       
                       />
-                      <span data-oid="c39ht6f">
-                        <strong data-oid="hkndt5m">Categories</strong> -
+                      <span>
+                        <strong>Categories</strong> -
                         Category budgets and actuals
                       </span>
                     </li>
-                    <li className="flex items-center gap-2" data-oid="0a:v7.t">
+                    <li className="flex items-center gap-2">
                       <span
                         className="w-1 h-1 rounded-full bg-spectral"
-                        data-oid="193ctko"
+                       
                       />
-                      <span data-oid="5gsbsdz">
-                        <strong data-oid="ttjy7dt">Expenses</strong> - Detailed
+                      <span>
+                        <strong>Expenses</strong> - Detailed
                         expense records
                       </span>
                     </li>

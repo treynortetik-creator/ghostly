@@ -222,8 +222,8 @@ export interface EventChecklistItem {
   updated_at: string;
 }
 
-// 'scrooge' is the legacy DB value - displayed as 'AI Agent' in the UI
-export type NotifyChannel = 'scrooge' | 'in_app' | 'both';
+// 'agent' - displayed as 'AI Agent' in the UI
+export type NotifyChannel = 'agent' | 'in_app' | 'both';
 
 export type ReminderStatus = 'pending' | 'sent' | 'dismissed' | 'snoozed';
 

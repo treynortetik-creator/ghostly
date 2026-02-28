@@ -55,14 +55,22 @@ function isUnsafeWebhookUrl(raw: string): string | null {
   if (ipv4Match) {
     const [, a, b] = ipv4Match.map(Number);
     if (
-      a === 10 ||                         // 10.0.0.0/8
+      a === 10 ||                          // 10.0.0.0/8
       (a === 172 && b >= 16 && b <= 31) || // 172.16.0.0/12
       (a === 192 && b === 168) ||          // 192.168.0.0/16
-      a === 169 && b === 254 ||            // link-local 169.254.0.0/16
-      a === 0                              // 0.0.0.0/8
+      (a === 169 && b === 254) ||          // link-local 169.254.0.0/16
+      a === 0 ||                           // 0.0.0.0/8
+      a === 127                            // 127.0.0.0/8 loopback
     ) {
       return 'Webhook URL must not point to a private/reserved IP';
     }
+  }
+
+  // Block IPv6 private/reserved ranges
+  // Strip brackets for IPv6 addresses (URLs use [::1] form)
+  const bareHost = hostname.replace(/^\[|\]$/g, '');
+  if (isPrivateIPv6(bareHost)) {
+    return 'Webhook URL must not point to a private/reserved IP';
   }
 
   // Block metadata service IPs (cloud SSRF)
@@ -71,6 +79,51 @@ function isUnsafeWebhookUrl(raw: string): string | null {
   }
 
   return null;
+}
+
+/**
+ * Check if an IPv6 address is in a private/reserved range.
+ * Handles:
+ * - ::1 (loopback)
+ * - fc00::/7 (unique local addresses - fc00:: and fd00::)
+ * - fe80::/10 (link-local)
+ * - ::ffff:127.0.0.1 (IPv4-mapped loopback)
+ * - ::ffff:10.x.x.x, ::ffff:172.16-31.x.x, ::ffff:192.168.x.x (IPv4-mapped private)
+ * - :: (unspecified address)
+ */
+function isPrivateIPv6(addr: string): boolean {
+  const lower = addr.toLowerCase();
+
+  // Loopback
+  if (lower === '::1') return true;
+
+  // Unspecified address
+  if (lower === '::') return true;
+
+  // Unique local (fc00::/7 covers fc00:: through fdff::)
+  if (lower.startsWith('fc') || lower.startsWith('fd')) return true;
+
+  // Link-local (fe80::/10 covers fe80:: through febf::)
+  if (lower.startsWith('fe8') || lower.startsWith('fe9') ||
+      lower.startsWith('fea') || lower.startsWith('feb')) return true;
+
+  // IPv4-mapped IPv6 addresses (::ffff:x.x.x.x)
+  const v4MappedMatch = lower.match(/^::ffff:(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (v4MappedMatch) {
+    const [, a, b] = v4MappedMatch.map(Number);
+    if (
+      a === 10 ||                          // 10.0.0.0/8
+      (a === 172 && b >= 16 && b <= 31) || // 172.16.0.0/12
+      (a === 192 && b === 168) ||          // 192.168.0.0/16
+      (a === 169 && b === 254) ||          // link-local
+      a === 127 ||                         // loopback
+      a === 0                              // 0.0.0.0/8
+    ) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 // ============================================

@@ -83,28 +83,28 @@ export function ExpenseFilters({
   const hasActiveFilters = activeFilterCount > 0;
 
   return (
-    <div className="space-y-4" data-oid="0ntp9mi">
+    <div className="space-y-4">
       {/* Main filter row */}
-      <div className="flex flex-col lg:flex-row gap-4" data-oid="19biyw7">
+      <div className="flex flex-col lg:flex-row gap-4">
         {/* Filter icon and label */}
         <div
           className="flex items-center gap-2 text-muted-foreground shrink-0"
-          data-oid="cgnxjmp"
+         
         >
-          <Filter className="w-4 h-4" data-oid="okbhtho" />
-          <span className="text-sm font-medium" data-oid="a5zt:3.">
+          <Filter className="w-4 h-4" />
+          <span className="text-sm font-medium">
             Filters:
           </span>
         </div>
 
         {/* Filter controls */}
-        <div className="flex flex-wrap gap-3 flex-1" data-oid="_1ddxit">
+        <div className="flex flex-wrap gap-3 flex-1">
           {/* Event Filter */}
-          <div className="flex items-center gap-2" data-oid="0h18it1">
+          <div className="flex items-center gap-2">
             <label
               htmlFor="filter-event"
               className="sr-only"
-              data-oid="tbms831"
+             
             >
               Filter by Event
             </label>
@@ -113,13 +113,13 @@ export function ExpenseFilters({
               value={filters.event_id}
               onChange={(e) => handleChange("event_id", e.target.value)}
               className={selectClasses}
-              data-oid="kze5u-c"
+             
             >
-              <option value="" data-oid="_l5-vsi">
+              <option value="">
                 All Events
               </option>
               {events.map((event) => (
-                <option key={event.id} value={event.id} data-oid="_ok.av:">
+                <option key={event.id} value={event.id}>
                   {event.name}
                 </option>
               ))}
@@ -127,11 +127,11 @@ export function ExpenseFilters({
           </div>
 
           {/* Category Filter */}
-          <div className="flex items-center gap-2" data-oid="lly0c44">
+          <div className="flex items-center gap-2">
             <label
               htmlFor="filter-category"
               className="sr-only"
-              data-oid="x1o1nyb"
+             
             >
               Filter by Category
             </label>
@@ -140,16 +140,16 @@ export function ExpenseFilters({
               value={filters.category_id}
               onChange={(e) => handleChange("category_id", e.target.value)}
               className={selectClasses}
-              data-oid="d_3tgm2"
+             
             >
-              <option value="" data-oid="es3.rpn">
+              <option value="">
                 All Categories
               </option>
               {categories.map((category) => (
                 <option
                   key={category.id}
                   value={category.id}
-                  data-oid="2yzomb-"
+                 
                 >
                   {category.name}
                 </option>
@@ -158,11 +158,11 @@ export function ExpenseFilters({
           </div>
 
           {/* Source Type Filter */}
-          <div className="flex items-center gap-2" data-oid=":99vz:6">
+          <div className="flex items-center gap-2">
             <label
               htmlFor="filter-source"
               className="sr-only"
-              data-oid="sf726ep"
+             
             >
               Filter by Source
             </label>
@@ -171,13 +171,13 @@ export function ExpenseFilters({
               value={filters.source_type}
               onChange={(e) => handleChange("source_type", e.target.value)}
               className={selectClasses}
-              data-oid="-yk.0yc"
+             
             >
-              <option value="all" data-oid="8lgaybv">
+              <option value="all">
                 All Sources
               </option>
               {sourceTypes.map((type) => (
-                <option key={type} value={type} data-oid="ldp3nfv">
+                <option key={type} value={type}>
                   {sourceTypeLabels[type]}
                 </option>
               ))}
@@ -191,13 +191,13 @@ export function ExpenseFilters({
               size="sm"
               onClick={onClearFilters}
               className="text-muted-foreground hover:text-destructive"
-              data-oid="cyudipp"
+             
             >
-              <X className="w-4 h-4 mr-1" data-oid="-2ihc6i" />
+              <X className="w-4 h-4 mr-1" />
               Clear
               <span
                 className="ml-1 px-1.5 py-0.5 text-xs bg-red-400/10 text-destructive rounded"
-                data-oid="vn:3kkl"
+               
               >
                 {activeFilterCount}
               </span>
@@ -207,13 +207,13 @@ export function ExpenseFilters({
       </div>
 
       {/* Second row: Date range and vendor search */}
-      <div className="flex flex-col sm:flex-row gap-3" data-oid="xgoxi..">
+      <div className="flex flex-col sm:flex-row gap-3">
         {/* Date range */}
-        <div className="flex items-center gap-2" data-oid="ajqzdmj">
+        <div className="flex items-center gap-2">
           <label
             htmlFor="filter-date-start"
             className="text-sm text-muted-foreground shrink-0"
-            data-oid="q8oyjs8"
+           
           >
             From:
           </label>
@@ -223,15 +223,15 @@ export function ExpenseFilters({
             value={filters.date_start}
             onChange={(e) => handleChange("date_start", e.target.value)}
             className={inputClasses}
-            data-oid="4vsmb69"
+           
           />
         </div>
 
-        <div className="flex items-center gap-2" data-oid="xwk1ysk">
+        <div className="flex items-center gap-2">
           <label
             htmlFor="filter-date-end"
             className="text-sm text-muted-foreground shrink-0"
-            data-oid="luf40:b"
+           
           >
             To:
           </label>
@@ -241,15 +241,15 @@ export function ExpenseFilters({
             value={filters.date_end}
             onChange={(e) => handleChange("date_end", e.target.value)}
             className={inputClasses}
-            data-oid="8w2kp1_"
+           
           />
         </div>
 
         {/* Vendor search */}
-        <div className="relative flex-1 max-w-xs" data-oid="cv9frz7">
+        <div className="relative flex-1 max-w-xs">
           <Search
             className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
-            data-oid="44rdx97"
+           
           />
           <input
             type="text"
@@ -257,7 +257,7 @@ export function ExpenseFilters({
             value={filters.vendor}
             onChange={(e) => handleChange("vendor", e.target.value)}
             className={`${inputClasses} pl-10 w-full`}
-            data-oid="70-c024"
+           
           />
         </div>
       </div>
@@ -324,21 +324,21 @@ export function ExpenseFilterPills({
   }
 
   return (
-    <div className="flex flex-wrap gap-2" data-oid="ddiir09">
+    <div className="flex flex-wrap gap-2">
       {pills.map((pill) => (
         <span
           key={pill.field}
           className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-spectral/10 text-sm text-foreground border border-border"
-          data-oid="3ipyv5u"
+         
         >
           {pill.label}
           <button
             onClick={() => onRemoveFilter(pill.field)}
             className="ml-0.5 p-0.5 rounded-full hover:bg-spectral/10 transition-colors"
             aria-label={`Remove ${pill.label} filter`}
-            data-oid="j:72t56"
+           
           >
-            <X className="w-3 h-3" data-oid="7r:4nc2" />
+            <X className="w-3 h-3" />
           </button>
         </span>
       ))}

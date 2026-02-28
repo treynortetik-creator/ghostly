@@ -1,5 +1,5 @@
 /**
- * The Firm - Event Checklist API
+ * Ghostly - Event Checklist API
  *
  * GET /api/events/:id/checklist - Get event checklist items
  * POST /api/events/:id/checklist - Add individual checklist item

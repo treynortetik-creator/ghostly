@@ -11,7 +11,7 @@ import { withApiHandler } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string; mid: string }> };
 
-const validChannels = ['scrooge', 'in_app', 'both'];
+const validChannels = ['agent', 'in_app', 'both'];
 
 export const PUT = withApiHandler({ permission: 'write', resource: 'cadence-milestones' },
   async (request: NextRequest, context: RouteContext) => {
@@ -31,7 +31,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'cadence-mile
     }
     if (body.notify_channel !== undefined) {
       if (!validChannels.includes(body.notify_channel)) {
-        return NextResponse.json({ error: 'notify_channel must be scrooge, in_app, or both' }, { status: 400 });
+        return NextResponse.json({ error: 'notify_channel must be agent, in_app, or both' }, { status: 400 });
       }
       updates.notify_channel = body.notify_channel;
     }

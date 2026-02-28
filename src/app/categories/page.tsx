@@ -100,37 +100,37 @@ export default function CategoriesPage() {
   });
 
   return (
-    <AppShell data-oid="_zvptt4">
+    <AppShell>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
       {/* Page Header */}
       <div
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
-        data-oid="f9_xldb"
+       
       >
-        <div data-oid="s_r5i5j">
+        <div>
           <h1
             className="text-3xl font-bold text-foreground flex items-center gap-3"
-            data-oid="ijfwbw-"
+           
           >
-            <Folder className="w-8 h-8 text-spectral" data-oid="k5afxd1" />
+            <Folder className="w-8 h-8 text-spectral" />
             The Category Ledger
           </h1>
-          <p className="mt-1 text-muted-foreground" data-oid="2634td4">
+          <p className="mt-1 text-muted-foreground">
             FY 2026 Budget Categories &middot; As of {formattedDate}
           </p>
         </div>
 
-        <div className="flex items-center gap-3" data-oid="o_4l0u1">
+        <div className="flex items-center gap-3">
           <Button
             variant="secondary"
             size="sm"
             onClick={fetchCategories}
             disabled={isLoading}
-            data-oid="8.d4fwk"
+           
           >
             <RefreshCw
               className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
-              data-oid="zx17975"
+             
             />
             Refresh
           </Button>
@@ -138,8 +138,8 @@ export default function CategoriesPage() {
           <Button
             variant="primary"
             onClick={() => setShowCreateForm(true)}
-            leftIcon={<Plus className="w-4 h-4" data-oid="z.ae_8w" />}
-            data-oid="cnoj46c"
+            leftIcon={<Plus className="w-4 h-4" />}
+           
           >
             Add Category
           </Button>
@@ -148,13 +148,13 @@ export default function CategoriesPage() {
 
       {/* Create Category Form (Modal-like) */}
       {showCreateForm && (
-        <div className="mb-8" data-oid="t._ixho">
+        <div className="mb-8">
           <CategoryForm
             mode="create"
             onSubmit={handleCreateCategory}
             onCancel={() => setShowCreateForm(false)}
             isLoading={isCreating}
-            data-oid="4.15:8b"
+           
           />
         </div>
       )}
@@ -166,16 +166,16 @@ export default function CategoriesPage() {
         error={error}
         expandable={false}
         showSearch={true}
-        data-oid="-yumb83"
+       
       />
 
       {/* Footer Info */}
       {!isLoading && !error && categories.length > 0 && (
         <div
           className="text-center py-6 mt-8 border-t border-border"
-          data-oid="w1ejhe0"
+         
         >
-          <p className="text-xs text-muted-foreground/60" data-oid="xmx-i.n">
+          <p className="text-xs text-muted-foreground/60">
             Click on any category to view full details and manage expenses.
           </p>
         </div>

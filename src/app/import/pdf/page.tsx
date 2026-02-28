@@ -285,35 +285,35 @@ export default function PDFImportPage() {
   };
 
   return (
-    <AppShell data-oid="01ww.ob">
+    <AppShell>
       {/* Page Header */}
-      <div className="mb-8" data-oid="2faecv:">
+      <div className="mb-8">
         <Link
           href="/import"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
-          data-oid="cf.t.y:"
+         
         >
-          <ArrowLeft className="w-4 h-4" data-oid="rqtrsra" />
+          <ArrowLeft className="w-4 h-4" />
           Back to Import Hub
         </Link>
 
         <h1
           className="text-3xl font-bold text-foreground flex items-center gap-3"
-          data-oid="-3grmlz"
+         
         >
-          <FileText className="w-8 h-8 text-spectral" data-oid="z2awoy4" />
+          <FileText className="w-8 h-8 text-spectral" />
           PDF Invoice Import
         </h1>
-        <p className="mt-1 text-muted-foreground" data-oid="f6::kec">
+        <p className="mt-1 text-muted-foreground">
           Extract expense details from PDF invoices and receipts
         </p>
       </div>
 
       {/* Progress Indicator */}
-      <div className="mb-8" data-oid="2brr9un">
+      <div className="mb-8">
         <div
           className="flex items-center justify-between max-w-md"
-          data-oid="z3fdi7y"
+         
         >
           {["upload", "review", "complete"].map((s, index) => {
             const isActive = s === step;
@@ -321,7 +321,7 @@ export default function PDFImportPage() {
               ["upload", "review", "complete"].indexOf(step) > index;
 
             return (
-              <div key={s} className="flex items-center" data-oid="3opknig">
+              <div key={s} className="flex items-center">
                 <div
                   className={`
                     w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
@@ -334,10 +334,10 @@ export default function PDFImportPage() {
                           : "bg-spectral/10 text-muted-foreground"
                     }
                   `}
-                  data-oid="ix_qu4y"
+                 
                 >
                   {isPast ? (
-                    <CheckCircle className="w-4 h-4" data-oid="x4pyy7w" />
+                    <CheckCircle className="w-4 h-4" />
                   ) : (
                     index + 1
                   )}
@@ -348,7 +348,7 @@ export default function PDFImportPage() {
                       w-16 sm:w-28 h-0.5 mx-2
                       ${isPast ? "bg-emerald-400" : "bg-spectral/10"}
                     `}
-                    data-oid="zlauc4u"
+                   
                   />
                 )}
               </div>
@@ -357,11 +357,11 @@ export default function PDFImportPage() {
         </div>
         <div
           className="flex justify-between max-w-md mt-2 text-xs text-muted-foreground"
-          data-oid="tjp9nai"
+         
         >
-          <span data-oid="f6_fuoa">Upload</span>
-          <span data-oid="c1:.b-y">Review</span>
-          <span data-oid="wd-:dlc">Complete</span>
+          <span>Upload</span>
+          <span>Review</span>
+          <span>Complete</span>
         </div>
       </div>
 
@@ -369,17 +369,17 @@ export default function PDFImportPage() {
       {error && (
         <div
           className="mb-6 flex items-start gap-3 p-4 bg-red-400/10 border border-destructive/30 rounded-lg"
-          data-oid="9-2wl.j"
+         
         >
           <AlertCircle
             className="w-5 h-5 text-destructive shrink-0 mt-0.5"
-            data-oid="glyzuxg"
+           
           />
-          <div data-oid="10sh3:h">
-            <p className="font-medium text-destructive" data-oid="6pdv9a5">
+          <div>
+            <p className="font-medium text-destructive">
               Error
             </p>
-            <p className="text-sm text-destructive/80" data-oid="g6ytii-">
+            <p className="text-sm text-destructive/80">
               {error}
             </p>
           </div>
@@ -388,40 +388,40 @@ export default function PDFImportPage() {
 
       {/* Step Content */}
       {step === "upload" && (
-        <Card data-oid="uadmscx">
-          <CardHeader data-oid="webj-f8">
-            <CardTitle className="flex items-center gap-2" data-oid="9y.bcwl">
-              <Upload className="w-5 h-5 text-spectral" data-oid="tcols:6" />
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Upload className="w-5 h-5 text-spectral" />
               Upload PDF Invoice
             </CardTitle>
-            <CardDescription data-oid="c00gbr4">
+            <CardDescription>
               Upload a PDF invoice or receipt to extract expense details. The
               system will attempt to identify the vendor, amount, and date.
             </CardDescription>
           </CardHeader>
-          <CardContent data-oid="sd4yd::">
+          <CardContent>
             <PDFUpload
               onFileSelect={handleFileSelect}
               maxSizeMB={10}
               isLoading={isLoading}
               error={error}
-              data-oid="jsp8rzc"
+             
             />
 
             {/* Info Note */}
             <div
               className="mt-6 flex items-start gap-3 p-4 bg-muted-foreground/10 border border-muted-foreground/30 rounded-lg"
-              data-oid="cz-h0af"
+             
             >
               <FileText
                 className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5"
-                data-oid="_xg55cy"
+               
               />
-              <div data-oid="398dlri">
-                <p className="font-medium text-foreground" data-oid="duyvley">
+              <div>
+                <p className="font-medium text-foreground">
                   Extraction Tips
                 </p>
-                <p className="text-sm text-muted-foreground mt-1" data-oid="fo.lten">
+                <p className="text-sm text-muted-foreground mt-1">
                   For best results, upload PDFs with selectable text (not
                   scanned images). The system looks for common invoice patterns
                   to identify vendor names, total amounts, and dates. You can
@@ -434,21 +434,21 @@ export default function PDFImportPage() {
       )}
 
       {step === "review" && pdfResult && (
-        <div className="space-y-6" data-oid="j:t5.yq">
+        <div className="space-y-6">
           {/* AI Powered Badge */}
           {pdfResult.aiPowered && (
             <div
               className="flex items-center gap-2 p-3 bg-spectral/10 border border-spectral rounded-lg"
-              data-oid="b62agdp"
+             
             >
-              <Sparkles className="w-4 h-4 text-spectral" data-oid="u:r00x." />
+              <Sparkles className="w-4 h-4 text-spectral" />
               <span
                 className="text-sm font-medium text-spectral"
-                data-oid=".8x0fb8"
+               
               >
                 AI-Powered Extraction
               </span>
-              <span className="text-xs text-muted-foreground" data-oid="lh73eyc">
+              <span className="text-xs text-muted-foreground">
                 — Fields extracted and assignment suggested by AI
               </span>
             </div>
@@ -460,33 +460,33 @@ export default function PDFImportPage() {
             pageCount={pdfResult.pageCount}
             extractedData={pdfResult.extracted}
             onDataChange={handleDataChange}
-            data-oid="675swab"
+           
           />
 
           {/* Assignment Selector */}
-          <Card elevated data-oid="k4bjdxa">
-            <CardHeader data-oid="qm0deqe">
-              <CardTitle data-oid="x9_pyfk">
+          <Card elevated>
+            <CardHeader>
+              <CardTitle>
                 Assign to Event or Category
               </CardTitle>
-              <CardDescription data-oid="4suoh..">
+              <CardDescription>
                 Select which event or budget category this expense belongs to.
               </CardDescription>
             </CardHeader>
-            <CardContent data-oid="nmc_qai">
+            <CardContent>
               <AssignmentSelector
                 value={selectedAssignment}
                 options={assignmentOptions}
                 onChange={setSelectedAssignment}
                 placeholder="Select event or category..."
-                data-oid="3-i4y9z"
+               
               />
 
               {pdfResult.suggestedAssignment?.confidence != null &&
                 selectedAssignment && (
                   <div
                     className="mt-3 flex items-center gap-2"
-                    data-oid=":_v.3uv"
+                   
                   >
                     <span
                       className={`
@@ -499,7 +499,7 @@ export default function PDFImportPage() {
                           : "bg-red-400/10 text-destructive"
                     }
                   `}
-                      data-oid=".qbix84"
+                     
                     >
                       AI Confidence:{" "}
                       {Math.round(
@@ -515,12 +515,12 @@ export default function PDFImportPage() {
           {/* Action Buttons */}
           <div
             className="flex items-center justify-end gap-4 pt-4 border-t border-border"
-            data-oid="hzhmzs9"
+           
           >
             <Button
               variant="secondary"
               onClick={handleStartOver}
-              data-oid="2_odol6"
+             
             >
               Start Over
             </Button>
@@ -528,8 +528,8 @@ export default function PDFImportPage() {
               variant="primary"
               onClick={handleSaveExpense}
               disabled={isLoading}
-              leftIcon={<Save className="w-4 h-4" data-oid="z3w3xz8" />}
-              data-oid="nmd5yvu"
+              leftIcon={<Save className="w-4 h-4" />}
+             
             >
               {isLoading ? "Saving..." : "Save Expense"}
             </Button>
@@ -538,68 +538,68 @@ export default function PDFImportPage() {
       )}
 
       {step === "complete" && savedExpense && (
-        <Card elevated data-oid="9hxq6v.">
-          <CardContent className="py-12 text-center" data-oid="5m8ogpa">
+        <Card elevated>
+          <CardContent className="py-12 text-center">
             <div
               className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-400/10 mb-6"
-              data-oid="istmcww"
+             
             >
               <CheckCircle
                 className="w-8 h-8 text-emerald-400"
-                data-oid="27urqdr"
+               
               />
             </div>
 
             <h2
               className="text-2xl font-bold text-foreground mb-2"
-              data-oid="mkik2:d"
+             
             >
               Expense Saved!
             </h2>
-            <p className="text-muted-foreground mb-8" data-oid="hsl3-lk">
+            <p className="text-muted-foreground mb-8">
               Your invoice has been successfully imported into the ledger.
             </p>
 
             {/* Summary */}
             <div
               className="max-w-sm mx-auto bg-background p-6 rounded-lg border border-border text-left mb-8"
-              data-oid="gxht9:y"
+             
             >
-              <dl className="space-y-3" data-oid="oy744st">
-                <div className="flex justify-between" data-oid="otco8ko">
-                  <dt className="text-muted-foreground" data-oid="m0tvphr">
+              <dl className="space-y-3">
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">
                     Vendor
                   </dt>
-                  <dd className="font-medium text-foreground" data-oid="e.esj26">
+                  <dd className="font-medium text-foreground">
                     {savedExpense.vendor}
                   </dd>
                 </div>
-                <div className="flex justify-between" data-oid="j:uvtjx">
-                  <dt className="text-muted-foreground" data-oid=":wf7wv-">
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">
                     Amount
                   </dt>
-                  <dd className="font-medium text-foreground" data-oid="42xi._b">
+                  <dd className="font-medium text-foreground">
                     {formatCurrency(savedExpense.amount)}
                   </dd>
                 </div>
-                <div className="flex justify-between" data-oid="n7lmemx">
-                  <dt className="text-muted-foreground" data-oid="de3:6mw">
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">
                     Date
                   </dt>
-                  <dd className="font-medium text-foreground" data-oid="-z70xnf">
+                  <dd className="font-medium text-foreground">
                     {savedExpense.date}
                   </dd>
                 </div>
                 <div
                   className="flex justify-between pt-3 border-t border-border"
-                  data-oid=":5:bo0i"
+                 
                 >
-                  <dt className="text-muted-foreground" data-oid="._vfm.m">
+                  <dt className="text-muted-foreground">
                     {savedExpense.assignmentType === "event"
                       ? "Event"
                       : "Category"}
                   </dt>
-                  <dd className="font-medium text-foreground" data-oid="mht1zsq">
+                  <dd className="font-medium text-foreground">
                     {savedExpense.assignmentName}
                   </dd>
                 </div>
@@ -609,19 +609,19 @@ export default function PDFImportPage() {
             {/* Action Buttons */}
             <div
               className="flex items-center justify-center gap-4"
-              data-oid="x165cy4"
+             
             >
               <Button
                 variant="secondary"
                 onClick={handleStartOver}
-                data-oid="-6_o923"
+               
               >
                 Import Another
               </Button>
               <Button
                 variant="primary"
                 onClick={() => router.push("/expenses")}
-                data-oid="0c9_m:6"
+               
               >
                 View Expenses
               </Button>
@@ -633,9 +633,9 @@ export default function PDFImportPage() {
       {/* Footer */}
       <div
         className="text-center py-6 mt-8 border-t border-border"
-        data-oid="atkffkb"
+       
       >
-        <p className="text-xs text-muted-foreground/60 italic" data-oid="8-401e9">
+        <p className="text-xs text-muted-foreground/60 italic">
           &ldquo;Keep a faithful record of thy receipts and
           disbursements.&rdquo;
         </p>

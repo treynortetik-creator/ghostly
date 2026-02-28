@@ -1,5 +1,5 @@
 /**
- * The Firm - Checklist Template Items API
+ * Ghostly - Checklist Template Items API
  *
  * POST /api/checklist-templates/:id/items - Add item to template
  */

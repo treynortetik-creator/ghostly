@@ -78,7 +78,7 @@ export default function TeamPage() {
   };
 
   return (
-    <AppShell data-oid="xml9grd">
+    <AppShell>
       <ConfirmDialog
         open={deleteTarget !== null}
         title="Remove Staff Member"
@@ -91,21 +91,21 @@ export default function TeamPage() {
       {/* Page Header */}
       <div
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
-        data-oid="jl0jc:7"
+       
       >
-        <div data-oid="3j9b-rp">
+        <div>
           <h1
             className="text-3xl font-bold text-foreground"
-            data-oid="sh-l5lz"
+           
           >
             The Partners &amp; Staff
           </h1>
-          <p className="text-muted-foreground mt-1" data-oid="btum3s5">
+          <p className="text-muted-foreground mt-1">
             {members.length} member{members.length !== 1 ? "s" : ""} on the
             rolls
           </p>
         </div>
-        <div className="flex items-center gap-2" data-oid="3i0e1az">
+        <div className="flex items-center gap-2">
           <Button
             variant="secondary"
             size="sm"
@@ -113,9 +113,9 @@ export default function TeamPage() {
               setIsLoading(true);
               fetchMembers();
             }}
-            data-oid="y6ni:cc"
+           
           >
-            <RefreshCw className="w-4 h-4 mr-2" data-oid=":bq7hv8" />
+            <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
           <Button
@@ -123,8 +123,8 @@ export default function TeamPage() {
               setEditingMember(null);
               setShowForm(true);
             }}
-            leftIcon={<UserPlus className="w-4 h-4" data-oid="mdile:q" />}
-            data-oid="uvu5ovr"
+            leftIcon={<UserPlus className="w-4 h-4" />}
+           
           >
             Appoint New Staff
           </Button>
@@ -133,14 +133,14 @@ export default function TeamPage() {
 
       {/* Content */}
       {isLoading ? (
-        <div className="animate-pulse space-y-4" data-oid="kf:alp9">
+        <div className="animate-pulse space-y-4">
           <div
             className="h-32 bg-spectral/10 rounded-lg"
-            data-oid="b_4og91"
+           
           />
           <div
             className="h-32 bg-spectral/10 rounded-lg"
-            data-oid="3whm9q2"
+           
           />
         </div>
       ) : (
@@ -148,7 +148,7 @@ export default function TeamPage() {
           members={members}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          data-oid="vbpmqfo"
+         
         />
       )}
 
@@ -162,7 +162,7 @@ export default function TeamPage() {
             setEditingMember(null);
           }}
           isLoading={isSaving}
-          data-oid="vbwlw9t"
+         
         />
       )}
     </AppShell>

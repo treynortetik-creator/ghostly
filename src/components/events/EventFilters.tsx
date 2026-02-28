@@ -94,21 +94,21 @@ export function EventFilters({
   return (
     <div
       className="flex flex-col sm:flex-row gap-3 items-start sm:items-center"
-      data-oid="7ul_yfa"
+     
     >
       {/* Filter icon and label */}
-      <div className="flex items-center gap-2 text-muted-foreground" data-oid="o7.an.n">
-        <Filter className="w-4 h-4" data-oid="3xd_49l" />
-        <span className="text-sm font-medium" data-oid="l8b3vjm">
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <Filter className="w-4 h-4" />
+        <span className="text-sm font-medium">
           Filters:
         </span>
       </div>
 
       {/* Filter dropdowns */}
-      <div className="flex flex-wrap gap-3" data-oid="21zlutu">
+      <div className="flex flex-wrap gap-3">
         {/* Event Type Filter */}
-        <div className="flex items-center gap-2" data-oid="a3kkqn7">
-          <label htmlFor="filter-type" className="sr-only" data-oid="9ox5.9f">
+        <div className="flex items-center gap-2">
+          <label htmlFor="filter-type" className="sr-only">
             Filter by Event Type
           </label>
           <select
@@ -117,13 +117,13 @@ export function EventFilters({
             onChange={(e) => onTypeChange(e.target.value)}
             className={selectClasses}
             disabled={loadingTypes}
-            data-oid="9koz0qs"
+           
           >
-            <option value="all" data-oid="_-wp353">
+            <option value="all">
               {loadingTypes ? "Loading..." : "All Types"}
             </option>
             {eventTypes.map((type) => (
-              <option key={type.id} value={type.id} data-oid="mqxhe9l">
+              <option key={type.id} value={type.id}>
                 {type.name}
               </option>
             ))}
@@ -131,11 +131,11 @@ export function EventFilters({
         </div>
 
         {/* Quarter Filter */}
-        <div className="flex items-center gap-2" data-oid="62-h_l:">
+        <div className="flex items-center gap-2">
           <label
             htmlFor="filter-quarter"
             className="sr-only"
-            data-oid="sdw265b"
+           
           >
             Filter by Quarter
           </label>
@@ -146,13 +146,13 @@ export function EventFilters({
               onQuarterChange(e.target.value as QuarterType | "all")
             }
             className={selectClasses}
-            data-oid="wz3i5c_"
+           
           >
-            <option value="all" data-oid="lrekq0u">
+            <option value="all">
               All Quarters
             </option>
             {quarters.map((q) => (
-              <option key={q} value={q} data-oid="vwro_bs">
+              <option key={q} value={q}>
                 {q}
               </option>
             ))}
@@ -166,14 +166,14 @@ export function EventFilters({
             size="sm"
             onClick={onClearFilters}
             className="text-muted-foreground hover:text-destructive"
-            data-oid="cxh78g9"
+           
           >
-            <X className="w-4 h-4 mr-1" data-oid="sx.gjpq" />
+            <X className="w-4 h-4 mr-1" />
             Clear
             {activeFilterCount > 0 && (
               <span
                 className="ml-1 px-1.5 py-0.5 text-xs bg-red-400/10 text-destructive rounded"
-                data-oid="28:h0xq"
+               
               >
                 {activeFilterCount}
               </span>
@@ -211,20 +211,20 @@ export function FilterPills({
   }
 
   return (
-    <div className="flex flex-wrap gap-2 mt-3" data-oid="4chdgzv">
+    <div className="flex flex-wrap gap-2 mt-3">
       {selectedTypeId !== "all" && selectedTypeName && (
         <span
           className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-spectral/10 text-sm text-foreground border border-border"
-          data-oid="b1uhyk_"
+         
         >
           Type: {selectedTypeName}
           <button
             onClick={onRemoveType}
             className="ml-0.5 p-0.5 rounded-full hover:bg-spectral/10 transition-colors"
             aria-label={`Remove ${selectedTypeName} filter`}
-            data-oid="y4eoevg"
+           
           >
-            <X className="w-3 h-3" data-oid="n2qjid4" />
+            <X className="w-3 h-3" />
           </button>
         </span>
       )}
@@ -232,16 +232,16 @@ export function FilterPills({
       {selectedQuarter !== "all" && (
         <span
           className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-spectral/10 text-sm text-foreground border border-border"
-          data-oid="50wbaaa"
+         
         >
           Quarter: {selectedQuarter}
           <button
             onClick={onRemoveQuarter}
             className="ml-0.5 p-0.5 rounded-full hover:bg-spectral/10 transition-colors"
             aria-label={`Remove ${selectedQuarter} filter`}
-            data-oid="gjs21:0"
+           
           >
-            <X className="w-3 h-3" data-oid="5x8stw7" />
+            <X className="w-3 h-3" />
           </button>
         </span>
       )}

@@ -128,7 +128,7 @@ export function FileUpload({
   const displayError = error || localError;
 
   return (
-    <div className={cn("space-y-4", className)} data-oid="jr0.lfg">
+    <div className={cn("space-y-4", className)}>
       {/* Drop Zone */}
       <div
         role="button"
@@ -154,7 +154,7 @@ export function FileUpload({
           isLoading && "opacity-60 pointer-events-none",
         )}
         onClick={handleBrowseClick}
-        data-oid="p:p:c1_"
+       
       >
         <input
           ref={fileInputRef}
@@ -163,12 +163,12 @@ export function FileUpload({
           onChange={handleInputChange}
           className="sr-only"
           disabled={isLoading}
-          data-oid="o647imi"
+         
         />
 
         <div
           className="flex flex-col items-center text-center"
-          data-oid="99uiebh"
+         
         >
           {/* Icon */}
           <div
@@ -178,19 +178,19 @@ export function FileUpload({
                 ? "bg-spectral/10 text-spectral"
                 : "bg-spectral/10 text-muted-foreground",
             )}
-            data-oid="l422net"
+           
           >
-            <Upload className="w-8 h-8" data-oid="fou984b" />
+            <Upload className="w-8 h-8" />
           </div>
 
           {/* Text */}
           <h3
             className="font-semibold text-foreground mb-1"
-            data-oid="nmf2ab9"
+           
           >
             {isDragging ? "Drop your file here" : "Upload CSV File"}
           </h3>
-          <p className="text-sm text-muted-foreground mb-4" data-oid="bq:na44">
+          <p className="text-sm text-muted-foreground mb-4">
             Drag and drop your Brex export here, or click to browse
           </p>
 
@@ -204,13 +204,13 @@ export function FileUpload({
               handleBrowseClick();
             }}
             disabled={isLoading}
-            data-oid="fkvdd1m"
+           
           >
             Browse Files
           </Button>
 
           {/* File Info */}
-          <p className="text-xs text-muted-foreground/60 mt-4" data-oid="ikmbeiz">
+          <p className="text-xs text-muted-foreground/60 mt-4">
             Accepted: {accept} &middot; Max size: {maxSizeMB}MB
           </p>
         </div>
@@ -220,26 +220,26 @@ export function FileUpload({
       {selectedFile && !displayError && (
         <div
           className="flex items-center gap-3 p-3 bg-emerald-400/10 border border-emerald-400/30 rounded-lg"
-          data-oid="l7l:u4g"
+         
         >
-          <div className="p-2 bg-emerald-400/10 rounded" data-oid="phlnyx.">
-            <FileText className="w-5 h-5 text-emerald-400" data-oid="4.y0fyl" />
+          <div className="p-2 bg-emerald-400/10 rounded">
+            <FileText className="w-5 h-5 text-emerald-400" />
           </div>
-          <div className="flex-1 min-w-0" data-oid="9ndiy9x">
+          <div className="flex-1 min-w-0">
             <p
               className="font-medium text-foreground truncate"
-              data-oid="zvtv0rl"
+             
             >
               {selectedFile.name}
             </p>
-            <p className="text-xs text-muted-foreground" data-oid="n.b_h:j">
+            <p className="text-xs text-muted-foreground">
               {(selectedFile.size / 1024).toFixed(1)} KB
             </p>
           </div>
-          <div className="flex items-center gap-2" data-oid="g2xnzaf">
+          <div className="flex items-center gap-2">
             <CheckCircle
               className="w-5 h-5 text-emerald-400"
-              data-oid="nli80n7"
+             
             />
             <button
               onClick={(e) => {
@@ -249,9 +249,9 @@ export function FileUpload({
               className="p-1 text-muted-foreground hover:text-destructive transition-colors"
               disabled={isLoading}
               aria-label="Remove selected file"
-              data-oid="0xr-m17"
+             
             >
-              <X className="w-4 h-4" data-oid=":z_ebib" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -261,17 +261,17 @@ export function FileUpload({
       {displayError && (
         <div
           className="flex items-start gap-3 p-3 bg-red-400/10 border border-destructive/30 rounded-lg"
-          data-oid="9judt4u"
+         
         >
           <AlertCircle
             className="w-5 h-5 text-destructive shrink-0 mt-0.5"
-            data-oid="6b-_w54"
+           
           />
-          <div className="flex-1" data-oid="e18h01h">
-            <p className="font-medium text-destructive" data-oid=":oztd_e">
+          <div className="flex-1">
+            <p className="font-medium text-destructive">
               Upload Error
             </p>
-            <p className="text-sm text-destructive/80" data-oid="bshuvp7">
+            <p className="text-sm text-destructive/80">
               {displayError}
             </p>
           </div>
@@ -281,9 +281,9 @@ export function FileUpload({
               handleClearFile();
             }}
             className="p-1 text-destructive/60 hover:text-destructive transition-colors"
-            data-oid="3uod091"
+           
           >
-            <X className="w-4 h-4" data-oid="k7f4b0f" />
+            <X className="w-4 h-4" />
           </button>
         </div>
       )}
@@ -292,13 +292,13 @@ export function FileUpload({
       {isLoading && (
         <div
           className="flex items-center justify-center gap-2 text-muted-foreground"
-          data-oid="s.-ws6n"
+         
         >
           <div
             className="w-4 h-4 border-2 border-spectral border-t-spectral rounded-full animate-spin"
-            data-oid="y9c3lk8"
+           
           />
-          <span className="text-sm" data-oid="l-oicon">
+          <span className="text-sm">
             Processing file...
           </span>
         </div>

@@ -186,29 +186,29 @@ export function EventForm({
   const errorClasses = "text-xs text-destructive mt-1";
 
   return (
-    <Card data-oid="_ol-ebz">
-      <CardHeader data-oid="r2ic:rk">
-        <CardTitle data-oid="kxs9kiz">
+    <Card>
+      <CardHeader>
+        <CardTitle>
           {mode === "create" ? "Register New Event" : "Edit Event Details"}
         </CardTitle>
       </CardHeader>
 
-      <form onSubmit={handleSubmit} data-oid="ca9_qe.">
-        <CardContent className="space-y-6" data-oid="s:39of-">
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-6">
           {/* Basic Information */}
-          <div className="space-y-4" data-oid="71hkroa">
+          <div className="space-y-4">
             <h4
               className="text-sm font-semibold text-foreground border-b border-border pb-2"
-              data-oid="pdff3fx"
+             
             >
               Basic Information
             </h4>
 
             {/* Event Name */}
-            <div data-oid="fwds4:a">
-              <label htmlFor="name" className={labelClasses} data-oid="qpeb_86">
+            <div>
+              <label htmlFor="name" className={labelClasses}>
                 Event Name{" "}
-                <span className="text-destructive" data-oid="4e90wfc">
+                <span className="text-destructive">
                   *
                 </span>
               </label>
@@ -220,11 +220,12 @@ export function EventForm({
                 className={inputClasses}
                 placeholder="e.g., NIC Spring Conference"
                 disabled={isLoading}
-                data-oid="bq9mwwq"
+                aria-invalid={!!errors.name}
+                aria-describedby={errors.name ? "name-error" : undefined}
               />
 
               {errors.name && (
-                <p className={errorClasses} data-oid="zwelsoj">
+                <p id="name-error" className={errorClasses}>
                   {errors.name}
                 </p>
               )}
@@ -233,16 +234,16 @@ export function EventForm({
             {/* Event Type and Quarter */}
             <div
               className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-              data-oid=":uog7et"
+             
             >
-              <div data-oid="s1ad_n9">
+              <div>
                 <label
                   htmlFor="event_type_id"
                   className={labelClasses}
-                  data-oid="z2_5:uf"
+                 
                 >
                   Event Type{" "}
-                  <span className="text-destructive" data-oid="3tsvqj2">
+                  <span className="text-destructive">
                     *
                   </span>
                 </label>
@@ -254,27 +255,27 @@ export function EventForm({
                   }
                   className={inputClasses}
                   disabled={isLoading || loadingTypes}
-                  data-oid="rwss-5f"
+                 
                 >
-                  <option value="" data-oid="wufa0wv">
+                  <option value="">
                     Select event type...
                   </option>
                   {eventTypes.map((type) => (
-                    <option key={type.id} value={type.id} data-oid="7ud3nsa">
+                    <option key={type.id} value={type.id}>
                       {type.name}
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div data-oid=".rm3vjd">
+              <div>
                 <label
                   htmlFor="quarter"
                   className={labelClasses}
-                  data-oid="lpkne56"
+                 
                 >
                   Quarter{" "}
-                  <span className="text-destructive" data-oid="k:25yk2">
+                  <span className="text-destructive">
                     *
                   </span>
                 </label>
@@ -284,10 +285,10 @@ export function EventForm({
                   onChange={(e) => handleChange("quarter", e.target.value)}
                   className={inputClasses}
                   disabled={isLoading}
-                  data-oid="eik_q97"
+                 
                 >
                   {quarters.map((q) => (
-                    <option key={q} value={q} data-oid="kt:0oqu">
+                    <option key={q} value={q}>
                       {quarterLabels[q]}
                     </option>
                   ))}
@@ -298,13 +299,13 @@ export function EventForm({
             {/* Dates */}
             <div
               className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-              data-oid="juj20ml"
+             
             >
-              <div data-oid=".-w1ijx">
+              <div>
                 <label
                   htmlFor="date_start"
                   className={labelClasses}
-                  data-oid="p-iy.7e"
+                 
                 >
                   Start Date
                 </label>
@@ -315,15 +316,15 @@ export function EventForm({
                   onChange={(e) => handleChange("date_start", e.target.value)}
                   className={inputClasses}
                   disabled={isLoading}
-                  data-oid="5lrpepx"
+                 
                 />
               </div>
 
-              <div data-oid="ao-p1wx">
+              <div>
                 <label
                   htmlFor="date_end"
                   className={labelClasses}
-                  data-oid=":vm5.i2"
+                 
                 >
                   End Date
                 </label>
@@ -334,11 +335,12 @@ export function EventForm({
                   onChange={(e) => handleChange("date_end", e.target.value)}
                   className={inputClasses}
                   disabled={isLoading}
-                  data-oid="1v7yd4_"
+                  aria-invalid={!!errors.date_end}
+                  aria-describedby={errors.date_end ? "date_end-error" : undefined}
                 />
 
                 {errors.date_end && (
-                  <p className={errorClasses} data-oid="9ikwqna">
+                  <p id="date_end-error" className={errorClasses}>
                     {errors.date_end}
                   </p>
                 )}
@@ -346,11 +348,11 @@ export function EventForm({
             </div>
 
             {/* Location */}
-            <div data-oid="9422w_-">
+            <div>
               <label
                 htmlFor="location"
                 className={labelClasses}
-                data-oid=".i_0fnl"
+               
               >
                 Location
               </label>
@@ -362,39 +364,39 @@ export function EventForm({
                 className={inputClasses}
                 placeholder="e.g., San Diego, CA"
                 disabled={isLoading}
-                data-oid="q.k_9:f"
+               
               />
             </div>
           </div>
 
           {/* Budget Information */}
-          <div className="space-y-4" data-oid="zncxj2:">
+          <div className="space-y-4">
             <h4
               className="text-sm font-semibold text-foreground border-b border-border pb-2"
-              data-oid="hrzbq.4"
+             
             >
               Budget & Goals
             </h4>
 
             <div
               className="grid grid-cols-1 sm:grid-cols-3 gap-4"
-              data-oid="rg0k0b5"
+             
             >
-              <div data-oid="i:fozar">
+              <div>
                 <label
                   htmlFor="budget_amount"
                   className={labelClasses}
-                  data-oid="b6an_kz"
+                 
                 >
                   Budget Amount{" "}
-                  <span className="text-destructive" data-oid="-0t2bkw">
+                  <span className="text-destructive">
                     *
                   </span>
                 </label>
-                <div className="relative" data-oid="efuruwx">
+                <div className="relative">
                   <span
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                    data-oid="g15-.c:"
+                   
                   >
                     $
                   </span>
@@ -411,21 +413,22 @@ export function EventForm({
                     className={`${inputClasses} pl-7`}
                     placeholder="0.00"
                     disabled={isLoading}
-                    data-oid="kuvm4n3"
+                    aria-invalid={!!errors.budget_amount}
+                    aria-describedby={errors.budget_amount ? "budget_amount-error" : undefined}
                   />
                 </div>
                 {errors.budget_amount && (
-                  <p className={errorClasses} data-oid="jvu:fl8">
+                  <p id="budget_amount-error" className={errorClasses}>
                     {errors.budget_amount}
                   </p>
                 )}
               </div>
 
-              <div data-oid="c5vgaha">
+              <div>
                 <label
                   htmlFor="expansion_goal"
                   className={labelClasses}
-                  data-oid="o3xui_t"
+                 
                 >
                   Expansion Goal
                 </label>
@@ -440,21 +443,22 @@ export function EventForm({
                   placeholder="0"
                   min="0"
                   disabled={isLoading}
-                  data-oid="-s-58l7"
+                  aria-invalid={!!errors.expansion_goal}
+                  aria-describedby={errors.expansion_goal ? "expansion_goal-error" : undefined}
                 />
 
                 {errors.expansion_goal && (
-                  <p className={errorClasses} data-oid="3p_r0lq">
+                  <p id="expansion_goal-error" className={errorClasses}>
                     {errors.expansion_goal}
                   </p>
                 )}
               </div>
 
-              <div data-oid="i4c89yc">
+              <div>
                 <label
                   htmlFor="net_new_goal"
                   className={labelClasses}
-                  data-oid="ri:u-7f"
+                 
                 >
                   Net New Goal
                 </label>
@@ -467,11 +471,12 @@ export function EventForm({
                   placeholder="0"
                   min="0"
                   disabled={isLoading}
-                  data-oid="zoolzns"
+                  aria-invalid={!!errors.net_new_goal}
+                  aria-describedby={errors.net_new_goal ? "net_new_goal-error" : undefined}
                 />
 
                 {errors.net_new_goal && (
-                  <p className={errorClasses} data-oid="6zt9twn">
+                  <p id="net_new_goal-error" className={errorClasses}>
                     {errors.net_new_goal}
                   </p>
                 )}
@@ -480,19 +485,19 @@ export function EventForm({
           </div>
 
           {/* Notes Section */}
-          <div className="space-y-4" data-oid="f_s7410">
+          <div className="space-y-4">
             <h4
               className="text-sm font-semibold text-foreground border-b border-border pb-2"
-              data-oid="2ggrpsp"
+             
             >
               Planning Notes
             </h4>
 
-            <div data-oid="45pvy-r">
+            <div>
               <label
                 htmlFor="approach_notes"
                 className={labelClasses}
-                data-oid="vf.uihz"
+               
               >
                 Approach Notes
               </label>
@@ -503,19 +508,19 @@ export function EventForm({
                 className={`${inputClasses} min-h-[80px] resize-y`}
                 placeholder="Strategy and approach for this event..."
                 disabled={isLoading}
-                data-oid="q4uvi7:"
+               
               />
             </div>
 
             <div
               className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-              data-oid="r90_i6h"
+             
             >
-              <div data-oid="5z63lo3">
+              <div>
                 <label
                   htmlFor="marketing_notes"
                   className={labelClasses}
-                  data-oid="lixsy37"
+                 
                 >
                   Marketing Notes
                 </label>
@@ -528,15 +533,15 @@ export function EventForm({
                   className={`${inputClasses} min-h-[80px] resize-y`}
                   placeholder="Booth details, collateral needs..."
                   disabled={isLoading}
-                  data-oid="--:9t14"
+                 
                 />
               </div>
 
-              <div data-oid="mllz2i1">
+              <div>
                 <label
                   htmlFor="sales_notes"
                   className={labelClasses}
-                  data-oid="tagrqth"
+                 
                 >
                   Sales Notes
                 </label>
@@ -547,20 +552,20 @@ export function EventForm({
                   className={`${inputClasses} min-h-[80px] resize-y`}
                   placeholder="Target accounts, meeting schedules..."
                   disabled={isLoading}
-                  data-oid="pbxho98"
+                 
                 />
               </div>
             </div>
           </div>
         </CardContent>
 
-        <CardFooter className="flex justify-end gap-3" data-oid=":0pg89-">
+        <CardFooter className="flex justify-end gap-3">
           <Button
             type="button"
             variant="secondary"
             onClick={onCancel}
             disabled={isLoading}
-            data-oid="q8qax:1"
+           
           >
             Cancel
           </Button>
@@ -568,7 +573,7 @@ export function EventForm({
             type="submit"
             variant="primary"
             isLoading={isLoading}
-            data-oid="f0238ur"
+           
           >
             {mode === "create" ? "Create Event" : "Save Changes"}
           </Button>

@@ -28,7 +28,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
           className,
         )}
         {...props}
-        data-oid="mtu.tl9"
+       
       >
         {children}
       </div>
@@ -54,7 +54,7 @@ const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
           className,
         )}
         {...props}
-        data-oid="83fp9:8"
+       
       >
         {children}
       </div>
@@ -76,7 +76,7 @@ const CardTitle = forwardRef<
         className,
       )}
       {...props}
-      data-oid="dbkb137"
+     
     >
       {children}
     </h3>
@@ -94,7 +94,7 @@ const CardDescription = forwardRef<
       ref={ref}
       className={cn("text-sm text-muted-foreground mt-1", className)}
       {...props}
-      data-oid="l7du_qo"
+     
     >
       {children}
     </p>
@@ -110,7 +110,7 @@ const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
         ref={ref}
         className={cn("px-6 py-4", className)}
         {...props}
-        data-oid="072q8gg"
+       
       >
         {children}
       </div>
@@ -136,7 +136,7 @@ const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
           className,
         )}
         {...props}
-        data-oid="6m08_2:"
+       
       >
         {children}
       </div>
@@ -167,12 +167,12 @@ const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
         ref={ref}
         className={cn("relative overflow-hidden", className)}
         {...props}
-        data-oid="s4bol:q"
+       
       >
-        <CardContent className="py-5" data-oid="z4hujv3">
-          <div className="flex items-start justify-between" data-oid="-6cx7.c">
-            <div className="space-y-1" data-oid="ygvnpn_">
-              <p className="text-sm font-medium text-muted-foreground" data-oid="ql49qus">
+        <CardContent className="py-5">
+          <div className="flex items-start justify-between">
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">
                 {title}
               </p>
               <p
@@ -180,7 +180,7 @@ const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
                   "text-2xl font-bold tabular-nums",
                   trend ? trendColors[trend] : "text-foreground",
                 )}
-                data-oid="b9vdz1_"
+               
               >
                 {value}
               </p>
@@ -190,7 +190,7 @@ const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
                     "text-xs",
                     trend ? trendColors[trend] : "text-muted-foreground/70",
                   )}
-                  data-oid="n5r9mgd"
+                 
                 >
                   {subtitle}
                 </p>
@@ -199,7 +199,7 @@ const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
             {icon && (
               <div
                 className="p-2 rounded-lg bg-spectral/10 text-spectral"
-                data-oid="94zsqw3"
+               
               >
                 {icon}
               </div>
@@ -209,11 +209,11 @@ const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
         {/* Decorative corner accent */}
         <div
           className="absolute top-0 right-0 w-16 h-16 overflow-hidden"
-          data-oid="etau9uy"
+         
         >
           <div
             className="absolute -top-8 -right-8 w-16 h-16 bg-gradient-to-br from-spectral/5 to-transparent rotate-45"
-            data-oid="z5cc2lj"
+           
           />
         </div>
       </Card>

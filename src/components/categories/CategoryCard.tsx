@@ -50,22 +50,22 @@ export function CategoryCard({
         ${onClick ? "hover:shadow-lg cursor-pointer" : ""}
         ${isExpanded ? "ring-1 ring-border" : ""}
       `}
-      data-oid="uniaq1o"
+     
     >
-      <CardContent className={compact ? "py-3" : "py-4"} data-oid=".y:syaw">
+      <CardContent className={compact ? "py-3" : "py-4"}>
         {/* Main content - clickable area */}
         <Link
           href={`/categories/${category.id}`}
           className="block"
-          data-oid="l2754xy"
+         
         >
           <div
             className="flex flex-col lg:flex-row lg:items-center gap-4"
-            data-oid="pxv0xnl"
+           
           >
             {/* Left section: Name and description */}
-            <div className="flex-1 min-w-0" data-oid="6st_cll">
-              <div className="flex items-start gap-3" data-oid="g3dlxdm">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start gap-3">
                 {/* Expandable toggle (if applicable) */}
                 {expandable && category.expense_count > 0 && (
                   <button
@@ -78,29 +78,29 @@ export function CategoryCard({
                     aria-label={
                       isExpanded ? "Collapse expenses" : "Expand expenses"
                     }
-                    data-oid="4569z0k"
+                   
                   >
                     {isExpanded ? (
-                      <ChevronDown className="w-4 h-4" data-oid=":bo5dk9" />
+                      <ChevronDown className="w-4 h-4" />
                     ) : (
-                      <ChevronRight className="w-4 h-4" data-oid="pakdyj1" />
+                      <ChevronRight className="w-4 h-4" />
                     )}
                   </button>
                 )}
 
-                <div className="flex-1 min-w-0" data-oid="rs:9hml">
+                <div className="flex-1 min-w-0">
                   {/* Category name and icon */}
                   <div
                     className="flex flex-wrap items-center gap-2 mb-1"
-                    data-oid="-b.8fxe"
+                   
                   >
                     <Folder
                       className="w-4 h-4 text-spectral"
-                      data-oid="vw_vy28"
+                     
                     />
                     <h3
                       className="font-semibold text-foreground truncate"
-                      data-oid="z8ji22_"
+                     
                     >
                       {category.name}
                     </h3>
@@ -110,7 +110,7 @@ export function CategoryCard({
                   {!compact && category.description && (
                     <p
                       className="text-sm text-muted-foreground line-clamp-1"
-                      data-oid="oh1hodg"
+                     
                     >
                       {category.description}
                     </p>
@@ -120,12 +120,12 @@ export function CategoryCard({
             </div>
 
             {/* Right section: Budget progress */}
-            <div className="lg:w-64 xl:w-80" data-oid="ib5yg.6">
+            <div className="lg:w-64 xl:w-80">
               <div
                 className="flex items-center justify-between mb-1.5 text-sm"
-                data-oid="u-4:cxn"
+               
               >
-                <span className="text-muted-foreground" data-oid="qxko0rf">
+                <span className="text-muted-foreground">
                   {formatCurrency(category.actual_spent)} of{" "}
                   {formatCurrency(category.budget_amount)}
                 </span>
@@ -134,7 +134,7 @@ export function CategoryCard({
                     font-medium tabular-nums
                     ${category.remaining < 0 ? "text-destructive" : category.remaining < category.budget_amount * 0.2 ? "text-spectral" : "text-emerald-400"}
                   `}
-                  data-oid="4poox.k"
+                 
                 >
                   {category.remaining >= 0
                     ? formatCurrency(category.remaining)
@@ -146,15 +146,15 @@ export function CategoryCard({
                 value={category.actual_spent}
                 max={category.budget_amount}
                 size="sm"
-                data-oid="k:qb2p-"
+               
               />
 
               {!compact && category.expense_count > 0 && (
                 <div
                   className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground"
-                  data-oid="6f4ldmi"
+                 
                 >
-                  <Receipt className="w-3 h-3" data-oid="lbg0cno" />
+                  <Receipt className="w-3 h-3" />
                   {category.expense_count} expense
                   {category.expense_count !== 1 ? "s" : ""}
                 </div>
@@ -167,45 +167,45 @@ export function CategoryCard({
         {expandable && isExpanded && expenses.length > 0 && (
           <div
             className="mt-4 pt-4 border-t border-border"
-            data-oid="7ddzrj:"
+           
           >
             <h4
               className="text-sm font-medium text-foreground mb-3"
-              data-oid="xs33zgy"
+             
             >
               Expenses ({expenses.length})
             </h4>
-            <div className="space-y-2" data-oid="m6kpzpm">
+            <div className="space-y-2">
               {expenses.slice(0, 5).map((expense) => (
                 <div
                   key={expense.id}
                   className="flex items-center justify-between py-2 px-3 bg-background/50 rounded text-sm"
-                  data-oid="8x6ymol"
+                 
                 >
-                  <div className="flex-1 min-w-0" data-oid="v1od5lj">
+                  <div className="flex-1 min-w-0">
                     <span
                       className="font-medium text-foreground"
-                      data-oid="g0.mkyo"
+                     
                     >
                       {expense.vendor || "Unknown Vendor"}
                     </span>
                     {expense.memo && (
                       <p
                         className="text-muted-foreground text-xs truncate mt-0.5"
-                        data-oid=":hr15r."
+                       
                       >
                         {expense.memo}
                       </p>
                     )}
                   </div>
-                  <div className="text-right ml-4" data-oid="witf3.2">
+                  <div className="text-right ml-4">
                     <span
                       className="font-medium tabular-nums text-foreground"
-                      data-oid="qijkzhl"
+                     
                     >
                       {formatCurrency(expense.amount)}
                     </span>
-                    <p className="text-xs text-muted-foreground" data-oid="6erj9ah">
+                    <p className="text-xs text-muted-foreground">
                       {new Date(expense.expense_date).toLocaleDateString(
                         "en-US",
                         {
@@ -221,7 +221,7 @@ export function CategoryCard({
                 <Link
                   href={`/categories/${category.id}`}
                   className="block text-center py-2 text-sm text-spectral hover:text-foreground transition-colors"
-                  data-oid="6j9:ea:"
+                 
                 >
                   View all {expenses.length} expenses
                 </Link>

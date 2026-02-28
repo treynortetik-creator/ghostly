@@ -1,5 +1,5 @@
 /**
- * The Firm - Event Checklist Item by ID
+ * Ghostly - Event Checklist Item by ID
  *
  * PUT /api/events/:id/checklist/:itemId - Update item (toggle complete, reassign, etc.)
  * DELETE /api/events/:id/checklist/:itemId - Remove item

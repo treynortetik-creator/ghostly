@@ -61,53 +61,53 @@ export function AssignTeamMemberModal({
   return (
     <div
       className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-      data-oid="rpgkp9k"
+     
     >
       <div
         className="bg-background rounded-lg border border-border glass-shadow w-full max-w-md"
-        data-oid="6hxnp:i"
+       
       >
         <div
           className="px-6 py-4 border-b border-border flex items-center justify-between"
-          data-oid="s4ctxz5"
+         
         >
           <h2
             className="text-xl font-semibold text-foreground"
-            data-oid="c_f.t_r"
+           
           >
             Assign Staff to Event
           </h2>
           <button
             onClick={onCancel}
             className="text-muted-foreground hover:text-foreground"
-            data-oid="600rtyb"
+           
           >
-            <X className="w-5 h-5" data-oid="xaj7l_y" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="px-6 py-4 space-y-4" data-oid="reprmoi">
+        <div className="px-6 py-4 space-y-4">
           {isFetching ? (
-            <p className="text-sm text-muted-foreground" data-oid="php7j1p">
+            <p className="text-sm text-muted-foreground">
               Loading staff roster...
             </p>
           ) : members.length === 0 ? (
-            <p className="text-sm text-muted-foreground" data-oid="pnw:4m_">
+            <p className="text-sm text-muted-foreground">
               All active staff members are already assigned to this event.
             </p>
           ) : (
             <>
-              <div data-oid="2vdbiye">
+              <div>
                 <label
                   className="block text-sm font-medium text-foreground mb-1"
-                  data-oid="s1inxbk"
+                 
                 >
                   Staff Member{" "}
-                  <span className="text-destructive" data-oid="vb34_p_">
+                  <span className="text-destructive">
                     *
                   </span>
                 </label>
-                <div className="space-y-2" data-oid="9ki_4ly">
+                <div className="space-y-2">
                   {members.map((m) => (
                     <label
                       key={m.id}
@@ -116,7 +116,7 @@ export function AssignTeamMemberModal({
                           ? "border-spectral bg-spectral/10"
                           : "border-border hover:bg-card"
                       }`}
-                      data-oid="pyeq1cl"
+                     
                     >
                       <input
                         type="radio"
@@ -130,27 +130,27 @@ export function AssignTeamMemberModal({
                           }
                         }}
                         className="sr-only"
-                        data-oid="9s.i3rv"
+                       
                       />
 
                       <div
                         className="w-8 h-8 rounded-full bg-spectral/10 flex items-center justify-center flex-shrink-0"
-                        data-oid="l8vbcj0"
+                       
                       >
                         <User
                           className="w-4 h-4 text-muted-foreground"
-                          data-oid="6oe9.3_"
+                         
                         />
                       </div>
-                      <div className="flex-1" data-oid="kna0kwm">
+                      <div className="flex-1">
                         <p
                           className="text-sm font-medium text-foreground"
-                          data-oid="u0rqajk"
+                         
                         >
                           {m.name}
                         </p>
                         {m.default_role && (
-                          <p className="text-xs text-muted-foreground" data-oid="e0bt9na">
+                          <p className="text-xs text-muted-foreground">
                             {m.default_role}
                           </p>
                         )}
@@ -158,11 +158,11 @@ export function AssignTeamMemberModal({
                       {selectedId === m.id && (
                         <div
                           className="w-4 h-4 rounded-full bg-spectral flex items-center justify-center"
-                          data-oid="qdrugjp"
+                         
                         >
                           <div
                             className="w-2 h-2 rounded-full bg-background"
-                            data-oid=".lr3ypc"
+                           
                           />
                         </div>
                       )}
@@ -171,10 +171,10 @@ export function AssignTeamMemberModal({
                 </div>
               </div>
 
-              <div data-oid="ll6p-3a">
+              <div>
                 <label
                   className="block text-sm font-medium text-foreground mb-1"
-                  data-oid="sqjrvw7"
+                 
                 >
                   Role for this Event
                 </label>
@@ -186,7 +186,7 @@ export function AssignTeamMemberModal({
                     selectedMember?.default_role || "e.g., Booth Lead"
                   }
                   className="w-full px-3 py-2 bg-card border border-border rounded-md text-foreground placeholder-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-spectral focus:border-transparent"
-                  data-oid="b0r3wr_"
+                 
                 />
               </div>
             </>
@@ -195,17 +195,17 @@ export function AssignTeamMemberModal({
 
         <div
           className="px-6 py-4 border-t border-border flex justify-end gap-3"
-          data-oid="bm-7q9v"
+         
         >
-          <Button variant="secondary" onClick={onCancel} data-oid="w:qumtg">
+          <Button variant="secondary" onClick={onCancel}>
             Cancel
           </Button>
           <Button
             onClick={handleAssign}
             isLoading={isLoading}
             disabled={!selectedId || isFetching}
-            leftIcon={<UserPlus className="w-4 h-4" data-oid="7wfkwua" />}
-            data-oid="tcndnee"
+            leftIcon={<UserPlus className="w-4 h-4" />}
+           
           >
             Assign
           </Button>

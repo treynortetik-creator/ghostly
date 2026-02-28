@@ -1,5 +1,5 @@
 /**
- * The Firm - Team Members API
+ * Ghostly - Team Members API
  *
  * GET /api/team - List all active team members
  * POST /api/team - Create a new team member

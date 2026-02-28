@@ -245,36 +245,36 @@ export default function SettingsPage() {
   });
 
   return (
-    <AppShell data-oid="bu1xrwg">
+    <AppShell>
       {/* Page Header */}
       <div
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
-        data-oid="mhxa40g"
+       
       >
-        <div data-oid="s3pp:cf">
+        <div>
           <h1
             className="text-3xl font-bold text-foreground flex items-center gap-3"
-            data-oid="hmaz-:k"
+           
           >
-            <Settings className="w-8 h-8 text-spectral" data-oid="j.4ykqf" />
+            <Settings className="w-8 h-8 text-spectral" />
             The Configuration Chambers
           </h1>
-          <p className="mt-1 text-muted-foreground" data-oid="b70mv_o">
+          <p className="mt-1 text-muted-foreground">
             Application Settings &middot; As of {formattedDate}
           </p>
         </div>
 
-        <div className="flex items-center gap-3" data-oid=".x1bfy2">
+        <div className="flex items-center gap-3">
           <Button
             variant="secondary"
             size="sm"
             onClick={fetchSettings}
             disabled={isLoading || isSaving}
-            data-oid="l4:1qhv"
+           
           >
             <RefreshCw
               className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
-              data-oid="q3_-2h5"
+             
             />
             Refresh
           </Button>
@@ -285,14 +285,14 @@ export default function SettingsPage() {
       {isLoading && (
         <div
           className="flex items-center justify-center py-16"
-          data-oid="0-oag5z"
+         
         >
-          <div className="text-center" data-oid="69yn43l">
+          <div className="text-center">
             <RefreshCw
               className="w-8 h-8 text-spectral animate-spin mx-auto mb-3"
-              data-oid="gafnrar"
+             
             />
-            <p className="text-muted-foreground" data-oid="zy725mw">
+            <p className="text-muted-foreground">
               Loading settings...
             </p>
           </div>
@@ -301,18 +301,18 @@ export default function SettingsPage() {
 
       {/* Settings Form */}
       {!isLoading && (
-        <div className="space-y-6" data-oid="hqqjc40">
+        <div className="space-y-6">
           {/* Error Message */}
           {error && (
             <div
               className="flex items-center gap-3 p-4 bg-red-400/10 border border-destructive/30 rounded-lg"
-              data-oid="2mlcrom"
+             
             >
               <AlertCircle
                 className="w-5 h-5 text-destructive flex-shrink-0"
-                data-oid="v-64m_:"
+               
               />
-              <p className="text-destructive" data-oid="32gzn0:">
+              <p className="text-destructive">
                 {error}
               </p>
             </div>
@@ -322,13 +322,13 @@ export default function SettingsPage() {
           {successMessage && (
             <div
               className="flex items-center gap-3 p-4 bg-emerald-400/10 border border-emerald-400/30 rounded-lg"
-              data-oid="d8mgopj"
+             
             >
               <CheckCircle
                 className="w-5 h-5 text-emerald-400 flex-shrink-0"
-                data-oid="5nki:ux"
+               
               />
-              <p className="text-emerald-400" data-oid="mnnfs24">
+              <p className="text-emerald-400">
                 {successMessage}
               </p>
             </div>
@@ -337,7 +337,7 @@ export default function SettingsPage() {
           {/* Settings Grid */}
           <div
             className="grid grid-cols-1 lg:grid-cols-2 gap-6"
-            data-oid="trj6eu-"
+           
           >
             {/* Fiscal Year Selector */}
             <FiscalYearSelector
@@ -346,7 +346,7 @@ export default function SettingsPage() {
                 setSettings((prev) => ({ ...prev, fiscal_year_id: id }))
               }
               disabled={isSaving}
-              data-oid="t1aywn8"
+             
             />
 
             {/* Model Selector */}
@@ -356,27 +356,27 @@ export default function SettingsPage() {
                 setSettings((prev) => ({ ...prev, openrouter_model: model }))
               }
               disabled={isSaving}
-              data-oid="zwwc3jc"
+             
             />
           </div>
 
           {/* AI Prompts Section */}
-          <div className="space-y-6" data-oid="dz20ei-">
-            <div className="flex items-center gap-3" data-oid="bf:o-qr">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
               <div
                 className="p-2 rounded-md bg-spectral/10 text-spectral"
-                data-oid="9wv6cg3"
+               
               >
-                <Bot className="w-5 h-5" data-oid="fytgd0l" />
+                <Bot className="w-5 h-5" />
               </div>
-              <div data-oid="3sv3a4b">
+              <div>
                 <h2
                   className="text-xl font-bold text-foreground"
-                  data-oid="5rmkni2"
+                 
                 >
                   AI Prompts
                 </h2>
-                <p className="text-sm text-muted-foreground" data-oid="7c3r8sd">
+                <p className="text-sm text-muted-foreground">
                   Customize the prompts used for AI-powered features
                 </p>
               </div>
@@ -391,7 +391,7 @@ export default function SettingsPage() {
                 setPrompts((prev) => ({ ...prev, csv_categorization: val }))
               }
               disabled={isSaving}
-              data-oid="792gq6z"
+             
             />
 
             <PromptEditor
@@ -403,7 +403,7 @@ export default function SettingsPage() {
                 setPrompts((prev) => ({ ...prev, pdf_extraction: val }))
               }
               disabled={isSaving}
-              data-oid="-wcun40"
+             
             />
           </div>
 
@@ -412,7 +412,7 @@ export default function SettingsPage() {
             <EventTypesSection
               fiscalYearId={settings.fiscal_year_id}
               disabled={isSaving}
-              data-oid="-.:20ve"
+             
             />
           )}
 
@@ -425,43 +425,43 @@ export default function SettingsPage() {
               const unallocated = setTotal - allocated;
 
               return (
-                <Card data-oid="wra_rhx">
-                  <CardHeader data-oid="t.mw1ng">
-                    <div className="flex items-center gap-3" data-oid="s:kbom9">
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
                       <div
                         className="p-2 rounded-md bg-spectral/10 text-spectral"
-                        data-oid="_v77y2_"
+                       
                       >
-                        <DollarSign className="w-5 h-5" data-oid="fzo9vbp" />
+                        <DollarSign className="w-5 h-5" />
                       </div>
-                      <div data-oid="23g4z41">
-                        <CardTitle data-oid="k2oexwx">
+                      <div>
+                        <CardTitle>
                           Budget Overview
                         </CardTitle>
-                        <CardDescription data-oid="1gr80y3">
+                        <CardDescription>
                           Set your annual budget target and track allocations
                           across events and categories
                         </CardDescription>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4" data-oid="iz9nb-o">
+                  <CardContent className="space-y-4">
                     {/* Editable Total Budget */}
                     <div
                       className="p-4 rounded-lg bg-spectral/10 border border-spectral"
-                      data-oid="xv0wax-"
+                     
                     >
                       <label
                         htmlFor="total_budget"
                         className="block text-sm text-muted-foreground mb-2"
-                        data-oid="xx2iblf"
+                       
                       >
                         Total Annual Budget
                       </label>
-                      <div className="relative" data-oid="3hi3y8m">
+                      <div className="relative">
                         <span
                           className="absolute left-3 top-1/2 -translate-y-1/2 text-spectral text-lg"
-                          data-oid="lsqwo:f"
+                         
                         >
                           $
                         </span>
@@ -487,16 +487,16 @@ export default function SettingsPage() {
                           className="w-full pl-8 pr-4 py-2.5 rounded-md bg-background border border-spectral text-2xl font-bold text-spectral focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral transition-colors duration-200 disabled:opacity-50"
                           placeholder="0"
                           disabled={isSaving}
-                          data-oid=":j9aoak"
+                         
                         />
                       </div>
                       {/* Allocated vs Unallocated */}
                       {setTotal > 0 && (
                         <div
                           className="mt-3 flex items-center justify-between text-sm"
-                          data-oid="qi:s29w"
+                         
                         >
-                          <span className="text-muted-foreground" data-oid="i4.sur8">
+                          <span className="text-muted-foreground">
                             Allocated:{" "}
                             {formatCurrency(allocated)}
                           </span>
@@ -506,7 +506,7 @@ export default function SettingsPage() {
                                 ? "text-emerald-400 font-medium"
                                 : "text-destructive font-medium"
                             }
-                            data-oid="c-cx6y3"
+                           
                           >
                             {unallocated >= 0
                               ? "Unallocated"
@@ -521,47 +521,47 @@ export default function SettingsPage() {
                     {/* Budget Breakdown */}
                     <div
                       className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-                      data-oid=":ebmu6:"
+                     
                     >
                       {/* Events Budget */}
                       <div
                         className="p-4 rounded-lg border border-border bg-background"
-                        data-oid="jb0bm60"
+                       
                       >
                         <div
                           className="flex items-center gap-2 mb-2"
-                          data-oid="aqgbae_"
+                         
                         >
                           <Calendar
                             className="w-4 h-4 text-spectral"
-                            data-oid="mvskafa"
+                           
                           />
                           <span
                             className="text-sm font-medium text-foreground"
-                            data-oid="0z5s25v"
+                           
                           >
                             Events Budget
                           </span>
                         </div>
                         <p
                           className="text-xl font-semibold text-foreground"
-                          data-oid="lvk0a6a"
+                         
                         >
                           {formatCurrency(budgetSummary.eventsBudget)}
                         </p>
                         <p
                           className="text-xs text-muted-foreground mt-1"
-                          data-oid="x4546ke"
+                         
                         >
                           Across {budgetSummary.eventsCount} event
                           {budgetSummary.eventsCount !== 1 ? "s" : ""}
                         </p>
-                        <Link href="/events" data-oid="3ag58uw">
+                        <Link href="/events">
                           <Button
                             variant="ghost"
                             size="sm"
                             className="mt-3 w-full"
-                            data-oid="49qkqz5"
+                           
                           >
                             Edit Event Budgets →
                           </Button>
@@ -571,42 +571,42 @@ export default function SettingsPage() {
                       {/* Categories Budget */}
                       <div
                         className="p-4 rounded-lg border border-border bg-background"
-                        data-oid="lpfrok4"
+                       
                       >
                         <div
                           className="flex items-center gap-2 mb-2"
-                          data-oid="9wp1pf9"
+                         
                         >
                           <FolderOpen
                             className="w-4 h-4 text-emerald-400"
-                            data-oid="0jcziso"
+                           
                           />
                           <span
                             className="text-sm font-medium text-foreground"
-                            data-oid="91-jp3."
+                           
                           >
                             Categories Budget
                           </span>
                         </div>
                         <p
                           className="text-xl font-semibold text-foreground"
-                          data-oid="6o38u6k"
+                         
                         >
                           {formatCurrency(budgetSummary.categoriesBudget)}
                         </p>
                         <p
                           className="text-xs text-muted-foreground mt-1"
-                          data-oid="vkv3cxi"
+                         
                         >
                           Across {budgetSummary.categoriesCount} categor
                           {budgetSummary.categoriesCount !== 1 ? "ies" : "y"}
                         </p>
-                        <Link href="/categories" data-oid="gyjqwx8">
+                        <Link href="/categories">
                           <Button
                             variant="ghost"
                             size="sm"
                             className="mt-3 w-full"
-                            data-oid="3maly-h"
+                           
                           >
                             Edit Category Budgets →
                           </Button>
@@ -619,25 +619,25 @@ export default function SettingsPage() {
             })()}
 
           {/* Save Actions */}
-          <Card data-oid="u5n_pac">
-            <CardHeader divider={false} data-oid="zhj1ga_">
-              <CardTitle className="text-lg" data-oid="n2klabg">
+          <Card>
+            <CardHeader divider={false}>
+              <CardTitle className="text-lg">
                 Save Changes
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-0" data-oid="rdnzqbj">
-              <p className="text-sm text-muted-foreground mb-4" data-oid="ghzlpvn">
+            <CardContent className="pt-0">
+              <p className="text-sm text-muted-foreground mb-4">
                 {hasChanges
                   ? 'You have unsaved changes. Click "Save Settings" to apply your changes.'
                   : "No changes to save. Modify settings above to enable saving."}
               </p>
             </CardContent>
-            <CardFooter className="flex justify-end gap-3" data-oid=":vhx6j4">
+            <CardFooter className="flex justify-end gap-3">
               <Button
                 variant="secondary"
                 onClick={handleReset}
                 disabled={!hasChanges || isSaving}
-                data-oid="sk5d98f"
+               
               >
                 Discard Changes
               </Button>
@@ -646,8 +646,8 @@ export default function SettingsPage() {
                 onClick={handleSave}
                 disabled={!hasChanges || isSaving}
                 isLoading={isSaving}
-                leftIcon={<Save className="w-4 h-4" data-oid="1pev0.2" />}
-                data-oid="n6r57ys"
+                leftIcon={<Save className="w-4 h-4" />}
+               
               >
                 Save Settings
               </Button>
@@ -655,28 +655,28 @@ export default function SettingsPage() {
           </Card>
 
           {/* Additional Info */}
-          <Card className="border-dashed" data-oid="3e72h2d">
-            <CardContent className="py-6" data-oid="p75u00w">
-              <div className="flex items-start gap-4" data-oid="7mrd_am">
+          <Card className="border-dashed">
+            <CardContent className="py-6">
+              <div className="flex items-start gap-4">
                 <div
                   className="p-2 bg-spectral/10 rounded-lg"
-                  data-oid="k5ypx_c"
+                 
                 >
                   <Settings
                     className="w-6 h-6 text-muted-foreground"
-                    data-oid="mby1_x5"
+                   
                   />
                 </div>
-                <div data-oid="m7_e1l9">
+                <div>
                   <h3
                     className="font-medium text-foreground mb-1"
-                    data-oid="tdxi4.c"
+                   
                   >
                     About These Settings
                   </h3>
                   <p
                     className="text-sm text-muted-foreground leading-relaxed"
-                    data-oid="h0f:c1-"
+                   
                   >
                     The fiscal year setting determines which budget year is
                     displayed throughout the application, affecting dashboards,
@@ -695,9 +695,9 @@ export default function SettingsPage() {
       {/* Footer */}
       <div
         className="text-center py-6 mt-8 border-t border-border"
-        data-oid="jenee8h"
+       
       >
-        <p className="text-xs text-muted-foreground/60 italic" data-oid="_6wa_qc">
+        <p className="text-xs text-muted-foreground/60 italic">
           &ldquo;A well-ordered ledger is the foundation of a prosperous
           enterprise.&rdquo;
         </p>

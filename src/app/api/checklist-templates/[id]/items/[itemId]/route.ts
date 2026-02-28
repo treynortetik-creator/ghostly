@@ -1,5 +1,5 @@
 /**
- * The Firm - Template Item by ID
+ * Ghostly - Template Item by ID
  *
  * PUT /api/checklist-templates/:id/items/:itemId - Update template item
  * DELETE /api/checklist-templates/:id/items/:itemId - Delete template item

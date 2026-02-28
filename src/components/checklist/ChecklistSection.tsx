@@ -29,27 +29,27 @@ export function ChecklistSection({
   if (total === 0) return null;
 
   return (
-    <Card className="overflow-hidden" data-oid="up4taay">
+    <Card className="overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full px-4 py-3 flex items-center justify-between bg-ghost-dark/5 hover:bg-ghost-dark/10 transition-colors"
-        data-oid="vx9fppb"
+       
       >
-        <div className="flex items-center gap-2" data-oid="xww4354">
+        <div className="flex items-center gap-2">
           {isOpen ? (
             <ChevronDown
               className="w-4 h-4 text-muted-foreground"
-              data-oid="9g6y3cw"
+             
             />
           ) : (
             <ChevronRight
               className="w-4 h-4 text-muted-foreground"
-              data-oid="d3f561k"
+             
             />
           )}
           <h4
             className="text-sm font-semibold text-foreground"
-            data-oid="qzgllh6"
+           
           >
             {checklistPhaseLabels[phase]}
           </h4>
@@ -60,20 +60,20 @@ export function ChecklistSection({
               ? "bg-emerald-400/10 text-emerald-400"
               : "bg-spectral/10 text-muted-foreground"
           }`}
-          data-oid=".w_g18."
+         
         >
           {completed}/{total}
         </span>
       </button>
 
       {isOpen && (
-        <div data-oid="gfvzamm">
+        <div>
           {items.map((item) => (
             <ChecklistItem
               key={item.id}
               item={item}
               onToggle={onToggle}
-              data-oid="30p4r8e"
+             
             />
           ))}
         </div>

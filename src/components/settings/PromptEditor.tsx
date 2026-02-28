@@ -53,14 +53,14 @@ export function PromptEditor({
   };
 
   return (
-    <Card data-oid="mvvc1m3">
-      <CardHeader divider={false} className="pb-2" data-oid="7a9.6vk">
-        <div className="flex items-center justify-between" data-oid="fty5x12">
+    <Card>
+      <CardHeader divider={false} className="pb-2">
+        <div className="flex items-center justify-between">
           <CardTitle
             className="text-lg flex items-center gap-2"
-            data-oid="z9irpbo"
+           
           >
-            <Type className="w-5 h-5 text-spectral" data-oid="j5uhsij" />
+            <Type className="w-5 h-5 text-spectral" />
             {label}
           </CardTitle>
 
@@ -68,25 +68,25 @@ export function PromptEditor({
           {isCustom ? (
             <span
               className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-spectral/10 text-spectral border border-spectral"
-              data-oid="s3vdu5n"
+             
             >
               Custom
             </span>
           ) : (
             <span
               className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-spectral/10 text-muted-foreground border border-border"
-              data-oid="ygloen5"
+             
             >
               Default
             </span>
           )}
         </div>
-        <p className="text-sm text-muted-foreground mt-1" data-oid="5il0tgr">
+        <p className="text-sm text-muted-foreground mt-1">
           {description}
         </p>
       </CardHeader>
 
-      <CardContent data-oid="tu8:bd-">
+      <CardContent>
         {/* Textarea */}
         <textarea
           value={displayValue}
@@ -107,48 +107,48 @@ export function PromptEditor({
             }
             ${isCustom ? "text-foreground" : "text-muted-foreground/60"}
           `}
-          data-oid="6v.-y:h"
+         
         />
 
         {/* Footer: char count + reset button */}
         <div
           className="mt-2 flex items-center justify-between"
-          data-oid="9b.xmuq"
+         
         >
           {/* Character Count */}
           <span
             className="text-xs text-muted-foreground/60 tabular-nums"
-            data-oid="fikd0zc"
+           
           >
             {charCount.toLocaleString()} characters
           </span>
 
           {/* Reset to Default */}
           {isCustom && !disabled && (
-            <div className="flex items-center gap-2" data-oid="37vuusf">
+            <div className="flex items-center gap-2">
               {showResetConfirm ? (
                 <>
                   <span
                     className="text-xs text-destructive flex items-center gap-1"
-                    data-oid="h9ep5lu"
+                   
                   >
-                    <AlertCircle className="w-3 h-3" data-oid="ncbwj3k" />
+                    <AlertCircle className="w-3 h-3" />
                     Are you sure?
                   </span>
                   <Button
                     variant="destructive"
                     size="sm"
                     onClick={handleReset}
-                    data-oid="0:eqent"
+                   
                   >
-                    <Check className="w-3 h-3" data-oid="ug5gk5n" />
+                    <Check className="w-3 h-3" />
                     Confirm
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowResetConfirm(false)}
-                    data-oid="yk2muku"
+                   
                   >
                     Cancel
                   </Button>
@@ -159,9 +159,9 @@ export function PromptEditor({
                   size="sm"
                   onClick={() => setShowResetConfirm(true)}
                   className="text-muted-foreground hover:text-foreground"
-                  data-oid="jvhf-11"
+                 
                 >
-                  <RotateCcw className="w-3.5 h-3.5" data-oid="fu7f.nz" />
+                  <RotateCcw className="w-3.5 h-3.5" />
                   Reset to Default
                 </Button>
               )}

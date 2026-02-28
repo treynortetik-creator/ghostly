@@ -64,42 +64,42 @@ export function ApplyTemplateModal({
   return (
     <div
       className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-      data-oid="pmmeyga"
+     
     >
       <div
         className="bg-background rounded-lg border border-border glass-shadow w-full max-w-md"
-        data-oid="q.o1mj3"
+       
       >
         <div
           className="px-6 py-4 border-b border-border flex items-center justify-between"
-          data-oid=".h5o8e4"
+         
         >
           <h2
             className="text-xl font-semibold text-foreground"
-            data-oid="bwzu2w6"
+           
           >
             Apply Template
           </h2>
           <button
             onClick={onCancel}
             className="text-muted-foreground hover:text-foreground"
-            data-oid="-ya.h:d"
+           
           >
-            <X className="w-5 h-5" data-oid="k1r9_wx" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="px-6 py-4" data-oid="34-z0dw">
+        <div className="px-6 py-4">
           {isFetching ? (
-            <p className="text-sm text-muted-foreground" data-oid="y570jsl">
+            <p className="text-sm text-muted-foreground">
               Loading templates...
             </p>
           ) : templates.length === 0 ? (
-            <p className="text-sm text-muted-foreground" data-oid="onymwty">
+            <p className="text-sm text-muted-foreground">
               No templates available.
             </p>
           ) : (
-            <div className="space-y-2" data-oid="l57_zdk">
+            <div className="space-y-2">
               {templates.map((t) => (
                 <label
                   key={t.id}
@@ -108,7 +108,7 @@ export function ApplyTemplateModal({
                       ? "border-spectral bg-spectral/10"
                       : "border-border hover:bg-card"
                   }`}
-                  data-oid="1rim31-"
+                 
                 >
                   <input
                     type="radio"
@@ -117,21 +117,21 @@ export function ApplyTemplateModal({
                     checked={selectedId === t.id}
                     onChange={() => setSelectedId(t.id)}
                     className="sr-only"
-                    data-oid="ezw5sl2"
+                   
                   />
 
                   <FileText
                     className="w-5 h-5 text-muted-foreground flex-shrink-0"
-                    data-oid="w3q7nt7"
+                   
                   />
-                  <div className="flex-1" data-oid=".5anetz">
+                  <div className="flex-1">
                     <p
                       className="text-sm font-medium text-foreground"
-                      data-oid="2l3to5m"
+                     
                     >
                       {t.name}
                     </p>
-                    <p className="text-xs text-muted-foreground" data-oid="fr7f7es">
+                    <p className="text-xs text-muted-foreground">
                       {t.item_count} tasks
                       {t.event_type && ` · ${t.event_type}`}
                       {t.is_default && " · Default"}
@@ -140,11 +140,11 @@ export function ApplyTemplateModal({
                   {selectedId === t.id && (
                     <div
                       className="w-4 h-4 rounded-full bg-spectral flex items-center justify-center"
-                      data-oid="79pp27_"
+                     
                     >
                       <div
                         className="w-2 h-2 rounded-full bg-background"
-                        data-oid="svqtgr."
+                       
                       />
                     </div>
                   )}
@@ -156,16 +156,16 @@ export function ApplyTemplateModal({
 
         <div
           className="px-6 py-4 border-t border-border flex justify-end gap-3"
-          data-oid="q_hwf0k"
+         
         >
-          <Button variant="secondary" onClick={onCancel} data-oid="rnhpm3u">
+          <Button variant="secondary" onClick={onCancel}>
             Cancel
           </Button>
           <Button
             onClick={handleApply}
             isLoading={isLoading}
             disabled={!selectedId || isFetching}
-            data-oid="9:4gfz5"
+           
           >
             Apply Template
           </Button>

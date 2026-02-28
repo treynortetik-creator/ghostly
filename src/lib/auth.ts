@@ -170,7 +170,7 @@ export function hashApiKey(rawKey: string): string {
  * Generate a new API key in the format sk_{agent}_{env}_{random32}
  */
 export function generateApiKey(agentName: string, environment: string = 'live'): string {
-  const random = randomBytes(24).toString('base64url'); // ~32 chars
+  const random = randomBytes(32).toString('base64url'); // 256-bit entropy, ~43 chars
   return `sk_${agentName}_${environment}_${random}`;
 }
 

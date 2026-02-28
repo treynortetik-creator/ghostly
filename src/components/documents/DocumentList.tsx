@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Download, Trash2, FileText, File, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { useToast, ToastContainer } from "@/components/ui/Toast";
 import { formatDateShort } from "@/lib/format";
 
@@ -73,13 +74,11 @@ export function DocumentList({
 
   if (documents.length === 0) {
     return (
-      <div className="text-center py-8">
-        <FileText className="w-10 h-10 text-muted-foreground/60 mx-auto mb-3" />
-        <p className="text-muted-foreground">No documents attached yet.</p>
-        <p className="text-sm text-muted-foreground/60 mt-1">
-          Upload a PDF or DOCX to attach it here.
-        </p>
-      </div>
+      <EmptyState
+        icon={<FileText className="w-12 h-12" />}
+        title="No Documents Attached"
+        description="Upload a PDF or DOCX to attach it here."
+      />
     );
   }
 

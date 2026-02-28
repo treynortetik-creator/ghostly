@@ -43,64 +43,64 @@ export function BudgetOverviewCard({
   };
 
   return (
-    <Card className={className} glow elevated data-oid="f4-h8cs">
-      <CardContent className="py-6" data-oid="7jd9hm1">
+    <Card className={className} glow elevated>
+      <CardContent className="py-6">
         {/* Header */}
         <div
           className="flex items-center justify-between mb-6"
-          data-oid="n3l6npw"
+         
         >
-          <div className="flex items-center gap-3" data-oid="p-oacfj">
+          <div className="flex items-center gap-3">
             <div
               className="p-3 rounded-lg bg-spectral/10 text-muted-foreground"
-              data-oid="i5mup12"
+             
             >
-              <Wallet className="w-6 h-6" data-oid="352x40s" />
+              <Wallet className="w-6 h-6" />
             </div>
-            <div data-oid="jb2-.3f">
+            <div>
               <h2
                 className="text-2xl font-semibold text-foreground"
-                data-oid="uh.j-3i"
+               
               >
                 Annual Budget
               </h2>
-              <p className="text-sm text-muted-foreground" data-oid="cb94_wh">
+              <p className="text-sm text-muted-foreground">
                 FY 2026 Overview
               </p>
             </div>
           </div>
           <div
             className={`flex items-center gap-1.5 text-sm font-medium ${getStatusColor()}`}
-            data-oid="xsm-c6j"
+           
           >
             {isOverBudget ? (
-              <TrendingDown className="w-4 h-4" data-oid=":dn2947" />
+              <TrendingDown className="w-4 h-4" />
             ) : (
-              <TrendingUp className="w-4 h-4" data-oid="c26vl_r" />
+              <TrendingUp className="w-4 h-4" />
             )}
-            <span data-oid="-5hg515">{getStatusText()}</span>
+            <span>{getStatusText()}</span>
           </div>
         </div>
 
         {/* Main Stats Grid */}
-        <div className="grid grid-cols-3 gap-6 mb-6" data-oid="lv6wds1">
+        <div className="grid grid-cols-3 gap-6 mb-6">
           {/* Total Budget */}
           <div
             className="text-center border-r border-border pr-6"
-            data-oid="6itcokl"
+           
           >
             <div
               className="flex items-center justify-center gap-2 text-muted-foreground mb-1"
-              data-oid="zdegs-4"
+             
             >
-              <DollarSign className="w-4 h-4" data-oid="0zru-kc" />
-              <span className="text-sm font-medium" data-oid="t0xdu2y">
+              <DollarSign className="w-4 h-4" />
+              <span className="text-sm font-medium">
                 Total Budget
               </span>
             </div>
             <p
               className="text-3xl font-bold text-foreground tabular-nums"
-              data-oid="vcg8m1t"
+             
             >
               {formatCurrency(budget)}
             </p>
@@ -109,46 +109,46 @@ export function BudgetOverviewCard({
           {/* Actual Spent */}
           <div
             className="text-center border-r border-border pr-6"
-            data-oid="luetqfp"
+           
           >
             <div
               className="flex items-center justify-center gap-2 text-muted-foreground mb-1"
-              data-oid="z.qowni"
+             
             >
-              <TrendingUp className="w-4 h-4" data-oid=":e57ftm" />
-              <span className="text-sm font-medium" data-oid=":ybkq1h">
+              <TrendingUp className="w-4 h-4" />
+              <span className="text-sm font-medium">
                 Spent to Date
               </span>
             </div>
             <p
               className={`text-3xl font-bold tabular-nums ${isOverBudget ? "text-destructive" : "text-foreground"}`}
-              data-oid="8f5qzd5"
+             
             >
               {formatCurrency(actual)}
             </p>
-            <p className="text-xs text-muted-foreground mt-1" data-oid="w.96:gm">
+            <p className="text-xs text-muted-foreground mt-1">
               {percentUsed.toFixed(1)}% of budget
             </p>
           </div>
 
           {/* Remaining */}
-          <div className="text-center" data-oid="pscbi9j">
+          <div className="text-center">
             <div
               className="flex items-center justify-center gap-2 text-muted-foreground mb-1"
-              data-oid="68kzta7"
+             
             >
-              <Wallet className="w-4 h-4" data-oid="hg5ypb9" />
-              <span className="text-sm font-medium" data-oid="xvq_zgz">
+              <Wallet className="w-4 h-4" />
+              <span className="text-sm font-medium">
                 Remaining
               </span>
             </div>
             <p
               className={`text-3xl font-bold tabular-nums ${getStatusColor()}`}
-              data-oid="l.f9w.5"
+             
             >
               {formatCurrency(remaining)}
             </p>
-            <p className="text-xs text-muted-foreground mt-1" data-oid="01a_0gv">
+            <p className="text-xs text-muted-foreground mt-1">
               {(100 - percentUsed).toFixed(1)}% available
             </p>
           </div>
@@ -158,9 +158,9 @@ export function BudgetOverviewCard({
         {hasSetBudget && allocated !== undefined && (
           <div
             className="flex items-center justify-between text-sm px-1 mb-4"
-            data-oid="bg1pnwb"
+           
           >
-            <span className="text-muted-foreground" data-oid="j8hp-1l">
+            <span className="text-muted-foreground">
               Allocated to events &amp; categories
             </span>
             <span
@@ -169,7 +169,7 @@ export function BudgetOverviewCard({
                   ? "text-destructive font-medium"
                   : "text-foreground font-medium"
               }
-              data-oid="exkt5c1"
+             
             >
               {formatCurrency(allocated)} of {formatCurrency(budget)}
             </span>
@@ -177,7 +177,7 @@ export function BudgetOverviewCard({
         )}
 
         {/* Progress Bar */}
-        <div className="pt-4 border-t border-border" data-oid="k2oulv4">
+        <div className="pt-4 border-t border-border">
           <ProgressBar
             value={actual}
             max={budget}
@@ -185,7 +185,7 @@ export function BudgetOverviewCard({
             showLabel
             labelFormat="both"
             animated={isOverBudget}
-            data-oid="y-405sw"
+           
           />
         </div>
       </CardContent>

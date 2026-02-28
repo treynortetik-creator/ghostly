@@ -12,6 +12,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { ExpenseCard } from "./ExpenseCard";
 import {
@@ -248,29 +249,29 @@ export function ExpenseList({
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) {
       return (
-        <ArrowUpDown className="w-4 h-4 text-muted-foreground/60" data-oid="jl1tud6" />
+        <ArrowUpDown className="w-4 h-4 text-muted-foreground/60" />
       );
     }
     return sortOrder === "asc" ? (
-      <ArrowUp className="w-4 h-4 text-spectral" data-oid="a7totka" />
+      <ArrowUp className="w-4 h-4 text-spectral" />
     ) : (
-      <ArrowDown className="w-4 h-4 text-spectral" data-oid="hrqfxdt" />
+      <ArrowDown className="w-4 h-4 text-spectral" />
     );
   };
 
   // Loading state
   if (isLoading) {
     return (
-      <div className="space-y-4" data-oid="sowf2w9">
+      <div className="space-y-4">
         <div
           className="h-24 bg-spectral/10 rounded animate-pulse"
-          data-oid="jn5ukp-"
+         
         />
         {[1, 2, 3, 4, 5].map((i) => (
           <div
             key={i}
             className="h-20 bg-spectral/10 rounded-lg animate-pulse"
-            data-oid="omf2-7s"
+           
           />
         ))}
       </div>
@@ -280,23 +281,23 @@ export function ExpenseList({
   // Error state
   if (error) {
     return (
-      <Card className="bg-red-400/10 border-destructive/20" data-oid="r1il0fv">
-        <CardContent className="py-12" data-oid="lzcqwr7">
+      <Card className="bg-red-400/10 border-destructive/20">
+        <CardContent className="py-12">
           <div
             className="flex flex-col items-center justify-center text-center"
-            data-oid="s8f5ft2"
+           
           >
             <AlertTriangle
               className="w-12 h-12 text-destructive mb-4"
-              data-oid="kj3h9s-"
+             
             />
             <h3
               className="text-xl font-semibold text-destructive mb-2"
-              data-oid="4aw6zx8"
+             
             >
               Failed to Load Expenses
             </h3>
-            <p className="text-muted-foreground" data-oid="zx9f0b5">
+            <p className="text-muted-foreground">
               {error}
             </p>
           </div>
@@ -306,7 +307,7 @@ export function ExpenseList({
   }
 
   return (
-    <div className="space-y-4" data-oid="qvpdpzh">
+    <div className="space-y-4">
       {/* Filters */}
       {showFilters && (
         <>
@@ -316,7 +317,7 @@ export function ExpenseList({
             categories={categories}
             onFiltersChange={handleFiltersChange}
             onClearFilters={handleClearFilters}
-            data-oid=":mineke"
+           
           />
 
           {/* Filter pills */}
@@ -325,7 +326,7 @@ export function ExpenseList({
             events={events}
             categories={categories}
             onRemoveFilter={handleRemoveFilter}
-            data-oid="w7_kkql"
+           
           />
         </>
       )}
@@ -333,13 +334,13 @@ export function ExpenseList({
       {/* Summary stats and sort controls */}
       <div
         className="flex flex-wrap items-center justify-between gap-4 py-3 px-4 bg-card rounded-lg border border-border"
-        data-oid=":9lks02"
+       
       >
-        <div className="flex flex-wrap items-center gap-4" data-oid="_m5_m_o">
+        <div className="flex flex-wrap items-center gap-4">
           {/* Select all checkbox */}
           <label
             className="flex items-center gap-2 cursor-pointer"
-            data-oid="6r1-rrv"
+           
           >
             <input
               type="checkbox"
@@ -349,22 +350,22 @@ export function ExpenseList({
               }
               onChange={handleSelectAll}
               className="w-4 h-4 rounded border-border text-spectral focus:ring-spectral/50"
-              data-oid="c8fvpxt"
+             
             />
 
-            <span className="text-sm text-muted-foreground" data-oid="q.5-4kp">
+            <span className="text-sm text-muted-foreground">
               Select all
             </span>
           </label>
 
           {selectedIds.size > 0 && (
             <>
-              <span className="text-muted-foreground/30" data-oid="qorsw7:">
+              <span className="text-muted-foreground/30">
                 |
               </span>
               <span
                 className="text-sm text-spectral font-medium"
-                data-oid="u2670f2"
+               
               >
                 {selectedIds.size} selected
               </span>
@@ -372,8 +373,8 @@ export function ExpenseList({
                 variant="destructive"
                 size="sm"
                 onClick={handleBulkDelete}
-                leftIcon={<Trash2 className="w-3.5 h-3.5" data-oid="r_nqjk:" />}
-                data-oid="v_mar5h"
+                leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+               
               >
                 Delete Selected
               </Button>
@@ -382,26 +383,26 @@ export function ExpenseList({
 
           {selectedIds.size === 0 && (
             <>
-              <span className="text-muted-foreground/30" data-oid="xgetq5f">
+              <span className="text-muted-foreground/30">
                 |
               </span>
-              <span className="text-sm text-muted-foreground" data-oid="9k82yxs">
+              <span className="text-sm text-muted-foreground">
                 <span
                   className="font-semibold text-foreground"
-                  data-oid="2zg-3ma"
+                 
                 >
                   {totals.count}
                 </span>{" "}
                 expense{totals.count !== 1 ? "s" : ""}
               </span>
-              <span className="text-muted-foreground/30" data-oid="1be:-_t">
+              <span className="text-muted-foreground/30">
                 |
               </span>
-              <span className="text-sm text-muted-foreground" data-oid="w5v1ylw">
+              <span className="text-sm text-muted-foreground">
                 Total:{" "}
                 <span
                   className="font-semibold tabular-nums text-foreground"
-                  data-oid="bn2b7yu"
+                 
                 >
                   {formatCurrency(totals.amount)}
                 </span>
@@ -411,8 +412,8 @@ export function ExpenseList({
         </div>
 
         {/* Sort controls */}
-        <div className="flex items-center gap-2" data-oid="ajbn9ib">
-          <span className="text-sm text-muted-foreground mr-1" data-oid="ukw401e">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground mr-1">
             Sort:
           </span>
           <button
@@ -422,10 +423,10 @@ export function ExpenseList({
               transition-colors duration-200
               ${sortField === "date" ? "bg-spectral/10 text-spectral" : "text-muted-foreground hover:bg-spectral/10"}
             `}
-            data-oid="yqju6j0"
+           
           >
             Date
-            <SortIcon field="date" data-oid="319m7j." />
+            <SortIcon field="date" />
           </button>
           <button
             onClick={() => handleSort("amount")}
@@ -434,10 +435,10 @@ export function ExpenseList({
               transition-colors duration-200
               ${sortField === "amount" ? "bg-spectral/10 text-spectral" : "text-muted-foreground hover:bg-spectral/10"}
             `}
-            data-oid="vx14.gm"
+           
           >
             Amount
-            <SortIcon field="amount" data-oid="m:8n3e:" />
+            <SortIcon field="amount" />
           </button>
           <button
             onClick={() => handleSort("vendor")}
@@ -446,65 +447,54 @@ export function ExpenseList({
               transition-colors duration-200
               ${sortField === "vendor" ? "bg-spectral/10 text-spectral" : "text-muted-foreground hover:bg-spectral/10"}
             `}
-            data-oid="2eq3r.p"
+           
           >
             Vendor
-            <SortIcon field="vendor" data-oid="8_na-cc" />
+            <SortIcon field="vendor" />
           </button>
         </div>
       </div>
 
       {/* Expenses list */}
       {sortedExpenses.length === 0 ? (
-        <Card data-oid="v_uwayv">
-          <CardContent className="py-12" data-oid="horzm9b">
-            <div
-              className="flex flex-col items-center justify-center text-center"
-              data-oid="i1tdfcs"
-            >
-              <Receipt
-                className="w-12 h-12 text-muted-foreground/60 mb-4"
-                data-oid="uxf:8wf"
-              />
-              <h3
-                className="text-xl font-semibold text-foreground mb-2"
-                data-oid="8-z-k3a"
-              >
-                No Expenses Found
-              </h3>
-              <p className="text-muted-foreground" data-oid="c0daf.1">
-                {Object.values(filters).some((v) => v !== "" && v !== "all")
+        <Card>
+          <CardContent>
+            <EmptyState
+              icon={<Receipt className="w-12 h-12" />}
+              title="No Expenses Found"
+              description={
+                Object.values(filters).some((v) => v !== "" && v !== "all")
                   ? "Try adjusting your filters."
-                  : "No expenses have been recorded yet."}
-              </p>
-            </div>
+                  : "No expenses have been recorded yet."
+              }
+            />
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-3" data-oid="s4_-i.-">
+        <div className="space-y-3">
           {paginatedExpenses.map((expense) => (
             <div
               key={expense.id}
               className="flex items-start gap-3"
-              data-oid="iny1n6z"
+             
             >
               {/* Checkbox */}
-              <div className="pt-4" data-oid="35q3cm3">
+              <div className="pt-4">
                 <input
                   type="checkbox"
                   checked={selectedIds.has(expense.id)}
                   onChange={() => handleSelectOne(expense.id)}
                   className="w-4 h-4 rounded border-border text-spectral focus:ring-spectral/50 cursor-pointer"
-                  data-oid="e7cxdnw"
+                 
                 />
               </div>
               {/* Expense card */}
-              <div className="flex-1" data-oid="ygpxllm">
+              <div className="flex-1">
                 <ExpenseCard
                   expense={expense}
                   onEdit={onEdit}
                   onDelete={onDelete}
-                  data-oid="omem26u"
+                 
                 />
               </div>
             </div>
@@ -516,11 +506,11 @@ export function ExpenseList({
       {sortedExpenses.length > 0 && (
         <div
           className="flex flex-wrap items-center justify-between gap-4 py-4 px-4 mt-4 bg-card rounded-lg border border-border"
-          data-oid="rm.l2dq"
+         
         >
           {/* Page size selector */}
-          <div className="flex items-center gap-2" data-oid="iyfmhar">
-            <span className="text-sm text-muted-foreground" data-oid="5b0-1ox">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
               Show:
             </span>
             <select
@@ -530,54 +520,54 @@ export function ExpenseList({
                 setCurrentPage(1);
               }}
               className="px-2 py-1 text-sm rounded border border-border bg-background text-foreground focus:ring-spectral/50 focus:border-spectral"
-              data-oid="93qtwi_"
+             
             >
-              <option value={25} data-oid="y56oegm">
+              <option value={25}>
                 25
               </option>
-              <option value={50} data-oid="1-c6ehk">
+              <option value={50}>
                 50
               </option>
-              <option value={100} data-oid="2x4fbew">
+              <option value={100}>
                 100
               </option>
             </select>
-            <span className="text-sm text-muted-foreground" data-oid="a8dd.uc">
+            <span className="text-sm text-muted-foreground">
               per page
             </span>
           </div>
 
           {/* Page info */}
-          <span className="text-sm text-muted-foreground" data-oid="97zox4p">
+          <span className="text-sm text-muted-foreground">
             Showing{" "}
-            <span className="font-semibold text-foreground" data-oid="e6.pahl">
+            <span className="font-semibold text-foreground">
               {startItem}-{endItem}
             </span>{" "}
             of{" "}
-            <span className="font-semibold text-foreground" data-oid="t:6xpuh">
+            <span className="font-semibold text-foreground">
               {sortedExpenses.length}
             </span>
           </span>
 
           {/* Page navigation */}
-          <div className="flex items-center gap-2" data-oid="p9jjalk">
+          <div className="flex items-center gap-2">
             <Button
               variant="secondary"
               size="sm"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              data-oid="8q-9467"
+             
             >
-              <ChevronLeft className="w-4 h-4" data-oid="7v:a1of" />
+              <ChevronLeft className="w-4 h-4" />
               Previous
             </Button>
-            <span className="text-sm text-muted-foreground px-2" data-oid="8j98y_z">
+            <span className="text-sm text-muted-foreground px-2">
               Page{" "}
-              <span className="font-semibold text-foreground" data-oid="t:54loi">
+              <span className="font-semibold text-foreground">
                 {currentPage}
               </span>{" "}
               of{" "}
-              <span className="font-semibold text-foreground" data-oid="8r2gsx8">
+              <span className="font-semibold text-foreground">
                 {totalPages}
               </span>
             </span>
@@ -586,10 +576,10 @@ export function ExpenseList({
               size="sm"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              data-oid="lhyn0ps"
+             
             >
               Next
-              <ChevronRight className="w-4 h-4" data-oid="24md.za" />
+              <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
         </div>

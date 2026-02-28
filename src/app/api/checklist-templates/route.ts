@@ -1,5 +1,5 @@
 /**
- * The Firm - Checklist Templates API
+ * Ghostly - Checklist Templates API
  *
  * GET /api/checklist-templates - List all templates
  * POST /api/checklist-templates - Create template

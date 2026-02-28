@@ -44,43 +44,43 @@ export function ChecklistItemForm({
   return (
     <div
       className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-      data-oid="f1u7cfq"
+     
     >
       <div
         className="bg-background rounded-lg border border-border glass-shadow w-full max-w-lg"
-        data-oid="d7:_cn8"
+       
       >
         <div
           className="px-6 py-4 border-b border-border flex items-center justify-between"
-          data-oid="miaptc."
+         
         >
           <h2
             className="text-xl font-semibold text-foreground"
-            data-oid="p5oo13b"
+           
           >
             Add Task
           </h2>
           <button
             onClick={onCancel}
             className="text-muted-foreground hover:text-foreground"
-            data-oid="88v2cq1"
+           
           >
-            <X className="w-5 h-5" data-oid=":ar.met" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         <form
           onSubmit={handleSubmit}
           className="px-6 py-4 space-y-4"
-          data-oid="wqqqc60"
+         
         >
-          <div data-oid="r4t-.yc">
+          <div>
             <label
               className="block text-sm font-medium text-foreground mb-1"
-              data-oid="8tf6ad3"
+             
             >
               Task{" "}
-              <span className="text-destructive" data-oid="-8xijab">
+              <span className="text-destructive">
                 *
               </span>
             </label>
@@ -91,14 +91,14 @@ export function ChecklistItemForm({
               required
               className="w-full px-3 py-2 bg-card border border-border rounded-md text-foreground placeholder-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-spectral focus:border-transparent"
               placeholder="Task description"
-              data-oid="vkq5:eh"
+             
             />
           </div>
 
-          <div data-oid="h_j33bf">
+          <div>
             <label
               className="block text-sm font-medium text-foreground mb-1"
-              data-oid="ccbp-pi"
+             
             >
               Details
             </label>
@@ -108,15 +108,15 @@ export function ChecklistItemForm({
               rows={2}
               className="w-full px-3 py-2 bg-card border border-border rounded-md text-foreground placeholder-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-spectral focus:border-transparent resize-none"
               placeholder="Additional details..."
-              data-oid="ldxhpkl"
+             
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4" data-oid="8k29c12">
-            <div data-oid="1zu5l8h">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
               <label
                 className="block text-sm font-medium text-foreground mb-1"
-                data-oid="ghhrqum"
+               
               >
                 Phase
               </label>
@@ -124,23 +124,23 @@ export function ChecklistItemForm({
                 value={phase}
                 onChange={(e) => setPhase(e.target.value as ChecklistPhase)}
                 className="w-full px-3 py-2 bg-card border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-spectral focus:border-transparent"
-                data-oid="l0czie:"
+               
               >
-                <option value="pre_event" data-oid="26k0-0v">
+                <option value="pre_event">
                   Before the Affair
                 </option>
-                <option value="day_of" data-oid=":i1f1ja">
+                <option value="day_of">
                   The Day Itself
                 </option>
-                <option value="post_event" data-oid="js_4f_o">
+                <option value="post_event">
                   After the Affair
                 </option>
               </select>
             </div>
-            <div data-oid="tpd-hsw">
+            <div>
               <label
                 className="block text-sm font-medium text-foreground mb-1"
-                data-oid="nt-_850"
+               
               >
                 Due Date
               </label>
@@ -149,15 +149,15 @@ export function ChecklistItemForm({
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
                 className="w-full px-3 py-2 bg-card border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-spectral focus:border-transparent"
-                data-oid="_42z6.a"
+               
               />
             </div>
           </div>
 
-          <div data-oid="euuub3d">
+          <div>
             <label
               className="block text-sm font-medium text-foreground mb-1"
-              data-oid="9p5d.d."
+             
             >
               Assignee
             </label>
@@ -165,29 +165,29 @@ export function ChecklistItemForm({
               value={assigneeId}
               onChange={(e) => setAssigneeId(e.target.value)}
               className="w-full px-3 py-2 bg-card border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-spectral focus:border-transparent"
-              data-oid="f84eqxc"
+             
             >
-              <option value="" data-oid="29673je">
+              <option value="">
                 Unassigned
               </option>
               {teamMembers.map((m) => (
-                <option key={m.id} value={m.id} data-oid="uupx9h0">
+                <option key={m.id} value={m.id}>
                   {m.name}
                 </option>
               ))}
             </select>
           </div>
 
-          <div className="flex justify-end gap-3 pt-2" data-oid="8:9m0pu">
+          <div className="flex justify-end gap-3 pt-2">
             <Button
               variant="secondary"
               onClick={onCancel}
               type="button"
-              data-oid="1a4:xz7"
+             
             >
               Cancel
             </Button>
-            <Button type="submit" isLoading={isLoading} data-oid="9599vfz">
+            <Button type="submit" isLoading={isLoading}>
               Add Task
             </Button>
           </div>

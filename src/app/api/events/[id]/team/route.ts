@@ -1,5 +1,5 @@
 /**
- * The Firm - Event Team Assignments API
+ * Ghostly - Event Team Assignments API
  *
  * GET /api/events/:id/team - Get team for an event
  * POST /api/events/:id/team - Assign team member to event

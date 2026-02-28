@@ -108,20 +108,20 @@ export function EventTypeForm({
   const errorClasses = "text-xs text-destructive mt-1";
 
   return (
-    <Card data-oid="q1unkgz">
-      <CardHeader data-oid="lhyv2ns">
-        <CardTitle data-oid="psd-9e_">
+    <Card>
+      <CardHeader>
+        <CardTitle>
           {mode === "create" ? "Add Event Type" : "Edit Event Type"}
         </CardTitle>
       </CardHeader>
 
-      <form onSubmit={handleSubmit} data-oid="3wl5nz3">
-        <CardContent className="space-y-4" data-oid="tb80uws">
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-4">
           {/* Name Field */}
-          <div data-oid="i5bd0qh">
-            <label htmlFor="name" className={labelClasses} data-oid="fnw_2dg">
+          <div>
+            <label htmlFor="name" className={labelClasses}>
               Name{" "}
-              <span className="text-destructive" data-oid="h6h6se.">
+              <span className="text-destructive">
                 *
               </span>
             </label>
@@ -133,29 +133,29 @@ export function EventTypeForm({
               className={inputClasses}
               placeholder="e.g., Executive"
               disabled={isLoading}
-              data-oid="9w9r1ux"
+             
             />
 
             {errors.name && (
-              <p className={errorClasses} data-oid="a-gu3ih">
+              <p className={errorClasses}>
                 {errors.name}
               </p>
             )}
           </div>
 
           {/* Budget Amount Field */}
-          <div data-oid="yk7cxyi">
+          <div>
             <label
               htmlFor="budget_amount"
               className={labelClasses}
-              data-oid="7q8qt:n"
+             
             >
               Budget Amount
             </label>
-            <div className="relative" data-oid="3:_1hwj">
+            <div className="relative">
               <span
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                data-oid="ypssh1q"
+               
               >
                 $
               </span>
@@ -172,22 +172,22 @@ export function EventTypeForm({
                 className={`${inputClasses} pl-7`}
                 placeholder="0.00"
                 disabled={isLoading}
-                data-oid="omt_end"
+               
               />
             </div>
             {errors.budget_amount && (
-              <p className={errorClasses} data-oid="64m7act">
+              <p className={errorClasses}>
                 {errors.budget_amount}
               </p>
             )}
           </div>
 
           {/* Description Field */}
-          <div data-oid="68.gy64">
+          <div>
             <label
               htmlFor="description"
               className={labelClasses}
-              data-oid="ooavb0r"
+             
             >
               Description
             </label>
@@ -198,18 +198,18 @@ export function EventTypeForm({
               className={`${inputClasses} min-h-[80px] resize-y`}
               placeholder="Brief description of this event type..."
               disabled={isLoading}
-              data-oid="tzx0vhq"
+             
             />
           </div>
         </CardContent>
 
-        <CardFooter className="flex justify-end gap-3" data-oid="4f0tbus">
+        <CardFooter className="flex justify-end gap-3">
           <Button
             type="button"
             variant="secondary"
             onClick={onCancel}
             disabled={isLoading}
-            data-oid="3rz_sbm"
+           
           >
             Cancel
           </Button>
@@ -217,7 +217,7 @@ export function EventTypeForm({
             type="submit"
             variant="primary"
             isLoading={isLoading}
-            data-oid="obc6t-6"
+           
           >
             {mode === "create" ? "Add Type" : "Save Changes"}
           </Button>

@@ -131,28 +131,28 @@ export function ExportPreview({
     const percent = budget > 0 ? (remaining / budget) * 100 : 0;
     if (percent > 20)
       return (
-        <TrendingUp className="w-4 h-4 text-emerald-400" data-oid="q6xw3s-" />
+        <TrendingUp className="w-4 h-4 text-emerald-400" />
       );
     if (percent < 0)
       return (
-        <TrendingDown className="w-4 h-4 text-destructive" data-oid="mcah0vh" />
+        <TrendingDown className="w-4 h-4 text-destructive" />
       );
-    return <Minus className="w-4 h-4 text-muted-foreground" data-oid="8qjjrb9" />;
+    return <Minus className="w-4 h-4 text-muted-foreground" />;
   };
 
   if (isLoading) {
     return (
-      <Card elevated data-oid="2-kkjoh">
-        <CardContent className="py-12" data-oid="yivziv0">
+      <Card elevated>
+        <CardContent className="py-12">
           <div
             className="flex flex-col items-center justify-center"
-            data-oid=".uhixoo"
+           
           >
             <div
               className="w-8 h-8 border-2 border-spectral border-t-spectral rounded-full animate-spin"
-              data-oid="mx1e:h8"
+             
             />
-            <p className="mt-4 text-sm text-muted-foreground" data-oid="7c3xii2">
+            <p className="mt-4 text-sm text-muted-foreground">
               Loading preview...
             </p>
           </div>
@@ -162,15 +162,15 @@ export function ExportPreview({
   }
 
   return (
-    <Card elevated data-oid="v2oj1jz">
-      <CardHeader data-oid="pc2gw9s">
-        <div className="flex items-center justify-between" data-oid="aj_1u47">
-          <div data-oid="5ymjsgp">
-            <CardTitle className="flex items-center gap-2" data-oid="xcwk0pn">
-              <FileCheck className="w-5 h-5 text-spectral" data-oid="wldmtk3" />
+    <Card elevated>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <FileCheck className="w-5 h-5 text-spectral" />
               Export Preview
             </CardTitle>
-            <CardDescription data-oid="6tvb87f">
+            <CardDescription>
               {getScopeDescription(
                 scope,
                 quarter,
@@ -184,60 +184,60 @@ export function ExportPreview({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6" data-oid="ppctaat">
+      <CardContent className="space-y-6">
         {/* Grand Totals */}
         <div
           className="p-4 rounded-lg bg-ghost-dark/5 border border-border"
-          data-oid="zr:quix"
+         
         >
           <h4
             className="text-sm font-semibold text-foreground mb-3"
-            data-oid="fujrzj3"
+           
           >
             Grand Totals
           </h4>
-          <div className="space-y-3" data-oid="tztwln0">
+          <div className="space-y-3">
             <div
               className="flex justify-between items-center"
-              data-oid="dpiwmyk"
+             
             >
-              <span className="text-xs text-muted-foreground/60" data-oid="7j3mp.g">
+              <span className="text-xs text-muted-foreground/60">
                 Total Budget
               </span>
               <span
                 className="font-semibold text-base text-foreground"
-                data-oid="ucu1bji"
+               
               >
                 {formatCurrency(grandTotalBudget)}
               </span>
             </div>
             <div
               className="flex justify-between items-center"
-              data-oid="k_e3vx."
+             
             >
-              <span className="text-xs text-muted-foreground/60" data-oid="2zdddpv">
+              <span className="text-xs text-muted-foreground/60">
                 Total Spent
               </span>
               <span
                 className="font-semibold text-base text-destructive"
-                data-oid="bibql73"
+               
               >
                 {formatCurrency(grandTotalActual)}
               </span>
             </div>
             <div
               className="flex justify-between items-center"
-              data-oid="prsibq0"
+             
             >
-              <span className="text-xs text-muted-foreground/60" data-oid=":-5:c0b">
+              <span className="text-xs text-muted-foreground/60">
                 Remaining
               </span>
               <span
                 className={`font-semibold text-base ${grandTotalRemaining >= 0 ? "text-emerald-400" : "text-destructive"}`}
-                data-oid="p_.gfhu"
+               
               >
                 {formatCurrency(grandTotalRemaining)}{" "}
-                <span className="text-xs font-normal" data-oid="q-sdzhz">
+                <span className="text-xs font-normal">
                   ({remainingPercent}%)
                 </span>
               </span>
@@ -246,24 +246,24 @@ export function ExportPreview({
         </div>
 
         {/* Section Previews */}
-        <div className="grid gap-4" data-oid="g1-wyk:">
+        <div className="grid gap-4">
           {/* Events */}
           <div
             className="p-3 rounded-lg border border-border bg-background"
-            data-oid="rkhpl6a"
+           
           >
             <div
               className="flex items-center justify-between"
-              data-oid="jwxlo6w"
+             
             >
-              <div className="flex items-center gap-2" data-oid="cn4p.5h">
+              <div className="flex items-center gap-2">
                 <div
                   className="p-1.5 rounded-lg bg-spectral/10"
-                  data-oid="i8x:ekp"
+                 
                 >
                   <Calendar
                     className="w-3.5 h-3.5 text-spectral"
-                    data-oid="zo2j-ut"
+                   
                   />
                 </div>
                 {getTrendIcon(
@@ -271,16 +271,16 @@ export function ExportPreview({
                   data.events.totalBudget,
                 )}
               </div>
-              <div className="text-right" data-oid="gkv6xp5">
+              <div className="text-right">
                 <h5
                   className="font-medium text-foreground text-sm"
-                  data-oid="kobdxab"
+                 
                 >
                   Events
                 </h5>
                 <p
                   className="text-lg font-bold text-spectral"
-                  data-oid="998:7xi"
+                 
                 >
                   {data.events.count}
                 </p>
@@ -288,31 +288,31 @@ export function ExportPreview({
             </div>
             <div
               className="mt-2 pt-2 border-t border-border grid grid-cols-3 gap-2 text-xs"
-              data-oid="98kb8vu"
+             
             >
-              <div data-oid="phg3p.d">
-                <span className="text-muted-foreground/60 block" data-oid="ww.ja8:">
+              <div>
+                <span className="text-muted-foreground/60 block">
                   Budget
                 </span>
-                <span className="text-muted-foreground font-medium" data-oid="ltcliac">
+                <span className="text-muted-foreground font-medium">
                   {formatCurrency(data.events.totalBudget)}
                 </span>
               </div>
-              <div data-oid="2c0fpzn">
-                <span className="text-muted-foreground/60 block" data-oid="i6nxcn5">
+              <div>
+                <span className="text-muted-foreground/60 block">
                   Spent
                 </span>
-                <span className="text-destructive font-medium" data-oid="m:_dme6">
+                <span className="text-destructive font-medium">
                   {formatCurrency(data.events.totalActual)}
                 </span>
               </div>
-              <div data-oid="7-4fyz9">
-                <span className="text-muted-foreground/60 block" data-oid="-3so18m">
+              <div>
+                <span className="text-muted-foreground/60 block">
                   Remaining
                 </span>
                 <span
                   className={`font-medium ${data.events.totalRemaining >= 0 ? "text-emerald-400" : "text-destructive"}`}
-                  data-oid="af6cuff"
+                 
                 >
                   {formatCurrency(data.events.totalRemaining)}
                 </span>
@@ -323,20 +323,20 @@ export function ExportPreview({
           {/* Categories */}
           <div
             className="p-3 rounded-lg border border-border bg-background"
-            data-oid="p1wtlwp"
+           
           >
             <div
               className="flex items-center justify-between"
-              data-oid="4ryo.9e"
+             
             >
-              <div className="flex items-center gap-2" data-oid="n210g:j">
+              <div className="flex items-center gap-2">
                 <div
                   className="p-1.5 rounded-lg bg-emerald-400/10"
-                  data-oid="29h0pil"
+                 
                 >
                   <FolderOpen
                     className="w-3.5 h-3.5 text-emerald-400"
-                    data-oid="9kvwv_h"
+                   
                   />
                 </div>
                 {getTrendIcon(
@@ -344,16 +344,16 @@ export function ExportPreview({
                   data.categories.totalBudget,
                 )}
               </div>
-              <div className="text-right" data-oid="lb49rs_">
+              <div className="text-right">
                 <h5
                   className="font-medium text-foreground text-sm"
-                  data-oid="gdcehl9"
+                 
                 >
                   Categories
                 </h5>
                 <p
                   className="text-lg font-bold text-emerald-400"
-                  data-oid="j01gfkq"
+                 
                 >
                   {data.categories.count}
                 </p>
@@ -361,31 +361,31 @@ export function ExportPreview({
             </div>
             <div
               className="mt-2 pt-2 border-t border-border grid grid-cols-3 gap-2 text-xs"
-              data-oid="t44q-wj"
+             
             >
-              <div data-oid="tk:q8ss">
-                <span className="text-muted-foreground/60 block" data-oid="pxsmugx">
+              <div>
+                <span className="text-muted-foreground/60 block">
                   Budget
                 </span>
-                <span className="text-muted-foreground font-medium" data-oid="ashu_m4">
+                <span className="text-muted-foreground font-medium">
                   {formatCurrency(data.categories.totalBudget)}
                 </span>
               </div>
-              <div data-oid="vr7.f9b">
-                <span className="text-muted-foreground/60 block" data-oid="qtbl_sp">
+              <div>
+                <span className="text-muted-foreground/60 block">
                   Spent
                 </span>
-                <span className="text-destructive font-medium" data-oid="6f4eg5c">
+                <span className="text-destructive font-medium">
                   {formatCurrency(data.categories.totalActual)}
                 </span>
               </div>
-              <div data-oid="d_wl.4k">
-                <span className="text-muted-foreground/60 block" data-oid="skald2w">
+              <div>
+                <span className="text-muted-foreground/60 block">
                   Remaining
                 </span>
                 <span
                   className={`font-medium ${data.categories.totalRemaining >= 0 ? "text-emerald-400" : "text-destructive"}`}
-                  data-oid="ewlls6w"
+                 
                 >
                   {formatCurrency(data.categories.totalRemaining)}
                 </span>
@@ -396,28 +396,28 @@ export function ExportPreview({
           {/* Expenses */}
           <div
             className="p-3 rounded-lg border border-border bg-background"
-            data-oid="i2876ej"
+           
           >
             <div
               className="flex items-center justify-between"
-              data-oid="d0hrae8"
+             
             >
-              <div className="p-1.5 rounded-lg bg-muted-foreground/10" data-oid="l5s-jhm">
+              <div className="p-1.5 rounded-lg bg-muted-foreground/10">
                 <Receipt
                   className="w-3.5 h-3.5 text-muted-foreground"
-                  data-oid="dba1bgq"
+                 
                 />
               </div>
-              <div className="text-right" data-oid="8rgfq00">
+              <div className="text-right">
                 <h5
                   className="font-medium text-foreground text-sm"
-                  data-oid="7n.li8-"
+                 
                 >
                   Expenses
                 </h5>
                 <p
                   className="text-lg font-bold text-muted-foreground"
-                  data-oid="oa6k3-q"
+                 
                 >
                   {data.expenses.count}
                 </p>
@@ -425,37 +425,37 @@ export function ExportPreview({
             </div>
             <div
               className="mt-2 pt-2 border-t border-border space-y-1 text-xs"
-              data-oid="awdc.ke"
+             
             >
-              <div className="flex justify-between" data-oid="1is4nzj">
-                <span className="text-muted-foreground/60" data-oid="3p122rr">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground/60">
                   Total Amount
                 </span>
-                <span className="text-muted-foreground font-medium" data-oid="8n7rugb">
+                <span className="text-muted-foreground font-medium">
                   {formatCurrency(data.expenses.totalAmount)}
                 </span>
               </div>
-              <div className="flex justify-between" data-oid="qyjvugh">
-                <span className="text-muted-foreground/60" data-oid="6zl079w">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground/60">
                   Manual entries
                 </span>
-                <span className="text-muted-foreground" data-oid="1ub_sv6">
+                <span className="text-muted-foreground">
                   {data.expenses.bySource.manual}
                 </span>
               </div>
-              <div className="flex justify-between" data-oid="m_ro3_9">
-                <span className="text-muted-foreground/60" data-oid="2.__1ga">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground/60">
                   Brex imports
                 </span>
-                <span className="text-muted-foreground" data-oid="udijcba">
+                <span className="text-muted-foreground">
                   {data.expenses.bySource.brex}
                 </span>
               </div>
-              <div className="flex justify-between" data-oid="2kmr-9l">
-                <span className="text-muted-foreground/60" data-oid="r5i_o:v">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground/60">
                   PDF uploads
                 </span>
-                <span className="text-muted-foreground" data-oid="j_lfafp">
+                <span className="text-muted-foreground">
                   {data.expenses.bySource.pdf}
                 </span>
               </div>
@@ -466,11 +466,11 @@ export function ExportPreview({
         {/* Export Note */}
         <div
           className="p-3 rounded-lg bg-spectral/10 border border-spectral"
-          data-oid="a7n_3vz"
+         
         >
           <p
             className="text-xs text-muted-foreground/60 italic text-center"
-            data-oid="71oaxtm"
+           
           >
             The exported file will contain all records shown above for the
             selected time period.

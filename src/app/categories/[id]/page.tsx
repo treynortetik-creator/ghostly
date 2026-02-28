@@ -148,19 +148,19 @@ export default function CategoryDetailPage({ params }: PageProps) {
   // Loading state
   if (isLoading) {
     return (
-      <AppShell data-oid="9lrtno2">
-        <div className="animate-pulse space-y-6" data-oid=".i57wz-">
+      <AppShell>
+        <div className="animate-pulse space-y-6">
           <div
             className="h-8 w-32 bg-spectral/10 rounded"
-            data-oid="bm9r:e."
+           
           />
           <div
             className="h-64 bg-spectral/10 rounded-lg"
-            data-oid="w8q5e0:"
+           
           />
           <div
             className="h-48 bg-spectral/10 rounded-lg"
-            data-oid="bjv_z48"
+           
           />
         </div>
       </AppShell>
@@ -170,29 +170,29 @@ export default function CategoryDetailPage({ params }: PageProps) {
   // Error state
   if (error || !category) {
     return (
-      <AppShell data-oid="5:as4lc">
-        <Card className="bg-red-400/10 border-destructive/20" data-oid="kxd3-cw">
-          <CardContent className="py-12" data-oid="0z4i:vk">
+      <AppShell>
+        <Card className="bg-red-400/10 border-destructive/20">
+          <CardContent className="py-12">
             <div
               className="flex flex-col items-center justify-center text-center"
-              data-oid="py-hyq4"
+             
             >
               <AlertTriangle
                 className="w-12 h-12 text-destructive mb-4"
-                data-oid="15.day_"
+               
               />
               <h3
                 className="text-xl font-semibold text-destructive mb-2"
-                data-oid="v364_6s"
+               
               >
                 {error || "Category Not Found"}
               </h3>
-              <p className="text-muted-foreground mb-6" data-oid="2tfpgzw">
+              <p className="text-muted-foreground mb-6">
                 The requested category could not be loaded.
               </p>
-              <Link href="/categories" data-oid="jreu0qp">
-                <Button variant="secondary" data-oid="q_z8rxy">
-                  <ArrowLeft className="w-4 h-4 mr-2" data-oid="vdq6ndv" />
+              <Link href="/categories">
+                <Button variant="secondary">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to Categories
                 </Button>
               </Link>
@@ -206,15 +206,15 @@ export default function CategoryDetailPage({ params }: PageProps) {
   // Edit mode
   if (isEditing) {
     return (
-      <AppShell data-oid="uhx7m22">
+      <AppShell>
         <ToastContainer toasts={toasts} removeToast={removeToast} />
-        <div className="mb-6" data-oid="teoc3bw">
+        <div className="mb-6">
           <Link
             href="/categories"
             className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
-            data-oid="kgru06u"
+           
           >
-            <ArrowLeft className="w-4 h-4 mr-1" data-oid="x_xu3j0" />
+            <ArrowLeft className="w-4 h-4 mr-1" />
             Back to Categories
           </Link>
         </div>
@@ -225,23 +225,23 @@ export default function CategoryDetailPage({ params }: PageProps) {
           onSubmit={handleUpdateCategory}
           onCancel={() => setIsEditing(false)}
           isLoading={isSaving}
-          data-oid="-z28:kt"
+         
         />
       </AppShell>
     );
   }
 
   return (
-    <AppShell data-oid="9tz9k.p">
+    <AppShell>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
       {/* Back link */}
-      <div className="mb-6" data-oid="hj7kivv">
+      <div className="mb-6">
         <Link
           href="/categories"
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
-          data-oid="-77id58"
+         
         >
-          <ArrowLeft className="w-4 h-4 mr-1" data-oid="6xnw:g0" />
+          <ArrowLeft className="w-4 h-4 mr-1" />
           Back to Categories
         </Link>
       </div>
@@ -249,45 +249,45 @@ export default function CategoryDetailPage({ params }: PageProps) {
       {/* Category Header */}
       <div
         className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-8"
-        data-oid="-g.jn4j"
+       
       >
-        <div data-oid="c_zgx6.">
+        <div>
           <div
             className="flex flex-wrap items-center gap-3 mb-2"
-            data-oid="8gb_7:u"
+           
           >
-            <Folder className="w-6 h-6 text-spectral" data-oid="405b:52" />
+            <Folder className="w-6 h-6 text-spectral" />
             <h1
               className="text-3xl font-bold text-foreground"
-              data-oid="3e7kwu."
+             
             >
               {category.name}
             </h1>
           </div>
 
           {category.description && (
-            <p className="text-muted-foreground max-w-2xl" data-oid="e60o806">
+            <p className="text-muted-foreground max-w-2xl">
               {category.description}
             </p>
           )}
         </div>
 
-        <div className="flex items-center gap-2" data-oid="gi3w_q5">
+        <div className="flex items-center gap-2">
           <Button
             variant="secondary"
             size="sm"
             onClick={fetchCategory}
-            data-oid="2bganti"
+           
           >
-            <RefreshCw className="w-4 h-4 mr-2" data-oid=":-1.5-i" />
+            <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
 
           <Button
             variant="secondary"
             onClick={() => setIsEditing(true)}
-            leftIcon={<Edit className="w-4 h-4" data-oid="d7npu7p" />}
-            data-oid="4g9qex0"
+            leftIcon={<Edit className="w-4 h-4" />}
+           
           >
             Edit
           </Button>
@@ -295,8 +295,8 @@ export default function CategoryDetailPage({ params }: PageProps) {
           <Button
             variant="destructive"
             onClick={() => setShowDeleteConfirm(true)}
-            leftIcon={<Trash2 className="w-4 h-4" data-oid="ynxx4k." />}
-            data-oid="q.lt:ms"
+            leftIcon={<Trash2 className="w-4 h-4" />}
+           
           >
             Delete
           </Button>
@@ -307,34 +307,34 @@ export default function CategoryDetailPage({ params }: PageProps) {
       {showDeleteConfirm && (
         <Card
           className="mb-6 bg-red-400/10 border-destructive/30"
-          data-oid="t3c6nar"
+         
         >
-          <CardContent className="py-4" data-oid="4hvvl:3">
+          <CardContent className="py-4">
             <div
               className="flex items-center justify-between"
-              data-oid="yrp3fqh"
+             
             >
-              <div className="flex items-center gap-3" data-oid="63mmy1f">
+              <div className="flex items-center gap-3">
                 <AlertTriangle
                   className="w-5 h-5 text-destructive"
-                  data-oid="6t4surm"
+                 
                 />
-                <div data-oid="bah37t1">
-                  <p className="font-medium text-foreground" data-oid="1dpc_tp">
+                <div>
+                  <p className="font-medium text-foreground">
                     Are you sure you want to delete this category?
                   </p>
-                  <p className="text-sm text-muted-foreground" data-oid="ruix:zi">
+                  <p className="text-sm text-muted-foreground">
                     This action can be undone by an administrator.
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2" data-oid="ndqvqkf">
+              <div className="flex items-center gap-2">
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={isDeleting}
-                  data-oid="dbojvz8"
+                 
                 >
                   Cancel
                 </Button>
@@ -343,7 +343,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
                   size="sm"
                   onClick={handleDeleteCategory}
                   isLoading={isDeleting}
-                  data-oid="ljuzil9"
+                 
                 >
                   Delete Category
                 </Button>
@@ -354,49 +354,49 @@ export default function CategoryDetailPage({ params }: PageProps) {
       )}
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6" data-oid="zohf.m.">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Left Column - Budget and Expenses */}
-        <div className="xl:col-span-2 space-y-6" data-oid=".u8ig7d">
+        <div className="xl:col-span-2 space-y-6">
           {/* Budget Overview */}
-          <Card data-oid="484v36p">
-            <CardHeader data-oid="5cj9azw">
-              <CardTitle className="flex items-center gap-2" data-oid="y:wy4i:">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
                 <DollarSign
                   className="w-5 h-5 text-spectral"
-                  data-oid="5lxglsh"
+                 
                 />
                 Budget Overview
               </CardTitle>
             </CardHeader>
-            <CardContent data-oid="ljxe.m.">
+            <CardContent>
               <BudgetProgress
                 label="Category Budget"
                 spent={category.actual_spent}
                 budget={category.budget_amount}
-                data-oid="jeb-5s5"
+               
               />
             </CardContent>
           </Card>
 
           {/* Expenses List */}
-          <Card data-oid="q6ibin5">
-            <CardHeader data-oid="ce6zbcj">
+          <Card>
+            <CardHeader>
               <div
                 className="flex items-center justify-between"
-                data-oid="5x7m7ni"
+               
               >
-                <div data-oid="3vpuuc7">
+                <div>
                   <CardTitle
                     className="flex items-center gap-2"
-                    data-oid="dgfy:0g"
+                   
                   >
                     <Receipt
                       className="w-5 h-5 text-spectral"
-                      data-oid="_o.oo3k"
+                     
                     />
                     Expenses
                   </CardTitle>
-                  <CardDescription data-oid="rrqz2d3">
+                  <CardDescription>
                     {expenses.length} expense{expenses.length !== 1 ? "s" : ""}{" "}
                     recorded
                   </CardDescription>
@@ -404,47 +404,47 @@ export default function CategoryDetailPage({ params }: PageProps) {
                 <Button
                   variant="secondary"
                   size="sm"
-                  leftIcon={<Plus className="w-4 h-4" data-oid="7j8v2_u" />}
+                  leftIcon={<Plus className="w-4 h-4" />}
                   onClick={() =>
                     router.push(`/expenses?category_id=${category.id}`)
                   }
-                  data-oid="w5wys7l"
+                 
                 >
                   Add Expense
                 </Button>
               </div>
             </CardHeader>
-            <CardContent data-oid="ol3nbpn">
+            <CardContent>
               {expenses.length === 0 ? (
-                <div className="text-center py-8" data-oid="-7:yvaz">
+                <div className="text-center py-8">
                   <Receipt
                     className="w-10 h-10 text-muted-foreground/60 mx-auto mb-3"
-                    data-oid="0xol7-k"
+                   
                   />
-                  <p className="text-muted-foreground" data-oid="wvdihvj">
+                  <p className="text-muted-foreground">
                     No expenses recorded yet.
                   </p>
-                  <p className="text-sm text-muted-foreground/60 mt-1" data-oid="b46j-.p">
+                  <p className="text-sm text-muted-foreground/60 mt-1">
                     Add expenses to track spending against this category's
                     budget.
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3" data-oid="1n:l40m">
+                <div className="space-y-3">
                   {expenses.map((expense) => (
                     <div
                       key={expense.id}
                       className="flex items-center justify-between p-4 rounded-lg bg-background border border-border hover:border-border transition-colors"
-                      data-oid="jdnzjbw"
+                     
                     >
-                      <div className="flex-1 min-w-0" data-oid=":nf3jjh">
+                      <div className="flex-1 min-w-0">
                         <div
                           className="flex items-center gap-2"
-                          data-oid="5gj-8m:"
+                         
                         >
                           <span
                             className="font-medium text-foreground"
-                            data-oid="hn_vyrf"
+                           
                           >
                             {expense.vendor || "Unknown Vendor"}
                           </span>
@@ -459,7 +459,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
                                     : "bg-gray-100 text-gray-700 dark:bg-gray-800/30 dark:text-gray-300"
                               }
                             `}
-                            data-oid="z0x-z-."
+                           
                           >
                             {expense.source_type}
                           </span>
@@ -467,14 +467,14 @@ export default function CategoryDetailPage({ params }: PageProps) {
                         {expense.memo && (
                           <p
                             className="text-sm text-muted-foreground mt-1 truncate"
-                            data-oid="f:gfs3m"
+                           
                           >
                             {expense.memo}
                           </p>
                         )}
                         <p
                           className="text-xs text-muted-foreground/60 mt-1"
-                          data-oid="790s1i:"
+                         
                         >
                           {new Date(expense.expense_date).toLocaleDateString(
                             "en-US",
@@ -486,10 +486,10 @@ export default function CategoryDetailPage({ params }: PageProps) {
                           )}
                         </p>
                       </div>
-                      <div className="text-right ml-4" data-oid="99w-5x9">
+                      <div className="text-right ml-4">
                         <span
                           className="font-semibold text-lg tabular-nums text-foreground"
-                          data-oid=".jwz6ie"
+                         
                         >
                           {formatCurrency(expense.amount)}
                         </span>
@@ -500,13 +500,13 @@ export default function CategoryDetailPage({ params }: PageProps) {
               )}
             </CardContent>
             {expenses.length > 0 && (
-              <CardFooter className="justify-between" data-oid="fmlfu2x">
-                <span className="text-sm text-muted-foreground" data-oid="r2oxctu">
+              <CardFooter className="justify-between">
+                <span className="text-sm text-muted-foreground">
                   Total Expenses
                 </span>
                 <span
                   className="font-bold text-lg tabular-nums text-foreground"
-                  data-oid="e-rfbnh"
+                 
                 >
                   {formatCurrency(category.actual_spent)}
                 </span>
@@ -516,26 +516,26 @@ export default function CategoryDetailPage({ params }: PageProps) {
         </div>
 
         {/* Right Column - Details */}
-        <div className="space-y-6" data-oid="8v.1m79">
+        <div className="space-y-6">
           {/* Description */}
           {category.description && (
-            <Card data-oid="ahtzit9">
-              <CardHeader data-oid="i5s8:rw">
+            <Card>
+              <CardHeader>
                 <CardTitle
                   className="flex items-center gap-2"
-                  data-oid=":4tfri-"
+                 
                 >
                   <FileText
                     className="w-5 h-5 text-spectral"
-                    data-oid="a0f.3m9"
+                   
                   />
                   Description
                 </CardTitle>
               </CardHeader>
-              <CardContent data-oid="stoi3gy">
+              <CardContent>
                 <p
                   className="text-sm text-muted-foreground whitespace-pre-wrap"
-                  data-oid="xg9b0uw"
+                 
                 >
                   {category.description}
                 </p>
@@ -544,45 +544,45 @@ export default function CategoryDetailPage({ params }: PageProps) {
           )}
 
           {/* Metadata */}
-          <Card data-oid="3fh.:14">
-            <CardHeader data-oid="nvevti7">
-              <CardTitle className="text-sm" data-oid="xt_q9ap">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">
                 Category Details
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm" data-oid="6e90qz4">
-              <div className="flex justify-between" data-oid="bek-34l">
-                <span className="text-muted-foreground" data-oid="hh_6vke">
+            <CardContent className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
                   Category ID
                 </span>
                 <span
                   className="font-mono text-xs text-foreground"
-                  data-oid="c0x20t0"
+                 
                 >
                   {category.id}
                 </span>
               </div>
-              <div className="flex justify-between" data-oid="q1amc94">
-                <span className="text-muted-foreground" data-oid="w1svncg">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
                   Fiscal Year
                 </span>
-                <span className="text-foreground" data-oid="2zojygx">
+                <span className="text-foreground">
                   2026
                 </span>
               </div>
-              <div className="flex justify-between" data-oid="xefqd4p">
-                <span className="text-muted-foreground" data-oid="li5bwxr">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
                   Created
                 </span>
-                <span className="text-foreground" data-oid="ubfy.bt">
+                <span className="text-foreground">
                   {new Date(category.created_at).toLocaleDateString()}
                 </span>
               </div>
-              <div className="flex justify-between" data-oid="aefoyoc">
-                <span className="text-muted-foreground" data-oid=":_shhtg">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
                   Last Updated
                 </span>
-                <span className="text-foreground" data-oid="6ssv0nv">
+                <span className="text-foreground">
                   {new Date(category.updated_at).toLocaleDateString()}
                 </span>
               </div>

@@ -1,6 +1,8 @@
 "use client";
 
+import { Users } from "lucide-react";
 import { TeamMemberCard } from "./TeamMemberCard";
+import { EmptyState } from "@/components/ui/EmptyState";
 import type { TeamMember } from "@/types/database";
 
 interface TeamMemberListProps {
@@ -16,26 +18,23 @@ export function TeamMemberList({
 }: TeamMemberListProps) {
   if (members.length === 0) {
     return (
-      <div className="text-center py-12 text-muted-foreground" data-oid="1ptlj_b">
-        <p className="text-lg" data-oid="7slbb45">
-          No staff on the rolls
-        </p>
-        <p className="text-sm mt-1" data-oid="d5xf9gr">
-          Appoint your first team member to begin.
-        </p>
-      </div>
+      <EmptyState
+        icon={<Users className="w-12 h-12" />}
+        title="No Staff on the Rolls"
+        description="Appoint your first team member to begin."
+      />
     );
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2" data-oid="265e6yk">
+    <div className="grid gap-4 md:grid-cols-2">
       {members.map((member) => (
         <TeamMemberCard
           key={member.id}
           member={member}
           onEdit={onEdit}
           onDelete={onDelete}
-          data-oid="3oqr71p"
+         
         />
       ))}
     </div>

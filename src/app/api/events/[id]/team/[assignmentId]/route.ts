@@ -1,5 +1,5 @@
 /**
- * The Firm - Event Team Assignment by ID
+ * Ghostly - Event Team Assignment by ID
  *
  * PUT /api/events/:id/team/:assignmentId - Update assignment
  * DELETE /api/events/:id/team/:assignmentId - Remove assignment

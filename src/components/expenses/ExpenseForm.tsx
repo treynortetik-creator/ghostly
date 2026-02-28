@@ -182,20 +182,20 @@ export function ExpenseForm({
   `;
 
   return (
-    <Card data-oid="ymh7ypu">
-      <CardHeader data-oid="gxu:4_4">
-        <CardTitle data-oid="ndk2ocf">
+    <Card>
+      <CardHeader>
+        <CardTitle>
           {mode === "create" ? "Record New Expense" : "Edit Expense Record"}
         </CardTitle>
       </CardHeader>
 
-      <form onSubmit={handleSubmit} data-oid="8j_xv9t">
-        <CardContent className="space-y-6" data-oid=":76wdms">
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-6">
           {/* Expense Details */}
-          <div className="space-y-4" data-oid="jzf:a-l">
+          <div className="space-y-4">
             <h4
               className="text-sm font-semibold text-foreground border-b border-border pb-2"
-              data-oid="1lj3bl7"
+             
             >
               Expense Details
             </h4>
@@ -203,23 +203,23 @@ export function ExpenseForm({
             {/* Amount and Date */}
             <div
               className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-              data-oid="x0fxjz."
+             
             >
-              <div data-oid="xoj4qx0">
+              <div>
                 <label
                   htmlFor="amount"
                   className={labelClasses}
-                  data-oid="9j1dukx"
+                 
                 >
                   Amount{" "}
-                  <span className="text-destructive" data-oid="cf3:s:1">
+                  <span className="text-destructive">
                     *
                   </span>
                 </label>
-                <div className="relative" data-oid="j8ep4lk">
+                <div className="relative">
                   <span
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                    data-oid="f4pbn0b"
+                   
                   >
                     $
                   </span>
@@ -233,24 +233,25 @@ export function ExpenseForm({
                     className={`${inputClasses} pl-7`}
                     placeholder="0.00"
                     disabled={isLoading}
-                    data-oid="-j7wz8c"
+                    aria-invalid={!!errors.amount}
+                    aria-describedby={errors.amount ? "amount-error" : undefined}
                   />
                 </div>
                 {errors.amount && (
-                  <p className={errorClasses} data-oid="f4lm9_9">
+                  <p id="amount-error" className={errorClasses}>
                     {errors.amount}
                   </p>
                 )}
               </div>
 
-              <div data-oid="a-6nvq1">
+              <div>
                 <label
                   htmlFor="expense_date"
                   className={labelClasses}
-                  data-oid="tpu7nc4"
+                 
                 >
                   Date{" "}
-                  <span className="text-destructive" data-oid="duuever">
+                  <span className="text-destructive">
                     *
                   </span>
                 </label>
@@ -261,11 +262,12 @@ export function ExpenseForm({
                   onChange={(e) => handleChange("expense_date", e.target.value)}
                   className={inputClasses}
                   disabled={isLoading}
-                  data-oid="bexkq_j"
+                  aria-invalid={!!errors.expense_date}
+                  aria-describedby={errors.expense_date ? "expense_date-error" : undefined}
                 />
 
                 {errors.expense_date && (
-                  <p className={errorClasses} data-oid="b4zk96l">
+                  <p id="expense_date-error" className={errorClasses}>
                     {errors.expense_date}
                   </p>
                 )}
@@ -273,11 +275,11 @@ export function ExpenseForm({
             </div>
 
             {/* Vendor */}
-            <div data-oid="d2iyvaf">
+            <div>
               <label
                 htmlFor="vendor"
                 className={labelClasses}
-                data-oid="b065rgy"
+               
               >
                 Vendor
               </label>
@@ -289,16 +291,16 @@ export function ExpenseForm({
                 className={inputClasses}
                 placeholder="e.g., Marriott Hotels"
                 disabled={isLoading}
-                data-oid="aj.ierf"
+               
               />
             </div>
 
             {/* Source Type */}
-            <div data-oid="wwb0xgz">
+            <div>
               <label
                 htmlFor="source_type"
                 className={labelClasses}
-                data-oid="w99p-ti"
+               
               >
                 Source Type
               </label>
@@ -308,10 +310,10 @@ export function ExpenseForm({
                 onChange={(e) => handleChange("source_type", e.target.value)}
                 className={inputClasses}
                 disabled={isLoading}
-                data-oid="15m3yw3"
+               
               >
                 {sourceTypes.map((type) => (
-                  <option key={type} value={type} data-oid="khyrpvz">
+                  <option key={type} value={type}>
                     {sourceTypeLabels[type]}
                   </option>
                 ))}
@@ -319,8 +321,8 @@ export function ExpenseForm({
             </div>
 
             {/* Memo */}
-            <div data-oid="pkidisp">
-              <label htmlFor="memo" className={labelClasses} data-oid="y37t1y6">
+            <div>
+              <label htmlFor="memo" className={labelClasses}>
                 Memo / Description
               </label>
               <textarea
@@ -330,22 +332,22 @@ export function ExpenseForm({
                 className={`${inputClasses} min-h-[80px] resize-y`}
                 placeholder="Notes about this expense..."
                 disabled={isLoading}
-                data-oid="aw02x5:"
+               
               />
             </div>
           </div>
 
           {/* Target Selection - XOR Constraint */}
-          <div className="space-y-4" data-oid="xdoolqo">
+          <div className="space-y-4">
             <h4
               className="text-sm font-semibold text-foreground border-b border-border pb-2"
-              data-oid="bls.xdl"
+             
             >
               Assign To{" "}
-              <span className="text-destructive" data-oid="nb93mcz">
+              <span className="text-destructive">
                 *
               </span>
-              <span className="font-normal text-muted-foreground ml-2" data-oid="nufuk25">
+              <span className="font-normal text-muted-foreground ml-2">
                 (select one)
               </span>
             </h4>
@@ -353,7 +355,7 @@ export function ExpenseForm({
             {/* Radio buttons for target type */}
             <div
               className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-              data-oid="tk79495"
+             
             >
               {/* Event Option */}
               <label
@@ -365,7 +367,7 @@ export function ExpenseForm({
                       : "border-border hover:border-border bg-background/50"
                   }
                 `}
-                data-oid="5eb8ps:"
+               
               >
                 <input
                   type="radio"
@@ -375,17 +377,17 @@ export function ExpenseForm({
                   onChange={() => handleTargetTypeChange("event")}
                   className="w-4 h-4 text-spectral focus:ring-spectral/50"
                   disabled={isLoading}
-                  data-oid="ij1mvof"
+                 
                 />
 
-                <div data-oid="1.kke1g">
+                <div>
                   <span
                     className="font-medium text-foreground"
-                    data-oid="nld290v"
+                   
                   >
                     Event
                   </span>
-                  <p className="text-xs text-muted-foreground" data-oid="cb_qxs.">
+                  <p className="text-xs text-muted-foreground">
                     Assign to a specific conference or meeting
                   </p>
                 </div>
@@ -401,7 +403,7 @@ export function ExpenseForm({
                       : "border-border hover:border-border bg-background/50"
                   }
                 `}
-                data-oid="0n9rs-o"
+               
               >
                 <input
                   type="radio"
@@ -411,17 +413,17 @@ export function ExpenseForm({
                   onChange={() => handleTargetTypeChange("category")}
                   className="w-4 h-4 text-spectral focus:ring-spectral/50"
                   disabled={isLoading}
-                  data-oid="oqfd.:-"
+                 
                 />
 
-                <div data-oid="dciaxxo">
+                <div>
                   <span
                     className="font-medium text-foreground"
-                    data-oid="9sr-g3d"
+                   
                   >
                     Category
                   </span>
-                  <p className="text-xs text-muted-foreground" data-oid="0kxul8j">
+                  <p className="text-xs text-muted-foreground">
                     Assign to a budget category
                   </p>
                 </div>
@@ -430,14 +432,14 @@ export function ExpenseForm({
 
             {/* Event Selector (shown when event is selected) */}
             {formData.target_type === "event" && (
-              <div className="mt-4" data-oid="muqbyh6">
+              <div className="mt-4">
                 <label
                   htmlFor="event_id"
                   className={labelClasses}
-                  data-oid="hqu5-8z"
+                 
                 >
                   Select Event{" "}
-                  <span className="text-destructive" data-oid="80qy4qs">
+                  <span className="text-destructive">
                     *
                   </span>
                 </label>
@@ -447,19 +449,20 @@ export function ExpenseForm({
                   onChange={(e) => handleChange("event_id", e.target.value)}
                   className={inputClasses}
                   disabled={isLoading}
-                  data-oid="-ssk9jl"
+                  aria-invalid={!!errors.event_id}
+                  aria-describedby={errors.event_id ? "event_id-error" : undefined}
                 >
-                  <option value="" data-oid="w4o7gqi">
+                  <option value="">
                     -- Select an event --
                   </option>
                   {events.map((event) => (
-                    <option key={event.id} value={event.id} data-oid="jal92ff">
+                    <option key={event.id} value={event.id}>
                       {event.name} ({event.quarter})
                     </option>
                   ))}
                 </select>
                 {errors.event_id && (
-                  <p className={errorClasses} data-oid="nsxeiyc">
+                  <p id="event_id-error" className={errorClasses}>
                     {errors.event_id}
                   </p>
                 )}
@@ -468,14 +471,14 @@ export function ExpenseForm({
 
             {/* Category Selector (shown when category is selected) */}
             {formData.target_type === "category" && (
-              <div className="mt-4" data-oid="dfyb1-5">
+              <div className="mt-4">
                 <label
                   htmlFor="category_id"
                   className={labelClasses}
-                  data-oid="d-n68_0"
+                 
                 >
                   Select Category{" "}
-                  <span className="text-destructive" data-oid="3i5.:_e">
+                  <span className="text-destructive">
                     *
                   </span>
                 </label>
@@ -485,23 +488,24 @@ export function ExpenseForm({
                   onChange={(e) => handleChange("category_id", e.target.value)}
                   className={inputClasses}
                   disabled={isLoading}
-                  data-oid="2jm:769"
+                  aria-invalid={!!errors.category_id}
+                  aria-describedby={errors.category_id ? "category_id-error" : undefined}
                 >
-                  <option value="" data-oid="2gdrdlt">
+                  <option value="">
                     -- Select a category --
                   </option>
                   {categories.map((category) => (
                     <option
                       key={category.id}
                       value={category.id}
-                      data-oid="-:oszrt"
+
                     >
                       {category.name}
                     </option>
                   ))}
                 </select>
                 {errors.category_id && (
-                  <p className={errorClasses} data-oid="cnjt7ao">
+                  <p id="category_id-error" className={errorClasses}>
                     {errors.category_id}
                   </p>
                 )}
@@ -510,13 +514,13 @@ export function ExpenseForm({
           </div>
         </CardContent>
 
-        <CardFooter className="flex justify-end gap-3" data-oid="tskx8.p">
+        <CardFooter className="flex justify-end gap-3">
           <Button
             type="button"
             variant="secondary"
             onClick={onCancel}
             disabled={isLoading}
-            data-oid="tus9g67"
+           
           >
             Cancel
           </Button>
@@ -524,7 +528,7 @@ export function ExpenseForm({
             type="submit"
             variant="primary"
             isLoading={isLoading}
-            data-oid="whc880b"
+           
           >
             {mode === "create" ? "Record Expense" : "Save Changes"}
           </Button>
