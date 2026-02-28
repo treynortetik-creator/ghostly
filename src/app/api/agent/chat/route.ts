@@ -455,15 +455,14 @@ export async function POST(request: NextRequest) {
         );
 
         // Send context usage info
-        const contextLimit = 196000;
-        const contextPercent = contextLimit > 0
-          ? Math.round((lastPromptTokens / contextLimit) * 100)
+        const contextPercent = CONTEXT_LIMIT > 0
+          ? Math.round((lastPromptTokens / CONTEXT_LIMIT) * 100)
           : 0;
         controller.enqueue(
           encoder.encode(`data: ${JSON.stringify({
             type: 'context',
             used: lastPromptTokens,
-            limit: contextLimit,
+            limit: CONTEXT_LIMIT,
             percent: contextPercent,
           })}\n\n`)
         );

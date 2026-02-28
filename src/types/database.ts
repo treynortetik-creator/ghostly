@@ -630,6 +630,8 @@ export interface ChatSession {
   user_id: string | null;
   title: string | null;
   event_id: string | null;
+  context_tokens_used: number;
+  context_summary: string | null;
   created_at: string | null;
   updated_at: string | null;
 }
