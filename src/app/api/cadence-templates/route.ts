@@ -7,15 +7,17 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 
 export const GET = withApiHandler({ permission: 'read', resource: 'cadence-templates' },
-  async () => {
+  async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const supabase = await createClient();
 
     const { data: templates, error } = await supabase
       .from('cadence_templates')
       .select('*, event_types(name)')
+      .eq('organization_id', orgId)
       .order('name', { ascending: true });
 
     if (error) throw error;
@@ -51,6 +53,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'cadence-templ
 
 export const POST = withApiHandler({ permission: 'write', resource: 'cadence-templates' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const body = await request.json();
 
     if (!body.name || String(body.name).trim() === '') {
@@ -62,6 +65,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'cadence-tem
     const { data, error } = await supabase
       .from('cadence_templates')
       .insert({
+        organization_id: orgId,
         name: body.name.trim(),
         event_type_id: body.event_type_id || null,
         is_default: body.is_default || false,

@@ -13,7 +13,7 @@ import {
   type TransactionForCategorization,
 } from '@/lib/openrouter';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import { parseCSVLine, findDuplicate, type DuplicateCandidate } from '@/lib/business-logic';
 
 // ============================================
@@ -185,6 +185,7 @@ function parseBrexCSV(csvContent: string): ParsedBrexTransaction[] {
 
 export const POST = withApiHandler({ permission: 'write', resource: 'import/brex' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const skipAI = formData.get('skipAI') === 'true';
@@ -241,9 +242,9 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/brex
       { data: events },
       { data: categories },
     ] = await Promise.all([
-      supabase.from('expenses').select('id, amount, expense_date, vendor').is('deleted_at', null),
-      supabase.from('events').select('id, name, event_type_id, quarter, event_types(name)').is('deleted_at', null),
-      supabase.from('budget_categories').select('id, name, description').is('deleted_at', null),
+      supabase.from('expenses').select('id, amount, expense_date, vendor').eq('organization_id', orgId).is('deleted_at', null),
+      supabase.from('events').select('id, name, event_type_id, quarter, event_types(name)').eq('organization_id', orgId).is('deleted_at', null),
+      supabase.from('budget_categories').select('id, name, description').eq('organization_id', orgId).is('deleted_at', null),
     ]);
 
     // Build assignment targets

@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { computeChanges } from '@/lib/audit';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -19,7 +19,8 @@ type RouteContext = { params: Promise<{ id: string }> };
 // ============================================
 
 export const GET = withApiHandler({ permission: 'read', resource: 'categories' },
-  async (_request: NextRequest, context: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -27,6 +28,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'categories' }
       .from('budget_categories')
       .select('*')
       .eq('id', id)
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .single();
 
@@ -86,6 +88,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'categories' }
 
 export const PUT = withApiHandler({ permission: 'write', resource: 'categories' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -95,6 +98,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'categories' 
       .from('budget_categories')
       .select('*')
       .eq('id', id)
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .single();
 
@@ -132,6 +136,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'categories' 
       const { data: duplicateCategories } = await supabase
         .from('budget_categories')
         .select('id')
+        .eq('organization_id', orgId)
         .ilike('name', escapedName)
         .is('deleted_at', null)
         .neq('id', id)
@@ -159,6 +164,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'categories' 
       .from('budget_categories')
       .update(updateData)
       .eq('id', id)
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .select()
       .single();
@@ -204,6 +210,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'categories' 
 
 export const DELETE = withApiHandler({ permission: 'write', resource: 'categories' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -212,6 +219,7 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'categorie
       .from('budget_categories')
       .select('id')
       .eq('id', id)
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .single();
 
@@ -228,7 +236,8 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'categorie
     const { error: deleteError } = await supabase
       .from('budget_categories')
       .update({ deleted_at: new Date().toISOString() })
-      .eq('id', id);
+      .eq('id', id)
+      .eq('organization_id', orgId);
 
     if (deleteError) throw deleteError;
 

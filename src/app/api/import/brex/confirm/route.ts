@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { ExpenseSource } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import { logAudit, getActor } from '@/lib/audit';
 
 // ============================================
@@ -41,6 +41,7 @@ interface ImportResult {
 
 export const POST = withApiHandler({ permission: 'write', resource: 'import/brex/confirm' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const supabase = await createClient();
     const body = await request.json();
     const { transactions } = body as { transactions: TransactionToImport[] };
@@ -88,13 +89,13 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/brex
       }
     }
 
-    // Batch fetch all referenced events and categories (2 queries instead of N)
+    // Batch fetch all referenced events and categories (2 queries instead of N, scoped to org)
     const [{ data: validEvents }, { data: validCategories }] = await Promise.all([
       referencedEventIds.size > 0
-        ? supabase.from('events').select('id').in('id', [...referencedEventIds]).is('deleted_at', null)
+        ? supabase.from('events').select('id').in('id', [...referencedEventIds]).eq('organization_id', orgId).is('deleted_at', null)
         : Promise.resolve({ data: [] as { id: string }[] }),
       referencedCategoryIds.size > 0
-        ? supabase.from('budget_categories').select('id').in('id', [...referencedCategoryIds]).is('deleted_at', null)
+        ? supabase.from('budget_categories').select('id').in('id', [...referencedCategoryIds]).eq('organization_id', orgId).is('deleted_at', null)
         : Promise.resolve({ data: [] as { id: string }[] }),
     ]);
 
@@ -143,6 +144,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/brex
     const insertRows = transactions.map(txn => {
       const isEvent = txn.assignmentType === 'event';
       return {
+        organization_id: orgId,
         event_id: isEvent ? txn.assignmentId : null,
         category_id: !isEvent ? txn.assignmentId : null,
         amount: txn.amount,

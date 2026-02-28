@@ -65,6 +65,18 @@ export function withApiHandler(
 }
 
 /**
+ * Extract the organization ID from the request.
+ * Set by middleware for all authenticated requests.
+ */
+export function getOrgId(request: NextRequest): string {
+  const orgId = request.headers.get('x-organization-id');
+  if (!orgId) {
+    throw new Error('Missing organization context — middleware should set x-organization-id');
+  }
+  return orgId;
+}
+
+/**
  * Fire-and-forget audit log. Swallows errors silently (logs to console).
  * Extracts actor from the request automatically.
  *

@@ -9,19 +9,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { hashApiKey, generateApiKey } from '@/lib/auth';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 
 // ============================================
 // GET /api/api-keys — List API keys
 // ============================================
 
 export const GET = withApiHandler({ permission: 'admin', resource: 'api-keys' },
-  async () => {
+  async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const supabase = await createClient();
 
     const { data, error } = await supabase
       .from('api_keys')
       .select('id, agent_name, label, permissions, is_active, last_used_at, expires_at, created_at, revoked_at')
+      .eq('organization_id', orgId)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -36,6 +38,7 @@ export const GET = withApiHandler({ permission: 'admin', resource: 'api-keys' },
 
 export const POST = withApiHandler({ permission: 'admin', resource: 'api-keys' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const body = await request.json();
 
     if (!body.agent_name?.trim()) {
@@ -71,6 +74,7 @@ export const POST = withApiHandler({ permission: 'admin', resource: 'api-keys' }
     const { data, error } = await supabase
       .from('api_keys')
       .insert({
+        organization_id: orgId,
         key_hash: keyHash,
         agent_name: agentName,
         label,

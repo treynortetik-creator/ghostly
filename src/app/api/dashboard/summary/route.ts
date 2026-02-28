@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import type { QuarterType } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
 
@@ -47,14 +47,16 @@ export interface DashboardSummary {
 // ============================================
 
 export const GET = withApiHandler({ permission: 'read', resource: 'dashboard/summary' },
-  async () => {
+  async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const supabase = await createClient();
 
-    // Fetch settings to determine fiscal year
+    // Fetch settings to determine fiscal year (scoped to org)
     const { data: settingsRow } = await supabase
       .from('app_settings')
       .select('value')
       .eq('key', 'app_config')
+      .eq('organization_id', orgId)
       .single();
 
     const appConfig = settingsRow?.value as Record<string, unknown> | null;
@@ -89,9 +91,9 @@ export const GET = withApiHandler({ permission: 'read', resource: 'dashboard/sum
       }
     }
 
-    // Build queries filtered by fiscal year
-    let eventsQuery = supabase.from('events').select('*').is('deleted_at', null);
-    let categoriesQuery = supabase.from('budget_categories').select('*').is('deleted_at', null);
+    // Build queries filtered by fiscal year (scoped to org)
+    let eventsQuery = supabase.from('events').select('*').eq('organization_id', orgId).is('deleted_at', null);
+    let categoriesQuery = supabase.from('budget_categories').select('*').eq('organization_id', orgId).is('deleted_at', null);
 
     if (fiscalYearId) {
       eventsQuery = eventsQuery.eq('fiscal_year_id', fiscalYearId);
@@ -106,11 +108,12 @@ export const GET = withApiHandler({ permission: 'read', resource: 'dashboard/sum
     ] = await Promise.all([
       eventsQuery,
       categoriesQuery,
-      supabase.from('expenses').select('*').is('deleted_at', null),
+      supabase.from('expenses').select('*').eq('organization_id', orgId).is('deleted_at', null),
       fiscalYearId
         ? supabase
             .from('event_types')
             .select('*')
+            .eq('organization_id', orgId)
             .eq('fiscal_year_id', fiscalYearId)
             .eq('is_archived', false)
             .order('display_order')

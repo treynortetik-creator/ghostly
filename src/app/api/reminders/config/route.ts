@@ -8,19 +8,21 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 
 // ============================================
 // GET /api/reminders/config
 // ============================================
 
 export const GET = withApiHandler({ permission: 'admin', resource: 'reminders/config' },
-  async () => {
+  async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const supabase = await createClient();
 
     const { data, error } = await supabase
       .from('reminder_config')
       .select('*')
+      .eq('organization_id', orgId)
       .order('reminder_type');
 
     if (error) throw error;
@@ -38,6 +40,7 @@ export const GET = withApiHandler({ permission: 'admin', resource: 'reminders/co
 
 export const PUT = withApiHandler({ permission: 'admin', resource: 'reminders/config' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const supabase = await createClient();
     const body = await request.json();
 
@@ -56,6 +59,7 @@ export const PUT = withApiHandler({ permission: 'admin', resource: 'reminders/co
       .from('reminder_config')
       .update(updates)
       .eq('reminder_type', reminder_type)
+      .eq('organization_id', orgId)
       .select()
       .single();
 

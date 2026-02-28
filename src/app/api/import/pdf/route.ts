@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logError } from '@/lib/error-logger';
 import { MAX_FILE_SIZE_BYTES } from '@/lib/constants';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import { createClient } from '@/lib/supabase/server';
 import {
   chatCompletion,
@@ -314,6 +314,7 @@ function extractDataFromText(text: string): ExtractedPDFData {
 
 export const POST = withApiHandler({ permission: 'write', resource: 'import/pdf' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
 
@@ -377,10 +378,10 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/pdf'
       try {
         const supabase = await createClient();
 
-        // Fetch events and categories for assignment context
+        // Fetch events and categories for assignment context (scoped to org)
         const [{ data: events }, { data: categories }] = await Promise.all([
-          supabase.from('events').select('id, name, event_type_id, quarter, event_types(name)').is('deleted_at', null),
-          supabase.from('budget_categories').select('id, name, description').is('deleted_at', null),
+          supabase.from('events').select('id, name, event_type_id, quarter, event_types(name)').eq('organization_id', orgId).is('deleted_at', null),
+          supabase.from('budget_categories').select('id, name, description').eq('organization_id', orgId).is('deleted_at', null),
         ]);
 
         const targets: AssignmentTarget[] = [
@@ -409,9 +410,9 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/pdf'
         const customPrompt = await getCustomPrompt('prompt_pdf_extraction', supabase);
         const systemPrompt = buildPdfExtractionPrompt(targets, customPrompt || undefined);
 
-        // Get the model setting
+        // Get the model setting (scoped to org)
         const { data: configRow } = await supabase
-          .from('app_settings').select('value').eq('key', 'app_config').single();
+          .from('app_settings').select('value').eq('key', 'app_config').eq('organization_id', orgId).single();
         const model = (configRow?.value as Record<string, unknown>)?.openrouter_model as string || 'anthropic/claude-3-haiku';
 
         const response = await chatCompletion(model, [

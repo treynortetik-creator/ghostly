@@ -4,9 +4,9 @@
  * GET /api/events/board - Events grouped by stage for Kanban board view
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import { differenceInCalendarDays, parseISO } from 'date-fns';
 import type { EventTypeRecord, EventStage } from '@/types/database';
 
@@ -34,20 +34,23 @@ const BOARD_STAGES: EventStage[] = ['confirmed', 'in_progress', 'ready', 'active
 // ============================================
 
 export const GET = withApiHandler({ permission: 'read', resource: 'events/board' },
-  async () => {
+  async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const supabase = await createClient();
     const today = new Date();
 
-    // Fetch non-archived events, expenses, and checklist items in parallel
+    // Fetch non-archived events, expenses, and checklist items in parallel (scoped to org)
     const [eventsResult, expenseTotalsResult, checklistResult] = await Promise.all([
       supabase
         .from('events')
         .select('*, event_types(*)')
+        .eq('organization_id', orgId)
         .is('deleted_at', null)
         .or('stage.neq.archived,stage.is.null'),
       supabase
         .from('expenses')
         .select('event_id, amount')
+        .eq('organization_id', orgId)
         .not('event_id', 'is', null)
         .is('deleted_at', null),
       supabase

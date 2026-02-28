@@ -4,9 +4,9 @@
  * GET /api/dashboard/roi - Aggregate ROI across all events
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import type { EventTypeRecord } from '@/types/database';
 
 interface EventROIRow {
@@ -24,21 +24,24 @@ interface EventROIRow {
 }
 
 export const GET = withApiHandler({ permission: 'read', resource: 'dashboard/roi' },
-  async () => {
+  async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const supabase = await createClient();
 
-    // Fetch all non-deleted events with event_types join
+    // Fetch all non-deleted events with event_types join (scoped to org)
     const { data: events, error: eventsError } = await supabase
       .from('events')
       .select('*, event_types(*)')
+      .eq('organization_id', orgId)
       .is('deleted_at', null);
 
     if (eventsError) throw eventsError;
 
-    // Fetch all non-deleted expenses with event_id
+    // Fetch all non-deleted expenses with event_id (scoped to org)
     const { data: expenses, error: expensesError } = await supabase
       .from('expenses')
       .select('event_id, amount')
+      .eq('organization_id', orgId)
       .not('event_id', 'is', null)
       .is('deleted_at', null);
 

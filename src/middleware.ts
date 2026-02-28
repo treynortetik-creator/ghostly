@@ -75,6 +75,7 @@ async function validateApiKeyInMiddleware(rawKey: string): Promise<{
   agentName?: string;
   permissions?: string[];
   apiKeyId?: string;
+  organizationId?: string;
   error?: string;
   errorCode?: string;
   status?: number;
@@ -88,7 +89,7 @@ async function validateApiKeyInMiddleware(rawKey: string): Promise<{
 
   const keyHash = await hashApiKeyEdge(rawKey);
 
-  const url = `${supabaseUrl}/rest/v1/api_keys?key_hash=eq.${encodeURIComponent(keyHash)}&revoked_at=is.null&is_active=eq.true&select=id,agent_name,permissions,expires_at`;
+  const url = `${supabaseUrl}/rest/v1/api_keys?key_hash=eq.${encodeURIComponent(keyHash)}&revoked_at=is.null&is_active=eq.true&select=id,agent_name,permissions,expires_at,organization_id`;
   const res = await fetch(url, {
     headers: {
       'apikey': supabaseServiceKey,
@@ -130,11 +131,15 @@ async function validateApiKeyInMiddleware(rawKey: string): Promise<{
     agentName: apiKey.agent_name,
     permissions: apiKey.permissions,
     apiKeyId: apiKey.id,
+    organizationId: apiKey.organization_id,
   };
 }
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Default organization ID for backward-compatible single-tenant mode
+  const DEFAULT_ORG_ID = '00000000-0000-0000-0000-000000000001';
 
   // Strip all internal auth headers to prevent client spoofing
   const requestHeaders = new Headers(request.headers);
@@ -142,6 +147,7 @@ export async function middleware(request: NextRequest) {
   requestHeaders.delete('x-auth-agent-name');
   requestHeaders.delete('x-auth-permissions');
   requestHeaders.delete('x-auth-api-key-id');
+  requestHeaders.delete('x-organization-id');
 
   // Allow public routes without authentication
   if (isPublicRoute(pathname)) {
@@ -176,6 +182,7 @@ export async function middleware(request: NextRequest) {
       requestHeaders.set('x-auth-agent-name', result.agentName!);
       requestHeaders.set('x-auth-permissions', JSON.stringify(result.permissions!));
       requestHeaders.set('x-auth-api-key-id', result.apiKeyId!);
+      requestHeaders.set('x-organization-id', result.organizationId || DEFAULT_ORG_ID);
 
       return NextResponse.next({
         request: { headers: requestHeaders },
@@ -216,6 +223,7 @@ export async function middleware(request: NextRequest) {
 
   // Cookie auth valid — pass auth context via headers
   requestHeaders.set('x-auth-type', 'cookie');
+  requestHeaders.set('x-organization-id', DEFAULT_ORG_ID);
 
   return NextResponse.next({
     request: { headers: requestHeaders },

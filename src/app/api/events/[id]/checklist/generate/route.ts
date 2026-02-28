@@ -10,7 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 import { subDays, addDays, parseISO } from 'date-fns';
 import type { ChecklistPhase } from '@/types/database';
 
@@ -30,14 +30,16 @@ const PIPELINE_TEMPLATE_NAME = 'Event Pipeline Template';
 
 export const POST = withApiHandler({ permission: 'write', resource: 'events/checklist' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id: eventId } = await context.params;
     const supabase = await createClient();
 
-    // 1. Fetch the event
+    // 1. Fetch the event (scoped to org)
     const { data: event, error: eventError } = await supabase
       .from('events')
       .select('id, tier, date_start, date_end')
       .eq('id', eventId)
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .single();
 
@@ -65,6 +67,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/chec
     const { data: template, error: templateError } = await supabase
       .from('checklist_templates')
       .select('id')
+      .eq('organization_id', orgId)
       .eq('name', PIPELINE_TEMPLATE_NAME)
       .is('deleted_at', null)
       .single();

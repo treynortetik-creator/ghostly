@@ -11,7 +11,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 import path from 'path';
 import fs from 'fs/promises';
 
@@ -28,6 +28,7 @@ function getUploadBasePath(): string {
 
 export const POST = withApiHandler({ permission: 'admin', resource: 'admin/cleanup' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     // Parse optional batch_size from request body
     let batchSize = DEFAULT_BATCH_SIZE;
     try {
@@ -104,11 +105,12 @@ export const POST = withApiHandler({ permission: 'admin', resource: 'admin/clean
     results.idempotency_keys = { deleted: idempKeysDeleted };
     if (ikErr) results.idempotency_keys.errors = [ikErr.message];
 
-    // 3. Clean orphaned files from documents soft-deleted > 7 days ago
+    // 3. Clean orphaned files from documents soft-deleted > 7 days ago (scoped to org)
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const { data: orphanedDocs, error: odErr } = await supabase
       .from('documents')
       .select('id, storage_path')
+      .eq('organization_id', orgId)
       .not('deleted_at', 'is', null)
       .lt('deleted_at', sevenDaysAgo)
       .limit(batchSize);

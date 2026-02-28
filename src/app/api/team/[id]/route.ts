@@ -8,12 +8,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export const GET = withApiHandler({ permission: 'read', resource: 'team/[id]' },
-  async (_request: NextRequest, context: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -21,6 +22,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'team/[id]' },
       .from('team_members')
       .select('*')
       .eq('id', id)
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .single();
 
@@ -34,6 +36,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'team/[id]' },
 
 export const PUT = withApiHandler({ permission: 'write', resource: 'team/[id]' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -51,6 +54,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'team/[id]' }
       .from('team_members')
       .update(updates)
       .eq('id', id)
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .select()
       .single();
@@ -73,6 +77,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'team/[id]' }
 
 export const DELETE = withApiHandler({ permission: 'write', resource: 'team/[id]' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -80,6 +85,7 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'team/[id]
       .from('team_members')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', id)
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .select()
       .single();

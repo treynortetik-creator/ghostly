@@ -6,20 +6,22 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export const GET = withApiHandler({ permission: 'read', resource: 'expenses/[id]/documents' },
-  async (_request: NextRequest, context: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const supabase = await createClient();
 
-    // Verify expense exists
+    // Verify expense exists and belongs to org
     const { data: expense, error: expenseError } = await supabase
       .from('expenses')
       .select('id, vendor')
       .eq('id', id)
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .single();
 

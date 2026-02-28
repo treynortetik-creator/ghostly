@@ -6,12 +6,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export const GET = withApiHandler({ permission: 'read', resource: 'events/summary' },
-  async (_request: NextRequest, context: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -21,6 +22,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/summar
         .from('events')
         .select('id, name, date_start, date_end, budget_amount, pipeline_generated, revenue_closed, leads_generated, meetings_booked, opportunities_created, roi_notes')
         .eq('id', id)
+        .eq('organization_id', orgId)
         .is('deleted_at', null)
         .single(),
       supabase

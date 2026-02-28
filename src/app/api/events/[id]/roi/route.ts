@@ -6,13 +6,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import type { EventTypeRecord } from '@/types/database';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export const GET = withApiHandler({ permission: 'read', resource: 'events/roi' },
-  async (_request: NextRequest, context: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -20,6 +21,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/roi' }
       .from('events')
       .select('*, event_types(*)')
       .eq('id', id)
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .single();
 

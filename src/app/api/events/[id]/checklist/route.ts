@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 import type { ChecklistPhase } from '@/types/database';
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -15,9 +15,14 @@ type RouteContext = { params: Promise<{ id: string }> };
 const validPhases: ChecklistPhase[] = ['pre_event', 'day_of', 'post_event'];
 
 export const GET = withApiHandler({ permission: 'read', resource: 'events/checklist' },
-  async (_request: NextRequest, context: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id: eventId } = await context.params;
     const supabase = await createClient();
+
+    // Verify event belongs to org
+    const { data: event } = await supabase.from('events').select('id').eq('id', eventId).eq('organization_id', orgId).single();
+    if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
 
     const { data: items, error } = await supabase
       .from('event_checklist_items')
@@ -69,6 +74,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/checkl
 
 export const POST = withApiHandler({ permission: 'write', resource: 'events/checklist' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id: eventId } = await context.params;
     const body = await request.json();
 
@@ -81,6 +87,10 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/chec
     }
 
     const supabase = await createClient();
+
+    // Verify event belongs to org
+    const { data: event } = await supabase.from('events').select('id').eq('id', eventId).eq('organization_id', orgId).single();
+    if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
 
     const { data, error } = await supabase
       .from('event_checklist_items')

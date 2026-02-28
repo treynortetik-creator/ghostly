@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as XLSX from 'xlsx';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import { getDateRangeForScope, type ExportScope } from '@/lib/export-helpers';
 
 /* ============================================
@@ -14,6 +14,7 @@ import { getDateRangeForScope, type ExportScope } from '@/lib/export-helpers';
 
 export const GET = withApiHandler({ permission: 'read', resource: 'export/excel' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const { searchParams } = new URL(request.url);
     const scope = (searchParams.get('scope') || 'year') as ExportScope;
     const fiscalYear = parseInt(searchParams.get('fiscal_year') || '2026', 10);
@@ -26,17 +27,18 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/excel'
 
     const supabase = await createClient();
 
-    // Fetch all data from Supabase in parallel
+    // Fetch all data from Supabase in parallel (scoped to org)
     const [
       { data: rawEvents, error: eventsErr },
       { data: rawCategories, error: catsErr },
       { data: rawExpenses, error: expErr },
     ] = await Promise.all([
-      supabase.from('events').select('*, event_types(*)').is('deleted_at', null),
-      supabase.from('budget_categories').select('*').is('deleted_at', null),
+      supabase.from('events').select('*, event_types(*)').eq('organization_id', orgId).is('deleted_at', null),
+      supabase.from('budget_categories').select('*').eq('organization_id', orgId).is('deleted_at', null),
       supabase
         .from('expenses')
         .select('*, events(name), budget_categories(name)')
+        .eq('organization_id', orgId)
         .is('deleted_at', null)
         .gte('expense_date', dateRange.start)
         .lte('expense_date', dateRange.end),

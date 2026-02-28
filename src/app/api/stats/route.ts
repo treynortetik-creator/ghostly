@@ -7,20 +7,22 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 
 // ============================================
 // GET /api/stats
 // ============================================
 
 export const GET = withApiHandler({ permission: 'read', resource: 'stats' },
-  async (_request: NextRequest) => {
+  async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const supabase = await createClient();
 
     // Get active fiscal year from app_settings
     const { data: settingsRow, error: settingsError } = await supabase
       .from('app_settings')
       .select('value')
+      .eq('organization_id', orgId)
       .eq('key', 'app_config')
       .single();
 
@@ -55,23 +57,27 @@ export const GET = withApiHandler({ permission: 'read', resource: 'stats' },
       supabase
         .from('events')
         .select('id, budget_amount, quarter')
+        .eq('organization_id', orgId)
         .eq('fiscal_year_id', fiscalYearId)
         .is('deleted_at', null),
       // Expenses tied to events in this fiscal year
       supabase
         .from('expenses')
         .select('event_id, category_id, amount, vendor')
+        .eq('organization_id', orgId)
         .not('event_id', 'is', null)
         .is('deleted_at', null),
       // All active team members
       supabase
         .from('team_members')
         .select('id', { count: 'exact' })
+        .eq('organization_id', orgId)
         .is('deleted_at', null),
       // Expenses tied to budget categories in this fiscal year
       supabase
         .from('expenses')
         .select('category_id, amount, vendor')
+        .eq('organization_id', orgId)
         .not('category_id', 'is', null)
         .is('deleted_at', null),
     ]);
@@ -92,6 +98,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'stats' },
     const { data: fiscalCategories } = await supabase
       .from('budget_categories')
       .select('id')
+      .eq('organization_id', orgId)
       .eq('fiscal_year_id', fiscalYearId)
       .is('deleted_at', null);
 

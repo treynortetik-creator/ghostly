@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 import type { AuditEntityType } from '@/lib/audit';
 
 interface EventTypeWithTotals {
@@ -32,6 +32,7 @@ interface EventTypeWithTotals {
 
 export const GET = withApiHandler({ permission: 'read', resource: 'event-types' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const { searchParams } = new URL(request.url);
     const fiscalYearId = searchParams.get('fiscal_year_id');
     const includeArchived = searchParams.get('include_archived') === 'true';
@@ -65,6 +66,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'event-types' 
     let query = supabase
       .from('event_types')
       .select('*')
+      .eq('organization_id', orgId)
       .eq('fiscal_year_id', fiscalYearId)
       .order('display_order', { ascending: true });
 
@@ -83,11 +85,13 @@ export const GET = withApiHandler({ permission: 'read', resource: 'event-types' 
       supabase
         .from('events')
         .select('id, event_type_id, budget_amount')
+        .eq('organization_id', orgId)
         .eq('fiscal_year_id', fiscalYearId)
         .is('deleted_at', null),
       supabase
         .from('expenses')
         .select('event_id, amount')
+        .eq('organization_id', orgId)
         .is('deleted_at', null),
     ]);
 
@@ -147,6 +151,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'event-types' 
 
 export const POST = withApiHandler({ permission: 'write', resource: 'event-types' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const body = await request.json();
 
     // Validate required fields
@@ -187,6 +192,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'event-types
     const { data: existing } = await supabase
       .from('event_types')
       .select('id')
+      .eq('organization_id', orgId)
       .eq('fiscal_year_id', body.fiscal_year_id)
       .ilike('name', escapedName)
       .eq('is_archived', false);
@@ -202,6 +208,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'event-types
     const { data: maxOrder } = await supabase
       .from('event_types')
       .select('display_order')
+      .eq('organization_id', orgId)
       .eq('fiscal_year_id', body.fiscal_year_id)
       .order('display_order', { ascending: false })
       .limit(1);
@@ -211,6 +218,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'event-types
     const { data: newEventType, error: insertError } = await supabase
       .from('event_types')
       .insert({
+        organization_id: orgId,
         name: body.name.trim(),
         description: body.description?.trim() || null,
         fiscal_year_id: body.fiscal_year_id,

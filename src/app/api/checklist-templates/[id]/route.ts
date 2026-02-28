@@ -8,12 +8,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export const GET = withApiHandler({ permission: 'read', resource: 'checklist-templates' },
-  async (_request: NextRequest, context: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -21,6 +22,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'checklist-tem
       .from('checklist_templates')
       .select('*')
       .eq('id', id)
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .single();
 
@@ -45,6 +47,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'checklist-tem
 
 export const PUT = withApiHandler({ permission: 'write', resource: 'checklist-templates' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -58,6 +61,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'checklist-te
       .from('checklist_templates')
       .update(updates)
       .eq('id', id)
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .select()
       .single();
@@ -71,7 +75,8 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'checklist-te
 );
 
 export const DELETE = withApiHandler({ permission: 'write', resource: 'checklist-templates' },
-  async (_request: NextRequest, context: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -79,6 +84,7 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'checklist
       .from('checklist_templates')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', id)
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .select()
       .single();

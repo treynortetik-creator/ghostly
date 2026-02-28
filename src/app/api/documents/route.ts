@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logAudit, getActor } from '@/lib/audit';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import { MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_LABEL } from '@/lib/constants';
 import path from 'path';
 import fs from 'fs/promises';
@@ -90,6 +90,7 @@ function sanitizeFilename(filename: string): string {
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const GET = withApiHandler({ permission: 'read', resource: 'documents' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const { searchParams } = new URL(request.url);
 
     const eventId = searchParams.get('event_id');
@@ -114,6 +115,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'documents' },
     let query = supabase
       .from('documents')
       .select('*, events(name), expenses(vendor)', { count: 'exact' })
+      .eq('organization_id', orgId)
       .is('deleted_at', null);
 
     if (eventId) {
@@ -167,6 +169,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'documents' },
 
 export const POST = withApiHandler({ permission: 'write', resource: 'documents' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     // Rate limit uploads
     const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     if (isUploadRateLimited(clientIp)) {
@@ -222,6 +225,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'documents' 
         .from('events')
         .select('id')
         .eq('id', eventId)
+        .eq('organization_id', orgId)
         .is('deleted_at', null)
         .single();
 
@@ -252,6 +256,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'documents' 
         .from('expenses')
         .select('id')
         .eq('id', expenseId)
+        .eq('organization_id', orgId)
         .is('deleted_at', null)
         .single();
 
@@ -306,6 +311,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'documents' 
     const { data: newDoc, error: insertError } = await supabase
       .from('documents')
       .insert({
+        organization_id: orgId,
         filename: sanitizeFilename(file.name),
         original_filename: file.name,
         mime_type: file.type,

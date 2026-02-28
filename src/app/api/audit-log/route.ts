@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 
 // ============================================
 // GET /api/audit-log
@@ -15,6 +15,7 @@ import { withApiHandler } from '@/lib/api-helpers';
 
 export const GET = withApiHandler({ permission: 'admin', resource: 'audit-log' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const { searchParams } = new URL(request.url);
 
     // Parse filter parameters
@@ -35,7 +36,8 @@ export const GET = withApiHandler({ permission: 'admin', resource: 'audit-log' }
 
     let query = supabase
       .from('audit_log')
-      .select('*', { count: 'exact' });
+      .select('*', { count: 'exact' })
+      .eq('organization_id', orgId);
 
     if (entityType) query = query.eq('entity_type', entityType);
     if (entityId) query = query.eq('entity_id', entityId);

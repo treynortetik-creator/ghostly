@@ -8,12 +8,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export const GET = withApiHandler({ permission: 'read', resource: 'cadence-templates' },
-  async (_request: NextRequest, context: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -21,6 +22,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'cadence-templ
       .from('cadence_templates')
       .select('*, event_types(name)')
       .eq('id', id)
+      .eq('organization_id', orgId)
       .single();
 
     if (templateError || !template) {
@@ -45,6 +47,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'cadence-templ
 
 export const PUT = withApiHandler({ permission: 'write', resource: 'cadence-templates' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -58,6 +61,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'cadence-temp
       .from('cadence_templates')
       .update(updates)
       .eq('id', id)
+      .eq('organization_id', orgId)
       .select()
       .single();
 
@@ -70,14 +74,16 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'cadence-temp
 );
 
 export const DELETE = withApiHandler({ permission: 'write', resource: 'cadence-templates' },
-  async (_request: NextRequest, context: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const supabase = await createClient();
 
     const { error } = await supabase
       .from('cadence_templates')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('organization_id', orgId);
 
     if (error) throw error;
 

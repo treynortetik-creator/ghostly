@@ -6,12 +6,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export const PUT = withApiHandler({ permission: 'write', resource: 'documents' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const body = await request.json();
 
@@ -28,11 +29,12 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'documents' }
 
     const supabase = await createClient();
 
-    // Check document exists
+    // Check document exists and belongs to org
     const { data: existing, error: findError } = await supabase
       .from('documents')
       .select('id, event_id, expense_id')
       .eq('id', id)
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .single();
 
@@ -43,12 +45,13 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'documents' }
       );
     }
 
-    // Validate event_id if provided
+    // Validate event_id if provided (scoped to org)
     if (eventId) {
       const { data: event, error: eventError } = await supabase
         .from('events')
         .select('id')
         .eq('id', eventId)
+        .eq('organization_id', orgId)
         .is('deleted_at', null)
         .single();
 
@@ -60,12 +63,13 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'documents' }
       }
     }
 
-    // Validate expense_id if provided
+    // Validate expense_id if provided (scoped to org)
     if (expenseId) {
       const { data: expense, error: expenseError } = await supabase
         .from('expenses')
         .select('id')
         .eq('id', expenseId)
+        .eq('organization_id', orgId)
         .is('deleted_at', null)
         .single();
 

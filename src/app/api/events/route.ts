@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withIdempotency } from '@/lib/idempotency';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 import type { QuarterType, EventTypeRecord } from '@/types/database';
 
 interface EventWithTotals {
@@ -48,6 +48,7 @@ interface EventWithTotals {
 
 export const GET = withApiHandler({ permission: 'read', resource: 'events' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const { searchParams } = new URL(request.url);
 
     // Parse filter parameters
@@ -113,6 +114,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events' },
     let query = supabase
       .from('events')
       .select('*, event_types(*)', { count: 'exact' })
+      .eq('organization_id', orgId)
       .is('deleted_at', null);
 
     if (filters.event_type_id) query = query.eq('event_type_id', filters.event_type_id);
@@ -128,6 +130,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events' },
       supabase
         .from('expenses')
         .select('event_id, amount')
+        .eq('organization_id', orgId)
         .not('event_id', 'is', null)
         .is('deleted_at', null),
     ]);
@@ -201,6 +204,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events' },
 export const POST = withIdempotency(
   withApiHandler({ permission: 'write', resource: 'events' },
     async (request: NextRequest) => {
+      const orgId = getOrgId(request);
       const body = await request.json();
 
       // Validate required fields
@@ -246,6 +250,7 @@ export const POST = withIdempotency(
         .from('event_types')
         .select('id, name')
         .eq('id', body.event_type_id)
+        .eq('organization_id', orgId)
         .single();
 
       if (eventTypeError || !eventType) {
@@ -264,6 +269,7 @@ export const POST = withIdempotency(
       let dupeQuery = supabase
         .from('events')
         .select('id, name')
+        .eq('organization_id', orgId)
         .eq('name', body.name)
         .is('deleted_at', null);
       if (fiscalYearId) {
@@ -282,6 +288,7 @@ export const POST = withIdempotency(
       const { data: newEvent, error: insertError } = await supabase
         .from('events')
         .insert({
+          organization_id: orgId,
           name: body.name,
           event_type_id: body.event_type_id,
           quarter: body.quarter as QuarterType,

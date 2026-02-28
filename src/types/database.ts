@@ -23,11 +23,40 @@ export type ChecklistPhase = 'pre_event' | 'day_of' | 'post_event';
 
 export type EventStage = 'confirmed' | 'in_progress' | 'ready' | 'active' | 'debrief' | 'archived';
 export type EventTier = 'executive' | 'national_t1' | 'national_t2' | 'state_t1' | 'state_t2' | 'customer_partner';
-export type ShippingHandler = 'handler_a' | 'handler_b';
+export type ShippingHandler = string; // Free text — configurable per org (was hardcoded 'handler_a' | 'handler_b')
+
+export type OrgRole = 'owner' | 'admin' | 'member';
 
 // ============================================
 // TABLE INTERFACES
 // ============================================
+
+/**
+ * Organization (tenant)
+ */
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  plan_tier: string;
+  settings: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Organization membership
+ */
+export interface OrganizationMember {
+  id: string;
+  organization_id: string;
+  user_id: string | null;
+  email: string | null;
+  role: OrgRole;
+  legacy_username: string | null;
+  invited_at: string;
+  accepted_at: string | null;
+}
 
 /**
  * Fiscal year record

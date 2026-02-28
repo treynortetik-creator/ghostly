@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 
 // ============================================
 // POST /api/reminders/check
@@ -15,14 +15,16 @@ import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 
 export const POST = withApiHandler({ permission: 'read', resource: 'reminders/check' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const supabase = await createClient();
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
 
-    // Get enabled reminder configs
+    // Get enabled reminder configs (scoped to org)
     const { data: configs, error: configError } = await supabase
       .from('reminder_config')
       .select('*')
+      .eq('organization_id', orgId)
       .eq('enabled', true);
 
     if (configError) throw configError;
@@ -30,10 +32,11 @@ export const POST = withApiHandler({ permission: 'read', resource: 'reminders/ch
       return NextResponse.json({ reminders: [], meta: { total: 0, message: 'No enabled reminder configs' } });
     }
 
-    // Get all upcoming events (not deleted, with a date_start)
+    // Get all upcoming events (not deleted, with a date_start, scoped to org)
     const { data: events, error: eventsError } = await supabase
       .from('events')
       .select('id, name, date_start, date_end, budget_amount')
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .not('date_start', 'is', null)
       .gte('date_start', todayStr);

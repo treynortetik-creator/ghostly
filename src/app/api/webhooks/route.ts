@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 
 const VALID_EVENT_TYPES = [
   'expense.created',
@@ -131,12 +131,14 @@ function isPrivateIPv6(addr: string): boolean {
 // ============================================
 
 export const GET = withApiHandler({ permission: 'admin', resource: 'webhooks' },
-  async () => {
+  async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const supabase = await createClient();
 
     const { data: webhooks, error } = await supabase
       .from('webhooks')
       .select('*')
+      .eq('organization_id', orgId)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -154,6 +156,7 @@ export const GET = withApiHandler({ permission: 'admin', resource: 'webhooks' },
 
 export const POST = withApiHandler({ permission: 'admin', resource: 'webhooks' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const body = await request.json();
 
     // Validate URL (includes SSRF protection)
@@ -184,6 +187,7 @@ export const POST = withApiHandler({ permission: 'admin', resource: 'webhooks' }
     const { data: webhook, error } = await supabase
       .from('webhooks')
       .insert({
+        organization_id: orgId,
         url: body.url.trim(),
         event_types: body.event_types,
         secret: body.secret || null,

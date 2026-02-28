@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import type { QuarterType } from '@/types/database';
 
 /* ============================================
@@ -64,6 +64,7 @@ function getDateRangeForScope(
 
 export const GET = withApiHandler({ permission: 'read', resource: 'export/preview' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
     const scope = (searchParams.get('scope') || 'year') as ExportScope;
@@ -75,10 +76,11 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/previe
 
     const dateRange = getDateRangeForScope(scope, fiscalYear, quarter, month, dateStart, dateEnd);
 
-    // Query events
+    // Query events (scoped to org)
     let eventsQuery = supabase
       .from('events')
       .select('*')
+      .eq('organization_id', orgId)
       .is('deleted_at', null);
 
     if (scope === 'quarter') {
@@ -92,17 +94,19 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/previe
     const { data: events, error: eventsError } = await eventsQuery;
     if (eventsError) throw eventsError;
 
-    // Query categories
+    // Query categories (scoped to org)
     const { data: categories, error: categoriesError } = await supabase
       .from('budget_categories')
       .select('*')
+      .eq('organization_id', orgId)
       .is('deleted_at', null);
     if (categoriesError) throw categoriesError;
 
-    // Query expenses within date range
+    // Query expenses within date range (scoped to org)
     const { data: expenses, error: expensesError } = await supabase
       .from('expenses')
       .select('*')
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .gte('expense_date', dateRange.start)
       .lte('expense_date', dateRange.end);
@@ -127,6 +131,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/previe
     const { data: allCategoryExpenses } = await supabase
       .from('expenses')
       .select('category_id, amount')
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .in('category_id', categoryIds.length > 0 ? categoryIds : ['__none__']);
 

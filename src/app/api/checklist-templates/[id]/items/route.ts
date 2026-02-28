@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import type { ChecklistPhase } from '@/types/database';
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -15,6 +15,7 @@ const validPhases: ChecklistPhase[] = ['pre_event', 'day_of', 'post_event'];
 
 export const POST = withApiHandler({ permission: 'write', resource: 'checklist-template-items' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id: templateId } = await context.params;
     const body = await request.json();
 
@@ -27,6 +28,10 @@ export const POST = withApiHandler({ permission: 'write', resource: 'checklist-t
     }
 
     const supabase = await createClient();
+
+    // Verify template belongs to org
+    const { data: templateCheck } = await supabase.from('checklist_templates').select('id').eq('id', templateId).eq('organization_id', orgId).single();
+    if (!templateCheck) return NextResponse.json({ error: 'Template not found' }, { status: 404 });
 
     const { data, error } = await supabase
       .from('checklist_template_items')

@@ -7,11 +7,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 import { withIdempotency } from '@/lib/idempotency';
 
 export const GET = withApiHandler({ permission: 'read', resource: 'team' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const { searchParams } = new URL(request.url);
     const modifiedAfter = searchParams.get('modified_after');
     const idsParam = searchParams.get('ids');
@@ -41,6 +42,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'team' },
     let query = supabase
       .from('team_members')
       .select('*')
+      .eq('organization_id', orgId)
       .is('deleted_at', null);
 
     if (filters.modified_after) query = query.gt('updated_at', filters.modified_after);
@@ -63,6 +65,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'team' },
 export const POST = withIdempotency(
   withApiHandler({ permission: 'write', resource: 'team' },
     async (request: NextRequest) => {
+      const orgId = getOrgId(request);
       const body = await request.json();
 
       if (!body.name || String(body.name).trim() === '') {
@@ -78,6 +81,7 @@ export const POST = withIdempotency(
       const { data, error } = await supabase
         .from('team_members')
         .insert({
+          organization_id: orgId,
           name: body.name.trim(),
           email: body.email?.trim() || null,
           phone: body.phone?.trim() || null,

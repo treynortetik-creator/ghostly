@@ -9,7 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 import type { AuditEntityType } from '@/lib/audit';
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -19,7 +19,8 @@ type RouteContext = { params: Promise<{ id: string }> };
 // ============================================
 
 export const GET = withApiHandler({ permission: 'read', resource: 'event-types/[id]' },
-  async (_request: NextRequest, context: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -27,6 +28,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'event-types/[
       .from('event_types')
       .select('*')
       .eq('id', id)
+      .eq('organization_id', orgId)
       .single();
 
     if (error || !eventType) {
@@ -46,6 +48,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'event-types/[
 
 export const PUT = withApiHandler({ permission: 'write', resource: 'event-types/[id]' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -82,6 +85,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'event-types/
       .from('event_types')
       .select('id, fiscal_year_id')
       .eq('id', id)
+      .eq('organization_id', orgId)
       .single();
 
     if (!existing) {
@@ -98,6 +102,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'event-types/
       const { data: duplicate } = await supabase
         .from('event_types')
         .select('id')
+        .eq('organization_id', orgId)
         .eq('fiscal_year_id', existing.fiscal_year_id)
         .ilike('name', escapedName)
         .eq('is_archived', false)
@@ -124,6 +129,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'event-types/
       .from('event_types')
       .update(updateData)
       .eq('id', id)
+      .eq('organization_id', orgId)
       .select()
       .single();
 
@@ -148,6 +154,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'event-types/
 
 export const DELETE = withApiHandler({ permission: 'write', resource: 'event-types/[id]' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -159,6 +166,7 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'event-typ
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
+      .eq('organization_id', orgId)
       .select()
       .single();
 

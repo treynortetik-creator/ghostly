@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withIdempotency } from '@/lib/idempotency';
 import { logAudit, getActor, computeChanges } from '@/lib/audit';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 
 const MAX_UPDATES_PER_REQUEST = 100;
 
@@ -84,6 +84,7 @@ function validateUpdateItem(item: UpdateInput): string[] {
 
 export const PUT = withIdempotency(withApiHandler({ permission: 'write', resource: 'expenses/bulk/update' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const body = await request.json();
 
     // Validate top-level structure
@@ -140,12 +141,13 @@ export const PUT = withIdempotency(withApiHandler({ permission: 'write', resourc
 
     const supabase = await createClient();
 
-    // Phase 2: Fetch all existing expenses to validate they exist
+    // Phase 2: Fetch all existing expenses to validate they exist (scoped to org)
     const expenseIds = body.updates.map((item: UpdateInput) => item.id as string);
     const { data: existingExpenses, error: fetchError } = await supabase
       .from('expenses')
       .select('*')
       .in('id', expenseIds)
+      .eq('organization_id', orgId)
       .is('deleted_at', null);
 
     if (fetchError) throw fetchError;
@@ -215,13 +217,14 @@ export const PUT = withIdempotency(withApiHandler({ permission: 'write', resourc
       );
     }
 
-    // Phase 4: Batch-validate referenced events and categories
+    // Phase 4: Batch-validate referenced events and categories (scoped to org)
     const validEvents = new Map<string, string>();
     if (eventIds.size > 0) {
       const { data: events, error: eventsError } = await supabase
         .from('events')
         .select('id, name')
         .in('id', [...eventIds])
+        .eq('organization_id', orgId)
         .is('deleted_at', null);
 
       if (eventsError) throw eventsError;
@@ -237,6 +240,7 @@ export const PUT = withIdempotency(withApiHandler({ permission: 'write', resourc
         .from('budget_categories')
         .select('id, name')
         .in('id', [...categoryIds])
+        .eq('organization_id', orgId)
         .is('deleted_at', null);
 
       if (categoriesError) throw categoriesError;

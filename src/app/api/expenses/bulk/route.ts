@@ -10,7 +10,7 @@ import type { ExpenseSource } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
 import { withIdempotency } from '@/lib/idempotency';
 import { logAudit, getActor } from '@/lib/audit';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 
 const MAX_EXPENSES_PER_REQUEST = 100;
 
@@ -96,6 +96,7 @@ function validateExpenseItem(item: ExpenseInput, index: number): string[] {
 
 export const POST = withIdempotency(withApiHandler({ permission: 'write', resource: 'expenses/bulk' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const body = await request.json();
 
     // Validate top-level structure
@@ -151,13 +152,14 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
       }
     }
 
-    // Validate all referenced events exist
+    // Validate all referenced events exist (scoped to org)
     const validEvents = new Map<string, string>(); // id -> name
     if (eventIds.size > 0) {
       const { data: events, error: eventsError } = await supabase
         .from('events')
         .select('id, name')
         .in('id', [...eventIds])
+        .eq('organization_id', orgId)
         .is('deleted_at', null);
 
       if (eventsError) {
@@ -169,13 +171,14 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
       }
     }
 
-    // Validate all referenced categories exist
+    // Validate all referenced categories exist (scoped to org)
     const validCategories = new Map<string, string>(); // id -> name
     if (categoryIds.size > 0) {
       const { data: categories, error: categoriesError } = await supabase
         .from('budget_categories')
         .select('id, name')
         .in('id', [...categoryIds])
+        .eq('organization_id', orgId)
         .is('deleted_at', null);
 
       if (categoriesError) {
@@ -218,6 +221,7 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
       const hasCategoryId = item.category_id && item.category_id !== '';
 
       return {
+        organization_id: orgId,
         event_id: hasEventId ? item.event_id : null,
         category_id: hasCategoryId ? item.category_id : null,
         amount: parseFloat(String(item.amount)),

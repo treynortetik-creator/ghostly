@@ -6,12 +6,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import { createHmac } from 'crypto';
 import type { Json } from '@/types/database';
 
 export const POST = withApiHandler({ permission: 'admin', resource: 'webhooks/test' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const body = await request.json();
 
     if (!body.webhook_id) {
@@ -24,6 +25,7 @@ export const POST = withApiHandler({ permission: 'admin', resource: 'webhooks/te
       .from('webhooks')
       .select('id, url, secret')
       .eq('id', body.webhook_id)
+      .eq('organization_id', orgId)
       .single();
 
     if (fetchError || !webhook) {

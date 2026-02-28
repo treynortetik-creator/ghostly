@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withIdempotency } from '@/lib/idempotency';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 
 interface CategoryWithTotals {
   id: string;
@@ -31,6 +31,7 @@ interface CategoryWithTotals {
 
 export const GET = withApiHandler({ permission: 'read', resource: 'categories' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const { searchParams } = new URL(request.url);
 
     // Parse filter parameters
@@ -74,6 +75,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'categories' }
     let query = supabase
       .from('budget_categories')
       .select('*', { count: 'exact' })
+      .eq('organization_id', orgId)
       .is('deleted_at', null);
 
     if (filters.fiscal_year_id) query = query.eq('fiscal_year_id', filters.fiscal_year_id);
@@ -86,6 +88,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'categories' }
       supabase
         .from('expenses')
         .select('category_id, amount')
+        .eq('organization_id', orgId)
         .not('category_id', 'is', null)
         .is('deleted_at', null),
     ]);
@@ -138,6 +141,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'categories' }
 export const POST = withIdempotency(
   withApiHandler({ permission: 'write', resource: 'categories' },
     async (request: NextRequest) => {
+      const orgId = getOrgId(request);
       const body = await request.json();
 
       // Validate required fields
@@ -175,6 +179,7 @@ export const POST = withIdempotency(
       const { data: existing } = await supabase
         .from('budget_categories')
         .select('id')
+        .eq('organization_id', orgId)
         .ilike('name', escapedName)
         .is('deleted_at', null);
 
@@ -188,6 +193,7 @@ export const POST = withIdempotency(
       const { data: newCategory, error: insertError } = await supabase
         .from('budget_categories')
         .insert({
+          organization_id: orgId,
           name: body.name,
           fiscal_year_id: body.fiscal_year_id || null,
           budget_amount: budgetAmount,

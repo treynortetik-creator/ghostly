@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { ExpenseSource } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
 import { withIdempotency } from '@/lib/idempotency';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 
 // ============================================
 // GET /api/expenses
@@ -18,6 +18,7 @@ import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 
 export const GET = withApiHandler({ permission: 'read', resource: 'expenses' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const { searchParams } = new URL(request.url);
 
     // Parse filter parameters
@@ -96,8 +97,8 @@ export const GET = withApiHandler({ permission: 'read', resource: 'expenses' },
 
     if (filters.fiscal_year_id) {
       const [{ data: fyEvents }, { data: fyCategories }] = await Promise.all([
-        supabase.from('events').select('id').eq('fiscal_year_id', filters.fiscal_year_id).is('deleted_at', null),
-        supabase.from('budget_categories').select('id').eq('fiscal_year_id', filters.fiscal_year_id).is('deleted_at', null),
+        supabase.from('events').select('id').eq('fiscal_year_id', filters.fiscal_year_id).eq('organization_id', orgId).is('deleted_at', null),
+        supabase.from('budget_categories').select('id').eq('fiscal_year_id', filters.fiscal_year_id).eq('organization_id', orgId).is('deleted_at', null),
       ]);
       fiscalEventIds = new Set((fyEvents ?? []).map(e => e.id));
       fiscalCategoryIds = new Set((fyCategories ?? []).map(c => c.id));
@@ -107,6 +108,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'expenses' },
     let query = supabase
       .from('expenses')
       .select('*, events(name), budget_categories(name)', { count: 'exact' })
+      .eq('organization_id', orgId)
       .is('deleted_at', null);
 
     // Apply filters
@@ -181,6 +183,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'expenses' },
     let sumQuery = supabase
       .from('expenses')
       .select('amount')
+      .eq('organization_id', orgId)
       .is('deleted_at', null);
 
     if (filters.event_id) sumQuery = sumQuery.eq('event_id', filters.event_id);
@@ -244,6 +247,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'expenses' },
 
 export const POST = withIdempotency(withApiHandler({ permission: 'write', resource: 'expenses' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const body = await request.json();
 
     // Validate required fields
@@ -326,6 +330,7 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
         .from('events')
         .select('id, name')
         .eq('id', body.event_id)
+        .eq('organization_id', orgId)
         .is('deleted_at', null)
         .single();
 
@@ -345,6 +350,7 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
         .from('budget_categories')
         .select('id, name')
         .eq('id', body.category_id)
+        .eq('organization_id', orgId)
         .is('deleted_at', null)
         .single();
 
@@ -361,6 +367,7 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
     const { data: newExpense, error: insertError } = await supabase
       .from('expenses')
       .insert({
+        organization_id: orgId,
         event_id: hasEventId ? body.event_id : null,
         category_id: hasCategoryId ? body.category_id : null,
         amount: amount,

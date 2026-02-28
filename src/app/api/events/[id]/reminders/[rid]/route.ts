@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string; rid: string }> };
 
@@ -14,9 +14,14 @@ const validStatuses = ['pending', 'sent', 'dismissed', 'snoozed'];
 
 export const PATCH = withApiHandler({ permission: 'write', resource: 'events/reminders' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id: eventId, rid } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
+
+    // Verify event belongs to org
+    const { data: eventCheck } = await supabase.from('events').select('id').eq('id', eventId).eq('organization_id', orgId).single();
+    if (!eventCheck) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
 
     const updates: Record<string, unknown> = {};
 

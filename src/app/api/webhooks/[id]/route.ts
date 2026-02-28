@@ -9,7 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 
 const VALID_EVENT_TYPES = [
   'expense.created',
@@ -59,12 +59,13 @@ type RouteContext = { params: Promise<{ id: string }> };
 // ============================================
 
 export const GET = withApiHandler({ permission: 'admin', resource: 'webhooks/[id]' },
-  async (_request: NextRequest, context: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const supabase = await createClient();
 
     const [webhookResult, deliveriesResult] = await Promise.all([
-      supabase.from('webhooks').select('*').eq('id', id).single(),
+      supabase.from('webhooks').select('*').eq('id', id).eq('organization_id', orgId).single(),
       supabase
         .from('webhook_deliveries')
         .select('*')
@@ -93,6 +94,7 @@ export const GET = withApiHandler({ permission: 'admin', resource: 'webhooks/[id
 
 export const PUT = withApiHandler({ permission: 'admin', resource: 'webhooks/[id]' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -102,6 +104,7 @@ export const PUT = withApiHandler({ permission: 'admin', resource: 'webhooks/[id
       .from('webhooks')
       .select('id')
       .eq('id', id)
+      .eq('organization_id', orgId)
       .single();
 
     if (fetchError || !existing) {
@@ -144,6 +147,7 @@ export const PUT = withApiHandler({ permission: 'admin', resource: 'webhooks/[id
       .from('webhooks')
       .update(update)
       .eq('id', id)
+      .eq('organization_id', orgId)
       .select()
       .single();
 
@@ -168,10 +172,11 @@ export const PUT = withApiHandler({ permission: 'admin', resource: 'webhooks/[id
 
 export const DELETE = withApiHandler({ permission: 'admin', resource: 'webhooks/[id]' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const supabase = await createClient();
 
-    const { error } = await supabase.from('webhooks').delete().eq('id', id);
+    const { error } = await supabase.from('webhooks').delete().eq('id', id).eq('organization_id', orgId);
 
     if (error) throw error;
 

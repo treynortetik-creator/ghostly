@@ -6,21 +6,23 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export const POST = withApiHandler({ permission: 'write', resource: 'events/reminders' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id: eventId } = await context.params;
     const body = await request.json().catch(() => ({}));
     const supabase = await createClient();
 
-    // Fetch event with date_start
+    // Fetch event with date_start (scoped to org)
     const { data: event, error: eventError } = await supabase
       .from('events')
       .select('id, name, date_start, event_type_id')
       .eq('id', eventId)
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .single();
 
@@ -44,6 +46,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/remi
       const { data: defaultTemplate } = await supabase
         .from('cadence_templates')
         .select('id')
+        .eq('organization_id', orgId)
         .eq('event_type_id', event.event_type_id)
         .eq('is_default', true)
         .limit(1)
@@ -54,6 +57,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/remi
         const { data: anyTemplate } = await supabase
           .from('cadence_templates')
           .select('id')
+          .eq('organization_id', orgId)
           .eq('event_type_id', event.event_type_id)
           .limit(1)
           .single();

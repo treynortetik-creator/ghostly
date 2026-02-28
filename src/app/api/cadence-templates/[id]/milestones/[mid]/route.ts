@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string; mid: string }> };
 
@@ -15,9 +15,14 @@ const validChannels = ['agent', 'in_app', 'both'];
 
 export const PUT = withApiHandler({ permission: 'write', resource: 'cadence-milestones' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id: templateId, mid } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
+
+    // Verify template belongs to org
+    const { data: templateCheck } = await supabase.from('cadence_templates').select('id').eq('id', templateId).eq('organization_id', orgId).single();
+    if (!templateCheck) return NextResponse.json({ error: 'Template not found' }, { status: 404 });
 
     const updates: Record<string, unknown> = {};
     if (body.title !== undefined) updates.title = body.title.trim();
@@ -54,9 +59,14 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'cadence-mile
 );
 
 export const DELETE = withApiHandler({ permission: 'write', resource: 'cadence-milestones' },
-  async (_request: NextRequest, context: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id: templateId, mid } = await context.params;
     const supabase = await createClient();
+
+    // Verify template belongs to org
+    const { data: templateCheck } = await supabase.from('cadence_templates').select('id').eq('id', templateId).eq('organization_id', orgId).single();
+    if (!templateCheck) return NextResponse.json({ error: 'Template not found' }, { status: 404 });
 
     const { error } = await supabase
       .from('cadence_milestones')

@@ -7,10 +7,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 
 export const GET = withApiHandler({ permission: 'read', resource: 'checklist-templates' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const { searchParams } = new URL(request.url);
     const modifiedAfter = searchParams.get('modified_after');
 
@@ -32,6 +33,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'checklist-tem
     let query = supabase
       .from('checklist_templates')
       .select('*')
+      .eq('organization_id', orgId)
       .is('deleted_at', null);
 
     if (filters.modified_after) query = query.gt('updated_at', filters.modified_after);
@@ -72,6 +74,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'checklist-tem
 
 export const POST = withApiHandler({ permission: 'write', resource: 'checklist-templates' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const body = await request.json();
 
     if (!body.name || String(body.name).trim() === '') {
@@ -83,6 +86,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'checklist-t
     const { data, error } = await supabase
       .from('checklist_templates')
       .insert({
+        organization_id: orgId,
         name: body.name.trim(),
         event_type: body.event_type?.trim() || null,
         is_default: body.is_default || false,

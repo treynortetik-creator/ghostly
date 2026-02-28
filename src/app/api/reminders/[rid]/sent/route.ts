@@ -6,14 +6,37 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ rid: string }> };
 
 export const PATCH = withApiHandler({ permission: 'write', resource: 'reminders/[rid]/sent' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { rid } = await context.params;
     const supabase = await createClient();
+
+    // First verify the reminder belongs to an event in this org
+    const { data: reminder } = await supabase
+      .from('event_reminders')
+      .select('event_id')
+      .eq('id', rid)
+      .single();
+
+    if (!reminder) {
+      return NextResponse.json({ error: 'Reminder not found or already sent' }, { status: 404 });
+    }
+
+    const { data: eventCheck } = await supabase
+      .from('events')
+      .select('id')
+      .eq('id', reminder.event_id)
+      .eq('organization_id', orgId)
+      .single();
+
+    if (!eventCheck) {
+      return NextResponse.json({ error: 'Reminder not found or already sent' }, { status: 404 });
+    }
 
     const { data, error } = await supabase
       .from('event_reminders')

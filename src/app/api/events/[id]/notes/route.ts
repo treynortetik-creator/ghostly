@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -15,11 +15,16 @@ const validNoteTypes = ['competitor_alert', 'general', 'logistics', 'budget', 'p
 
 export const GET = withApiHandler({ permission: 'read', resource: 'events/notes' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id: eventId } = await context.params;
     const { searchParams } = new URL(request.url);
     const noteType = searchParams.get('note_type');
     const pinned = searchParams.get('pinned');
     const supabase = await createClient();
+
+    // Verify event belongs to org
+    const { data: eventCheck } = await supabase.from('events').select('id').eq('id', eventId).eq('organization_id', orgId).single();
+    if (!eventCheck) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
 
     let query = supabase
       .from('event_notes')
@@ -48,6 +53,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/notes'
 
 export const POST = withApiHandler({ permission: 'write', resource: 'events/notes' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id: eventId } = await context.params;
     const body = await request.json();
     const supabase = await createClient();
@@ -65,11 +71,12 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/note
       return NextResponse.json({ error: `note_type must be one of: ${validNoteTypes.join(', ')}` }, { status: 400 });
     }
 
-    // Verify event exists
+    // Verify event exists and belongs to org
     const { data: event, error: eventError } = await supabase
       .from('events')
       .select('id')
       .eq('id', eventId)
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .single();
 

@@ -9,7 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 import type { AuditEntityType } from '@/lib/audit';
 import type { Json } from '@/types/database';
 
@@ -39,13 +39,15 @@ interface PromptsResponse {
 // ============================================
 
 export const GET = withApiHandler({ permission: 'admin', resource: 'settings' },
-  async () => {
+  async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const supabase = await createClient();
 
     // Fetch app config from app_settings table
     const { data: settingsRow, error: settingsError } = await supabase
       .from('app_settings')
       .select('*')
+      .eq('organization_id', orgId)
       .eq('key', 'app_config')
       .single();
 
@@ -88,7 +90,7 @@ export const GET = withApiHandler({ permission: 'admin', resource: 'settings' },
     }
 
     // Fetch custom AI prompts
-    const prompts = await fetchPrompts(supabase);
+    const prompts = await fetchPrompts(supabase, orgId);
 
     return NextResponse.json({
       settings,
@@ -104,6 +106,7 @@ export const GET = withApiHandler({ permission: 'admin', resource: 'settings' },
 
 export const PUT = withApiHandler({ permission: 'admin', resource: 'settings' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const body = await request.json();
     const supabase = await createClient();
 
@@ -146,6 +149,7 @@ export const PUT = withApiHandler({ permission: 'admin', resource: 'settings' },
     const { data: currentRow } = await supabase
       .from('app_settings')
       .select('value')
+      .eq('organization_id', orgId)
       .eq('key', 'app_config')
       .single();
 
@@ -167,11 +171,12 @@ export const PUT = withApiHandler({ permission: 'admin', resource: 'settings' },
     const { error: updateError } = await supabase
       .from('app_settings')
       .upsert({
+        organization_id: orgId,
         key: 'app_config',
         value: updatedSettings as Json,
         updated_at: new Date().toISOString(),
       }, {
-        onConflict: 'key',
+        onConflict: 'organization_id,key',
       });
 
     if (updateError) {
@@ -196,11 +201,12 @@ export const PUT = withApiHandler({ permission: 'admin', resource: 'settings' },
           const { error: promptError } = await supabase
             .from('app_settings')
             .upsert({
+              organization_id: orgId,
               key: dbKey,
               value: { prompt: value.trim() } as unknown as Json,
               updated_at: new Date().toISOString(),
             }, {
-              onConflict: 'key',
+              onConflict: 'organization_id,key',
             });
 
           if (promptError) {
@@ -211,6 +217,7 @@ export const PUT = withApiHandler({ permission: 'admin', resource: 'settings' },
           await supabase
             .from('app_settings')
             .delete()
+            .eq('organization_id', orgId)
             .eq('key', dbKey);
         }
       }
@@ -228,7 +235,7 @@ export const PUT = withApiHandler({ permission: 'admin', resource: 'settings' },
     }
 
     // Fetch updated prompts
-    const prompts = await fetchPrompts(supabase);
+    const prompts = await fetchPrompts(supabase, orgId);
 
     // Audit log
     await auditMutation(request, {
@@ -254,6 +261,7 @@ export const PUT = withApiHandler({ permission: 'admin', resource: 'settings' },
 
 export const DELETE = withApiHandler({ permission: 'admin', resource: 'settings' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const { searchParams } = new URL(request.url);
     const promptKey = searchParams.get('prompt_key');
 
@@ -269,6 +277,7 @@ export const DELETE = withApiHandler({ permission: 'admin', resource: 'settings'
     const { error } = await supabase
       .from('app_settings')
       .delete()
+      .eq('organization_id', orgId)
       .eq('key', promptKey);
 
     if (error) {
@@ -293,10 +302,11 @@ export const DELETE = withApiHandler({ permission: 'admin', resource: 'settings'
 // Helper: Fetch custom AI prompts
 // ============================================
 
-async function fetchPrompts(supabase: Awaited<ReturnType<typeof createClient>>): Promise<PromptsResponse> {
+async function fetchPrompts(supabase: Awaited<ReturnType<typeof createClient>>, orgId: string): Promise<PromptsResponse> {
   const { data: promptRows } = await supabase
     .from('app_settings')
     .select('key, value')
+    .eq('organization_id', orgId)
     .in('key', [...PROMPT_KEYS]);
 
   const prompts: PromptsResponse = {

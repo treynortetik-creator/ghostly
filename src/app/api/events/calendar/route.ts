@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import { startOfMonth, endOfMonth, parseISO, format, isBefore } from 'date-fns';
 import type { EventTypeRecord } from '@/types/database';
 
@@ -16,6 +16,7 @@ import type { EventTypeRecord } from '@/types/database';
 
 export const GET = withApiHandler({ permission: 'read', resource: 'events/calendar' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const { searchParams } = new URL(request.url);
     const month = searchParams.get('month');
 
@@ -44,11 +45,12 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/calend
 
     const supabase = await createClient();
 
-    // Fetch events that overlap the month, expenses, and checklist items in parallel
+    // Fetch events that overlap the month, expenses, and checklist items in parallel (scoped to org)
     const [eventsResult, expenseTotalsResult, checklistResult] = await Promise.all([
       supabase
         .from('events')
         .select('*, event_types(*)')
+        .eq('organization_id', orgId)
         .is('deleted_at', null)
         .not('date_start', 'is', null)
         .lte('date_start', endDateStr)
@@ -56,6 +58,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/calend
       supabase
         .from('expenses')
         .select('event_id, amount')
+        .eq('organization_id', orgId)
         .not('event_id', 'is', null)
         .is('deleted_at', null),
       supabase

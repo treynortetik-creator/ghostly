@@ -6,11 +6,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler } from '@/lib/api-helpers';
+import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import type { EventTypeRecord } from '@/types/database';
 
 export const GET = withApiHandler({ permission: 'read', resource: 'events/upcoming' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const { searchParams } = new URL(request.url);
 
     const daysParam = searchParams.get('days');
@@ -32,11 +33,12 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/upcomi
 
     const supabase = await createClient();
 
-    // Fetch upcoming events, expenses, checklist items, and team counts in parallel
+    // Fetch upcoming events, expenses, checklist items, and team counts in parallel (scoped to org)
     const [eventsResult, expenseTotalsResult, checklistResult, teamCountsResult] = await Promise.all([
       supabase
         .from('events')
         .select('*, event_types(*)')
+        .eq('organization_id', orgId)
         .is('deleted_at', null)
         .gte('date_start', todayISO)
         .lte('date_start', cutoffISO)
@@ -44,6 +46,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/upcomi
       supabase
         .from('expenses')
         .select('event_id, amount')
+        .eq('organization_id', orgId)
         .not('event_id', 'is', null)
         .is('deleted_at', null),
       supabase

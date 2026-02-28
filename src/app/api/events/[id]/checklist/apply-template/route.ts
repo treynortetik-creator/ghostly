@@ -6,12 +6,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export const POST = withApiHandler({ permission: 'write', resource: 'events/checklist' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id: eventId } = await context.params;
     const body = await request.json();
 
@@ -20,6 +21,10 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/chec
     }
 
     const supabase = await createClient();
+
+    // Verify event belongs to org
+    const { data: eventCheck } = await supabase.from('events').select('id').eq('id', eventId).eq('organization_id', orgId).single();
+    if (!eventCheck) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
 
     // Fetch the template items
     const { data: templateItems, error: templateError } = await supabase

@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -18,7 +18,8 @@ type RouteContext = { params: Promise<{ id: string }> };
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const GET = withApiHandler({ permission: 'read', resource: 'documents' },
-  async (_request: NextRequest, context: RouteContext) => {
+  async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -26,6 +27,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'documents' },
       .from('documents')
       .select('*, events(name), expenses(vendor)')
       .eq('id', id)
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .single();
 
@@ -51,6 +53,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'documents' },
 
 export const DELETE = withApiHandler({ permission: 'write', resource: 'documents' },
   async (request: NextRequest, context: RouteContext) => {
+    const orgId = getOrgId(request);
     const { id } = await context.params;
     const supabase = await createClient();
 
@@ -59,6 +62,7 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'documents
       .from('documents')
       .select('id, filename')
       .eq('id', id)
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .single();
 
@@ -73,7 +77,8 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'documents
     const { error: updateError } = await supabase
       .from('documents')
       .update({ deleted_at: new Date().toISOString() })
-      .eq('id', id);
+      .eq('id', id)
+      .eq('organization_id', orgId);
 
     if (updateError) {
       throw updateError;
