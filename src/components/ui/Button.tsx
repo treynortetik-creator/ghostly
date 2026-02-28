@@ -5,114 +5,109 @@ import { cn } from "@/lib/utils";
 /* ============================================
    BUTTON COMPONENT
    ============================================
-   Victorian-styled buttons with wood tones,
-   brass accents, and subtle pressed effects.
-   Designed to feel like carved wood or
-   embossed leather book covers.
+   Ghostly ethereal buttons with glass-morphism
+   and spectral glow.
    ============================================ */
 
 const buttonVariants = cva(
   /* Base styles */
   `inline-flex items-center justify-center gap-2 whitespace-nowrap
    font-medium transition-all duration-200
-   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink-gold focus-visible:ring-offset-2 focus-visible:ring-offset-parchment
+   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-spectral focus-visible:ring-offset-2 focus-visible:ring-offset-background
    disabled:pointer-events-none disabled:opacity-50
    active:scale-[0.98]`,
   {
     variants: {
       variant: {
-        /* Primary - Dark mahogany wood */
+        /* Primary - Spectral purple gradient */
         primary: `
-          bg-gradient-to-b from-wood-dark to-[#2d1a0e]
-          text-parchment border border-wood-medium/50
-          shadow-md hover:shadow-lg
-          hover:from-[#4a2a1a] hover:to-wood-dark
-          active:from-[#2d1a0e] active:to-[#1f1108]
-          dark:from-[#c4b898] dark:to-[#a89878]
-          dark:text-[#1a1612] dark:border-[#7a6350]/50
-          dark:hover:from-[#d4c9b0] dark:hover:to-[#c4b898]
-          dark:active:from-[#a89878] dark:active:to-[#9a8a6a]
+          bg-gradient-to-b from-spectral to-spectral/80
+          text-primary-foreground border border-spectral/50
+          shadow-md hover:shadow-lg hover:shadow-spectral/20
+          hover:from-spectral-light hover:to-spectral
+          active:from-spectral/70 active:to-spectral/60
+          dark:from-spectral dark:to-spectral/80
+          dark:text-primary-foreground dark:border-spectral/30
+          dark:hover:from-spectral-light dark:hover:to-spectral
+          dark:active:from-spectral/70 dark:active:to-spectral/60
         `,
 
-        /* Secondary - Light parchment */
+        /* Secondary - Glass-morphism */
         secondary: `
-          bg-gradient-to-b from-parchment to-parchment-dark
-          text-wood-dark border border-wood-medium/40
+          bg-secondary/80 backdrop-blur-sm
+          text-secondary-foreground border border-border
           shadow-sm hover:shadow-md
-          hover:from-parchment-dark hover:to-[#ddd5c3]
-          active:from-[#ddd5c3] active:to-parchment-dark
-          dark:from-[#2e281f] dark:to-[#242018]
-          dark:text-[#d4c9b0] dark:border-[#7a6350]/40
-          dark:hover:from-[#3a3228] dark:hover:to-[#2e281f]
-          dark:active:from-[#242018] dark:active:to-[#1e1a14]
+          hover:bg-secondary
+          active:bg-secondary/60
+          dark:bg-ghost-light/80 dark:text-phantom
+          dark:border-white/10 dark:backdrop-blur-sm
+          dark:hover:bg-ghost-light dark:hover:border-spectral/20
+          dark:active:bg-ghost-light/60
         `,
 
         /* Ghost - Minimal, for nav items */
         ghost: `
-          bg-transparent text-wood-dark
-          hover:bg-wood-medium/10 hover:text-wood-dark
-          active:bg-wood-medium/20
-          dark:text-[#d4c9b0]
-          dark:hover:bg-[#7a6350]/15 dark:hover:text-[#d4c9b0]
-          dark:active:bg-[#7a6350]/25
+          bg-transparent text-foreground
+          hover:bg-spectral/10 hover:text-foreground
+          active:bg-spectral/15
+          dark:text-phantom
+          dark:hover:bg-spectral/10 dark:hover:text-phantom
+          dark:active:bg-spectral/15
         `,
 
         /* Outline - Bordered */
         outline: `
-          bg-transparent border-2 border-wood-medium
-          text-wood-dark
-          hover:bg-wood-medium/10
-          active:bg-wood-medium/20
-          dark:border-[#7a6350] dark:text-[#d4c9b0]
-          dark:hover:bg-[#7a6350]/15
-          dark:active:bg-[#7a6350]/25
+          bg-transparent border-2 border-border
+          text-foreground
+          hover:bg-spectral/10
+          active:bg-spectral/15
+          dark:border-spectral/30 dark:text-phantom
+          dark:hover:bg-spectral/10
+          dark:active:bg-spectral/15
         `,
 
-        /* Destructive - Ledger red for danger actions */
+        /* Destructive - Red for danger actions */
         destructive: `
-          bg-gradient-to-b from-ink-red to-[#6b1d00]
-          text-parchment border border-ink-red/50
+          bg-gradient-to-b from-destructive to-destructive/80
+          text-white border border-destructive/50
           shadow-md hover:shadow-lg
-          hover:from-[#9b2d0a] hover:to-ink-red
-          active:from-[#6b1d00] active:to-[#4a1400]
-          dark:from-[#c44425] dark:to-[#9b2d0a]
-          dark:text-[#fce8e0] dark:border-[#c44425]/40
-          dark:hover:from-[#d4553a] dark:hover:to-[#c44425]
-          dark:active:from-[#9b2d0a] dark:active:to-[#7a2008]
+          hover:from-red-400 hover:to-destructive
+          active:from-destructive/80 active:to-destructive/60
+          dark:from-destructive dark:to-destructive/80
+          dark:text-white dark:border-destructive/30
+          dark:hover:from-red-400 dark:hover:to-destructive
         `,
 
-        /* Success - Ledger green for confirmations */
+        /* Success - Emerald for confirmations */
         success: `
-          bg-gradient-to-b from-ink-green to-[#123620]
-          text-parchment border border-ink-green/50
+          bg-gradient-to-b from-emerald-500 to-emerald-600
+          text-white border border-emerald-500/50
           shadow-md hover:shadow-lg
-          hover:from-[#1f5733] hover:to-ink-green
-          active:from-[#123620] active:to-[#0d2617]
-          dark:from-[#2d8a5e] dark:to-[#1f6344]
-          dark:text-[#e0f5ea] dark:border-[#2d8a5e]/40
-          dark:hover:from-[#35a06e] dark:hover:to-[#2d8a5e]
-          dark:active:from-[#1f6344] dark:active:to-[#174a33]
+          hover:from-emerald-400 hover:to-emerald-500
+          active:from-emerald-600 active:to-emerald-700
+          dark:from-emerald-500 dark:to-emerald-600
+          dark:text-white dark:border-emerald-500/30
+          dark:hover:from-emerald-400 dark:hover:to-emerald-500
         `,
 
-        /* Gold - Accent button for special actions */
-        gold: `
-          bg-gradient-to-b from-ink-gold to-[#8a6508]
-          text-ink-black border border-ink-gold/50
-          shadow-md hover:shadow-lg
-          hover:from-[#c9970d] hover:to-ink-gold
-          active:from-[#8a6508] active:to-[#6b4e06]
-          dark:from-[#d4a017] dark:to-[#b8860b]
-          dark:text-[#1a1612] dark:border-[#d4a017]/40
-          dark:hover:from-[#e0b020] dark:hover:to-[#d4a017]
-          dark:active:from-[#b8860b] dark:active:to-[#8a6508]
+        /* Accent - Spectral to ether gradient for special actions */
+        accent: `
+          bg-gradient-to-r from-spectral to-ether
+          text-white border border-spectral/50
+          shadow-md hover:shadow-lg hover:shadow-spectral/20
+          hover:from-spectral-light hover:to-ether-light
+          active:from-spectral/80 active:to-ether/80
+          dark:from-spectral dark:to-ether
+          dark:text-white dark:border-spectral/30
+          dark:hover:from-spectral-light dark:hover:to-ether-light
         `,
 
         /* Link - Text-only link style */
         link: `
-          bg-transparent text-ink-gold underline-offset-4
-          hover:underline hover:text-wood-dark
+          bg-transparent text-spectral underline-offset-4
+          hover:underline hover:text-spectral-light
           p-0 h-auto
-          dark:text-[#d4a017] dark:hover:text-[#d4c9b0]
+          dark:text-spectral-light dark:hover:text-spectral-soft
         `,
       },
       size: {

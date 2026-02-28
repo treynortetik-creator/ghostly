@@ -6,8 +6,8 @@
  * for use with Claude Desktop, Cursor, and other MCP-compatible AI clients.
  *
  * Required env vars:
- *   COUNTING_HOUSE_URL      - Base URL of your Ghostly instance
- *   COUNTING_HOUSE_API_KEY  - API key from Ghostly Settings → API Keys
+ *   GHOSTLY_URL      - Base URL of your Ghostly instance
+ *   GHOSTLY_API_KEY  - API key from Ghostly Settings → API Keys
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -16,39 +16,39 @@ import { z } from "zod";
 
 // ─── Configuration ────────────────────────────────────────────────────────────
 
-const COUNTING_HOUSE_URL = process.env.COUNTING_HOUSE_URL;
-const COUNTING_HOUSE_API_KEY = process.env.COUNTING_HOUSE_API_KEY;
+const GHOSTLY_URL = process.env.GHOSTLY_URL;
+const GHOSTLY_API_KEY = process.env.GHOSTLY_API_KEY;
 
-if (!COUNTING_HOUSE_URL) {
+if (!GHOSTLY_URL) {
   console.error(
-    "Error: COUNTING_HOUSE_URL environment variable is required.\n" +
-    "Set it to the base URL of your Counting House instance.\n" +
-    "Example: COUNTING_HOUSE_URL=https://counting-house.railway.app"
+    "Error: GHOSTLY_URL environment variable is required.\n" +
+    "Set it to the base URL of your Ghostly instance.\n" +
+    "Example: GHOSTLY_URL=https://ghostly.railway.app"
   );
   process.exit(1);
 }
 
-if (!COUNTING_HOUSE_API_KEY) {
+if (!GHOSTLY_API_KEY) {
   console.error(
-    "Error: COUNTING_HOUSE_API_KEY environment variable is required.\n" +
-    "Create an API key in Counting House: Settings → API Keys → Create.\n" +
-    "Example: COUNTING_HOUSE_API_KEY=ch_live_xxxxxxxxxxxx"
+    "Error: GHOSTLY_API_KEY environment variable is required.\n" +
+    "Create an API key in Ghostly: Settings → API Keys → Create.\n" +
+    "Example: GHOSTLY_API_KEY=gh_live_xxxxxxxxxxxx"
   );
   process.exit(1);
 }
 
 // ─── HTTP Helper ──────────────────────────────────────────────────────────────
 
-async function countingHouseRequest(
+async function ghostlyRequest(
   method: string,
   path: string,
   body?: unknown
 ): Promise<unknown> {
-  const url = `${COUNTING_HOUSE_URL}${path}`;
+  const url = `${GHOSTLY_URL}${path}`;
   const options: RequestInit = {
     method,
     headers: {
-      "x-api-key": COUNTING_HOUSE_API_KEY!,
+      "x-api-key": GHOSTLY_API_KEY!,
       "Content-Type": "application/json",
     },
   };
@@ -92,7 +92,7 @@ server.tool(
   {},
   async () => {
     try {
-      const result = await countingHouseRequest("GET", "/api/event-types");
+      const result = await ghostlyRequest("GET", "/api/event-types");
       const types = (result as { event_types?: unknown[] })?.event_types ?? result;
       return {
         content: [
@@ -144,7 +144,7 @@ server.tool(
       params.set("per_page", String(input.per_page ?? 20));
 
       const path = `/api/events?${params.toString()}`;
-      const result = await countingHouseRequest("GET", path);
+      const result = await ghostlyRequest("GET", path);
 
       const summary = ((result as { events?: unknown[] })?.events ?? []).map(
         (e: unknown) => {
@@ -190,7 +190,7 @@ server.tool(
 
 server.tool(
   "create_event",
-  "Create a new event in Shindig. Use list_event_types first to get a valid event_type_id. " +
+  "Create a new event in Ghostly. Use list_event_types first to get a valid event_type_id. " +
   "Quarter must be Q1, Q2, Q3, Q4, or TBD. budget_amount is in dollars.",
   {
     name: z.string().max(200).describe("Event name (max 200 chars)"),
@@ -238,7 +238,7 @@ server.tool(
   },
   async (input) => {
     try {
-      const result = await countingHouseRequest("POST", "/api/events", {
+      const result = await ghostlyRequest("POST", "/api/events", {
         name: input.name,
         event_type_id: input.event_type_id,
         quarter: input.quarter,
@@ -345,7 +345,7 @@ server.tool(
   },
   async (input) => {
     try {
-      const result = await countingHouseRequest("POST", "/api/expenses", {
+      const result = await ghostlyRequest("POST", "/api/expenses", {
         event_id: input.event_id,
         amount: input.amount,
         expense_date: input.expense_date,
@@ -407,7 +407,7 @@ server.tool(
       const today = new Date().toISOString().split("T")[0];
       const memo = `Vendor assignment${input.notes ? `: ${input.notes}` : ""}`;
 
-      const result = await countingHouseRequest("POST", "/api/expenses", {
+      const result = await ghostlyRequest("POST", "/api/expenses", {
         event_id: input.event_id,
         vendor: input.vendor_name,
         amount: input.estimated_amount ?? 0,

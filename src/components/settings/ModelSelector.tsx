@@ -17,7 +17,7 @@ import type { OpenRouterModel } from "@/lib/openrouter";
    ============================================
    Dropdown to select the AI model for transaction
    categorization. Shows pricing and capabilities.
-   Victorian theme: "The Mechanical Oracle"
+   Ghostly theme: "The Mechanical Oracle"
    ============================================ */
 
 interface ModelSelectorProps {
@@ -116,10 +116,10 @@ export function ModelSelector({
           className="text-lg flex items-center gap-2"
           data-oid="7otjv-y"
         >
-          <Bot className="w-5 h-5 text-ink-gold" data-oid="anvr9t." />
+          <Bot className="w-5 h-5 text-spectral" data-oid="anvr9t." />
           AI Model
         </CardTitle>
-        <p className="text-sm text-sepia mt-1" data-oid="8_f57g.">
+        <p className="text-sm text-muted-foreground mt-1" data-oid="8_f57g.">
           Select the model for automatic transaction categorization
         </p>
       </CardHeader>
@@ -133,15 +133,15 @@ export function ModelSelector({
             disabled={disabled || isLoading}
             className={`
               w-full flex items-center justify-between px-4 py-3
-              bg-parchment border border-wood-medium/40 rounded-md
-              text-wood-dark font-medium
+              bg-background border border-border rounded-md
+              text-foreground font-medium
               transition-all duration-200
               ${
                 disabled || isLoading
                   ? "opacity-50 cursor-not-allowed"
-                  : "hover:border-wood-medium cursor-pointer"
+                  : "hover:border-border cursor-pointer"
               }
-              ${isOpen ? "border-ink-gold ring-1 ring-ink-gold/30" : ""}
+              ${isOpen ? "border-spectral ring-1 ring-spectral/30" : ""}
             `}
             data-oid="nhscnm9"
           >
@@ -150,7 +150,7 @@ export function ModelSelector({
               data-oid="cnwnxzm"
             >
               {isLoading ? (
-                <span className="text-sepia" data-oid="wa47vl4">
+                <span className="text-muted-foreground" data-oid="wa47vl4">
                   Loading models...
                 </span>
               ) : selectedModel ? (
@@ -162,13 +162,13 @@ export function ModelSelector({
                   {value}
                 </span>
               ) : (
-                <span className="text-sepia" data-oid="vhvie9.">
+                <span className="text-muted-foreground" data-oid="vhvie9.">
                   Select a model
                 </span>
               )}
             </span>
             <ChevronDown
-              className={`w-5 h-5 text-sepia flex-shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
+              className={`w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
               data-oid="lbd5.u-"
             />
           </button>
@@ -177,12 +177,12 @@ export function ModelSelector({
           {isOpen && (
             <div
               className="absolute top-full left-0 right-0 mt-1 z-10
-              bg-parchment border border-wood-medium/40 rounded-md shadow-lg"
+              bg-background border border-border rounded-md shadow-lg"
               data-oid="5udoe-p"
             >
               {/* Search & Filter */}
               <div
-                className="p-3 border-b border-wood-medium/20 space-y-2"
+                className="p-3 border-b border-border space-y-2"
                 data-oid="-ogo2yz"
               >
                 <input
@@ -190,9 +190,9 @@ export function ModelSelector({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search models..."
-                  className="w-full px-3 py-2 bg-parchment-dark border border-wood-medium/40
-                    rounded text-sm text-wood-dark
-                    focus:outline-none focus:ring-1 focus:ring-ink-gold"
+                  className="w-full px-3 py-2 bg-card border border-border
+                    rounded text-sm text-foreground
+                    focus:outline-none focus:ring-1 focus:ring-spectral"
                   data-oid="ek017e6"
                 />
 
@@ -202,8 +202,8 @@ export function ModelSelector({
                     onClick={() => setFilter("recommended")}
                     className={`px-3 py-1 text-xs rounded-full transition-colors ${
                       filter === "recommended"
-                        ? "bg-ink-gold text-ink-black"
-                        : "bg-wood-medium/20 text-sepia hover:bg-wood-medium/30"
+                        ? "bg-spectral text-foreground"
+                        : "bg-spectral/10 text-muted-foreground hover:bg-spectral/10"
                     }`}
                     data-oid="dcl45vc"
                   >
@@ -214,8 +214,8 @@ export function ModelSelector({
                     onClick={() => setFilter("all")}
                     className={`px-3 py-1 text-xs rounded-full transition-colors ${
                       filter === "all"
-                        ? "bg-ink-gold text-ink-black"
-                        : "bg-wood-medium/20 text-sepia hover:bg-wood-medium/30"
+                        ? "bg-spectral text-foreground"
+                        : "bg-spectral/10 text-muted-foreground hover:bg-spectral/10"
                     }`}
                     data-oid="cd7is:k"
                   >
@@ -228,7 +228,7 @@ export function ModelSelector({
               <div className="max-h-64 overflow-y-auto" data-oid="tjoi3-5">
                 {filteredModels.length === 0 ? (
                   <div
-                    className="px-4 py-6 text-center text-sepia"
+                    className="px-4 py-6 text-center text-muted-foreground"
                     data-oid="bqaqvgy"
                   >
                     No models found
@@ -251,8 +251,8 @@ export function ModelSelector({
                           w-full flex flex-col px-4 py-3 text-left transition-colors
                           ${
                             model.id === value
-                              ? "bg-ink-gold/10"
-                              : "hover:bg-wood-medium/10"
+                              ? "bg-spectral/10"
+                              : "hover:bg-spectral/10"
                           }
                         `}
                         data-oid="dgg9rs:"
@@ -262,26 +262,26 @@ export function ModelSelector({
                           data-oid="5e3-ric"
                         >
                           <span
-                            className="font-medium text-wood-dark flex items-center gap-2"
+                            className="font-medium text-foreground flex items-center gap-2"
                             data-oid="i26ef9c"
                           >
                             {model.name || model.id}
                             {isRecommended && (
                               <Zap
-                                className="w-3 h-3 text-ink-gold"
+                                className="w-3 h-3 text-spectral"
                                 data-oid="oc0dfua"
                               />
                             )}
                           </span>
                           {model.id === value && (
                             <Check
-                              className="w-4 h-4 text-ink-gold flex-shrink-0"
+                              className="w-4 h-4 text-spectral flex-shrink-0"
                               data-oid="ysm9v46"
                             />
                           )}
                         </div>
                         <div
-                          className="flex items-center gap-3 mt-1 text-xs text-sepia"
+                          className="flex items-center gap-3 mt-1 text-xs text-muted-foreground"
                           data-oid="4rd4zf."
                         >
                           <span
@@ -294,7 +294,7 @@ export function ModelSelector({
                             />
                             {formatPrice(model.pricing.prompt)}/1K tokens
                           </span>
-                          <span className="text-sepia/50" data-oid="oj9q2-u">
+                          <span className="text-muted-foreground/60" data-oid="oj9q2-u">
                             |
                           </span>
                           <span data-oid="z11vvj9">
@@ -303,7 +303,7 @@ export function ModelSelector({
                         </div>
                         {model.description && (
                           <p
-                            className="text-xs text-sepia/70 mt-1 line-clamp-1"
+                            className="text-xs text-muted-foreground/60 mt-1 line-clamp-1"
                             data-oid="oc:qzp8"
                           >
                             {model.description}
@@ -321,7 +321,7 @@ export function ModelSelector({
         {/* Error Message */}
         {error && (
           <div
-            className="mt-2 flex items-center gap-2 text-sm text-ink-red"
+            className="mt-2 flex items-center gap-2 text-sm text-destructive"
             data-oid="s80:3x5"
           >
             <AlertCircle className="w-4 h-4" data-oid="xzqnz4k" />
@@ -332,18 +332,18 @@ export function ModelSelector({
         {/* Selected Model Info */}
         {selectedModel && !isOpen && (
           <div
-            className="mt-3 p-3 bg-wood-medium/5 rounded border border-wood-medium/20"
+            className="mt-3 p-3 bg-spectral/10 rounded border border-border"
             data-oid="9ruzrkq"
           >
             <div
               className="flex items-center justify-between text-sm"
               data-oid="o75ubml"
             >
-              <span className="text-sepia" data-oid="6snl_4g">
+              <span className="text-muted-foreground" data-oid="6snl_4g">
                 Model ID:
               </span>
               <code
-                className="text-wood-dark font-mono text-xs bg-parchment-dark px-2 py-0.5 rounded"
+                className="text-foreground font-mono text-xs bg-card px-2 py-0.5 rounded"
                 data-oid="gpo9jqa"
               >
                 {selectedModel.id}
@@ -353,10 +353,10 @@ export function ModelSelector({
               className="flex items-center justify-between text-sm mt-2"
               data-oid="i5j914e"
             >
-              <span className="text-sepia" data-oid="zd19v4i">
+              <span className="text-muted-foreground" data-oid="zd19v4i">
                 Cost per 1K input tokens:
               </span>
-              <span className="text-wood-dark" data-oid="v8.q1tz">
+              <span className="text-foreground" data-oid="v8.q1tz">
                 {formatPrice(selectedModel.pricing.prompt)}
               </span>
             </div>
@@ -364,10 +364,10 @@ export function ModelSelector({
               className="flex items-center justify-between text-sm mt-1"
               data-oid="v488e6t"
             >
-              <span className="text-sepia" data-oid="zrwn5kl">
+              <span className="text-muted-foreground" data-oid="zrwn5kl">
                 Cost per 1K output tokens:
               </span>
-              <span className="text-wood-dark" data-oid="60f8tnv">
+              <span className="text-foreground" data-oid="60f8tnv">
                 {formatPrice(selectedModel.pricing.completion)}
               </span>
             </div>
@@ -375,7 +375,7 @@ export function ModelSelector({
         )}
 
         {/* Help Text */}
-        <p className="mt-3 text-xs text-sepia/70" data-oid="5dmjv9w">
+        <p className="mt-3 text-xs text-muted-foreground/60" data-oid="5dmjv9w">
           Recommended models offer the best balance of speed, accuracy, and cost
           for categorization tasks.
         </p>

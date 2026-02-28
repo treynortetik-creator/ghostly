@@ -1,5 +1,5 @@
 /**
- * The Counting House - Audit Log API
+ * Ghostly - Audit Log API
  *
  * Endpoints:
  * GET /api/audit-log - Query audit log entries

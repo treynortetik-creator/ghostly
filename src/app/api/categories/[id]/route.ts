@@ -1,5 +1,5 @@
 /**
- * The Counting House - Single Category API
+ * Ghostly - Single Category API
  *
  * Endpoints:
  * GET /api/categories/[id] - Get a single category with its expenses

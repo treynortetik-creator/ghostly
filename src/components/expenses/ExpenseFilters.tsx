@@ -8,7 +8,7 @@ import { sourceTypeLabels } from "@/types/database";
 /* ============================================
    EXPENSE FILTERS COMPONENT
    ============================================
-   Victorian-styled filter controls for the expenses list.
+   Ghostly-themed filter controls for the expenses list.
    Includes filters for event, category, date range, and vendor search.
    ============================================ */
 
@@ -45,9 +45,9 @@ export function ExpenseFilters({
 }: ExpenseFiltersProps) {
   const selectClasses = `
     px-3 py-2 rounded-md
-    bg-parchment border border-wood-medium/40
-    text-ink-black text-sm
-    focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold
+    bg-background border border-border
+    text-foreground text-sm
+    focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral
     transition-colors duration-200
     cursor-pointer
     appearance-none
@@ -60,9 +60,9 @@ export function ExpenseFilters({
 
   const inputClasses = `
     px-3 py-2 rounded-md
-    bg-parchment border border-wood-medium/40
-    text-ink-black text-sm placeholder-sepia/50
-    focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold
+    bg-background border border-border
+    text-foreground text-sm placeholder-muted-foreground/50
+    focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral
     transition-colors duration-200
   `;
 
@@ -88,7 +88,7 @@ export function ExpenseFilters({
       <div className="flex flex-col lg:flex-row gap-4" data-oid="19biyw7">
         {/* Filter icon and label */}
         <div
-          className="flex items-center gap-2 text-sepia shrink-0"
+          className="flex items-center gap-2 text-muted-foreground shrink-0"
           data-oid="cgnxjmp"
         >
           <Filter className="w-4 h-4" data-oid="okbhtho" />
@@ -190,13 +190,13 @@ export function ExpenseFilters({
               variant="ghost"
               size="sm"
               onClick={onClearFilters}
-              className="text-sepia hover:text-ink-red"
+              className="text-muted-foreground hover:text-destructive"
               data-oid="cyudipp"
             >
               <X className="w-4 h-4 mr-1" data-oid="-2ihc6i" />
               Clear
               <span
-                className="ml-1 px-1.5 py-0.5 text-xs bg-ink-red/10 text-ink-red rounded"
+                className="ml-1 px-1.5 py-0.5 text-xs bg-red-400/10 text-destructive rounded"
                 data-oid="vn:3kkl"
               >
                 {activeFilterCount}
@@ -212,7 +212,7 @@ export function ExpenseFilters({
         <div className="flex items-center gap-2" data-oid="ajqzdmj">
           <label
             htmlFor="filter-date-start"
-            className="text-sm text-sepia shrink-0"
+            className="text-sm text-muted-foreground shrink-0"
             data-oid="q8oyjs8"
           >
             From:
@@ -230,7 +230,7 @@ export function ExpenseFilters({
         <div className="flex items-center gap-2" data-oid="xwk1ysk">
           <label
             htmlFor="filter-date-end"
-            className="text-sm text-sepia shrink-0"
+            className="text-sm text-muted-foreground shrink-0"
             data-oid="luf40:b"
           >
             To:
@@ -248,7 +248,7 @@ export function ExpenseFilters({
         {/* Vendor search */}
         <div className="relative flex-1 max-w-xs" data-oid="cv9frz7">
           <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-sepia"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
             data-oid="44rdx97"
           />
           <input
@@ -328,13 +328,13 @@ export function ExpenseFilterPills({
       {pills.map((pill) => (
         <span
           key={pill.field}
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-wood-medium/10 text-sm text-wood-dark border border-wood-medium/20"
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-spectral/10 text-sm text-foreground border border-border"
           data-oid="3ipyv5u"
         >
           {pill.label}
           <button
             onClick={() => onRemoveFilter(pill.field)}
-            className="ml-0.5 p-0.5 rounded-full hover:bg-wood-medium/20 transition-colors"
+            className="ml-0.5 p-0.5 rounded-full hover:bg-spectral/10 transition-colors"
             aria-label={`Remove ${pill.label} filter`}
             data-oid="j:72t56"
           >

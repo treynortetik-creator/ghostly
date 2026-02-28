@@ -119,7 +119,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/excel'
     // SUMMARY WORKSHEET
     // ============================================
     const summaryData = [
-      ['The Counting House - Export Report'],
+      ['Ghostly - Export Report'],
       [''],
       ['Fiscal Year', fiscalYear],
       ['Export Date', new Date().toISOString().split('T')[0]],
@@ -329,7 +329,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/excel'
     else if (scope === 'month') scopeLabel = `month-${month.toString().padStart(2, '0')}`;
     else if (scope === 'custom') scopeLabel = 'custom-range';
 
-    const filename = `counting-house-${fiscalYear}-${scopeLabel}.xlsx`;
+    const filename = `ghostly-${fiscalYear}-${scopeLabel}.xlsx`;
 
     // Return as downloadable file
     return new NextResponse(excelBuffer, {

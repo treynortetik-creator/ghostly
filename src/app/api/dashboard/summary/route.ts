@@ -1,5 +1,5 @@
 /**
- * The Counting House - Dashboard Summary API
+ * Ghostly - Dashboard Summary API
  * Returns budget vs actual data for the main dashboard
  *
  * Endpoints:

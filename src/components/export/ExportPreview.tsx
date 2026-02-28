@@ -131,13 +131,13 @@ export function ExportPreview({
     const percent = budget > 0 ? (remaining / budget) * 100 : 0;
     if (percent > 20)
       return (
-        <TrendingUp className="w-4 h-4 text-ink-green" data-oid="q6xw3s-" />
+        <TrendingUp className="w-4 h-4 text-emerald-400" data-oid="q6xw3s-" />
       );
     if (percent < 0)
       return (
-        <TrendingDown className="w-4 h-4 text-ink-red" data-oid="mcah0vh" />
+        <TrendingDown className="w-4 h-4 text-destructive" data-oid="mcah0vh" />
       );
-    return <Minus className="w-4 h-4 text-sepia" data-oid="8qjjrb9" />;
+    return <Minus className="w-4 h-4 text-muted-foreground" data-oid="8qjjrb9" />;
   };
 
   if (isLoading) {
@@ -149,10 +149,10 @@ export function ExportPreview({
             data-oid=".uhixoo"
           >
             <div
-              className="w-8 h-8 border-2 border-ink-gold/30 border-t-ink-gold rounded-full animate-spin"
+              className="w-8 h-8 border-2 border-spectral border-t-spectral rounded-full animate-spin"
               data-oid="mx1e:h8"
             />
-            <p className="mt-4 text-sm text-sepia" data-oid="7c3xii2">
+            <p className="mt-4 text-sm text-muted-foreground" data-oid="7c3xii2">
               Loading preview...
             </p>
           </div>
@@ -167,7 +167,7 @@ export function ExportPreview({
         <div className="flex items-center justify-between" data-oid="aj_1u47">
           <div data-oid="5ymjsgp">
             <CardTitle className="flex items-center gap-2" data-oid="xcwk0pn">
-              <FileCheck className="w-5 h-5 text-ink-gold" data-oid="wldmtk3" />
+              <FileCheck className="w-5 h-5 text-spectral" data-oid="wldmtk3" />
               Export Preview
             </CardTitle>
             <CardDescription data-oid="6tvb87f">
@@ -187,11 +187,11 @@ export function ExportPreview({
       <CardContent className="space-y-6" data-oid="ppctaat">
         {/* Grand Totals */}
         <div
-          className="p-4 rounded-lg bg-wood-dark/5 border border-wood-medium/30"
+          className="p-4 rounded-lg bg-ghost-dark/5 border border-border"
           data-oid="zr:quix"
         >
           <h4
-            className="text-sm font-serif font-semibold text-wood-dark mb-3"
+            className="text-sm font-semibold text-foreground mb-3"
             data-oid="fujrzj3"
           >
             Grand Totals
@@ -201,11 +201,11 @@ export function ExportPreview({
               className="flex justify-between items-center"
               data-oid="dpiwmyk"
             >
-              <span className="text-xs text-sepia/70" data-oid="7j3mp.g">
+              <span className="text-xs text-muted-foreground/60" data-oid="7j3mp.g">
                 Total Budget
               </span>
               <span
-                className="font-serif font-semibold text-base text-wood-dark"
+                className="font-semibold text-base text-foreground"
                 data-oid="ucu1bji"
               >
                 {formatCurrency(grandTotalBudget)}
@@ -215,11 +215,11 @@ export function ExportPreview({
               className="flex justify-between items-center"
               data-oid="k_e3vx."
             >
-              <span className="text-xs text-sepia/70" data-oid="2zdddpv">
+              <span className="text-xs text-muted-foreground/60" data-oid="2zdddpv">
                 Total Spent
               </span>
               <span
-                className="font-serif font-semibold text-base text-ink-red"
+                className="font-semibold text-base text-destructive"
                 data-oid="bibql73"
               >
                 {formatCurrency(grandTotalActual)}
@@ -229,11 +229,11 @@ export function ExportPreview({
               className="flex justify-between items-center"
               data-oid="prsibq0"
             >
-              <span className="text-xs text-sepia/70" data-oid=":-5:c0b">
+              <span className="text-xs text-muted-foreground/60" data-oid=":-5:c0b">
                 Remaining
               </span>
               <span
-                className={`font-serif font-semibold text-base ${grandTotalRemaining >= 0 ? "text-ink-green" : "text-ink-red"}`}
+                className={`font-semibold text-base ${grandTotalRemaining >= 0 ? "text-emerald-400" : "text-destructive"}`}
                 data-oid="p_.gfhu"
               >
                 {formatCurrency(grandTotalRemaining)}{" "}
@@ -249,7 +249,7 @@ export function ExportPreview({
         <div className="grid gap-4" data-oid="g1-wyk:">
           {/* Events */}
           <div
-            className="p-3 rounded-lg border border-wood-medium/20 bg-parchment"
+            className="p-3 rounded-lg border border-border bg-background"
             data-oid="rkhpl6a"
           >
             <div
@@ -258,11 +258,11 @@ export function ExportPreview({
             >
               <div className="flex items-center gap-2" data-oid="cn4p.5h">
                 <div
-                  className="p-1.5 rounded-lg bg-ink-gold/10"
+                  className="p-1.5 rounded-lg bg-spectral/10"
                   data-oid="i8x:ekp"
                 >
                   <Calendar
-                    className="w-3.5 h-3.5 text-ink-gold"
+                    className="w-3.5 h-3.5 text-spectral"
                     data-oid="zo2j-ut"
                   />
                 </div>
@@ -273,13 +273,13 @@ export function ExportPreview({
               </div>
               <div className="text-right" data-oid="gkv6xp5">
                 <h5
-                  className="font-medium text-wood-dark text-sm"
+                  className="font-medium text-foreground text-sm"
                   data-oid="kobdxab"
                 >
                   Events
                 </h5>
                 <p
-                  className="text-lg font-serif font-bold text-ink-gold"
+                  className="text-lg font-bold text-spectral"
                   data-oid="998:7xi"
                 >
                   {data.events.count}
@@ -287,31 +287,31 @@ export function ExportPreview({
               </div>
             </div>
             <div
-              className="mt-2 pt-2 border-t border-wood-medium/20 grid grid-cols-3 gap-2 text-xs"
+              className="mt-2 pt-2 border-t border-border grid grid-cols-3 gap-2 text-xs"
               data-oid="98kb8vu"
             >
               <div data-oid="phg3p.d">
-                <span className="text-sepia/70 block" data-oid="ww.ja8:">
+                <span className="text-muted-foreground/60 block" data-oid="ww.ja8:">
                   Budget
                 </span>
-                <span className="text-sepia font-medium" data-oid="ltcliac">
+                <span className="text-muted-foreground font-medium" data-oid="ltcliac">
                   {formatCurrency(data.events.totalBudget)}
                 </span>
               </div>
               <div data-oid="2c0fpzn">
-                <span className="text-sepia/70 block" data-oid="i6nxcn5">
+                <span className="text-muted-foreground/60 block" data-oid="i6nxcn5">
                   Spent
                 </span>
-                <span className="text-ink-red font-medium" data-oid="m:_dme6">
+                <span className="text-destructive font-medium" data-oid="m:_dme6">
                   {formatCurrency(data.events.totalActual)}
                 </span>
               </div>
               <div data-oid="7-4fyz9">
-                <span className="text-sepia/70 block" data-oid="-3so18m">
+                <span className="text-muted-foreground/60 block" data-oid="-3so18m">
                   Remaining
                 </span>
                 <span
-                  className={`font-medium ${data.events.totalRemaining >= 0 ? "text-ink-green" : "text-ink-red"}`}
+                  className={`font-medium ${data.events.totalRemaining >= 0 ? "text-emerald-400" : "text-destructive"}`}
                   data-oid="af6cuff"
                 >
                   {formatCurrency(data.events.totalRemaining)}
@@ -322,7 +322,7 @@ export function ExportPreview({
 
           {/* Categories */}
           <div
-            className="p-3 rounded-lg border border-wood-medium/20 bg-parchment"
+            className="p-3 rounded-lg border border-border bg-background"
             data-oid="p1wtlwp"
           >
             <div
@@ -331,11 +331,11 @@ export function ExportPreview({
             >
               <div className="flex items-center gap-2" data-oid="n210g:j">
                 <div
-                  className="p-1.5 rounded-lg bg-ink-green/10"
+                  className="p-1.5 rounded-lg bg-emerald-400/10"
                   data-oid="29h0pil"
                 >
                   <FolderOpen
-                    className="w-3.5 h-3.5 text-ink-green"
+                    className="w-3.5 h-3.5 text-emerald-400"
                     data-oid="9kvwv_h"
                   />
                 </div>
@@ -346,13 +346,13 @@ export function ExportPreview({
               </div>
               <div className="text-right" data-oid="lb49rs_">
                 <h5
-                  className="font-medium text-wood-dark text-sm"
+                  className="font-medium text-foreground text-sm"
                   data-oid="gdcehl9"
                 >
                   Categories
                 </h5>
                 <p
-                  className="text-lg font-serif font-bold text-ink-green"
+                  className="text-lg font-bold text-emerald-400"
                   data-oid="j01gfkq"
                 >
                   {data.categories.count}
@@ -360,31 +360,31 @@ export function ExportPreview({
               </div>
             </div>
             <div
-              className="mt-2 pt-2 border-t border-wood-medium/20 grid grid-cols-3 gap-2 text-xs"
+              className="mt-2 pt-2 border-t border-border grid grid-cols-3 gap-2 text-xs"
               data-oid="t44q-wj"
             >
               <div data-oid="tk:q8ss">
-                <span className="text-sepia/70 block" data-oid="pxsmugx">
+                <span className="text-muted-foreground/60 block" data-oid="pxsmugx">
                   Budget
                 </span>
-                <span className="text-sepia font-medium" data-oid="ashu_m4">
+                <span className="text-muted-foreground font-medium" data-oid="ashu_m4">
                   {formatCurrency(data.categories.totalBudget)}
                 </span>
               </div>
               <div data-oid="vr7.f9b">
-                <span className="text-sepia/70 block" data-oid="qtbl_sp">
+                <span className="text-muted-foreground/60 block" data-oid="qtbl_sp">
                   Spent
                 </span>
-                <span className="text-ink-red font-medium" data-oid="6f4eg5c">
+                <span className="text-destructive font-medium" data-oid="6f4eg5c">
                   {formatCurrency(data.categories.totalActual)}
                 </span>
               </div>
               <div data-oid="d_wl.4k">
-                <span className="text-sepia/70 block" data-oid="skald2w">
+                <span className="text-muted-foreground/60 block" data-oid="skald2w">
                   Remaining
                 </span>
                 <span
-                  className={`font-medium ${data.categories.totalRemaining >= 0 ? "text-ink-green" : "text-ink-red"}`}
+                  className={`font-medium ${data.categories.totalRemaining >= 0 ? "text-emerald-400" : "text-destructive"}`}
                   data-oid="ewlls6w"
                 >
                   {formatCurrency(data.categories.totalRemaining)}
@@ -395,28 +395,28 @@ export function ExportPreview({
 
           {/* Expenses */}
           <div
-            className="p-3 rounded-lg border border-wood-medium/20 bg-parchment"
+            className="p-3 rounded-lg border border-border bg-background"
             data-oid="i2876ej"
           >
             <div
               className="flex items-center justify-between"
               data-oid="d0hrae8"
             >
-              <div className="p-1.5 rounded-lg bg-sepia/10" data-oid="l5s-jhm">
+              <div className="p-1.5 rounded-lg bg-muted-foreground/10" data-oid="l5s-jhm">
                 <Receipt
-                  className="w-3.5 h-3.5 text-sepia"
+                  className="w-3.5 h-3.5 text-muted-foreground"
                   data-oid="dba1bgq"
                 />
               </div>
               <div className="text-right" data-oid="8rgfq00">
                 <h5
-                  className="font-medium text-wood-dark text-sm"
+                  className="font-medium text-foreground text-sm"
                   data-oid="7n.li8-"
                 >
                   Expenses
                 </h5>
                 <p
-                  className="text-lg font-serif font-bold text-sepia"
+                  className="text-lg font-bold text-muted-foreground"
                   data-oid="oa6k3-q"
                 >
                   {data.expenses.count}
@@ -424,38 +424,38 @@ export function ExportPreview({
               </div>
             </div>
             <div
-              className="mt-2 pt-2 border-t border-wood-medium/20 space-y-1 text-xs"
+              className="mt-2 pt-2 border-t border-border space-y-1 text-xs"
               data-oid="awdc.ke"
             >
               <div className="flex justify-between" data-oid="1is4nzj">
-                <span className="text-sepia/70" data-oid="3p122rr">
+                <span className="text-muted-foreground/60" data-oid="3p122rr">
                   Total Amount
                 </span>
-                <span className="text-sepia font-medium" data-oid="8n7rugb">
+                <span className="text-muted-foreground font-medium" data-oid="8n7rugb">
                   {formatCurrency(data.expenses.totalAmount)}
                 </span>
               </div>
               <div className="flex justify-between" data-oid="qyjvugh">
-                <span className="text-sepia/70" data-oid="6zl079w">
+                <span className="text-muted-foreground/60" data-oid="6zl079w">
                   Manual entries
                 </span>
-                <span className="text-sepia" data-oid="1ub_sv6">
+                <span className="text-muted-foreground" data-oid="1ub_sv6">
                   {data.expenses.bySource.manual}
                 </span>
               </div>
               <div className="flex justify-between" data-oid="m_ro3_9">
-                <span className="text-sepia/70" data-oid="2.__1ga">
+                <span className="text-muted-foreground/60" data-oid="2.__1ga">
                   Brex imports
                 </span>
-                <span className="text-sepia" data-oid="udijcba">
+                <span className="text-muted-foreground" data-oid="udijcba">
                   {data.expenses.bySource.brex}
                 </span>
               </div>
               <div className="flex justify-between" data-oid="2kmr-9l">
-                <span className="text-sepia/70" data-oid="r5i_o:v">
+                <span className="text-muted-foreground/60" data-oid="r5i_o:v">
                   PDF uploads
                 </span>
-                <span className="text-sepia" data-oid="j_lfafp">
+                <span className="text-muted-foreground" data-oid="j_lfafp">
                   {data.expenses.bySource.pdf}
                 </span>
               </div>
@@ -465,11 +465,11 @@ export function ExportPreview({
 
         {/* Export Note */}
         <div
-          className="p-3 rounded-lg bg-ink-gold/5 border border-ink-gold/20"
+          className="p-3 rounded-lg bg-spectral/10 border border-spectral"
           data-oid="a7n_3vz"
         >
           <p
-            className="text-xs text-sepia/80 italic text-center"
+            className="text-xs text-muted-foreground/60 italic text-center"
             data-oid="71oaxtm"
           >
             The exported file will contain all records shown above for the

@@ -1,5 +1,5 @@
 /**
- * The Counting House - Settings Components
+ * Ghostly - Settings Components
  * Exports for all settings-related components
  */
 

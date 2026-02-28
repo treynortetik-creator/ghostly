@@ -8,7 +8,7 @@ import type { QuarterType, EventTypeRecord } from "@/types/database";
 /* ============================================
    EVENT FILTERS COMPONENT
    ============================================
-   Victorian-styled filter controls for the events list.
+   Ghostly-themed filter controls for the events list.
    Includes dropdowns for event type, quarter, and fiscal year.
    ============================================ */
 
@@ -69,9 +69,9 @@ export function EventFilters({
 
   const selectClasses = `
     px-3 py-2 rounded-md
-    bg-parchment border border-wood-medium/40
-    text-ink-black text-sm
-    focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold
+    bg-background border border-border
+    text-foreground text-sm
+    focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral
     transition-colors duration-200
     cursor-pointer
     appearance-none
@@ -97,7 +97,7 @@ export function EventFilters({
       data-oid="7ul_yfa"
     >
       {/* Filter icon and label */}
-      <div className="flex items-center gap-2 text-sepia" data-oid="o7.an.n">
+      <div className="flex items-center gap-2 text-muted-foreground" data-oid="o7.an.n">
         <Filter className="w-4 h-4" data-oid="3xd_49l" />
         <span className="text-sm font-medium" data-oid="l8b3vjm">
           Filters:
@@ -165,14 +165,14 @@ export function EventFilters({
             variant="ghost"
             size="sm"
             onClick={onClearFilters}
-            className="text-sepia hover:text-ink-red"
+            className="text-muted-foreground hover:text-destructive"
             data-oid="cxh78g9"
           >
             <X className="w-4 h-4 mr-1" data-oid="sx.gjpq" />
             Clear
             {activeFilterCount > 0 && (
               <span
-                className="ml-1 px-1.5 py-0.5 text-xs bg-ink-red/10 text-ink-red rounded"
+                className="ml-1 px-1.5 py-0.5 text-xs bg-red-400/10 text-destructive rounded"
                 data-oid="28:h0xq"
               >
                 {activeFilterCount}
@@ -214,13 +214,13 @@ export function FilterPills({
     <div className="flex flex-wrap gap-2 mt-3" data-oid="4chdgzv">
       {selectedTypeId !== "all" && selectedTypeName && (
         <span
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-wood-medium/10 text-sm text-wood-dark border border-wood-medium/20"
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-spectral/10 text-sm text-foreground border border-border"
           data-oid="b1uhyk_"
         >
           Type: {selectedTypeName}
           <button
             onClick={onRemoveType}
-            className="ml-0.5 p-0.5 rounded-full hover:bg-wood-medium/20 transition-colors"
+            className="ml-0.5 p-0.5 rounded-full hover:bg-spectral/10 transition-colors"
             aria-label={`Remove ${selectedTypeName} filter`}
             data-oid="y4eoevg"
           >
@@ -231,13 +231,13 @@ export function FilterPills({
 
       {selectedQuarter !== "all" && (
         <span
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-wood-medium/10 text-sm text-wood-dark border border-wood-medium/20"
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-spectral/10 text-sm text-foreground border border-border"
           data-oid="50wbaaa"
         >
           Quarter: {selectedQuarter}
           <button
             onClick={onRemoveQuarter}
-            className="ml-0.5 p-0.5 rounded-full hover:bg-wood-medium/20 transition-colors"
+            className="ml-0.5 p-0.5 rounded-full hover:bg-spectral/10 transition-colors"
             aria-label={`Remove ${selectedQuarter} filter`}
             data-oid="gjs21:0"
           >

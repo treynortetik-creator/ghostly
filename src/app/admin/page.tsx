@@ -29,7 +29,7 @@ import {
    ============================================
    Administrative dashboard for viewing and
    managing application error logs.
-   Victorian theme: "The Watchman's Station"
+   Ghostly theme: "The Watchman's Station"
    ============================================ */
 
 interface ErrorLogEntry {
@@ -48,10 +48,10 @@ const levelConfig = {
   error: {
     icon: AlertCircle,
     label: "Error",
-    bgColor: "bg-ink-red/10",
-    borderColor: "border-ink-red/30",
-    textColor: "text-ink-red",
-    badgeBg: "bg-ink-red",
+    bgColor: "bg-red-400/10",
+    borderColor: "border-destructive/30",
+    textColor: "text-destructive",
+    badgeBg: "bg-red-400",
   },
   warn: {
     icon: AlertTriangle,
@@ -184,13 +184,13 @@ export default function AdminPage() {
       >
         <div data-oid="qelzfzf">
           <h1
-            className="text-3xl font-serif font-bold text-wood-dark flex items-center gap-3"
+            className="text-3xl font-bold text-foreground flex items-center gap-3"
             data-oid="c-kjg24"
           >
-            <Shield className="w-8 h-8 text-ink-gold" data-oid="j2_usnr" />
+            <Shield className="w-8 h-8 text-spectral" data-oid="j2_usnr" />
             The Watchman&apos;s Station
           </h1>
-          <p className="mt-1 text-sepia" data-oid="d_-:r7b">
+          <p className="mt-1 text-muted-foreground" data-oid="d_-:r7b">
             Error Log Administration &middot; As of {formattedDate}
           </p>
         </div>
@@ -225,14 +225,14 @@ export default function AdminPage() {
       {/* Error Message */}
       {error && (
         <div
-          className="flex items-center gap-3 p-4 mb-6 bg-ink-red/10 border border-ink-red/30 rounded-lg"
+          className="flex items-center gap-3 p-4 mb-6 bg-red-400/10 border border-destructive/30 rounded-lg"
           data-oid="ozxardi"
         >
           <AlertCircle
-            className="w-5 h-5 text-ink-red flex-shrink-0"
+            className="w-5 h-5 text-destructive flex-shrink-0"
             data-oid="5bm3j4q"
           />
-          <p className="text-ink-red" data-oid="m8:eiz_">
+          <p className="text-destructive" data-oid="m8:eiz_">
             {error}
           </p>
         </div>
@@ -243,7 +243,7 @@ export default function AdminPage() {
         className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6"
         data-oid="uyg8vgf"
       >
-        <Card className="bg-parchment" data-oid="pt.wyr3">
+        <Card className="bg-background" data-oid="pt.wyr3">
           <CardContent className="py-4" data-oid="66fry_a">
             <div
               className="flex items-center justify-between"
@@ -251,20 +251,20 @@ export default function AdminPage() {
             >
               <div data-oid="m6d_u4q">
                 <p
-                  className="text-xs text-sepia uppercase tracking-wider"
+                  className="text-xs text-muted-foreground uppercase tracking-wider"
                   data-oid="eb688yu"
                 >
                   Total Logs
                 </p>
                 <p
-                  className="text-2xl font-serif font-bold text-wood-dark"
+                  className="text-2xl font-bold text-foreground"
                   data-oid="kxk.p9t"
                 >
                   {logs.length}
                 </p>
               </div>
               <Code
-                className="w-8 h-8 text-wood-medium/50"
+                className="w-8 h-8 text-muted-foreground/50"
                 data-oid="i-1mdd0"
               />
             </div>
@@ -282,13 +282,13 @@ export default function AdminPage() {
             >
               <div data-oid=".9yrvom">
                 <p
-                  className="text-xs text-sepia uppercase tracking-wider"
+                  className="text-xs text-muted-foreground uppercase tracking-wider"
                   data-oid="q..x..z"
                 >
                   Errors
                 </p>
                 <p
-                  className={`text-2xl font-serif font-bold ${levelConfig.error.textColor}`}
+                  className={`text-2xl font-bold ${levelConfig.error.textColor}`}
                   data-oid="df5_mcf"
                 >
                   {errorCount}
@@ -313,13 +313,13 @@ export default function AdminPage() {
             >
               <div data-oid="n-s5h3:">
                 <p
-                  className="text-xs text-sepia uppercase tracking-wider"
+                  className="text-xs text-muted-foreground uppercase tracking-wider"
                   data-oid="3q_sc4b"
                 >
                   Warnings
                 </p>
                 <p
-                  className={`text-2xl font-serif font-bold ${levelConfig.warn.textColor}`}
+                  className={`text-2xl font-bold ${levelConfig.warn.textColor}`}
                   data-oid="zp.6_ci"
                 >
                   {warnCount}
@@ -344,13 +344,13 @@ export default function AdminPage() {
             >
               <div data-oid="i--vagd">
                 <p
-                  className="text-xs text-sepia uppercase tracking-wider"
+                  className="text-xs text-muted-foreground uppercase tracking-wider"
                   data-oid="xtqrpyp"
                 >
                   Info
                 </p>
                 <p
-                  className={`text-2xl font-serif font-bold ${levelConfig.info.textColor}`}
+                  className={`text-2xl font-bold ${levelConfig.info.textColor}`}
                   data-oid="l_nhhyd"
                 >
                   {infoCount}
@@ -373,9 +373,9 @@ export default function AdminPage() {
             data-oid="c9..ccx"
           >
             <div className="flex items-center gap-2" data-oid="wwpprxm">
-              <Filter className="w-4 h-4 text-sepia" data-oid="ca_0a.r" />
+              <Filter className="w-4 h-4 text-muted-foreground" data-oid="ca_0a.r" />
               <span
-                className="text-sm font-medium text-wood-dark"
+                className="text-sm font-medium text-foreground"
                 data-oid="_6liic_"
               >
                 Filters:
@@ -387,7 +387,7 @@ export default function AdminPage() {
               <div className="flex items-center gap-2" data-oid="nbkeqyp">
                 <label
                   htmlFor="level-filter"
-                  className="text-sm text-sepia"
+                  className="text-sm text-muted-foreground"
                   data-oid="oeio-k8"
                 >
                   Level:
@@ -398,8 +398,8 @@ export default function AdminPage() {
                   onChange={(e) =>
                     setLevelFilter(e.target.value as typeof levelFilter)
                   }
-                  className="px-3 py-1.5 text-sm bg-parchment border border-wood-medium/30 rounded
-                           text-wood-dark focus:outline-none focus:ring-2 focus:ring-ink-gold/50"
+                  className="px-3 py-1.5 text-sm bg-background border border-border rounded
+                           text-foreground focus:outline-none focus:ring-2 focus:ring-spectral/50"
                   data-oid="quv9ndc"
                 >
                   <option value="all" data-oid="rje-vww">
@@ -421,7 +421,7 @@ export default function AdminPage() {
               <div className="flex items-center gap-2" data-oid="cv:fpml">
                 <label
                   htmlFor="source-filter"
-                  className="text-sm text-sepia"
+                  className="text-sm text-muted-foreground"
                   data-oid="qore_vf"
                 >
                   Source:
@@ -430,8 +430,8 @@ export default function AdminPage() {
                   id="source-filter"
                   value={sourceFilter}
                   onChange={(e) => setSourceFilter(e.target.value)}
-                  className="px-3 py-1.5 text-sm bg-parchment border border-wood-medium/30 rounded
-                           text-wood-dark focus:outline-none focus:ring-2 focus:ring-ink-gold/50"
+                  className="px-3 py-1.5 text-sm bg-background border border-border rounded
+                           text-foreground focus:outline-none focus:ring-2 focus:ring-spectral/50"
                   data-oid="_nov_8j"
                 >
                   <option value="all" data-oid="0j7f4c7">
@@ -457,10 +457,10 @@ export default function AdminPage() {
         >
           <div className="text-center" data-oid="ws42zrj">
             <RefreshCw
-              className="w-8 h-8 text-ink-gold animate-spin mx-auto mb-3"
+              className="w-8 h-8 text-spectral animate-spin mx-auto mb-3"
               data-oid="cxtyfoa"
             />
-            <p className="text-sepia" data-oid="ydsb330">
+            <p className="text-muted-foreground" data-oid="ydsb330">
               Loading error logs...
             </p>
           </div>
@@ -473,17 +473,17 @@ export default function AdminPage() {
           <CardContent className="py-16" data-oid="lwz:bs2">
             <div className="text-center" data-oid="-fky0ks">
               <Shield
-                className="w-12 h-12 text-ink-green/50 mx-auto mb-4"
+                className="w-12 h-12 text-emerald-400/50 mx-auto mb-4"
                 data-oid="hxh3b.a"
               />
               <h3
-                className="font-serif text-lg font-medium text-wood-dark mb-2"
+                className="text-lg font-medium text-foreground mb-2"
                 data-oid="h8ry7wa"
               >
                 All Clear, Watchman
               </h3>
               <p
-                className="text-sepia text-sm max-w-md mx-auto"
+                className="text-muted-foreground text-sm max-w-md mx-auto"
                 data-oid="fxqy5rk"
               >
                 No error logs have been recorded. The ledgers are in good order,
@@ -508,35 +508,35 @@ export default function AdminPage() {
               <table className="w-full" data-oid="39zya0k">
                 <thead data-oid="hujgh0q">
                   <tr
-                    className="border-b border-wood-medium/20 bg-parchment-dark/50"
+                    className="border-b border-border bg-card/50"
                     data-oid="8o3pk0g"
                   >
                     <th
-                      className="px-4 py-3 text-left text-xs font-medium text-sepia uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
                       data-oid="4ttruok"
                     >
                       Level
                     </th>
                     <th
-                      className="px-4 py-3 text-left text-xs font-medium text-sepia uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
                       data-oid=":z-w7l:"
                     >
                       Timestamp
                     </th>
                     <th
-                      className="px-4 py-3 text-left text-xs font-medium text-sepia uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
                       data-oid="l6qigia"
                     >
                       Source
                     </th>
                     <th
-                      className="px-4 py-3 text-left text-xs font-medium text-sepia uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
                       data-oid="ngda5sx"
                     >
                       Message
                     </th>
                     <th
-                      className="px-4 py-3 text-left text-xs font-medium text-sepia uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
                       data-oid="yxzel_:"
                     >
                       Details
@@ -544,7 +544,7 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody
-                  className="divide-y divide-wood-medium/10"
+                  className="divide-y divide-border"
                   data-oid="21efpkd"
                 >
                   {logs.map((log) => {
@@ -554,7 +554,7 @@ export default function AdminPage() {
                     return (
                       <tr
                         key={log.id}
-                        className={`hover:bg-parchment-dark/30 transition-colors ${config.bgColor}`}
+                        className={`hover:bg-card/30 transition-colors ${config.bgColor}`}
                         data-oid="luff4ue"
                       >
                         <td
@@ -562,7 +562,7 @@ export default function AdminPage() {
                           data-oid="byr-9u-"
                         >
                           <span
-                            className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium text-parchment ${config.badgeBg}`}
+                            className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium text-phantom ${config.badgeBg}`}
                             data-oid="o_xulpc"
                           >
                             <Icon className="w-3 h-3" data-oid="4g6::8b" />
@@ -574,11 +574,11 @@ export default function AdminPage() {
                           data-oid="jawjz6:"
                         >
                           <div
-                            className="flex items-center gap-1.5 text-sm text-wood-dark"
+                            className="flex items-center gap-1.5 text-sm text-foreground"
                             data-oid="6_kg9o8"
                           >
                             <Clock
-                              className="w-3.5 h-3.5 text-sepia"
+                              className="w-3.5 h-3.5 text-muted-foreground"
                               data-oid="ugw-3ao"
                             />
                             {formatTimestamp(log.timestamp)}
@@ -589,7 +589,7 @@ export default function AdminPage() {
                           data-oid="b9mjlsl"
                         >
                           <span
-                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-wood-medium/10 text-wood-dark border border-wood-medium/20"
+                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-spectral/10 text-foreground border border-border"
                             data-oid="tf--ier"
                           >
                             {log.source}
@@ -597,7 +597,7 @@ export default function AdminPage() {
                         </td>
                         <td className="px-4 py-3" data-oid="3fs7.u0">
                           <p
-                            className="text-sm text-wood-dark max-w-md truncate"
+                            className="text-sm text-foreground max-w-md truncate"
                             title={log.message}
                             data-oid="r_u_e.j"
                           >
@@ -630,7 +630,7 @@ export default function AdminPage() {
       {/* Detail Modal */}
       {selectedLog && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-black/50"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
           data-oid="inj35:6"
         >
           <Card
@@ -684,36 +684,36 @@ export default function AdminPage() {
               <div className="grid grid-cols-2 gap-4" data-oid=".7k:s7e">
                 <div data-oid="y20nlal">
                   <p
-                    className="text-xs text-sepia uppercase tracking-wider mb-1"
+                    className="text-xs text-muted-foreground uppercase tracking-wider mb-1"
                     data-oid="zz0:yje"
                   >
                     Timestamp
                   </p>
-                  <p className="text-sm text-wood-dark" data-oid="wv0szna">
+                  <p className="text-sm text-foreground" data-oid="wv0szna">
                     {new Date(selectedLog.timestamp).toLocaleString()}
                   </p>
                 </div>
                 <div data-oid="fasxue0">
                   <p
-                    className="text-xs text-sepia uppercase tracking-wider mb-1"
+                    className="text-xs text-muted-foreground uppercase tracking-wider mb-1"
                     data-oid="ey58smm"
                   >
                     Source
                   </p>
-                  <p className="text-sm text-wood-dark" data-oid="155v4fg">
+                  <p className="text-sm text-foreground" data-oid="155v4fg">
                     {selectedLog.source}
                   </p>
                 </div>
                 {selectedLog.url && (
                   <div className="col-span-2" data-oid="rqzaa2z">
                     <p
-                      className="text-xs text-sepia uppercase tracking-wider mb-1"
+                      className="text-xs text-muted-foreground uppercase tracking-wider mb-1"
                       data-oid="p3lh3r9"
                     >
                       URL
                     </p>
                     <p
-                      className="text-sm text-wood-dark break-all"
+                      className="text-sm text-foreground break-all"
                       data-oid="hdzxle7"
                     >
                       {selectedLog.url}
@@ -723,12 +723,12 @@ export default function AdminPage() {
                 {selectedLog.userId && (
                   <div data-oid="g_pv3eu">
                     <p
-                      className="text-xs text-sepia uppercase tracking-wider mb-1"
+                      className="text-xs text-muted-foreground uppercase tracking-wider mb-1"
                       data-oid="mcvky5p"
                     >
                       User ID
                     </p>
-                    <p className="text-sm text-wood-dark" data-oid="1b2:cvd">
+                    <p className="text-sm text-foreground" data-oid="1b2:cvd">
                       {selectedLog.userId}
                     </p>
                   </div>
@@ -738,13 +738,13 @@ export default function AdminPage() {
               {/* Message */}
               <div data-oid="w_hxfn5">
                 <p
-                  className="text-xs text-sepia uppercase tracking-wider mb-1"
+                  className="text-xs text-muted-foreground uppercase tracking-wider mb-1"
                   data-oid="zdn-0iw"
                 >
                   Message
                 </p>
                 <p
-                  className="text-sm text-wood-dark bg-parchment p-3 rounded border border-wood-medium/20"
+                  className="text-sm text-foreground bg-background p-3 rounded border border-border"
                   data-oid="6e764mc"
                 >
                   {selectedLog.message}
@@ -755,13 +755,13 @@ export default function AdminPage() {
               {selectedLog.stack && (
                 <div data-oid="z1znvq4">
                   <p
-                    className="text-xs text-sepia uppercase tracking-wider mb-1"
+                    className="text-xs text-muted-foreground uppercase tracking-wider mb-1"
                     data-oid="xr.:cn6"
                   >
                     Stack Trace
                   </p>
                   <pre
-                    className="text-xs text-wood-dark bg-parchment p-3 rounded border border-wood-medium/20 overflow-x-auto whitespace-pre-wrap font-mono"
+                    className="text-xs text-foreground bg-background p-3 rounded border border-border overflow-x-auto whitespace-pre-wrap font-mono"
                     data-oid="witq41o"
                   >
                     {selectedLog.stack}
@@ -774,13 +774,13 @@ export default function AdminPage() {
                 Object.keys(selectedLog.context).length > 0 && (
                   <div data-oid="c_uu5ps">
                     <p
-                      className="text-xs text-sepia uppercase tracking-wider mb-1"
+                      className="text-xs text-muted-foreground uppercase tracking-wider mb-1"
                       data-oid="3je0iel"
                     >
                       Context
                     </p>
                     <pre
-                      className="text-xs text-wood-dark bg-parchment p-3 rounded border border-wood-medium/20 overflow-x-auto whitespace-pre-wrap font-mono"
+                      className="text-xs text-foreground bg-background p-3 rounded border border-border overflow-x-auto whitespace-pre-wrap font-mono"
                       data-oid="3_upq0k"
                     >
                       {JSON.stringify(selectedLog.context, null, 2)}
@@ -794,10 +794,10 @@ export default function AdminPage() {
 
       {/* Footer */}
       <div
-        className="text-center py-6 mt-8 border-t border-wood-medium/20"
+        className="text-center py-6 mt-8 border-t border-border"
         data-oid="efzsy0k"
       >
-        <p className="text-xs text-sepia/60 italic" data-oid="v8bcgk-">
+        <p className="text-xs text-muted-foreground/60 italic" data-oid="v8bcgk-">
           &ldquo;Vigilance is the price of a well-ordered house.&rdquo;
         </p>
       </div>

@@ -61,22 +61,22 @@ function DashboardSkeleton() {
       {/* Header skeleton */}
       <div className="mb-8" data-oid="em025ko">
         <div
-          className="h-9 w-48 bg-wood-medium/20 rounded mb-2"
+          className="h-9 w-48 bg-spectral/10 rounded mb-2"
           data-oid="_pp0log"
         />
         <div
-          className="h-5 w-72 bg-wood-medium/10 rounded"
+          className="h-5 w-72 bg-spectral/10 rounded"
           data-oid="96fpe:w"
         />
       </div>
 
       {/* Overview card skeleton */}
-      <div className="h-64 bg-wood-medium/10 rounded-lg" data-oid="-o7.k8g" />
+      <div className="h-64 bg-spectral/10 rounded-lg" data-oid="-o7.k8g" />
 
       {/* Grid skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-oid="vbf7k4z">
-        <div className="h-96 bg-wood-medium/10 rounded-lg" data-oid="4us5506" />
-        <div className="h-96 bg-wood-medium/10 rounded-lg" data-oid="azoc9fq" />
+        <div className="h-96 bg-spectral/10 rounded-lg" data-oid="4us5506" />
+        <div className="h-96 bg-spectral/10 rounded-lg" data-oid="azoc9fq" />
       </div>
     </div>
   );
@@ -90,28 +90,28 @@ function DashboardError({
   onRetry: () => void;
 }) {
   return (
-    <Card className="bg-ink-red/5 border-ink-red/20" data-oid="4-qawl4">
+    <Card className="bg-red-400/10 border-destructive/20" data-oid="4-qawl4">
       <CardContent className="py-12" data-oid="3gkims.">
         <div
           className="flex flex-col items-center justify-center text-center"
           data-oid="e63.dzi"
         >
           <AlertTriangle
-            className="w-12 h-12 text-ink-red mb-4"
+            className="w-12 h-12 text-destructive mb-4"
             data-oid="dlt7s4o"
           />
           <h3
-            className="font-serif text-xl font-semibold text-ink-red mb-2"
+            className="text-xl font-semibold text-destructive mb-2"
             data-oid="x0-:gp9"
           >
             Failed to Load Dashboard
           </h3>
-          <p className="text-sepia mb-6 max-w-md" data-oid="zo2h6_t">
+          <p className="text-muted-foreground mb-6 max-w-md" data-oid="zo2h6_t">
             {error}
           </p>
           <button
             onClick={onRetry}
-            className="flex items-center gap-2 px-4 py-2 bg-wood-dark text-parchment rounded-lg hover:bg-wood-medium transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-ghost-dark text-phantom rounded-lg hover:bg-ghost-light transition-colors"
             data-oid="xo-_vot"
           >
             <RefreshCw className="w-4 h-4" data-oid="oj:mjow" />
@@ -165,12 +165,12 @@ export default function DashboardPage() {
       {/* Page Header */}
       <div className="mb-8" data-oid="aoaw53b">
         <h1
-          className="text-3xl font-serif font-bold text-wood-dark"
+          className="text-3xl font-bold text-foreground"
           data-oid="::-yhcp"
         >
           The Ledger
         </h1>
-        <p className="mt-1 text-sepia" data-oid="l2cv1u8">
+        <p className="mt-1 text-muted-foreground" data-oid="l2cv1u8">
           FY {new Date().getFullYear()} Budget Overview &middot; As of{" "}
           {formattedDate}
         </p>
@@ -235,7 +235,7 @@ export default function DashboardPage() {
 
           {/* Footer Info */}
           <div className="text-center py-4" data-oid="37pge2r">
-            <p className="text-xs text-sepia/60" data-oid="o4l7alh">
+            <p className="text-xs text-muted-foreground/60" data-oid="o4l7alh">
               Data refreshes automatically. Last updated:{" "}
               {new Date().toLocaleTimeString("en-US", {
                 hour: "numeric",

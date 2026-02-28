@@ -1,5 +1,5 @@
 /**
- * The Counting House - Single Expense API
+ * Ghostly - Single Expense API
  *
  * Endpoints:
  * GET /api/expenses/[id] - Get a single expense

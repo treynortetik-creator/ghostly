@@ -1,5 +1,5 @@
 /**
- * Error Logger - Centralized error tracking for The Counting House
+ * Error Logger - Centralized error tracking for Ghostly
  *
  * Logs errors to both Supabase (persistent) and console (Railway logs).
  * Falls back to in-memory storage if Supabase write fails.

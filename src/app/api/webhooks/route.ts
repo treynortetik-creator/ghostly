@@ -1,5 +1,5 @@
 /**
- * The Counting House - Webhooks API
+ * Ghostly - Webhooks API
  *
  * Endpoints:
  * GET  /api/webhooks - List all webhooks (admin only)

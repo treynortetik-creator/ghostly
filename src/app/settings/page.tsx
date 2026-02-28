@@ -38,7 +38,7 @@ import { formatCurrency } from "@/lib/format";
    ============================================
    Application configuration page for managing
    fiscal years and AI model selection.
-   Victorian theme: "The Configuration Chambers"
+   Ghostly theme: "The Configuration Chambers"
    ============================================ */
 
 interface SettingsData {
@@ -253,13 +253,13 @@ export default function SettingsPage() {
       >
         <div data-oid="s3pp:cf">
           <h1
-            className="text-3xl font-serif font-bold text-wood-dark flex items-center gap-3"
+            className="text-3xl font-bold text-foreground flex items-center gap-3"
             data-oid="hmaz-:k"
           >
-            <Settings className="w-8 h-8 text-ink-gold" data-oid="j.4ykqf" />
+            <Settings className="w-8 h-8 text-spectral" data-oid="j.4ykqf" />
             The Configuration Chambers
           </h1>
-          <p className="mt-1 text-sepia" data-oid="b70mv_o">
+          <p className="mt-1 text-muted-foreground" data-oid="b70mv_o">
             Application Settings &middot; As of {formattedDate}
           </p>
         </div>
@@ -289,10 +289,10 @@ export default function SettingsPage() {
         >
           <div className="text-center" data-oid="69yn43l">
             <RefreshCw
-              className="w-8 h-8 text-ink-gold animate-spin mx-auto mb-3"
+              className="w-8 h-8 text-spectral animate-spin mx-auto mb-3"
               data-oid="gafnrar"
             />
-            <p className="text-sepia" data-oid="zy725mw">
+            <p className="text-muted-foreground" data-oid="zy725mw">
               Loading settings...
             </p>
           </div>
@@ -305,14 +305,14 @@ export default function SettingsPage() {
           {/* Error Message */}
           {error && (
             <div
-              className="flex items-center gap-3 p-4 bg-ink-red/10 border border-ink-red/30 rounded-lg"
+              className="flex items-center gap-3 p-4 bg-red-400/10 border border-destructive/30 rounded-lg"
               data-oid="2mlcrom"
             >
               <AlertCircle
-                className="w-5 h-5 text-ink-red flex-shrink-0"
+                className="w-5 h-5 text-destructive flex-shrink-0"
                 data-oid="v-64m_:"
               />
-              <p className="text-ink-red" data-oid="32gzn0:">
+              <p className="text-destructive" data-oid="32gzn0:">
                 {error}
               </p>
             </div>
@@ -321,14 +321,14 @@ export default function SettingsPage() {
           {/* Success Message */}
           {successMessage && (
             <div
-              className="flex items-center gap-3 p-4 bg-ink-green/10 border border-ink-green/30 rounded-lg"
+              className="flex items-center gap-3 p-4 bg-emerald-400/10 border border-emerald-400/30 rounded-lg"
               data-oid="d8mgopj"
             >
               <CheckCircle
-                className="w-5 h-5 text-ink-green flex-shrink-0"
+                className="w-5 h-5 text-emerald-400 flex-shrink-0"
                 data-oid="5nki:ux"
               />
-              <p className="text-ink-green" data-oid="mnnfs24">
+              <p className="text-emerald-400" data-oid="mnnfs24">
                 {successMessage}
               </p>
             </div>
@@ -364,19 +364,19 @@ export default function SettingsPage() {
           <div className="space-y-6" data-oid="dz20ei-">
             <div className="flex items-center gap-3" data-oid="bf:o-qr">
               <div
-                className="p-2 rounded-md bg-ink-gold/10 text-ink-gold"
+                className="p-2 rounded-md bg-spectral/10 text-spectral"
                 data-oid="9wv6cg3"
               >
                 <Bot className="w-5 h-5" data-oid="fytgd0l" />
               </div>
               <div data-oid="3sv3a4b">
                 <h2
-                  className="text-xl font-serif font-bold text-wood-dark"
+                  className="text-xl font-bold text-foreground"
                   data-oid="5rmkni2"
                 >
                   AI Prompts
                 </h2>
-                <p className="text-sm text-sepia" data-oid="7c3r8sd">
+                <p className="text-sm text-muted-foreground" data-oid="7c3r8sd">
                   Customize the prompts used for AI-powered features
                 </p>
               </div>
@@ -429,7 +429,7 @@ export default function SettingsPage() {
                   <CardHeader data-oid="t.mw1ng">
                     <div className="flex items-center gap-3" data-oid="s:kbom9">
                       <div
-                        className="p-2 rounded-md bg-ink-gold/10 text-ink-gold"
+                        className="p-2 rounded-md bg-spectral/10 text-spectral"
                         data-oid="_v77y2_"
                       >
                         <DollarSign className="w-5 h-5" data-oid="fzo9vbp" />
@@ -448,19 +448,19 @@ export default function SettingsPage() {
                   <CardContent className="space-y-4" data-oid="iz9nb-o">
                     {/* Editable Total Budget */}
                     <div
-                      className="p-4 rounded-lg bg-ink-gold/5 border border-ink-gold/20"
+                      className="p-4 rounded-lg bg-spectral/10 border border-spectral"
                       data-oid="xv0wax-"
                     >
                       <label
                         htmlFor="total_budget"
-                        className="block text-sm text-sepia mb-2"
+                        className="block text-sm text-muted-foreground mb-2"
                         data-oid="xx2iblf"
                       >
                         Total Annual Budget
                       </label>
                       <div className="relative" data-oid="3hi3y8m">
                         <span
-                          className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-gold font-serif text-lg"
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-spectral text-lg"
                           data-oid="lsqwo:f"
                         >
                           $
@@ -484,7 +484,7 @@ export default function SettingsPage() {
                               total_budget: sanitized,
                             }));
                           }}
-                          className="w-full pl-8 pr-4 py-2.5 rounded-md bg-parchment border border-ink-gold/40 text-2xl font-serif font-bold text-ink-gold focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold transition-colors duration-200 disabled:opacity-50"
+                          className="w-full pl-8 pr-4 py-2.5 rounded-md bg-background border border-spectral text-2xl font-bold text-spectral focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral transition-colors duration-200 disabled:opacity-50"
                           placeholder="0"
                           disabled={isSaving}
                           data-oid=":j9aoak"
@@ -496,15 +496,15 @@ export default function SettingsPage() {
                           className="mt-3 flex items-center justify-between text-sm"
                           data-oid="qi:s29w"
                         >
-                          <span className="text-sepia" data-oid="i4.sur8">
+                          <span className="text-muted-foreground" data-oid="i4.sur8">
                             Allocated:{" "}
                             {formatCurrency(allocated)}
                           </span>
                           <span
                             className={
                               unallocated >= 0
-                                ? "text-ink-green font-medium"
-                                : "text-ink-red font-medium"
+                                ? "text-emerald-400 font-medium"
+                                : "text-destructive font-medium"
                             }
                             data-oid="c-cx6y3"
                           >
@@ -525,7 +525,7 @@ export default function SettingsPage() {
                     >
                       {/* Events Budget */}
                       <div
-                        className="p-4 rounded-lg border border-wood-medium/20 bg-parchment"
+                        className="p-4 rounded-lg border border-border bg-background"
                         data-oid="jb0bm60"
                       >
                         <div
@@ -533,24 +533,24 @@ export default function SettingsPage() {
                           data-oid="aqgbae_"
                         >
                           <Calendar
-                            className="w-4 h-4 text-ink-gold"
+                            className="w-4 h-4 text-spectral"
                             data-oid="mvskafa"
                           />
                           <span
-                            className="text-sm font-medium text-wood-dark"
+                            className="text-sm font-medium text-foreground"
                             data-oid="0z5s25v"
                           >
                             Events Budget
                           </span>
                         </div>
                         <p
-                          className="text-xl font-serif font-semibold text-wood-dark"
+                          className="text-xl font-semibold text-foreground"
                           data-oid="lvk0a6a"
                         >
                           {formatCurrency(budgetSummary.eventsBudget)}
                         </p>
                         <p
-                          className="text-xs text-sepia mt-1"
+                          className="text-xs text-muted-foreground mt-1"
                           data-oid="x4546ke"
                         >
                           Across {budgetSummary.eventsCount} event
@@ -570,7 +570,7 @@ export default function SettingsPage() {
 
                       {/* Categories Budget */}
                       <div
-                        className="p-4 rounded-lg border border-wood-medium/20 bg-parchment"
+                        className="p-4 rounded-lg border border-border bg-background"
                         data-oid="lpfrok4"
                       >
                         <div
@@ -578,24 +578,24 @@ export default function SettingsPage() {
                           data-oid="9wp1pf9"
                         >
                           <FolderOpen
-                            className="w-4 h-4 text-ink-green"
+                            className="w-4 h-4 text-emerald-400"
                             data-oid="0jcziso"
                           />
                           <span
-                            className="text-sm font-medium text-wood-dark"
+                            className="text-sm font-medium text-foreground"
                             data-oid="91-jp3."
                           >
                             Categories Budget
                           </span>
                         </div>
                         <p
-                          className="text-xl font-serif font-semibold text-wood-dark"
+                          className="text-xl font-semibold text-foreground"
                           data-oid="6o38u6k"
                         >
                           {formatCurrency(budgetSummary.categoriesBudget)}
                         </p>
                         <p
-                          className="text-xs text-sepia mt-1"
+                          className="text-xs text-muted-foreground mt-1"
                           data-oid="vkv3cxi"
                         >
                           Across {budgetSummary.categoriesCount} categor
@@ -626,7 +626,7 @@ export default function SettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0" data-oid="rdnzqbj">
-              <p className="text-sm text-sepia mb-4" data-oid="ghzlpvn">
+              <p className="text-sm text-muted-foreground mb-4" data-oid="ghzlpvn">
                 {hasChanges
                   ? 'You have unsaved changes. Click "Save Settings" to apply your changes.'
                   : "No changes to save. Modify settings above to enable saving."}
@@ -659,23 +659,23 @@ export default function SettingsPage() {
             <CardContent className="py-6" data-oid="p75u00w">
               <div className="flex items-start gap-4" data-oid="7mrd_am">
                 <div
-                  className="p-2 bg-wood-medium/10 rounded-lg"
+                  className="p-2 bg-spectral/10 rounded-lg"
                   data-oid="k5ypx_c"
                 >
                   <Settings
-                    className="w-6 h-6 text-wood-medium"
+                    className="w-6 h-6 text-muted-foreground"
                     data-oid="mby1_x5"
                   />
                 </div>
                 <div data-oid="m7_e1l9">
                   <h3
-                    className="font-serif font-medium text-wood-dark mb-1"
+                    className="font-medium text-foreground mb-1"
                     data-oid="tdxi4.c"
                   >
                     About These Settings
                   </h3>
                   <p
-                    className="text-sm text-sepia leading-relaxed"
+                    className="text-sm text-muted-foreground leading-relaxed"
                     data-oid="h0f:c1-"
                   >
                     The fiscal year setting determines which budget year is
@@ -694,10 +694,10 @@ export default function SettingsPage() {
 
       {/* Footer */}
       <div
-        className="text-center py-6 mt-8 border-t border-wood-medium/20"
+        className="text-center py-6 mt-8 border-t border-border"
         data-oid="jenee8h"
       >
-        <p className="text-xs text-sepia/60 italic" data-oid="_6wa_qc">
+        <p className="text-xs text-muted-foreground/60 italic" data-oid="_6wa_qc">
           &ldquo;A well-ordered ledger is the foundation of a prosperous
           enterprise.&rdquo;
         </p>

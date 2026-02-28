@@ -1,5 +1,5 @@
 /**
- * The Counting House - Expense Documents API
+ * Ghostly - Expense Documents API
  *
  * GET /api/expenses/:id/documents - List documents for an expense
  */

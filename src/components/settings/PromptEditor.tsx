@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/Button";
    Textarea editor for customizing AI prompts.
    Supports default/custom states with reset
    functionality and character counting.
-   Victorian theme: "The Scrivener's Desk"
+   Ghostly theme: "The Scrivener's Desk"
    ============================================ */
 
 interface PromptEditorProps {
@@ -60,28 +60,28 @@ export function PromptEditor({
             className="text-lg flex items-center gap-2"
             data-oid="z9irpbo"
           >
-            <Type className="w-5 h-5 text-ink-gold" data-oid="j5uhsij" />
+            <Type className="w-5 h-5 text-spectral" data-oid="j5uhsij" />
             {label}
           </CardTitle>
 
           {/* Custom / Default Badge */}
           {isCustom ? (
             <span
-              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-ink-gold/15 text-ink-gold border border-ink-gold/30"
+              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-spectral/10 text-spectral border border-spectral"
               data-oid="s3vdu5n"
             >
               Custom
             </span>
           ) : (
             <span
-              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-wood-medium/10 text-sepia border border-wood-medium/20"
+              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-spectral/10 text-muted-foreground border border-border"
               data-oid="ygloen5"
             >
               Default
             </span>
           )}
         </div>
-        <p className="text-sm text-sepia mt-1" data-oid="5il0tgr">
+        <p className="text-sm text-muted-foreground mt-1" data-oid="5il0tgr">
           {description}
         </p>
       </CardHeader>
@@ -95,17 +95,17 @@ export function PromptEditor({
           placeholder={defaultValue}
           className={`
             w-full min-h-[200px] px-4 py-3
-            bg-parchment border border-wood-medium/40 rounded-md
+            bg-background border border-border rounded-md
             font-mono text-sm leading-relaxed
             transition-all duration-200
-            focus:outline-none focus:ring-1 focus:ring-ink-gold focus:border-ink-gold
+            focus:outline-none focus:ring-1 focus:ring-spectral focus:border-spectral
             resize-y
             ${
               disabled
                 ? "opacity-50 cursor-not-allowed"
-                : "hover:border-wood-medium"
+                : "hover:border-border"
             }
-            ${isCustom ? "text-wood-dark" : "text-sepia/70"}
+            ${isCustom ? "text-foreground" : "text-muted-foreground/60"}
           `}
           data-oid="6v.-y:h"
         />
@@ -117,7 +117,7 @@ export function PromptEditor({
         >
           {/* Character Count */}
           <span
-            className="text-xs text-sepia/70 tabular-nums"
+            className="text-xs text-muted-foreground/60 tabular-nums"
             data-oid="fikd0zc"
           >
             {charCount.toLocaleString()} characters
@@ -129,7 +129,7 @@ export function PromptEditor({
               {showResetConfirm ? (
                 <>
                   <span
-                    className="text-xs text-ink-red flex items-center gap-1"
+                    className="text-xs text-destructive flex items-center gap-1"
                     data-oid="h9ep5lu"
                   >
                     <AlertCircle className="w-3 h-3" data-oid="ncbwj3k" />
@@ -158,7 +158,7 @@ export function PromptEditor({
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowResetConfirm(true)}
-                  className="text-sepia hover:text-wood-dark"
+                  className="text-muted-foreground hover:text-foreground"
                   data-oid="jvhf-11"
                 >
                   <RotateCcw className="w-3.5 h-3.5" data-oid="fu7f.nz" />

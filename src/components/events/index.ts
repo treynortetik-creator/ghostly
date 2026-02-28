@@ -1,5 +1,5 @@
 /**
- * The Counting House - Event Components Exports
+ * Ghostly - Event Components Exports
  */
 
 export { EventForm } from './EventForm';

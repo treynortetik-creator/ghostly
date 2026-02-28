@@ -43,26 +43,26 @@ export function ChecklistItemForm({
 
   return (
     <div
-      className="fixed inset-0 bg-ink-black/50 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
       data-oid="f1u7cfq"
     >
       <div
-        className="bg-parchment rounded-lg border border-wood-medium/40 parchment-shadow w-full max-w-lg"
+        className="bg-background rounded-lg border border-border glass-shadow w-full max-w-lg"
         data-oid="d7:_cn8"
       >
         <div
-          className="px-6 py-4 border-b border-wood-medium/20 flex items-center justify-between"
+          className="px-6 py-4 border-b border-border flex items-center justify-between"
           data-oid="miaptc."
         >
           <h2
-            className="font-serif text-xl font-semibold text-wood-dark"
+            className="text-xl font-semibold text-foreground"
             data-oid="p5oo13b"
           >
             Add Task
           </h2>
           <button
             onClick={onCancel}
-            className="text-sepia hover:text-wood-dark"
+            className="text-muted-foreground hover:text-foreground"
             data-oid="88v2cq1"
           >
             <X className="w-5 h-5" data-oid=":ar.met" />
@@ -76,11 +76,11 @@ export function ChecklistItemForm({
         >
           <div data-oid="r4t-.yc">
             <label
-              className="block text-sm font-medium text-wood-dark mb-1"
+              className="block text-sm font-medium text-foreground mb-1"
               data-oid="8tf6ad3"
             >
               Task{" "}
-              <span className="text-ink-red" data-oid="-8xijab">
+              <span className="text-destructive" data-oid="-8xijab">
                 *
               </span>
             </label>
@@ -89,7 +89,7 @@ export function ChecklistItemForm({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="w-full px-3 py-2 bg-parchment-dark border border-wood-medium/30 rounded-md text-ink-black placeholder-sepia/40 focus:outline-none focus:ring-2 focus:ring-ink-gold focus:border-transparent"
+              className="w-full px-3 py-2 bg-card border border-border rounded-md text-foreground placeholder-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-spectral focus:border-transparent"
               placeholder="Task description"
               data-oid="vkq5:eh"
             />
@@ -97,7 +97,7 @@ export function ChecklistItemForm({
 
           <div data-oid="h_j33bf">
             <label
-              className="block text-sm font-medium text-wood-dark mb-1"
+              className="block text-sm font-medium text-foreground mb-1"
               data-oid="ccbp-pi"
             >
               Details
@@ -106,7 +106,7 @@ export function ChecklistItemForm({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
-              className="w-full px-3 py-2 bg-parchment-dark border border-wood-medium/30 rounded-md text-ink-black placeholder-sepia/40 focus:outline-none focus:ring-2 focus:ring-ink-gold focus:border-transparent resize-none"
+              className="w-full px-3 py-2 bg-card border border-border rounded-md text-foreground placeholder-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-spectral focus:border-transparent resize-none"
               placeholder="Additional details..."
               data-oid="ldxhpkl"
             />
@@ -115,7 +115,7 @@ export function ChecklistItemForm({
           <div className="grid grid-cols-2 gap-4" data-oid="8k29c12">
             <div data-oid="1zu5l8h">
               <label
-                className="block text-sm font-medium text-wood-dark mb-1"
+                className="block text-sm font-medium text-foreground mb-1"
                 data-oid="ghhrqum"
               >
                 Phase
@@ -123,7 +123,7 @@ export function ChecklistItemForm({
               <select
                 value={phase}
                 onChange={(e) => setPhase(e.target.value as ChecklistPhase)}
-                className="w-full px-3 py-2 bg-parchment-dark border border-wood-medium/30 rounded-md text-ink-black focus:outline-none focus:ring-2 focus:ring-ink-gold focus:border-transparent"
+                className="w-full px-3 py-2 bg-card border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-spectral focus:border-transparent"
                 data-oid="l0czie:"
               >
                 <option value="pre_event" data-oid="26k0-0v">
@@ -139,7 +139,7 @@ export function ChecklistItemForm({
             </div>
             <div data-oid="tpd-hsw">
               <label
-                className="block text-sm font-medium text-wood-dark mb-1"
+                className="block text-sm font-medium text-foreground mb-1"
                 data-oid="nt-_850"
               >
                 Due Date
@@ -148,7 +148,7 @@ export function ChecklistItemForm({
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full px-3 py-2 bg-parchment-dark border border-wood-medium/30 rounded-md text-ink-black focus:outline-none focus:ring-2 focus:ring-ink-gold focus:border-transparent"
+                className="w-full px-3 py-2 bg-card border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-spectral focus:border-transparent"
                 data-oid="_42z6.a"
               />
             </div>
@@ -156,7 +156,7 @@ export function ChecklistItemForm({
 
           <div data-oid="euuub3d">
             <label
-              className="block text-sm font-medium text-wood-dark mb-1"
+              className="block text-sm font-medium text-foreground mb-1"
               data-oid="9p5d.d."
             >
               Assignee
@@ -164,7 +164,7 @@ export function ChecklistItemForm({
             <select
               value={assigneeId}
               onChange={(e) => setAssigneeId(e.target.value)}
-              className="w-full px-3 py-2 bg-parchment-dark border border-wood-medium/30 rounded-md text-ink-black focus:outline-none focus:ring-2 focus:ring-ink-gold focus:border-transparent"
+              className="w-full px-3 py-2 bg-card border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-spectral focus:border-transparent"
               data-oid="f84eqxc"
             >
               <option value="" data-oid="29673je">

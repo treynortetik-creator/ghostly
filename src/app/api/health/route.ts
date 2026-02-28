@@ -1,5 +1,5 @@
 /**
- * The Counting House - Health Check API
+ * Ghostly - Health Check API
  *
  * GET /api/health — System health check (public, no auth required)
  *

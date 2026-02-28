@@ -65,7 +65,7 @@ export function EventDocumentsTab({ eventId }: EventDocumentsTabProps) {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-ink-gold" />
+                <FileText className="w-5 h-5 text-spectral" />
                 Documents ({documents.length})
               </CardTitle>
               <CardDescription>
@@ -88,7 +88,7 @@ export function EventDocumentsTab({ eventId }: EventDocumentsTabProps) {
         <CardContent>
           {error ? (
             <div className="text-center py-4">
-              <p className="text-ink-red text-sm">{error}</p>
+              <p className="text-destructive text-sm">{error}</p>
               <Button
                 variant="secondary"
                 size="sm"
@@ -100,8 +100,8 @@ export function EventDocumentsTab({ eventId }: EventDocumentsTabProps) {
             </div>
           ) : isLoading && documents.length === 0 ? (
             <div className="animate-pulse space-y-3">
-              <div className="h-14 bg-wood-medium/10 rounded-lg" />
-              <div className="h-14 bg-wood-medium/10 rounded-lg" />
+              <div className="h-14 bg-spectral/10 rounded-lg" />
+              <div className="h-14 bg-spectral/10 rounded-lg" />
             </div>
           ) : (
             <>

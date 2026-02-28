@@ -1,5 +1,5 @@
 /**
- * Shared formatting utilities for The Counting House
+ * Shared formatting utilities for Ghostly
  *
  * Canonical source for currency formatting.
  * Import from here instead of defining local helpers.

@@ -1,5 +1,5 @@
 /**
- * The Counting House - Single Document API
+ * Ghostly - Single Document API
  *
  * Endpoints:
  * GET /api/documents/:id - Get document metadata

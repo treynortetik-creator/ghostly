@@ -39,17 +39,17 @@ function CountdownBadge({ daysUntil }: { daysUntil: number | null }) {
 
   if (daysUntil > 7) {
     text = `in ${daysUntil} days`;
-    colorClass = 'text-ink-green';
+    colorClass = 'text-emerald-400';
   } else if (daysUntil > 0) {
     text = `in ${daysUntil} day${daysUntil === 1 ? '' : 's'}`;
-    colorClass = 'text-ink-gold';
+    colorClass = 'text-spectral';
   } else if (daysUntil === 0) {
     text = 'TODAY';
-    colorClass = 'text-ink-gold font-bold';
+    colorClass = 'text-spectral font-bold';
   } else {
     const abs = Math.abs(daysUntil);
     text = `${abs} day${abs === 1 ? '' : 's'} ago`;
-    colorClass = 'text-ink-red';
+    colorClass = 'text-destructive';
   }
 
   return <span className={`text-[10px] font-medium ${colorClass}`}>{text}</span>;
@@ -87,10 +87,10 @@ export function KanbanCard({ event, overlay = false }: KanbanCardProps) {
       ref={overlay ? undefined : setNodeRef}
       style={style}
       className={`
-        group bg-parchment rounded-lg border border-wood-medium/30 shadow-sm
-        cursor-pointer hover:shadow-md hover:border-ink-gold/40 transition-all duration-150
+        group bg-background rounded-lg border border-border shadow-sm
+        cursor-pointer hover:shadow-md hover:border-spectral transition-all duration-150
         ${isDragging ? 'opacity-30' : ''}
-        ${overlay ? 'shadow-lg border-ink-gold/50 rotate-1 scale-105' : ''}
+        ${overlay ? 'shadow-lg border-spectral rotate-1 scale-105' : ''}
       `}
       onClick={handleClick}
     >
@@ -100,17 +100,17 @@ export function KanbanCard({ event, overlay = false }: KanbanCardProps) {
           <button
             {...(overlay ? {} : { ...listeners, ...attributes })}
             data-drag-handle
-            className="mt-0.5 p-0.5 rounded text-sepia/30 hover:text-sepia/60 cursor-grab active:cursor-grabbing flex-shrink-0"
+            className="mt-0.5 p-0.5 rounded text-muted-foreground/60 hover:text-muted-foreground/60 cursor-grab active:cursor-grabbing flex-shrink-0"
             onClick={(e) => e.stopPropagation()}
           >
             <GripVertical className="w-3.5 h-3.5" />
           </button>
           <div className="flex-1 min-w-0">
-            <h4 className="font-serif text-sm font-semibold text-wood-dark leading-tight truncate">
+            <h4 className="text-sm font-semibold text-foreground leading-tight truncate">
               {event.name}
             </h4>
             {event.event_type_record && (
-              <p className="text-[10px] text-sepia/60 truncate">{event.event_type_record.name}</p>
+              <p className="text-[10px] text-muted-foreground/60 truncate">{event.event_type_record.name}</p>
             )}
           </div>
           <CountdownBadge daysUntil={event.days_until} />
@@ -118,12 +118,12 @@ export function KanbanCard({ event, overlay = false }: KanbanCardProps) {
 
         {/* Date + location */}
         <div className="space-y-0.5">
-          <div className="flex items-center gap-1 text-[11px] text-sepia/80">
+          <div className="flex items-center gap-1 text-[11px] text-muted-foreground/60">
             <Calendar className="w-3 h-3 flex-shrink-0" />
             <span className="truncate">{formatDateRange(event.date_start, event.date_end)}</span>
           </div>
           {event.location && (
-            <div className="flex items-center gap-1 text-[11px] text-sepia/70">
+            <div className="flex items-center gap-1 text-[11px] text-muted-foreground/60">
               <MapPin className="w-3 h-3 flex-shrink-0" />
               <span className="truncate">{event.location}</span>
             </div>
@@ -146,7 +146,7 @@ export function KanbanCard({ event, overlay = false }: KanbanCardProps) {
             max={event.budget_amount || 1}
             size="sm"
           />
-          <p className="text-[10px] text-sepia tabular-nums">
+          <p className="text-[10px] text-muted-foreground tabular-nums">
             {formatCurrencyCompact(event.actual_spent)} / {formatCurrencyCompact(event.budget_amount)}
           </p>
         </div>
@@ -162,7 +162,7 @@ export function KanbanCard({ event, overlay = false }: KanbanCardProps) {
                 colorOverride="green"
               />
             </div>
-            <span className="text-[10px] text-sepia tabular-nums whitespace-nowrap">
+            <span className="text-[10px] text-muted-foreground tabular-nums whitespace-nowrap">
               {event.task_counts.completed}/{event.task_counts.total} ({taskPct}%)
             </span>
           </div>

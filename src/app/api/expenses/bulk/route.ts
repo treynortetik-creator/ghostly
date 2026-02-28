@@ -1,5 +1,5 @@
 /**
- * The Counting House - Bulk Expenses API
+ * Ghostly - Bulk Expenses API
  *
  * Endpoints:
  * POST /api/expenses/bulk - Create multiple expenses in one request

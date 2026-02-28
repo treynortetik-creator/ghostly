@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/Button";
    PDF UPLOAD COMPONENT
    ============================================
    Drag-and-drop PDF file upload with validation.
-   Victorian-themed styling for PDF invoice import.
+   Ghostly-themed styling for PDF invoice import.
    ============================================ */
 
 interface PDFUploadProps {
@@ -143,12 +143,12 @@ export function PDFUpload({
         }}
         className={cn(
           "relative border-2 border-dashed rounded-lg p-8 transition-all duration-200",
-          "bg-parchment hover:bg-parchment-dark cursor-pointer",
-          "focus:outline-none focus:ring-2 focus:ring-ink-gold focus:ring-offset-2",
+          "bg-background hover:bg-card cursor-pointer",
+          "focus:outline-none focus:ring-2 focus:ring-spectral focus:ring-offset-2",
           isDragging
-            ? "border-ink-gold bg-ink-gold/5 scale-[1.01]"
-            : "border-wood-medium/40 hover:border-wood-medium",
-          displayError && "border-ink-red/50 bg-ink-red/5",
+            ? "border-spectral bg-spectral/10 scale-[1.01]"
+            : "border-border hover:border-border",
+          displayError && "border-destructive/50 bg-red-400/10",
           isLoading && "opacity-60 pointer-events-none",
         )}
         onClick={handleBrowseClick}
@@ -173,8 +173,8 @@ export function PDFUpload({
             className={cn(
               "p-4 rounded-full mb-4 transition-colors",
               isDragging
-                ? "bg-ink-gold/20 text-ink-gold"
-                : "bg-wood-medium/10 text-wood-medium",
+                ? "bg-spectral/10 text-spectral"
+                : "bg-spectral/10 text-muted-foreground",
             )}
             data-oid="e9-8myl"
           >
@@ -187,12 +187,12 @@ export function PDFUpload({
 
           {/* Text */}
           <h3
-            className="font-serif font-semibold text-wood-dark mb-1"
+            className="font-semibold text-foreground mb-1"
             data-oid=":z4dk2z"
           >
             {isDragging ? "Drop your PDF here" : "Upload PDF Invoice"}
           </h3>
-          <p className="text-sm text-sepia mb-4" data-oid="b7y5.5g">
+          <p className="text-sm text-muted-foreground mb-4" data-oid="b7y5.5g">
             Drag and drop your PDF invoice here, or click to browse
           </p>
 
@@ -212,7 +212,7 @@ export function PDFUpload({
           </Button>
 
           {/* File Info */}
-          <p className="text-xs text-sepia/60 mt-4" data-oid="yhyjt4g">
+          <p className="text-xs text-muted-foreground/60 mt-4" data-oid="yhyjt4g">
             Accepted: PDF files &middot; Max size: {maxSizeMB}MB
           </p>
         </div>
@@ -221,26 +221,26 @@ export function PDFUpload({
       {/* Selected File Display */}
       {selectedFile && !displayError && (
         <div
-          className="flex items-center gap-3 p-3 bg-ink-green/10 border border-ink-green/30 rounded-lg"
+          className="flex items-center gap-3 p-3 bg-emerald-400/10 border border-emerald-400/30 rounded-lg"
           data-oid="nk86let"
         >
-          <div className="p-2 bg-ink-green/20 rounded" data-oid="5ld013z">
-            <FileText className="w-5 h-5 text-ink-green" data-oid="p6u.p5i" />
+          <div className="p-2 bg-emerald-400/10 rounded" data-oid="5ld013z">
+            <FileText className="w-5 h-5 text-emerald-400" data-oid="p6u.p5i" />
           </div>
           <div className="flex-1 min-w-0" data-oid="kv4cn1m">
             <p
-              className="font-medium text-ink-black truncate"
+              className="font-medium text-foreground truncate"
               data-oid="cjxlm0h"
             >
               {selectedFile.name}
             </p>
-            <p className="text-xs text-sepia" data-oid="arzrxy0">
+            <p className="text-xs text-muted-foreground" data-oid="arzrxy0">
               {(selectedFile.size / 1024).toFixed(1)} KB
             </p>
           </div>
           <div className="flex items-center gap-2" data-oid="z3mgp3z">
             <CheckCircle
-              className="w-5 h-5 text-ink-green"
+              className="w-5 h-5 text-emerald-400"
               data-oid="j147_6a"
             />
             <button
@@ -248,7 +248,7 @@ export function PDFUpload({
                 e.stopPropagation();
                 handleClearFile();
               }}
-              className="p-1 text-sepia hover:text-ink-red transition-colors"
+              className="p-1 text-muted-foreground hover:text-destructive transition-colors"
               disabled={isLoading}
               aria-label="Remove selected file"
               data-oid="-zoghxu"
@@ -262,18 +262,18 @@ export function PDFUpload({
       {/* Error Display */}
       {displayError && (
         <div
-          className="flex items-start gap-3 p-3 bg-ink-red/10 border border-ink-red/30 rounded-lg"
+          className="flex items-start gap-3 p-3 bg-red-400/10 border border-destructive/30 rounded-lg"
           data-oid="80pv3d2"
         >
           <AlertCircle
-            className="w-5 h-5 text-ink-red shrink-0 mt-0.5"
+            className="w-5 h-5 text-destructive shrink-0 mt-0.5"
             data-oid="0g6o50n"
           />
           <div className="flex-1" data-oid="brpm0t8">
-            <p className="font-medium text-ink-red" data-oid="d6n_q10">
+            <p className="font-medium text-destructive" data-oid="d6n_q10">
               Upload Error
             </p>
-            <p className="text-sm text-ink-red/80" data-oid="64vnf9i">
+            <p className="text-sm text-destructive/80" data-oid="64vnf9i">
               {displayError}
             </p>
           </div>
@@ -282,7 +282,7 @@ export function PDFUpload({
               e.stopPropagation();
               handleClearFile();
             }}
-            className="p-1 text-ink-red/60 hover:text-ink-red transition-colors"
+            className="p-1 text-destructive/60 hover:text-destructive transition-colors"
             data-oid="7lodzkc"
           >
             <X className="w-4 h-4" data-oid="w:4rt7h" />
@@ -293,11 +293,11 @@ export function PDFUpload({
       {/* Loading Overlay */}
       {isLoading && (
         <div
-          className="flex items-center justify-center gap-2 text-sepia"
+          className="flex items-center justify-center gap-2 text-muted-foreground"
           data-oid="uy6u8a-"
         >
           <div
-            className="w-4 h-4 border-2 border-ink-gold/30 border-t-ink-gold rounded-full animate-spin"
+            className="w-4 h-4 border-2 border-spectral border-t-spectral rounded-full animate-spin"
             data-oid="wdrlq:l"
           />
           <span className="text-sm" data-oid="ghpyjgh">

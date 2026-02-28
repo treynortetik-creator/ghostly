@@ -1,5 +1,5 @@
 /**
- * The Counting House - Event Type Detail API
+ * Ghostly - Event Type Detail API
  *
  * Endpoints:
  * GET /api/event-types/[id] - Get single event type

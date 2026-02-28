@@ -1,5 +1,5 @@
 /**
- * The Counting House - Categories API
+ * Ghostly - Categories API
  *
  * Endpoints:
  * GET /api/categories - List all categories with optional filters

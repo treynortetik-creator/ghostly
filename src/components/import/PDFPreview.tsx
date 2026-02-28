@@ -75,30 +75,30 @@ export function PDFPreview({
   const getConfidenceBadge = (level: "high" | "medium" | "low" | "none") => {
     const badges = {
       high: {
-        bg: "bg-ink-green/15",
-        border: "border-ink-green/30",
-        text: "text-ink-green",
+        bg: "bg-emerald-400/10",
+        border: "border-emerald-400/30",
+        text: "text-emerald-400",
         icon: CheckCircle,
         label: "High confidence",
       },
       medium: {
-        bg: "bg-ink-gold/15",
-        border: "border-ink-gold/30",
-        text: "text-ink-gold",
+        bg: "bg-spectral/10",
+        border: "border-spectral",
+        text: "text-spectral",
         icon: CheckCircle,
         label: "Medium confidence",
       },
       low: {
-        bg: "bg-sepia/15",
-        border: "border-sepia/30",
-        text: "text-sepia",
+        bg: "bg-muted-foreground/15",
+        border: "border-muted-foreground/30",
+        text: "text-muted-foreground",
         icon: AlertTriangle,
         label: "Low confidence",
       },
       none: {
-        bg: "bg-ink-red/15",
-        border: "border-ink-red/30",
-        text: "text-ink-red",
+        bg: "bg-red-400/10",
+        border: "border-destructive/30",
+        text: "text-destructive",
         icon: AlertTriangle,
         label: "Not detected",
       },
@@ -115,7 +115,7 @@ export function PDFPreview({
             className="flex items-center gap-2 text-lg"
             data-oid="xt4ndt6"
           >
-            <FileText className="w-5 h-5 text-ink-gold" data-oid="uh_oxbh" />
+            <FileText className="w-5 h-5 text-spectral" data-oid="uh_oxbh" />
             Uploaded Document
           </CardTitle>
         </CardHeader>
@@ -124,10 +124,10 @@ export function PDFPreview({
             className="flex items-center justify-between text-sm"
             data-oid="fprwhrc"
           >
-            <span className="font-medium text-ink-black" data-oid="4p7y.:z">
+            <span className="font-medium text-foreground" data-oid="4p7y.:z">
               {fileName}
             </span>
-            <span className="text-sepia" data-oid="vbpndck">
+            <span className="text-muted-foreground" data-oid="vbpndck">
               {pageCount} {pageCount === 1 ? "page" : "pages"}
             </span>
           </div>
@@ -138,10 +138,10 @@ export function PDFPreview({
       <Card elevated data-oid="u:_5q7k">
         <CardHeader data-oid="dykuqs7">
           <CardTitle className="flex items-center gap-2" data-oid="rfaz:7g">
-            <Edit3 className="w-5 h-5 text-ink-gold" data-oid="qywp_9:" />
+            <Edit3 className="w-5 h-5 text-spectral" data-oid="qywp_9:" />
             Extracted Information
           </CardTitle>
-          <p className="text-sm text-sepia mt-1" data-oid="v89geon">
+          <p className="text-sm text-muted-foreground mt-1" data-oid="v89geon">
             Review and edit the extracted details. Fields marked with low
             confidence may need manual correction.
           </p>
@@ -154,10 +154,10 @@ export function PDFPreview({
               data-oid="ua6_lkg"
             >
               <label
-                className="flex items-center gap-2 text-sm font-medium text-wood-dark"
+                className="flex items-center gap-2 text-sm font-medium text-foreground"
                 data-oid="ll13d33"
               >
-                <Building2 className="w-4 h-4 text-sepia" data-oid=":q4wqrt" />
+                <Building2 className="w-4 h-4 text-muted-foreground" data-oid=":q4wqrt" />
                 Vendor / Company
               </label>
               <ConfidenceBadge
@@ -172,9 +172,9 @@ export function PDFPreview({
               placeholder="Enter vendor name"
               className={cn(
                 "w-full px-3 py-2 text-sm rounded-md",
-                "bg-parchment border border-wood-medium/40",
-                "focus:outline-none focus:ring-2 focus:ring-ink-gold/30 focus:border-wood-medium",
-                "placeholder:text-sepia/50",
+                "bg-background border border-border",
+                "focus:outline-none focus:ring-2 focus:ring-spectral/30 focus:border-border",
+                "placeholder:text-muted-foreground/60",
               )}
               data-oid="nr16tlv"
             />
@@ -187,10 +187,10 @@ export function PDFPreview({
               data-oid=":-8ifs."
             >
               <label
-                className="flex items-center gap-2 text-sm font-medium text-wood-dark"
+                className="flex items-center gap-2 text-sm font-medium text-foreground"
                 data-oid="6d3l-j-"
               >
-                <DollarSign className="w-4 h-4 text-sepia" data-oid="m1.t7yf" />
+                <DollarSign className="w-4 h-4 text-muted-foreground" data-oid="m1.t7yf" />
                 Amount
               </label>
               <ConfidenceBadge
@@ -200,7 +200,7 @@ export function PDFPreview({
             </div>
             <div className="relative" data-oid="gfxc0mt">
               <span
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-sepia"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 data-oid="wgp0.93"
               >
                 $
@@ -214,15 +214,15 @@ export function PDFPreview({
                 min="0"
                 className={cn(
                   "w-full pl-7 pr-3 py-2 text-sm rounded-md",
-                  "bg-parchment border border-wood-medium/40",
-                  "focus:outline-none focus:ring-2 focus:ring-ink-gold/30 focus:border-wood-medium",
-                  "placeholder:text-sepia/50",
+                  "bg-background border border-border",
+                  "focus:outline-none focus:ring-2 focus:ring-spectral/30 focus:border-border",
+                  "placeholder:text-muted-foreground/60",
                 )}
                 data-oid="9u39rtj"
               />
             </div>
             {amount && parseFloat(amount) > 0 && (
-              <p className="text-xs text-sepia" data-oid="_wl3nbv">
+              <p className="text-xs text-muted-foreground" data-oid="_wl3nbv">
                 {formatCurrency(parseFloat(amount))}
               </p>
             )}
@@ -235,10 +235,10 @@ export function PDFPreview({
               data-oid="we.rdn2"
             >
               <label
-                className="flex items-center gap-2 text-sm font-medium text-wood-dark"
+                className="flex items-center gap-2 text-sm font-medium text-foreground"
                 data-oid="_c3p8k7"
               >
-                <Calendar className="w-4 h-4 text-sepia" data-oid="ug.6685" />
+                <Calendar className="w-4 h-4 text-muted-foreground" data-oid="ug.6685" />
                 Expense Date
               </label>
               <ConfidenceBadge
@@ -252,8 +252,8 @@ export function PDFPreview({
               onChange={(e) => setDate(e.target.value)}
               className={cn(
                 "w-full px-3 py-2 text-sm rounded-md",
-                "bg-parchment border border-wood-medium/40",
-                "focus:outline-none focus:ring-2 focus:ring-ink-gold/30 focus:border-wood-medium",
+                "bg-background border border-border",
+                "focus:outline-none focus:ring-2 focus:ring-spectral/30 focus:border-border",
               )}
               data-oid="o:tse86"
             />
@@ -264,7 +264,7 @@ export function PDFPreview({
       {/* Raw Text Preview (collapsed by default) */}
       <details className="group" data-oid="9q-d0rf">
         <summary
-          className="cursor-pointer text-sm text-sepia hover:text-wood-dark transition-colors flex items-center gap-2"
+          className="cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
           data-oid="jgwpm-t"
         >
           <span
@@ -278,7 +278,7 @@ export function PDFPreview({
         <Card className="mt-2" data-oid="4u:ossq">
           <CardContent className="py-4" data-oid="i77wqaf">
             <pre
-              className="text-xs text-sepia whitespace-pre-wrap font-mono bg-parchment p-3 rounded border border-wood-medium/20 max-h-48 overflow-y-auto"
+              className="text-xs text-muted-foreground whitespace-pre-wrap font-mono bg-background p-3 rounded border border-border max-h-48 overflow-y-auto"
               data-oid="8v4a30u"
             >
               {extractedData.rawText || "No text extracted"}
@@ -298,30 +298,30 @@ function ConfidenceBadge({
 }) {
   const badges = {
     high: {
-      bg: "bg-ink-green/15",
-      border: "border-ink-green/30",
-      text: "text-ink-green",
+      bg: "bg-emerald-400/10",
+      border: "border-emerald-400/30",
+      text: "text-emerald-400",
       icon: CheckCircle,
       label: "High",
     },
     medium: {
-      bg: "bg-ink-gold/15",
-      border: "border-ink-gold/30",
-      text: "text-ink-gold",
+      bg: "bg-spectral/10",
+      border: "border-spectral",
+      text: "text-spectral",
       icon: CheckCircle,
       label: "Medium",
     },
     low: {
-      bg: "bg-sepia/15",
-      border: "border-sepia/30",
-      text: "text-sepia",
+      bg: "bg-muted-foreground/15",
+      border: "border-muted-foreground/30",
+      text: "text-muted-foreground",
       icon: AlertTriangle,
       label: "Low",
     },
     none: {
-      bg: "bg-ink-red/15",
-      border: "border-ink-red/30",
-      text: "text-ink-red",
+      bg: "bg-red-400/10",
+      border: "border-destructive/30",
+      text: "text-destructive",
       icon: AlertTriangle,
       label: "Not found",
     },

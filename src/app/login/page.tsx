@@ -2,7 +2,8 @@
 
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { BookOpen, KeyRound, User } from 'lucide-react';
+import { User } from 'lucide-react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 
 export default function LoginPage() {
@@ -45,43 +46,43 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      {/* Background decoration - subtle radial gradient */}
+      {/* Background decoration - dark ethereal */}
       <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-parchment via-parchment to-parchment-dark" />
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-ink-gold/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-wood-medium/5 rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-ghost-dark via-background to-ghost-medium" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-spectral/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-ether/5 rounded-full blur-3xl" />
       </div>
 
       <div className="w-full max-w-md">
         {/* Decorative header */}
         <div className="text-center mb-8 animate-fade-in">
           {/* Logo */}
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-wood-dark border-4 border-wood-medium/50 shadow-lg mb-4">
-            <BookOpen className="w-10 h-10 text-ink-gold" />
+          <div className="inline-flex items-center justify-center w-24 h-24 mb-4">
+            <Image src="/images/ghostly-logo.jpg" alt="Ghostly" width={96} height={96} className="rounded-2xl" />
           </div>
 
-          <h1 className="text-4xl font-serif font-bold text-wood-dark tracking-wide">
+          <h1 className="text-4xl font-bold text-foreground tracking-wide">
             Ghostly
           </h1>
 
-          {/* flourish */}
-          <div className="mt-3 flourish">
-            <span className="text-xs tracking-widest text-sepia uppercase">ghostly.ai</span>
+          {/* ghost divider */}
+          <div className="mt-3 ghost-divider">
+            <span className="text-xs tracking-widest text-mist uppercase">ghostly.ai</span>
           </div>
 
-          <p className="mt-4 text-sepia text-sm italic">
+          <p className="mt-4 text-mist text-sm">
             The invisible AI agent running your events.
           </p>
         </div>
 
         {/* Login card */}
         <div
-          className="bg-parchment-dark rounded-lg border border-wood-medium/40 overflow-hidden parchment-shadow corner-flourish animate-fade-in"
+          className="glass rounded-xl overflow-hidden glass-shadow animate-fade-in"
           style={{ animationDelay: '100ms' }}
         >
           {/* Card header */}
-          <div className="bg-gradient-to-b from-wood-dark to-[#2d1a0e] px-6 py-4 border-b border-wood-medium/30">
-            <h2 className="text-lg font-serif text-parchment text-center tracking-wide">
+          <div className="bg-gradient-to-b from-spectral/20 to-transparent px-6 py-4 border-b border-border">
+            <h2 className="text-lg text-foreground text-center tracking-wide">
               Enter Your Credentials
             </h2>
           </div>
@@ -90,7 +91,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="p-6 space-y-5">
             {/* Error message */}
             {error && (
-              <div className="bg-ink-red/10 border border-ink-red/30 text-ink-red px-4 py-3 rounded-md text-sm animate-fade-in">
+              <div className="bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 rounded-md text-sm animate-fade-in">
                 <span className="font-medium">Error:</span> {error}
               </div>
             )}
@@ -99,9 +100,9 @@ export default function LoginPage() {
             <div className="space-y-2">
               <label
                 htmlFor="username"
-                className="flex items-center gap-2 text-sm font-medium text-ink-black"
+                className="flex items-center gap-2 text-sm font-medium text-foreground"
               >
-                <User className="w-4 h-4 text-sepia" />
+                <User className="w-4 h-4 text-mist" />
                 Username
               </label>
               <input
@@ -111,10 +112,10 @@ export default function LoginPage() {
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 autoComplete="username"
-                className="w-full px-4 py-2.5 bg-parchment border border-wood-medium/50 rounded-md
-                         text-ink-black placeholder:text-sepia/50
-                         focus:ring-2 focus:ring-ink-gold/30 focus:border-ink-gold
-                         transition-all duration-200 inset-shadow"
+                className="w-full px-4 py-2.5 bg-card border border-border rounded-lg
+                         text-foreground placeholder:text-mist/60
+                         focus:ring-2 focus:ring-spectral/20 focus:border-spectral
+                         transition-all duration-200 glass-inset"
                 placeholder="Enter your username"
               />
             </div>
@@ -123,9 +124,9 @@ export default function LoginPage() {
             <div className="space-y-2">
               <label
                 htmlFor="password"
-                className="flex items-center gap-2 text-sm font-medium text-ink-black"
+                className="flex items-center gap-2 text-sm font-medium text-foreground"
               >
-                <KeyRound className="w-4 h-4 text-sepia" />
+                <User className="w-4 h-4 text-mist" />
                 Password
               </label>
               <input
@@ -135,10 +136,10 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
-                className="w-full px-4 py-2.5 bg-parchment border border-wood-medium/50 rounded-md
-                         text-ink-black placeholder:text-sepia/50
-                         focus:ring-2 focus:ring-ink-gold/30 focus:border-ink-gold
-                         transition-all duration-200 inset-shadow"
+                className="w-full px-4 py-2.5 bg-card border border-border rounded-lg
+                         text-foreground placeholder:text-mist/60
+                         focus:ring-2 focus:ring-spectral/20 focus:border-spectral
+                         transition-all duration-200 glass-inset"
                 placeholder="Enter your password"
               />
             </div>
@@ -151,24 +152,24 @@ export default function LoginPage() {
               isLoading={isLoading}
               className="w-full"
             >
-              {isLoading ? 'Authenticating...' : 'Sign In to the Ledger'}
+              {isLoading ? 'Authenticating...' : 'Sign In'}
             </Button>
           </form>
 
           {/* Footer decoration */}
-          <div className="px-6 py-4 bg-parchment/50 border-t border-wood-medium/20">
-            <p className="text-xs text-center text-sepia/70 italic">
-              &ldquo;Keep careful accounts, and the shillings shall mind themselves.&rdquo;
+          <div className="px-6 py-4 bg-ghost-light/30 border-t border-border">
+            <p className="text-xs text-center text-mist/70 italic">
+              &ldquo;Your events, managed from the shadows.&rdquo;
             </p>
           </div>
         </div>
 
         {/* Bottom decoration */}
         <div className="mt-6 text-center animate-fade-in" style={{ animationDelay: '200ms' }}>
-          <div className="inline-flex items-center gap-2 text-sepia/60 text-xs">
-            <span className="w-4 h-px bg-wood-medium/30" />
+          <div className="inline-flex items-center gap-2 text-mist/60 text-xs">
+            <span className="w-4 h-px bg-spectral/20" />
             <span>Single-user secure access</span>
-            <span className="w-4 h-px bg-wood-medium/30" />
+            <span className="w-4 h-px bg-spectral/20" />
           </div>
         </div>
       </div>

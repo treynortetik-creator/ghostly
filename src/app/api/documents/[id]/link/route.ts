@@ -1,5 +1,5 @@
 /**
- * The Counting House - Document Link API
+ * Ghostly - Document Link API
  *
  * PUT /api/documents/:id/link - Re-link a document to a different event/expense
  */

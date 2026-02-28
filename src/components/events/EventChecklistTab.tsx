@@ -138,7 +138,7 @@ export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
 
   if (isLoading) {
     return (
-      <div className="py-8 text-center text-sepia" data-oid="pecs0im">
+      <div className="py-8 text-center text-muted-foreground" data-oid="pecs0im">
         Loading checklist...
       </div>
     );
@@ -154,7 +154,7 @@ export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
       <div className="flex items-center justify-between" data-oid="-nmyq2m">
         <div className="flex items-center gap-3" data-oid="4p:snnu">
           <h3
-            className="font-serif text-lg font-semibold text-wood-dark"
+            className="text-lg font-semibold text-foreground"
             data-oid=".qegadb"
           >
             Task Ledger
@@ -163,8 +163,8 @@ export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
             <span
               className={`text-xs font-medium px-2 py-0.5 rounded ${
                 completed === total
-                  ? "bg-ink-green/20 text-ink-green"
-                  : "bg-wood-medium/10 text-sepia"
+                  ? "bg-emerald-400/10 text-emerald-400"
+                  : "bg-spectral/10 text-muted-foreground"
               }`}
               data-oid="da8jzp0"
             >
@@ -174,7 +174,7 @@ export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
         </div>
         <div className="flex gap-2" data-oid="obmyq1v">
           <Button
-            variant="gold"
+            variant="accent"
             size="sm"
             leftIcon={<Sparkles className="w-4 h-4" />}
             onClick={handleGenerateTasks}
@@ -208,10 +208,10 @@ export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
         <div
           className={`text-sm px-3 py-2 rounded border ${
             generateMessage.type === "success"
-              ? "bg-ink-green/10 text-ink-green border-ink-green/30"
+              ? "bg-emerald-400/10 text-emerald-400 border-emerald-400/30"
               : generateMessage.type === "error"
-                ? "bg-ink-red/10 text-ink-red border-ink-red/30"
-                : "bg-ink-gold/10 text-ink-gold border-ink-gold/30"
+                ? "bg-red-400/10 text-destructive border-destructive/30"
+                : "bg-spectral/10 text-spectral border-spectral"
           }`}
         >
           {generateMessage.text}
@@ -232,8 +232,8 @@ export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
               onClick={() => setCategoryFilter(filter.value)}
               className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                 categoryFilter === filter.value
-                  ? "bg-wood-medium text-ink-gold"
-                  : "text-sepia/70 hover:bg-parchment-dark border border-wood-medium/20"
+                  ? "bg-ghost-light text-spectral"
+                  : "text-muted-foreground/60 hover:bg-card border border-border"
               }`}
             >
               {filter.label}
@@ -244,12 +244,12 @@ export function EventChecklistTab({ eventId, tier }: EventChecklistTabProps) {
 
       {/* Checklist sections */}
       {total === 0 ? (
-        <div className="text-center py-8 text-sepia" data-oid="0qwcj9x">
+        <div className="text-center py-8 text-muted-foreground" data-oid="0qwcj9x">
           <ListChecks
-            className="w-10 h-10 mx-auto mb-3 text-sepia/30"
+            className="w-10 h-10 mx-auto mb-3 text-muted-foreground/60"
             data-oid="5a-vcan"
           />
-          <p className="font-serif" data-oid="fcq2q4m">
+          <p className="" data-oid="fcq2q4m">
             No tasks on the ledger
           </p>
           <p className="text-sm mt-1" data-oid="txrh9h9">

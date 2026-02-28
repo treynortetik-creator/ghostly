@@ -9,7 +9,7 @@ import type { ExpenseWithRelations } from "@/types/database";
 /* ============================================
    EXPENSE CARD COMPONENT
    ============================================
-   Victorian-styled card showing expense summary
+   Ghostly-themed card showing expense summary
    with vendor, amount, date, and target info.
    ============================================ */
 
@@ -37,9 +37,9 @@ const sourceLabels: Record<string, string> = {
 };
 
 const sourceBadgeColors: Record<string, string> = {
-  manual: "bg-sepia/15 text-sepia border-sepia/30",
-  brex: "bg-ink-green/15 text-ink-green border-ink-green/30",
-  pdf: "bg-ink-gold/15 text-ink-gold border-ink-gold/30",
+  manual: "bg-muted-foreground/15 text-muted-foreground border-muted-foreground/30",
+  brex: "bg-emerald-400/10 text-emerald-400 border-emerald-400/30",
+  pdf: "bg-spectral/10 text-spectral border-spectral",
 };
 
 export function ExpenseCard({
@@ -74,7 +74,7 @@ export function ExpenseCard({
               data-oid="z.16l5v"
             >
               <h3
-                className="font-serif font-semibold text-wood-dark truncate"
+                className="font-semibold text-foreground truncate"
                 data-oid="-t-vyib"
               >
                 {expense.vendor || "Unknown Vendor"}
@@ -95,7 +95,7 @@ export function ExpenseCard({
             {/* Memo */}
             {!compact && expense.memo && (
               <p
-                className="text-sm text-sepia truncate mt-1"
+                className="text-sm text-muted-foreground truncate mt-1"
                 data-oid="bh-cabv"
               >
                 {expense.memo}
@@ -104,7 +104,7 @@ export function ExpenseCard({
 
             {/* Meta info: date and target */}
             <div
-              className="flex flex-wrap items-center gap-3 mt-2 text-sm text-sepia"
+              className="flex flex-wrap items-center gap-3 mt-2 text-sm text-muted-foreground"
               data-oid="bv7f9eu"
             >
               <span
@@ -114,19 +114,19 @@ export function ExpenseCard({
                 <Calendar className="w-3.5 h-3.5" data-oid="4vpe0ms" />
                 {formatDateMedium(expense.expense_date)}
               </span>
-              <span className="text-wood-medium/30" data-oid="15ckp9r">
+              <span className="text-muted-foreground/30" data-oid="15ckp9r">
                 |
               </span>
               <Link
                 href={targetLink}
-                className="inline-flex items-center gap-1 hover:text-ink-gold transition-colors"
+                className="inline-flex items-center gap-1 hover:text-spectral transition-colors"
                 data-oid="diit:b9"
               >
                 <TargetIcon className="w-3.5 h-3.5" data-oid="5f_0kzq" />
                 <span className="truncate max-w-[200px]" data-oid="ubx2t3l">
                   {expense.target_name}
                 </span>
-                <span className="text-xs text-sepia/60" data-oid="573v4_q">
+                <span className="text-xs text-muted-foreground/60" data-oid="573v4_q">
                   ({expense.target_type === "event" ? "Event" : "Category"})
                 </span>
               </Link>
@@ -137,7 +137,7 @@ export function ExpenseCard({
           <div className="flex items-center gap-4" data-oid="e36ar4c">
             <div className="text-right" data-oid="yfcaeu9">
               <span
-                className="font-serif text-lg font-semibold tabular-nums text-wood-dark"
+                className="text-lg font-semibold tabular-nums text-foreground"
                 data-oid="oea:hnb"
               >
                 {formatCurrency(expense.amount)}
@@ -147,13 +147,13 @@ export function ExpenseCard({
             {/* Action buttons */}
             {(onEdit || onDelete) && (
               <div
-                className="flex items-center gap-2 border-l border-wood-medium/20 pl-4"
+                className="flex items-center gap-2 border-l border-border pl-4"
                 data-oid="1dw6vtw"
               >
                 {onEdit && (
                   <button
                     onClick={() => onEdit(expense)}
-                    className="p-2 rounded-md text-sepia hover:text-ink-gold hover:bg-ink-gold/10 transition-colors"
+                    className="p-2 rounded-md text-muted-foreground hover:text-spectral hover:bg-spectral/10 transition-colors"
                     aria-label="Edit expense"
                     data-oid="nqc3egk"
                   >
@@ -163,7 +163,7 @@ export function ExpenseCard({
                 {onDelete && (
                   <button
                     onClick={() => onDelete(expense)}
-                    className="p-2 rounded-md text-sepia hover:text-ink-red hover:bg-ink-red/10 transition-colors"
+                    className="p-2 rounded-md text-muted-foreground hover:text-destructive hover:bg-red-400/10 transition-colors"
                     aria-label="Delete expense"
                     data-oid="xe6qjzk"
                   >

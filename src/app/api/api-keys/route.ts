@@ -1,5 +1,5 @@
 /**
- * The Counting House - API Keys Management
+ * Ghostly - API Keys Management
  *
  * Endpoints:
  * GET  /api/api-keys - List all API keys (redacted)

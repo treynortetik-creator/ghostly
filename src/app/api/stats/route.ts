@@ -1,5 +1,5 @@
 /**
- * The Counting House - Stats API
+ * Ghostly - Stats API
  *
  * Endpoints:
  * GET /api/stats - Global statistics for the active fiscal year

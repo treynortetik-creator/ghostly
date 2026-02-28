@@ -1,5 +1,5 @@
 /**
- * The Counting House - Expense Components Exports
+ * Ghostly - Expense Components Exports
  */
 
 export { ExpenseForm } from './ExpenseForm';

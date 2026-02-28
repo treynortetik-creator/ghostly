@@ -15,7 +15,7 @@ import { sanitizeCurrency } from "@/lib/format";
 /* ============================================
    CATEGORY FORM COMPONENT
    ============================================
-   Victorian-styled form for creating and editing
+   Ghostly-themed form for creating and editing
    budget categories. Simple form with name,
    budget amount, and description.
    ============================================ */
@@ -99,16 +99,16 @@ export function CategoryForm({
 
   const inputClasses = `
     w-full px-4 py-2.5 rounded-md
-    bg-parchment border border-wood-medium/40
-    text-ink-black placeholder-sepia/50
-    focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold
+    bg-background border border-border
+    text-foreground placeholder-muted-foreground/50
+    focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral
     transition-colors duration-200
     disabled:opacity-50 disabled:cursor-not-allowed
   `;
 
-  const labelClasses = "block text-sm font-medium text-wood-dark mb-1.5";
+  const labelClasses = "block text-sm font-medium text-foreground mb-1.5";
 
-  const errorClasses = "text-xs text-ink-red mt-1";
+  const errorClasses = "text-xs text-destructive mt-1";
 
   return (
     <Card data-oid="t9r9fd8">
@@ -124,7 +124,7 @@ export function CategoryForm({
           <div data-oid="3egwnir">
             <label htmlFor="name" className={labelClasses} data-oid="okelwke">
               Category Name{" "}
-              <span className="text-ink-red" data-oid="y-k:9:4">
+              <span className="text-destructive" data-oid="y-k:9:4">
                 *
               </span>
             </label>
@@ -154,13 +154,13 @@ export function CategoryForm({
               data-oid="6i.r:v0"
             >
               Budget Amount{" "}
-              <span className="text-ink-red" data-oid="ibg2wy:">
+              <span className="text-destructive" data-oid="ibg2wy:">
                 *
               </span>
             </label>
             <div className="relative" data-oid="23lxoqx">
               <span
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-sepia"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 data-oid="csav8lh"
               >
                 $

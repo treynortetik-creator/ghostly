@@ -1,5 +1,5 @@
 /**
- * The Counting House - Export Components
+ * Ghostly - Export Components
  * Components for exporting ledger data
  */
 

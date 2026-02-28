@@ -41,27 +41,27 @@ export function ConfirmDialog({
 
   const icon =
     variant === "danger" ? (
-      <Trash2 className="w-6 h-6 text-ink-red" />
+      <Trash2 className="w-6 h-6 text-red-400" />
     ) : variant === "warning" ? (
-      <AlertTriangle className="w-6 h-6 text-ink-gold" />
+      <AlertTriangle className="w-6 h-6 text-amber-400" />
     ) : (
-      <HelpCircle className="w-6 h-6 text-wood-dark dark:text-ink-black" />
+      <HelpCircle className="w-6 h-6 text-foreground" />
     );
 
   return (
     <dialog
       ref={dialogRef}
-      className="fixed inset-0 z-50 m-auto max-w-md rounded-lg border border-wood-medium/40 bg-parchment p-0 shadow-xl backdrop:bg-black/50 dark:border-wood-medium dark:bg-parchment-dark"
+      className="fixed inset-0 z-50 m-auto max-w-md rounded-xl border border-border bg-card p-0 shadow-xl glass-shadow backdrop:bg-black/50"
       onClose={onCancel}
     >
       <div className="p-6">
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0 mt-0.5">{icon}</div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-wood-dark dark:text-ink-black font-[family-name:var(--font-playfair)]">
+            <h3 className="text-lg font-semibold text-foreground">
               {title}
             </h3>
-            <p className="mt-2 text-sm text-sepia">{message}</p>
+            <p className="mt-2 text-sm text-muted-foreground">{message}</p>
           </div>
         </div>
         <div className="mt-6 flex justify-end gap-3">

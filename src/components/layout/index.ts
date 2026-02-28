@@ -1,3 +1,3 @@
-// Layout Components - The Counting House
+// Layout Components - Ghostly
 
 export { AppShell } from './AppShell';

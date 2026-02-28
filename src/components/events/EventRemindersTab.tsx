@@ -21,10 +21,10 @@ interface EventRemindersTabProps {
 }
 
 const statusConfig: Record<ReminderStatus, { label: string; className: string }> = {
-  pending: { label: 'Pending', className: 'bg-ink-gold/15 text-ink-gold border-ink-gold/30' },
-  sent: { label: 'Sent', className: 'bg-ink-green/15 text-ink-green border-ink-green/30' },
-  dismissed: { label: 'Dismissed', className: 'bg-wood-medium/15 text-sepia border-wood-medium/30' },
-  snoozed: { label: 'Snoozed', className: 'bg-sepia/15 text-sepia border-sepia/30' },
+  pending: { label: 'Pending', className: 'bg-spectral/10 text-spectral border-spectral' },
+  sent: { label: 'Sent', className: 'bg-emerald-400/10 text-emerald-400 border-emerald-400/30' },
+  dismissed: { label: 'Dismissed', className: 'bg-spectral/10 text-muted-foreground border-border' },
+  snoozed: { label: 'Snoozed', className: 'bg-muted-foreground/15 text-muted-foreground border-muted-foreground/30' },
 };
 
 function getStatusClasses(reminder: EventReminder): string {
@@ -34,7 +34,7 @@ function getStatusClasses(reminder: EventReminder): string {
   reminderDate.setHours(0, 0, 0, 0);
 
   if (reminder.status === 'pending' && reminderDate < today) {
-    return 'bg-ink-red/15 text-ink-red border-ink-red/30';
+    return 'bg-red-400/10 text-destructive border-destructive/30';
   }
   return statusConfig[reminder.status]?.className || statusConfig.pending.className;
 }
@@ -111,7 +111,7 @@ export function EventRemindersTab({ eventId, eventDateStart }: EventRemindersTab
   };
 
   if (isLoading) {
-    return <div className="py-8 text-center text-sepia">Loading reminders...</div>;
+    return <div className="py-8 text-center text-muted-foreground">Loading reminders...</div>;
   }
 
   const sortedReminders = [...reminders].sort(
@@ -124,8 +124,8 @@ export function EventRemindersTab({ eventId, eventDateStart }: EventRemindersTab
       {/* Generate Reminders Action */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Bell className="w-5 h-5 text-ink-gold" />
-          <span className="text-sm text-sepia">
+          <Bell className="w-5 h-5 text-spectral" />
+          <span className="text-sm text-muted-foreground">
             {reminders.length} reminder{reminders.length !== 1 ? 's' : ''}
           </span>
         </div>
@@ -141,20 +141,20 @@ export function EventRemindersTab({ eventId, eventDateStart }: EventRemindersTab
           {!eventDateStart ? (
             <div className="relative group">
               <Button
-                variant="gold"
+                variant="accent"
                 size="sm"
                 disabled
                 leftIcon={<Bell className="w-4 h-4" />}
               >
                 Generate Reminders
               </Button>
-              <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-wood-dark text-parchment text-xs rounded shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-ghost-dark text-phantom text-xs rounded shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 Set event start date first
               </div>
             </div>
           ) : (
             <Button
-              variant="gold"
+              variant="accent"
               size="sm"
               onClick={() => setShowGenerateConfirm(true)}
               isLoading={isGenerating}
@@ -168,16 +168,16 @@ export function EventRemindersTab({ eventId, eventDateStart }: EventRemindersTab
 
       {/* Generate Confirmation */}
       {showGenerateConfirm && (
-        <Card className="bg-ink-gold/5 border-ink-gold/30">
+        <Card className="bg-spectral/10 border-spectral">
           <CardContent className="py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <AlertTriangle className="w-5 h-5 text-ink-gold" />
+                <AlertTriangle className="w-5 h-5 text-spectral" />
                 <div>
-                  <p className="font-medium text-ink-black">
+                  <p className="font-medium text-foreground">
                     Generate reminders from cadence template?
                   </p>
-                  <p className="text-sm text-sepia">
+                  <p className="text-sm text-muted-foreground">
                     This will replace any existing reminders for this event.
                   </p>
                 </div>
@@ -191,7 +191,7 @@ export function EventRemindersTab({ eventId, eventDateStart }: EventRemindersTab
                   Cancel
                 </Button>
                 <Button
-                  variant="gold"
+                  variant="accent"
                   size="sm"
                   onClick={handleGenerate}
                   isLoading={isGenerating}
@@ -209,9 +209,9 @@ export function EventRemindersTab({ eventId, eventDateStart }: EventRemindersTab
         <Card>
           <CardContent className="py-12">
             <div className="text-center">
-              <Bell className="w-10 h-10 text-sepia/30 mx-auto mb-3" />
-              <p className="text-sepia">No reminders generated yet.</p>
-              <p className="text-sm text-sepia/70 mt-1">
+              <Bell className="w-10 h-10 text-muted-foreground/60 mx-auto mb-3" />
+              <p className="text-muted-foreground">No reminders generated yet.</p>
+              <p className="text-sm text-muted-foreground/60 mt-1">
                 Click &ldquo;Generate Reminders&rdquo; to create a reminder schedule from a cadence template.
               </p>
             </div>
@@ -222,18 +222,18 @@ export function EventRemindersTab({ eventId, eventDateStart }: EventRemindersTab
           {sortedReminders.map(reminder => (
             <div
               key={reminder.id}
-              className="flex items-center justify-between p-4 rounded-lg bg-parchment border border-wood-medium/20 hover:border-wood-medium/40 transition-colors"
+              className="flex items-center justify-between p-4 rounded-lg bg-background border border-border hover:border-border transition-colors"
             >
               <div className="flex items-center gap-4 flex-1 min-w-0">
                 <div className="text-right min-w-[130px]">
-                  <p className="text-sm font-medium tabular-nums text-ink-black">
+                  <p className="text-sm font-medium tabular-nums text-foreground">
                     {formatDateLong(reminder.reminder_date)}
                   </p>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-ink-black truncate">{reminder.title}</p>
+                  <p className="font-medium text-foreground truncate">{reminder.title}</p>
                   {reminder.description && (
-                    <p className="text-sm text-sepia truncate">{reminder.description}</p>
+                    <p className="text-sm text-muted-foreground truncate">{reminder.description}</p>
                   )}
                 </div>
               </div>

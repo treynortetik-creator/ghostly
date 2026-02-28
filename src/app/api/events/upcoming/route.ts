@@ -1,5 +1,5 @@
 /**
- * The Counting House - Upcoming Events API
+ * Ghostly - Upcoming Events API
  *
  * GET /api/events/upcoming - List events starting within the next N days
  */

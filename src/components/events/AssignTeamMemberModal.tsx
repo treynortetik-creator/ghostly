@@ -60,26 +60,26 @@ export function AssignTeamMemberModal({
 
   return (
     <div
-      className="fixed inset-0 bg-ink-black/50 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
       data-oid="rpgkp9k"
     >
       <div
-        className="bg-parchment rounded-lg border border-wood-medium/40 parchment-shadow w-full max-w-md"
+        className="bg-background rounded-lg border border-border glass-shadow w-full max-w-md"
         data-oid="6hxnp:i"
       >
         <div
-          className="px-6 py-4 border-b border-wood-medium/20 flex items-center justify-between"
+          className="px-6 py-4 border-b border-border flex items-center justify-between"
           data-oid="s4ctxz5"
         >
           <h2
-            className="font-serif text-xl font-semibold text-wood-dark"
+            className="text-xl font-semibold text-foreground"
             data-oid="c_f.t_r"
           >
             Assign Staff to Event
           </h2>
           <button
             onClick={onCancel}
-            className="text-sepia hover:text-wood-dark"
+            className="text-muted-foreground hover:text-foreground"
             data-oid="600rtyb"
           >
             <X className="w-5 h-5" data-oid="xaj7l_y" />
@@ -88,22 +88,22 @@ export function AssignTeamMemberModal({
 
         <div className="px-6 py-4 space-y-4" data-oid="reprmoi">
           {isFetching ? (
-            <p className="text-sm text-sepia" data-oid="php7j1p">
+            <p className="text-sm text-muted-foreground" data-oid="php7j1p">
               Loading staff roster...
             </p>
           ) : members.length === 0 ? (
-            <p className="text-sm text-sepia" data-oid="pnw:4m_">
+            <p className="text-sm text-muted-foreground" data-oid="pnw:4m_">
               All active staff members are already assigned to this event.
             </p>
           ) : (
             <>
               <div data-oid="2vdbiye">
                 <label
-                  className="block text-sm font-medium text-wood-dark mb-1"
+                  className="block text-sm font-medium text-foreground mb-1"
                   data-oid="s1inxbk"
                 >
                   Staff Member{" "}
-                  <span className="text-ink-red" data-oid="vb34_p_">
+                  <span className="text-destructive" data-oid="vb34_p_">
                     *
                   </span>
                 </label>
@@ -113,8 +113,8 @@ export function AssignTeamMemberModal({
                       key={m.id}
                       className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-colors ${
                         selectedId === m.id
-                          ? "border-ink-gold bg-ink-gold/5"
-                          : "border-wood-medium/20 hover:bg-parchment-dark"
+                          ? "border-spectral bg-spectral/10"
+                          : "border-border hover:bg-card"
                       }`}
                       data-oid="pyeq1cl"
                     >
@@ -134,34 +134,34 @@ export function AssignTeamMemberModal({
                       />
 
                       <div
-                        className="w-8 h-8 rounded-full bg-wood-medium/15 flex items-center justify-center flex-shrink-0"
+                        className="w-8 h-8 rounded-full bg-spectral/10 flex items-center justify-center flex-shrink-0"
                         data-oid="l8vbcj0"
                       >
                         <User
-                          className="w-4 h-4 text-wood-medium"
+                          className="w-4 h-4 text-muted-foreground"
                           data-oid="6oe9.3_"
                         />
                       </div>
                       <div className="flex-1" data-oid="kna0kwm">
                         <p
-                          className="text-sm font-medium text-wood-dark"
+                          className="text-sm font-medium text-foreground"
                           data-oid="u0rqajk"
                         >
                           {m.name}
                         </p>
                         {m.default_role && (
-                          <p className="text-xs text-sepia" data-oid="e0bt9na">
+                          <p className="text-xs text-muted-foreground" data-oid="e0bt9na">
                             {m.default_role}
                           </p>
                         )}
                       </div>
                       {selectedId === m.id && (
                         <div
-                          className="w-4 h-4 rounded-full bg-ink-gold flex items-center justify-center"
+                          className="w-4 h-4 rounded-full bg-spectral flex items-center justify-center"
                           data-oid="qdrugjp"
                         >
                           <div
-                            className="w-2 h-2 rounded-full bg-parchment"
+                            className="w-2 h-2 rounded-full bg-background"
                             data-oid=".lr3ypc"
                           />
                         </div>
@@ -173,7 +173,7 @@ export function AssignTeamMemberModal({
 
               <div data-oid="ll6p-3a">
                 <label
-                  className="block text-sm font-medium text-wood-dark mb-1"
+                  className="block text-sm font-medium text-foreground mb-1"
                   data-oid="sqjrvw7"
                 >
                   Role for this Event
@@ -185,7 +185,7 @@ export function AssignTeamMemberModal({
                   placeholder={
                     selectedMember?.default_role || "e.g., Booth Lead"
                   }
-                  className="w-full px-3 py-2 bg-parchment-dark border border-wood-medium/30 rounded-md text-ink-black placeholder-sepia/40 focus:outline-none focus:ring-2 focus:ring-ink-gold focus:border-transparent"
+                  className="w-full px-3 py-2 bg-card border border-border rounded-md text-foreground placeholder-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-spectral focus:border-transparent"
                   data-oid="b0r3wr_"
                 />
               </div>
@@ -194,7 +194,7 @@ export function AssignTeamMemberModal({
         </div>
 
         <div
-          className="px-6 py-4 border-t border-wood-medium/20 flex justify-end gap-3"
+          className="px-6 py-4 border-t border-border flex justify-end gap-3"
           data-oid="bm-7q9v"
         >
           <Button variant="secondary" onClick={onCancel} data-oid="w:qumtg">

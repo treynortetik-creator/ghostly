@@ -1,5 +1,5 @@
 /**
- * The Counting House - OpenRouter Models API
+ * Ghostly - OpenRouter Models API
  *
  * Endpoints:
  * GET /api/openrouter/models - Fetch available models from OpenRouter

@@ -1,5 +1,5 @@
 /**
- * The Counting House - Single Event API
+ * Ghostly - Single Event API
  *
  * Endpoints:
  * GET /api/events/[id] - Get a single event with its expenses

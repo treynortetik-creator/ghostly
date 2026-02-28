@@ -21,7 +21,7 @@ import { sanitizeCurrency } from "@/lib/format";
 /* ============================================
    EXPENSE FORM COMPONENT
    ============================================
-   Victorian-styled form for creating and editing expenses.
+   Ghostly-themed form for creating and editing expenses.
    Enforces XOR constraint: exactly one of event OR category.
    ============================================ */
 
@@ -165,16 +165,16 @@ export function ExpenseForm({
 
   const inputClasses = `
     w-full px-4 py-2.5 rounded-md
-    bg-parchment border border-wood-medium/40
-    text-ink-black placeholder-sepia/50
-    focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold
+    bg-background border border-border
+    text-foreground placeholder-muted-foreground/50
+    focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral
     transition-colors duration-200
     disabled:opacity-50 disabled:cursor-not-allowed
   `;
 
-  const labelClasses = "block text-sm font-medium text-wood-dark mb-1.5";
+  const labelClasses = "block text-sm font-medium text-foreground mb-1.5";
 
-  const errorClasses = "text-xs text-ink-red mt-1";
+  const errorClasses = "text-xs text-destructive mt-1";
 
   const radioLabelClasses = `
     flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer
@@ -194,7 +194,7 @@ export function ExpenseForm({
           {/* Expense Details */}
           <div className="space-y-4" data-oid="jzf:a-l">
             <h4
-              className="text-sm font-semibold text-wood-dark border-b border-wood-medium/20 pb-2"
+              className="text-sm font-semibold text-foreground border-b border-border pb-2"
               data-oid="1lj3bl7"
             >
               Expense Details
@@ -212,13 +212,13 @@ export function ExpenseForm({
                   data-oid="9j1dukx"
                 >
                   Amount{" "}
-                  <span className="text-ink-red" data-oid="cf3:s:1">
+                  <span className="text-destructive" data-oid="cf3:s:1">
                     *
                   </span>
                 </label>
                 <div className="relative" data-oid="j8ep4lk">
                   <span
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-sepia"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                     data-oid="f4pbn0b"
                   >
                     $
@@ -250,7 +250,7 @@ export function ExpenseForm({
                   data-oid="tpu7nc4"
                 >
                   Date{" "}
-                  <span className="text-ink-red" data-oid="duuever">
+                  <span className="text-destructive" data-oid="duuever">
                     *
                   </span>
                 </label>
@@ -338,14 +338,14 @@ export function ExpenseForm({
           {/* Target Selection - XOR Constraint */}
           <div className="space-y-4" data-oid="xdoolqo">
             <h4
-              className="text-sm font-semibold text-wood-dark border-b border-wood-medium/20 pb-2"
+              className="text-sm font-semibold text-foreground border-b border-border pb-2"
               data-oid="bls.xdl"
             >
               Assign To{" "}
-              <span className="text-ink-red" data-oid="nb93mcz">
+              <span className="text-destructive" data-oid="nb93mcz">
                 *
               </span>
-              <span className="font-normal text-sepia ml-2" data-oid="nufuk25">
+              <span className="font-normal text-muted-foreground ml-2" data-oid="nufuk25">
                 (select one)
               </span>
             </h4>
@@ -361,8 +361,8 @@ export function ExpenseForm({
                   ${radioLabelClasses}
                   ${
                     formData.target_type === "event"
-                      ? "border-ink-gold bg-ink-gold/5"
-                      : "border-wood-medium/30 hover:border-wood-medium/50 bg-parchment/50"
+                      ? "border-spectral bg-spectral/10"
+                      : "border-border hover:border-border bg-background/50"
                   }
                 `}
                 data-oid="5eb8ps:"
@@ -373,19 +373,19 @@ export function ExpenseForm({
                   value="event"
                   checked={formData.target_type === "event"}
                   onChange={() => handleTargetTypeChange("event")}
-                  className="w-4 h-4 text-ink-gold focus:ring-ink-gold/50"
+                  className="w-4 h-4 text-spectral focus:ring-spectral/50"
                   disabled={isLoading}
                   data-oid="ij1mvof"
                 />
 
                 <div data-oid="1.kke1g">
                   <span
-                    className="font-medium text-wood-dark"
+                    className="font-medium text-foreground"
                     data-oid="nld290v"
                   >
                     Event
                   </span>
-                  <p className="text-xs text-sepia" data-oid="cb_qxs.">
+                  <p className="text-xs text-muted-foreground" data-oid="cb_qxs.">
                     Assign to a specific conference or meeting
                   </p>
                 </div>
@@ -397,8 +397,8 @@ export function ExpenseForm({
                   ${radioLabelClasses}
                   ${
                     formData.target_type === "category"
-                      ? "border-ink-gold bg-ink-gold/5"
-                      : "border-wood-medium/30 hover:border-wood-medium/50 bg-parchment/50"
+                      ? "border-spectral bg-spectral/10"
+                      : "border-border hover:border-border bg-background/50"
                   }
                 `}
                 data-oid="0n9rs-o"
@@ -409,19 +409,19 @@ export function ExpenseForm({
                   value="category"
                   checked={formData.target_type === "category"}
                   onChange={() => handleTargetTypeChange("category")}
-                  className="w-4 h-4 text-ink-gold focus:ring-ink-gold/50"
+                  className="w-4 h-4 text-spectral focus:ring-spectral/50"
                   disabled={isLoading}
                   data-oid="oqfd.:-"
                 />
 
                 <div data-oid="dciaxxo">
                   <span
-                    className="font-medium text-wood-dark"
+                    className="font-medium text-foreground"
                     data-oid="9sr-g3d"
                   >
                     Category
                   </span>
-                  <p className="text-xs text-sepia" data-oid="0kxul8j">
+                  <p className="text-xs text-muted-foreground" data-oid="0kxul8j">
                     Assign to a budget category
                   </p>
                 </div>
@@ -437,7 +437,7 @@ export function ExpenseForm({
                   data-oid="hqu5-8z"
                 >
                   Select Event{" "}
-                  <span className="text-ink-red" data-oid="80qy4qs">
+                  <span className="text-destructive" data-oid="80qy4qs">
                     *
                   </span>
                 </label>
@@ -475,7 +475,7 @@ export function ExpenseForm({
                   data-oid="d-n68_0"
                 >
                   Select Category{" "}
-                  <span className="text-ink-red" data-oid="3i5.:_e">
+                  <span className="text-destructive" data-oid="3i5.:_e">
                     *
                   </span>
                 </label>

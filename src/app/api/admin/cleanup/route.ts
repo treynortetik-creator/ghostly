@@ -1,5 +1,5 @@
 /**
- * The Counting House - Data Retention & Cleanup API
+ * Ghostly - Data Retention & Cleanup API
  *
  * POST /api/admin/cleanup - Run maintenance tasks (admin only)
  *

@@ -1,5 +1,5 @@
 /**
- * The Counting House - Settings API
+ * Ghostly - Settings API
  *
  * Endpoints:
  * GET /api/settings - Get current settings (including custom AI prompts)

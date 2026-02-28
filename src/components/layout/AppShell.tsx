@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -14,7 +15,6 @@ import {
   Settings,
   Shield,
   LogOut,
-  BookOpen,
   Menu,
   X,
   Users,
@@ -114,31 +114,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <aside
         className={`
           hidden md:flex flex-col fixed top-0 left-0 h-screen z-40
-          bg-wood-dark dark:bg-sidebar ink-shadow
-          text-parchment dark:text-sidebar-foreground
-          border-r border-wood-medium/30 dark:border-sidebar-border
+          bg-sidebar spectral-shadow
+          text-sidebar-foreground
+          border-r border-sidebar-border
           transition-all duration-300 overflow-hidden
           ${isCollapsed ? "w-[68px]" : "w-64"}
         `}
       >
         {/* Top decorative border */}
-        <div className="h-1 bg-gradient-to-r from-transparent via-ink-gold/40 to-transparent shrink-0" />
+        <div className="h-1 bg-gradient-to-r from-transparent via-spectral/30 to-transparent shrink-0" />
 
         {/* Logo section */}
         <div className="flex items-center gap-3 px-4 py-4 shrink-0">
-          <div className="flex items-center justify-center w-9 h-9 rounded bg-wood-medium/50 border border-wood-light/20 shrink-0">
-            <BookOpen className="w-5 h-5 text-ink-gold" />
-          </div>
+          <Image src="/images/ghostly-logo.jpg" alt="Ghostly" width={28} height={28} className="rounded shrink-0" />
           <div
             className={`
               flex flex-col overflow-hidden transition-all duration-300
               ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"}
             `}
           >
-            <h1 className="font-serif text-lg font-semibold tracking-wide text-parchment dark:text-sidebar-foreground whitespace-nowrap">
+            <h1 className="text-lg font-semibold tracking-wide text-sidebar-foreground whitespace-nowrap">
               Ghostly
             </h1>
-            <span className="text-[10px] text-parchment/50 dark:text-sidebar-foreground/50 tracking-widest uppercase -mt-0.5 whitespace-nowrap">
+            <span className="text-[10px] text-sidebar-foreground/50 tracking-widest uppercase -mt-0.5 whitespace-nowrap">
               ghostly.ai
             </span>
           </div>
@@ -146,14 +144,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Decorative divider */}
         <div className="px-3 shrink-0">
-          <div className="h-px bg-gradient-to-r from-transparent via-wood-medium to-transparent" />
-          <div className="flex items-center justify-center -mt-px">
-            <div className="flex items-center gap-2">
-              <span className="w-8 h-px bg-gradient-to-r from-transparent to-ink-gold/30" />
-              <span className="text-ink-gold/40 text-xs">&#9830;</span>
-              <span className="w-8 h-px bg-gradient-to-l from-transparent to-ink-gold/30" />
-            </div>
-          </div>
+          <div className="h-px bg-gradient-to-r from-transparent via-spectral/20 to-transparent" />
         </div>
 
         {/* Navigation items */}
@@ -174,8 +165,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   transition-all duration-200
                   ${
                     isActive
-                      ? "bg-wood-medium text-ink-gold dark:bg-sidebar-accent dark:text-sidebar-primary"
-                      : "text-parchment/80 dark:text-sidebar-foreground/80 hover:bg-wood-medium/50 dark:hover:bg-sidebar-accent/50 hover:text-parchment dark:hover:text-sidebar-foreground"
+                      ? "bg-spectral/10 text-spectral border-l-2 border-spectral"
+                      : "text-sidebar-foreground/60 hover:bg-spectral/5 hover:text-sidebar-foreground"
                   }
                 `}
               >
@@ -191,7 +182,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
                 {/* Tooltip on hover when collapsed */}
                 {isCollapsed && (
-                  <span className="absolute left-full ml-2 px-2 py-1 rounded bg-ink-black text-parchment text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+                  <span className="absolute left-full ml-2 px-2 py-1 rounded bg-ghost-light text-phantom text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
                     {item.name}
                   </span>
                 )}
@@ -202,14 +193,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Bottom section */}
         <div className="mt-auto px-3 pb-3 space-y-1 shrink-0">
-          <div className="h-px bg-gradient-to-r from-transparent via-wood-medium/50 to-transparent mb-2" />
+          <div className="h-px bg-gradient-to-r from-transparent via-spectral/15 to-transparent mb-2" />
 
           {/* Theme toggle */}
           <button
             onClick={cycleTheme}
             title={isCollapsed ? `Theme: ${themeLabels[theme]}` : undefined}
             className="group relative w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md
-              text-parchment/70 dark:text-sidebar-foreground/70 hover:bg-wood-medium/50 dark:hover:bg-sidebar-accent/50 hover:text-parchment dark:hover:text-sidebar-foreground
+              text-sidebar-foreground/50 hover:bg-spectral/5 hover:text-sidebar-foreground
               transition-all duration-200"
           >
             <ThemeIcon className="w-5 h-5 shrink-0" />
@@ -222,7 +213,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {themeLabels[theme]}
             </span>
             {isCollapsed && (
-              <span className="absolute left-full ml-2 px-2 py-1 rounded bg-ink-black text-parchment text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+              <span className="absolute left-full ml-2 px-2 py-1 rounded bg-ghost-light text-phantom text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
                 Theme: {themeLabels[theme]}
               </span>
             )}
@@ -233,7 +224,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             onClick={toggleCollapsed}
             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             className="group relative w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md
-              text-parchment/70 dark:text-sidebar-foreground/70 hover:bg-wood-medium/50 dark:hover:bg-sidebar-accent/50 hover:text-parchment dark:hover:text-sidebar-foreground
+              text-sidebar-foreground/50 hover:bg-spectral/5 hover:text-sidebar-foreground
               transition-all duration-200"
           >
             {isCollapsed ? (
@@ -250,7 +241,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               Collapse
             </span>
             {isCollapsed && (
-              <span className="absolute left-full ml-2 px-2 py-1 rounded bg-ink-black text-parchment text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+              <span className="absolute left-full ml-2 px-2 py-1 rounded bg-ghost-light text-phantom text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
                 Expand sidebar
               </span>
             )}
@@ -261,7 +252,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             onClick={handleLogout}
             title={isCollapsed ? "Sign Out" : undefined}
             className="group relative w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md
-              text-parchment/60 dark:text-sidebar-foreground/60 hover:text-ink-red hover:bg-wood-medium/30 dark:hover:bg-sidebar-accent/30
+              text-sidebar-foreground/50 hover:text-destructive hover:bg-destructive/10
               transition-all duration-200"
           >
             <LogOut className="w-5 h-5 shrink-0" />
@@ -274,7 +265,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               Sign Out
             </span>
             {isCollapsed && (
-              <span className="absolute left-full ml-2 px-2 py-1 rounded bg-ink-black text-parchment text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+              <span className="absolute left-full ml-2 px-2 py-1 rounded bg-ghost-light text-phantom text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
                 Sign Out
               </span>
             )}
@@ -283,18 +274,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* ===== Mobile Top Bar ===== */}
-      <header className="md:hidden sticky top-0 z-40 bg-wood-dark dark:bg-sidebar ink-shadow text-parchment dark:text-sidebar-foreground">
-        <div className="h-1 bg-gradient-to-r from-transparent via-ink-gold/40 to-transparent" />
+      <header className="md:hidden sticky top-0 z-40 bg-sidebar spectral-shadow text-sidebar-foreground">
+        <div className="h-1 bg-gradient-to-r from-transparent via-spectral/30 to-transparent" />
         <div className="flex items-center justify-between h-14 px-4">
           <button
             onClick={() => setMobileMenuOpen(true)}
             className="flex items-center justify-center w-10 h-10 rounded-md
-              text-parchment/80 dark:text-sidebar-foreground/80 hover:bg-wood-medium/50 transition-colors"
+              text-sidebar-foreground/60 hover:bg-spectral/5 transition-colors"
             aria-label="Open navigation menu"
           >
             <Menu className="w-5 h-5" />
           </button>
-          <h1 className="font-serif text-lg font-semibold tracking-wide text-parchment dark:text-sidebar-foreground">
+          <h1 className="text-lg font-semibold tracking-wide text-sidebar-foreground">
             Ghostly
           </h1>
           {/* Spacer for centering */}
@@ -312,28 +303,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           />
 
           {/* Sidebar drawer */}
-          <aside className="relative flex flex-col w-64 h-full bg-wood-dark dark:bg-sidebar text-parchment dark:text-sidebar-foreground ink-shadow animate-fade-in">
+          <aside className="relative flex flex-col w-64 h-full bg-sidebar text-sidebar-foreground spectral-shadow animate-fade-in">
             {/* Top decorative border */}
-            <div className="h-1 bg-gradient-to-r from-transparent via-ink-gold/40 to-transparent shrink-0" />
+            <div className="h-1 bg-gradient-to-r from-transparent via-spectral/30 to-transparent shrink-0" />
 
             {/* Logo + close */}
             <div className="flex items-center justify-between px-4 py-4 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-9 h-9 rounded bg-wood-medium/50 border border-wood-light/20">
-                  <BookOpen className="w-5 h-5 text-ink-gold" />
-                </div>
+                <Image src="/images/ghostly-logo.jpg" alt="Ghostly" width={28} height={28} className="rounded" />
                 <div className="flex flex-col">
-                  <h1 className="font-serif text-lg font-semibold tracking-wide text-parchment dark:text-sidebar-foreground">
+                  <h1 className="text-lg font-semibold tracking-wide text-sidebar-foreground">
                     Ghostly
                   </h1>
-                  <span className="text-[10px] text-parchment/50 dark:text-sidebar-foreground/50 tracking-widest uppercase -mt-0.5">
+                  <span className="text-[10px] text-sidebar-foreground/50 tracking-widest uppercase -mt-0.5">
                     ghostly.ai
                   </span>
                 </div>
               </div>
               <button
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center w-8 h-8 rounded-md text-parchment/60 hover:text-parchment hover:bg-wood-medium/50 transition-colors"
+                className="flex items-center justify-center w-8 h-8 rounded-md text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-spectral/5 transition-colors"
                 aria-label="Close navigation menu"
               >
                 <X className="w-5 h-5" />
@@ -342,14 +331,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
             {/* Decorative divider */}
             <div className="px-3 shrink-0">
-              <div className="h-px bg-gradient-to-r from-transparent via-wood-medium to-transparent" />
-              <div className="flex items-center justify-center -mt-px">
-                <div className="flex items-center gap-2">
-                  <span className="w-8 h-px bg-gradient-to-r from-transparent to-ink-gold/30" />
-                  <span className="text-ink-gold/40 text-xs">&#9830;</span>
-                  <span className="w-8 h-px bg-gradient-to-l from-transparent to-ink-gold/30" />
-                </div>
-              </div>
+              <div className="h-px bg-gradient-to-r from-transparent via-spectral/20 to-transparent" />
             </div>
 
             {/* Navigation */}
@@ -370,8 +352,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       transition-all duration-200
                       ${
                         isActive
-                          ? "bg-wood-medium text-ink-gold dark:bg-sidebar-accent dark:text-sidebar-primary"
-                          : "text-parchment/80 dark:text-sidebar-foreground/80 hover:bg-wood-medium/50 dark:hover:bg-sidebar-accent/50 hover:text-parchment dark:hover:text-sidebar-foreground"
+                          ? "bg-spectral/10 text-spectral border-l-2 border-spectral"
+                          : "text-sidebar-foreground/60 hover:bg-spectral/5 hover:text-sidebar-foreground"
                       }
                     `}
                   >
@@ -384,13 +366,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
             {/* Bottom section */}
             <div className="mt-auto px-3 pb-3 space-y-1 shrink-0">
-              <div className="h-px bg-gradient-to-r from-transparent via-wood-medium/50 to-transparent mb-2" />
+              <div className="h-px bg-gradient-to-r from-transparent via-spectral/15 to-transparent mb-2" />
 
               {/* Theme toggle */}
               <button
                 onClick={cycleTheme}
                 className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md
-                  text-parchment/70 dark:text-sidebar-foreground/70 hover:bg-wood-medium/50 dark:hover:bg-sidebar-accent/50 hover:text-parchment dark:hover:text-sidebar-foreground
+                  text-sidebar-foreground/50 hover:bg-spectral/5 hover:text-sidebar-foreground
                   transition-all duration-200"
               >
                 <ThemeIcon className="w-5 h-5" />
@@ -401,7 +383,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md
-                  text-parchment/60 dark:text-sidebar-foreground/60 hover:text-ink-red hover:bg-wood-medium/30 dark:hover:bg-sidebar-accent/30
+                  text-sidebar-foreground/50 hover:text-destructive hover:bg-destructive/10
                   transition-all duration-200"
               >
                 <LogOut className="w-5 h-5" />
@@ -427,14 +409,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </main>
 
         {/* Footer */}
-        <footer className="bg-parchment-dark dark:bg-card border-t border-wood-medium/20 dark:border-sidebar-border">
+        <footer className="bg-card border-t border-border">
           <div className="px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-              <p className="text-xs text-sepia/60 dark:text-muted-foreground/60 italic">
-                &ldquo;Keep careful accounts, and the shillings shall mind
-                themselves.&rdquo;
+              <p className="text-xs text-muted-foreground/60 italic">
+                &ldquo;The invisible hand managing your events.&rdquo;
               </p>
-              <p className="text-xs text-sepia/40 dark:text-muted-foreground/40">
+              <p className="text-xs text-muted-foreground/40">
                 Ghostly &middot; FY {new Date().getFullYear()}
               </p>
             </div>

@@ -19,14 +19,14 @@ import type { CadenceTemplate, CadenceMilestone, CadenceTemplateWithMilestones, 
 
 const inputClasses = `
   w-full px-4 py-2.5 rounded-md
-  bg-parchment border border-wood-medium/40
-  text-ink-black placeholder-sepia/50
-  focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold
+  bg-background border border-border
+  text-foreground placeholder-muted-foreground/50
+  focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral
   transition-colors duration-200
   disabled:opacity-50 disabled:cursor-not-allowed
 `;
 
-const labelClasses = 'block text-sm font-medium text-wood-dark mb-1.5';
+const labelClasses = 'block text-sm font-medium text-foreground mb-1.5';
 
 interface MilestoneFormData {
   offset_days: string;
@@ -52,13 +52,13 @@ function formatOffsetDays(days: number): string {
 }
 
 function offsetColor(days: number): string {
-  if (days < 0) return 'text-sepia';
-  if (days === 0) return 'text-ink-gold';
-  return 'text-ink-green';
+  if (days < 0) return 'text-muted-foreground';
+  if (days === 0) return 'text-spectral';
+  return 'text-emerald-400';
 }
 
 const notifyChannelLabels: Record<NotifyChannel, string> = {
-  scrooge: 'Scrooge',
+  scrooge: 'AI Agent',
   in_app: 'In-App',
   both: 'Both',
 };
@@ -340,7 +340,7 @@ export default function CadenceRegistryPage() {
       <div className="mb-6">
         <Link
           href="/settings"
-          className="inline-flex items-center text-sm text-sepia hover:text-wood-dark transition-colors"
+          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-1" />
           Back to Settings
@@ -350,11 +350,11 @@ export default function CadenceRegistryPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-serif font-bold text-wood-dark flex items-center gap-3">
-            <Clock className="w-8 h-8 text-ink-gold" />
+          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+            <Clock className="w-8 h-8 text-spectral" />
             The Cadence Registry
           </h1>
-          <p className="mt-1 text-sepia">
+          <p className="mt-1 text-muted-foreground">
             Manage reminder schedules for your events
           </p>
         </div>
@@ -382,10 +382,10 @@ export default function CadenceRegistryPage() {
 
       {/* Error Message */}
       {error && (
-        <div className="flex items-center gap-3 p-4 bg-ink-red/10 border border-ink-red/30 rounded-lg mb-6">
-          <AlertCircle className="w-5 h-5 text-ink-red flex-shrink-0" />
-          <p className="text-ink-red">{error}</p>
-          <button onClick={() => setError(null)} className="ml-auto text-ink-red hover:text-ink-red/70">
+        <div className="flex items-center gap-3 p-4 bg-red-400/10 border border-destructive/30 rounded-lg mb-6">
+          <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
+          <p className="text-destructive">{error}</p>
+          <button onClick={() => setError(null)} className="ml-auto text-destructive hover:text-destructive/70">
             &times;
           </button>
         </div>
@@ -395,8 +395,8 @@ export default function CadenceRegistryPage() {
       {isLoading && (
         <div className="flex items-center justify-center py-16">
           <div className="text-center">
-            <RefreshCw className="w-8 h-8 text-ink-gold animate-spin mx-auto mb-3" />
-            <p className="text-sepia">Loading cadence templates...</p>
+            <RefreshCw className="w-8 h-8 text-spectral animate-spin mx-auto mb-3" />
+            <p className="text-muted-foreground">Loading cadence templates...</p>
           </div>
         </div>
       )}
@@ -413,7 +413,7 @@ export default function CadenceRegistryPage() {
               <CardContent className="space-y-4">
                 <div>
                   <label htmlFor="new-template-name" className={labelClasses}>
-                    Template Name <span className="text-ink-red">*</span>
+                    Template Name <span className="text-destructive">*</span>
                   </label>
                   <input
                     type="text"
@@ -449,10 +449,10 @@ export default function CadenceRegistryPage() {
                         type="checkbox"
                         checked={newTemplateIsDefault}
                         onChange={(e) => setNewTemplateIsDefault(e.target.checked)}
-                        className="w-4 h-4 rounded border-wood-medium/40 text-ink-gold focus:ring-ink-gold/50"
+                        className="w-4 h-4 rounded border-border text-spectral focus:ring-spectral/50"
                         disabled={isSavingTemplate}
                       />
-                      <span className="text-sm text-wood-dark">Set as default template</span>
+                      <span className="text-sm text-foreground">Set as default template</span>
                     </label>
                   </div>
                 </div>
@@ -489,9 +489,9 @@ export default function CadenceRegistryPage() {
             <Card>
               <CardContent className="py-12">
                 <div className="text-center">
-                  <Clock className="w-10 h-10 text-sepia/30 mx-auto mb-3" />
-                  <p className="text-sepia">No cadence templates yet.</p>
-                  <p className="text-sm text-sepia/70 mt-1">
+                  <Clock className="w-10 h-10 text-muted-foreground/60 mx-auto mb-3" />
+                  <p className="text-muted-foreground">No cadence templates yet.</p>
+                  <p className="text-sm text-muted-foreground/60 mt-1">
                     Create a template to define reminder schedules for your events.
                   </p>
                   <Button
@@ -516,7 +516,7 @@ export default function CadenceRegistryPage() {
                     <div className="space-y-4">
                       <div>
                         <label className={labelClasses}>
-                          Template Name <span className="text-ink-red">*</span>
+                          Template Name <span className="text-destructive">*</span>
                         </label>
                         <input
                           type="text"
@@ -547,10 +547,10 @@ export default function CadenceRegistryPage() {
                               type="checkbox"
                               checked={editTemplateIsDefault}
                               onChange={(e) => setEditTemplateIsDefault(e.target.checked)}
-                              className="w-4 h-4 rounded border-wood-medium/40 text-ink-gold focus:ring-ink-gold/50"
+                              className="w-4 h-4 rounded border-border text-spectral focus:ring-spectral/50"
                               disabled={isSavingTemplate}
                             />
-                            <span className="text-sm text-wood-dark">Default template</span>
+                            <span className="text-sm text-foreground">Default template</span>
                           </label>
                         </div>
                       </div>
@@ -582,15 +582,15 @@ export default function CadenceRegistryPage() {
                         onClick={() => toggleExpand(template.id)}
                       >
                         {expandedTemplates.has(template.id) ? (
-                          <ChevronDown className="w-5 h-5 text-sepia" />
+                          <ChevronDown className="w-5 h-5 text-muted-foreground" />
                         ) : (
-                          <ChevronRight className="w-5 h-5 text-sepia" />
+                          <ChevronRight className="w-5 h-5 text-muted-foreground" />
                         )}
                         <div>
                           <CardTitle className="flex items-center gap-2">
                             {template.name}
                             {template.is_default && (
-                              <span className="text-xs px-2 py-0.5 rounded bg-ink-gold/15 text-ink-gold border border-ink-gold/30">
+                              <span className="text-xs px-2 py-0.5 rounded bg-spectral/10 text-spectral border border-spectral">
                                 Default
                               </span>
                             )}
@@ -617,7 +617,7 @@ export default function CadenceRegistryPage() {
                           onClick={() => setDeleteTemplateId(template.id)}
                           aria-label="Delete template"
                         >
-                          <Trash2 className="w-4 h-4 text-ink-red" />
+                          <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
                       </div>
                     </div>
@@ -627,9 +627,9 @@ export default function CadenceRegistryPage() {
                 {/* Milestones Section */}
                 {expandedTemplates.has(template.id) && editingTemplateId !== template.id && (
                   <CardContent className="pt-0">
-                    <div className="border-t border-wood-medium/20 pt-4">
+                    <div className="border-t border-border pt-4">
                       <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-sm font-semibold text-wood-dark">Milestones</h4>
+                        <h4 className="text-sm font-semibold text-foreground">Milestones</h4>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -645,7 +645,7 @@ export default function CadenceRegistryPage() {
 
                       {/* Milestones List */}
                       {template.milestones.length === 0 && addingMilestoneToTemplate !== template.id && (
-                        <p className="text-sm text-sepia/70 text-center py-4">
+                        <p className="text-sm text-muted-foreground/60 text-center py-4">
                           No milestones yet. Add milestones to define the reminder schedule.
                         </p>
                       )}
@@ -657,11 +657,11 @@ export default function CadenceRegistryPage() {
                             <div key={milestone.id}>
                               {editingMilestoneId === milestone.id ? (
                                 /* Edit Milestone Inline Form */
-                                <div className="p-3 rounded-lg bg-parchment border border-ink-gold/30 space-y-3">
+                                <div className="p-3 rounded-lg bg-background border border-spectral space-y-3">
                                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     <div>
-                                      <label className="block text-xs font-medium text-wood-dark mb-1">
-                                        Offset Days <span className="text-ink-red">*</span>
+                                      <label className="block text-xs font-medium text-foreground mb-1">
+                                        Offset Days <span className="text-destructive">*</span>
                                       </label>
                                       <input
                                         type="number"
@@ -671,11 +671,11 @@ export default function CadenceRegistryPage() {
                                         placeholder="-14"
                                         disabled={isSavingMilestone}
                                       />
-                                      <p className="text-xs text-sepia/70 mt-0.5">Negative = before event</p>
+                                      <p className="text-xs text-muted-foreground/60 mt-0.5">Negative = before event</p>
                                     </div>
                                     <div>
-                                      <label className="block text-xs font-medium text-wood-dark mb-1">
-                                        Title <span className="text-ink-red">*</span>
+                                      <label className="block text-xs font-medium text-foreground mb-1">
+                                        Title <span className="text-destructive">*</span>
                                       </label>
                                       <input
                                         type="text"
@@ -686,7 +686,7 @@ export default function CadenceRegistryPage() {
                                       />
                                     </div>
                                     <div>
-                                      <label className="block text-xs font-medium text-wood-dark mb-1">Channel</label>
+                                      <label className="block text-xs font-medium text-foreground mb-1">Channel</label>
                                       <select
                                         value={editMilestoneForm.notify_channel}
                                         onChange={(e) => setEditMilestoneForm(f => ({ ...f, notify_channel: e.target.value as NotifyChannel }))}
@@ -694,13 +694,13 @@ export default function CadenceRegistryPage() {
                                         disabled={isSavingMilestone}
                                       >
                                         <option value="in_app">In-App</option>
-                                        <option value="scrooge">Scrooge</option>
+                                        <option value="scrooge">AI Agent</option>
                                         <option value="both">Both</option>
                                       </select>
                                     </div>
                                   </div>
                                   <div>
-                                    <label className="block text-xs font-medium text-wood-dark mb-1">Description</label>
+                                    <label className="block text-xs font-medium text-foreground mb-1">Description</label>
                                     <input
                                       type="text"
                                       value={editMilestoneForm.description}
@@ -732,20 +732,20 @@ export default function CadenceRegistryPage() {
                                 </div>
                               ) : (
                                 /* Milestone Display Row */
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-parchment border border-wood-medium/20 hover:border-wood-medium/40 transition-colors">
+                                <div className="flex items-center justify-between p-3 rounded-lg bg-background border border-border hover:border-border transition-colors">
                                   <div className="flex items-center gap-4 flex-1 min-w-0">
                                     <span className={`text-sm font-medium tabular-nums whitespace-nowrap ${offsetColor(milestone.offset_days)}`}>
                                       {formatOffsetDays(milestone.offset_days)}
                                     </span>
                                     <div className="min-w-0">
-                                      <p className="font-medium text-ink-black truncate">{milestone.title}</p>
+                                      <p className="font-medium text-foreground truncate">{milestone.title}</p>
                                       {milestone.description && (
-                                        <p className="text-xs text-sepia truncate">{milestone.description}</p>
+                                        <p className="text-xs text-muted-foreground truncate">{milestone.description}</p>
                                       )}
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-2 ml-2">
-                                    <span className="text-xs px-2 py-0.5 rounded bg-wood-medium/10 text-sepia whitespace-nowrap">
+                                    <span className="text-xs px-2 py-0.5 rounded bg-spectral/10 text-muted-foreground whitespace-nowrap">
                                       {notifyChannelLabels[milestone.notify_channel]}
                                     </span>
                                     <Button
@@ -762,7 +762,7 @@ export default function CadenceRegistryPage() {
                                       onClick={() => setDeleteMilestone({ templateId: template.id, milestoneId: milestone.id })}
                                       aria-label="Delete milestone"
                                     >
-                                      <Trash2 className="w-3 h-3 text-ink-red" />
+                                      <Trash2 className="w-3 h-3 text-destructive" />
                                     </Button>
                                   </div>
                                 </div>
@@ -772,11 +772,11 @@ export default function CadenceRegistryPage() {
 
                         {/* Add Milestone Inline Form */}
                         {addingMilestoneToTemplate === template.id && (
-                          <div className="p-3 rounded-lg bg-parchment border border-ink-gold/30 space-y-3 mt-2">
+                          <div className="p-3 rounded-lg bg-background border border-spectral space-y-3 mt-2">
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                               <div>
-                                <label className="block text-xs font-medium text-wood-dark mb-1">
-                                  Offset Days <span className="text-ink-red">*</span>
+                                <label className="block text-xs font-medium text-foreground mb-1">
+                                  Offset Days <span className="text-destructive">*</span>
                                 </label>
                                 <input
                                   type="number"
@@ -786,11 +786,11 @@ export default function CadenceRegistryPage() {
                                   placeholder="-14"
                                   disabled={isSavingMilestone}
                                 />
-                                <p className="text-xs text-sepia/70 mt-0.5">Negative = before event</p>
+                                <p className="text-xs text-muted-foreground/60 mt-0.5">Negative = before event</p>
                               </div>
                               <div>
-                                <label className="block text-xs font-medium text-wood-dark mb-1">
-                                  Title <span className="text-ink-red">*</span>
+                                <label className="block text-xs font-medium text-foreground mb-1">
+                                  Title <span className="text-destructive">*</span>
                                 </label>
                                 <input
                                   type="text"
@@ -802,7 +802,7 @@ export default function CadenceRegistryPage() {
                                 />
                               </div>
                               <div>
-                                <label className="block text-xs font-medium text-wood-dark mb-1">Channel</label>
+                                <label className="block text-xs font-medium text-foreground mb-1">Channel</label>
                                 <select
                                   value={milestoneForm.notify_channel}
                                   onChange={(e) => setMilestoneForm(f => ({ ...f, notify_channel: e.target.value as NotifyChannel }))}
@@ -810,13 +810,13 @@ export default function CadenceRegistryPage() {
                                   disabled={isSavingMilestone}
                                 >
                                   <option value="in_app">In-App</option>
-                                  <option value="scrooge">Scrooge</option>
+                                  <option value="scrooge">AI Agent</option>
                                   <option value="both">Both</option>
                                 </select>
                               </div>
                             </div>
                             <div>
-                              <label className="block text-xs font-medium text-wood-dark mb-1">Description</label>
+                              <label className="block text-xs font-medium text-foreground mb-1">Description</label>
                               <input
                                 type="text"
                                 value={milestoneForm.description}
@@ -858,8 +858,8 @@ export default function CadenceRegistryPage() {
       )}
 
       {/* Footer */}
-      <div className="text-center py-6 mt-8 border-t border-wood-medium/20">
-        <p className="text-xs text-sepia/60 italic">
+      <div className="text-center py-6 mt-8 border-t border-border">
+        <p className="text-xs text-muted-foreground/60 italic">
           &ldquo;Punctuality is the politeness of kings.&rdquo; &mdash; Louis XVIII
         </p>
       </div>

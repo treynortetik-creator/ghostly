@@ -60,16 +60,16 @@ export function EventSidePanel({ event, onClose }: EventSidePanelProps) {
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-ink-black/20 z-40"
+        className="fixed inset-0 bg-black/50 z-40"
         onClick={onClose}
       />
 
       {/* Panel */}
-      <div className="fixed top-0 right-0 z-50 w-96 h-full bg-parchment border-l border-wood-dark/30 shadow-xl overflow-y-auto animate-fade-in">
+      <div className="fixed top-0 right-0 z-50 w-96 h-full bg-background border-l border-border shadow-xl overflow-y-auto animate-fade-in">
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1 rounded hover:bg-parchment-dark text-sepia/60 hover:text-sepia transition-colors"
+          className="absolute top-4 right-4 p-1 rounded hover:bg-card text-muted-foreground/60 hover:text-muted-foreground transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
@@ -77,23 +77,23 @@ export function EventSidePanel({ event, onClose }: EventSidePanelProps) {
         <div className="p-6 space-y-5">
           {/* Event name */}
           <div className="pr-8">
-            <h2 className="font-serif text-xl font-semibold text-wood-dark leading-tight">
+            <h2 className="text-xl font-semibold text-foreground leading-tight">
               {event.name}
             </h2>
             {event.event_type_record && (
-              <p className="text-sm text-sepia/70 mt-1">{event.event_type_record.name}</p>
+              <p className="text-sm text-muted-foreground/60 mt-1">{event.event_type_record.name}</p>
             )}
           </div>
 
           {/* Date range */}
-          <p className="text-sm text-ink-black">
+          <p className="text-sm text-foreground">
             {formatDateRange(event.date_start, event.date_end)}
           </p>
 
           {/* Location */}
           {event.location && (
-            <div className="flex items-center gap-2 text-sm text-sepia">
-              <MapPin className="w-4 h-4 text-sepia/60 flex-shrink-0" />
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin className="w-4 h-4 text-muted-foreground/60 flex-shrink-0" />
               <span>{event.location}</span>
             </div>
           )}
@@ -106,57 +106,57 @@ export function EventSidePanel({ event, onClose }: EventSidePanelProps) {
               </span>
             )}
             {stageLabel && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-parchment-dark text-sepia border border-wood-medium/30">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-card text-muted-foreground border border-border">
                 {stageLabel}
               </span>
             )}
           </div>
 
           {/* Divider */}
-          <div className="border-t border-wood-medium/20" />
+          <div className="border-t border-border" />
 
           {/* Budget section */}
           <div>
-            <h3 className="text-sm font-medium text-wood-dark mb-2">Budget</h3>
+            <h3 className="text-sm font-medium text-foreground mb-2">Budget</h3>
             <ProgressBar
               value={event.actual_spent}
               max={event.budget_amount || 1}
               size="md"
             />
-            <p className="text-xs text-sepia mt-1.5 tabular-nums">
+            <p className="text-xs text-muted-foreground mt-1.5 tabular-nums">
               ${event.actual_spent.toLocaleString('en-US', { minimumFractionDigits: 2 })} spent of ${event.budget_amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </p>
-            <p className="text-xs text-sepia/70 tabular-nums">
+            <p className="text-xs text-muted-foreground/60 tabular-nums">
               ${Math.abs(event.remaining).toLocaleString('en-US', { minimumFractionDigits: 2 })} {event.remaining >= 0 ? 'remaining' : 'over budget'}
             </p>
           </div>
 
           {/* Task completion */}
           <div>
-            <h3 className="text-sm font-medium text-wood-dark mb-2">Tasks</h3>
+            <h3 className="text-sm font-medium text-foreground mb-2">Tasks</h3>
             <ProgressBar
               value={event.task_counts.completed}
               max={event.task_counts.total || 1}
               size="md"
               colorOverride="green"
             />
-            <p className="text-xs text-sepia mt-1.5">
+            <p className="text-xs text-muted-foreground mt-1.5">
               {event.task_counts.completed}/{event.task_counts.total} tasks complete ({taskPct}%)
             </p>
             {event.task_counts.overdue > 0 && (
-              <p className="text-xs text-ink-red mt-0.5">
+              <p className="text-xs text-destructive mt-0.5">
                 {event.task_counts.overdue} overdue
               </p>
             )}
           </div>
 
           {/* Divider */}
-          <div className="border-t border-wood-medium/20" />
+          <div className="border-t border-border" />
 
           {/* Link to full details */}
           <Link
             href={`/events/${event.id}`}
-            className="inline-flex items-center gap-2 text-sm font-medium text-ink-gold hover:text-wood-dark transition-colors"
+            className="inline-flex items-center gap-2 text-sm font-medium text-spectral hover:text-foreground transition-colors"
           >
             View Full Details
             <ExternalLink className="w-4 h-4" />

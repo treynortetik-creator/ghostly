@@ -16,7 +16,7 @@ import type { QuarterType } from "@/types/database";
    QUARTER SUMMARY
    ============================================
    Displays budget breakdown by quarter with
-   Victorian-styled timeline and progress bars.
+   Ghostly-themed timeline and progress bars.
    ============================================ */
 
 export interface QuarterData {
@@ -38,27 +38,27 @@ const quarterConfig: Record<
   Q1: {
     label: "Q1",
     months: "Jan - Mar",
-    color: "bg-ink-green",
+    color: "bg-emerald-400",
   },
   Q2: {
     label: "Q2",
     months: "Apr - Jun",
-    color: "bg-ink-gold",
+    color: "bg-spectral",
   },
   Q3: {
     label: "Q3",
     months: "Jul - Sep",
-    color: "bg-wood-medium",
+    color: "bg-ghost-light",
   },
   Q4: {
     label: "Q4",
     months: "Oct - Dec",
-    color: "bg-ink-red",
+    color: "bg-red-400",
   },
   TBD: {
     label: "TBD",
     months: "Unscheduled",
-    color: "bg-sepia",
+    color: "bg-muted-foreground",
   },
 };
 
@@ -69,9 +69,9 @@ function QuarterCard({ data }: { data: QuarterData }) {
   const isOverBudget = data.actual > data.budget;
 
   const getStatusColor = () => {
-    if (isOverBudget) return "text-ink-red";
-    if (percentage >= 80) return "text-ink-gold";
-    return "text-ink-green";
+    if (isOverBudget) return "text-destructive";
+    if (percentage >= 80) return "text-spectral";
+    return "text-emerald-400";
   };
 
   // Skip quarters with no budget
@@ -92,7 +92,7 @@ function QuarterCard({ data }: { data: QuarterData }) {
       </div>
 
       <div
-        className="pt-4 p-4 rounded-lg bg-parchment border border-wood-medium/20 hover:border-wood-medium/40 transition-colors"
+        className="pt-4 p-4 rounded-lg bg-background border border-border hover:border-border transition-colors"
         data-oid="dp58oog"
       >
         {/* Header */}
@@ -101,7 +101,7 @@ function QuarterCard({ data }: { data: QuarterData }) {
           data-oid="1gkexno"
         >
           <div
-            className="flex items-center gap-2 text-sepia"
+            className="flex items-center gap-2 text-muted-foreground"
             data-oid="m4bi:wd"
           >
             <Calendar className="w-4 h-4" data-oid="88pj.vh" />
@@ -128,18 +128,18 @@ function QuarterCard({ data }: { data: QuarterData }) {
 
         {/* Stats */}
         <div
-          className="mt-3 pt-3 border-t border-wood-medium/15 space-y-2"
+          className="mt-3 pt-3 border-t border-border space-y-2"
           data-oid="r2v2cfn"
         >
           <div
             className="flex justify-between items-center gap-2"
             data-oid="f9z:zjp"
           >
-            <span className="text-xs text-sepia shrink-0" data-oid="apsg3fz">
+            <span className="text-xs text-muted-foreground shrink-0" data-oid="apsg3fz">
               Spent
             </span>
             <span
-              className="font-medium text-xs tabular-nums text-ink-black"
+              className="font-medium text-xs tabular-nums text-foreground"
               data-oid="t9hhtd6"
             >
               {formatCurrencyCompact(data.actual)}
@@ -149,11 +149,11 @@ function QuarterCard({ data }: { data: QuarterData }) {
             className="flex justify-between items-center gap-2"
             data-oid="gk0lms-"
           >
-            <span className="text-xs text-sepia shrink-0" data-oid="ocgcled">
+            <span className="text-xs text-muted-foreground shrink-0" data-oid="ocgcled">
               Budget
             </span>
             <span
-              className="font-medium text-xs tabular-nums text-ink-black"
+              className="font-medium text-xs tabular-nums text-foreground"
               data-oid="4_5c_g4"
             >
               {formatCurrencyCompact(data.budget)}
@@ -163,7 +163,7 @@ function QuarterCard({ data }: { data: QuarterData }) {
             className="flex justify-between items-center gap-2"
             data-oid="ybu9qq7"
           >
-            <span className="text-xs text-sepia shrink-0" data-oid="v20iz0q">
+            <span className="text-xs text-muted-foreground shrink-0" data-oid="v20iz0q">
               Remaining
             </span>
             <span
@@ -197,7 +197,7 @@ export function QuarterSummary({ data, className }: QuarterSummaryProps) {
         <div className="flex items-center justify-between" data-oid="8kf53p8">
           <div className="flex items-center gap-3" data-oid="6oxjxlf">
             <div
-              className="p-2 rounded-md bg-wood-medium/10 text-wood-medium"
+              className="p-2 rounded-md bg-spectral/10 text-muted-foreground"
               data-oid="h5_2jrp"
             >
               <Clock className="w-5 h-5" data-oid=".em-a7q" />
@@ -210,16 +210,16 @@ export function QuarterSummary({ data, className }: QuarterSummaryProps) {
             </div>
           </div>
           <div className="text-right" data-oid="li60weh">
-            <p className="text-sm text-sepia" data-oid="1qnqh.y">
+            <p className="text-sm text-muted-foreground" data-oid="1qnqh.y">
               Total Allocated
             </p>
             <p
-              className="font-serif font-bold text-lg text-ink-black tabular-nums"
+              className="font-bold text-lg text-foreground tabular-nums"
               data-oid="7pohq5a"
             >
               {formatCurrency(totalActual)}
               <span
-                className="text-sepia font-normal text-sm"
+                className="text-muted-foreground font-normal text-sm"
                 data-oid=".mk1qgp"
               >
                 {" "}
@@ -248,11 +248,11 @@ export function QuarterSummary({ data, className }: QuarterSummaryProps) {
         {/* TBD Section */}
         {tbdQuarter && (
           <div
-            className="pt-4 border-t border-wood-medium/20"
+            className="pt-4 border-t border-border"
             data-oid="y-zzesp"
           >
             <div
-              className="flex items-center gap-2 mb-4 text-sepia"
+              className="flex items-center gap-2 mb-4 text-muted-foreground"
               data-oid="f8f6g48"
             >
               <Clock className="w-4 h-4" data-oid="eui9h9t" />

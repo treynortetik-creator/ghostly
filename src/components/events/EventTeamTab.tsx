@@ -51,7 +51,7 @@ export function EventTeamTab({ eventId }: EventTeamTabProps) {
 
   if (isLoading) {
     return (
-      <div className="py-8 text-center text-sepia" data-oid="e042sln">
+      <div className="py-8 text-center text-muted-foreground" data-oid="e042sln">
         Loading team...
       </div>
     );
@@ -70,7 +70,7 @@ export function EventTeamTab({ eventId }: EventTeamTabProps) {
       />
       <div className="flex items-center justify-between" data-oid="dr73x1a">
         <h3
-          className="font-serif text-lg font-semibold text-wood-dark"
+          className="text-lg font-semibold text-foreground"
           data-oid="x8--6a6"
         >
           Assigned Staff ({assignments.length})
@@ -87,8 +87,8 @@ export function EventTeamTab({ eventId }: EventTeamTabProps) {
       </div>
 
       {assignments.length === 0 ? (
-        <div className="text-center py-8 text-sepia" data-oid="bsj-yun">
-          <p className="font-serif" data-oid="82rvft2">
+        <div className="text-center py-8 text-muted-foreground" data-oid="bsj-yun">
+          <p className="" data-oid="82rvft2">
             No staff assigned to this affair
           </p>
           <p className="text-sm mt-1" data-oid="oi_yo4k">
@@ -105,22 +105,22 @@ export function EventTeamTab({ eventId }: EventTeamTabProps) {
               >
                 <div className="flex items-center gap-3" data-oid="waluk-u">
                   <div
-                    className="w-9 h-9 rounded-full bg-wood-medium/15 flex items-center justify-center"
+                    className="w-9 h-9 rounded-full bg-spectral/10 flex items-center justify-center"
                     data-oid="::xzaut"
                   >
                     <User
-                      className="w-4 h-4 text-wood-medium"
+                      className="w-4 h-4 text-muted-foreground"
                       data-oid="30xj_-s"
                     />
                   </div>
                   <div data-oid="2vkeueq">
                     <p
-                      className="text-sm font-medium text-wood-dark"
+                      className="text-sm font-medium text-foreground"
                       data-oid="xngr-79"
                     >
                       {a.team_member?.name || "Unknown"}
                     </p>
-                    <p className="text-xs text-sepia" data-oid="l4jwkz6">
+                    <p className="text-xs text-muted-foreground" data-oid="l4jwkz6">
                       {a.event_role ||
                         a.team_member?.default_role ||
                         "No role assigned"}
@@ -129,7 +129,7 @@ export function EventTeamTab({ eventId }: EventTeamTabProps) {
                 </div>
                 <button
                   onClick={() => setRemoveConfirmId(a.id)}
-                  className="text-sepia/50 hover:text-ink-red transition-colors"
+                  className="text-muted-foreground/60 hover:text-destructive transition-colors"
                   data-oid="rx5bxtt"
                 >
                   <Trash2 className="w-4 h-4" data-oid="1rqcai:" />

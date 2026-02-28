@@ -187,7 +187,7 @@ export function EventROITab({ event, onEventUpdated }: EventROITabProps) {
               data-oid="l0e7z58"
             >
               <TrendingUp
-                className="w-5 h-5 text-ink-gold"
+                className="w-5 h-5 text-spectral"
                 data-oid="x3vn9yy"
               />
               ROI Data
@@ -225,7 +225,7 @@ export function EventROITab({ event, onEventUpdated }: EventROITabProps) {
                   Cancel
                 </Button>
                 <Button
-                  variant="gold"
+                  variant="accent"
                   size="sm"
                   onClick={handleSaveROI}
                   isLoading={isSavingROI}
@@ -245,7 +245,7 @@ export function EventROITab({ event, onEventUpdated }: EventROITabProps) {
           >
             <div data-oid="7-098:l">
               <label
-                className="block text-sm font-medium text-wood-dark mb-1"
+                className="block text-sm font-medium text-foreground mb-1"
                 data-oid="npy.c:9"
               >
                 Pipeline Generated
@@ -262,12 +262,12 @@ export function EventROITab({ event, onEventUpdated }: EventROITabProps) {
                       pipeline_generated: parseFloat(e.target.value) || 0,
                     }))
                   }
-                  className="w-full px-3 py-2 bg-parchment border border-wood-medium/50 rounded-lg text-ink-black focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral"
                   data-oid="a5qejo0"
                 />
               ) : (
                 <p
-                  className="font-serif text-lg font-semibold text-ink-black"
+                  className="text-lg font-semibold text-foreground"
                   data-oid=":jk.0e6"
                 >
                   {formatCurrency(event.pipeline_generated ?? 0)}
@@ -276,7 +276,7 @@ export function EventROITab({ event, onEventUpdated }: EventROITabProps) {
             </div>
             <div data-oid="lx7oai6">
               <label
-                className="block text-sm font-medium text-wood-dark mb-1"
+                className="block text-sm font-medium text-foreground mb-1"
                 data-oid="2k3iio-"
               >
                 Revenue Closed
@@ -293,12 +293,12 @@ export function EventROITab({ event, onEventUpdated }: EventROITabProps) {
                       revenue_closed: parseFloat(e.target.value) || 0,
                     }))
                   }
-                  className="w-full px-3 py-2 bg-parchment border border-wood-medium/50 rounded-lg text-ink-black focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral"
                   data-oid="6ks.hyc"
                 />
               ) : (
                 <p
-                  className="font-serif text-lg font-semibold text-ink-black"
+                  className="text-lg font-semibold text-foreground"
                   data-oid="tdtm-ms"
                 >
                   {formatCurrency(event.revenue_closed ?? 0)}
@@ -307,7 +307,7 @@ export function EventROITab({ event, onEventUpdated }: EventROITabProps) {
             </div>
             <div data-oid="8vrzrpl">
               <label
-                className="block text-sm font-medium text-wood-dark mb-1"
+                className="block text-sm font-medium text-foreground mb-1"
                 data-oid="phkagcs"
               >
                 Leads Generated
@@ -323,12 +323,12 @@ export function EventROITab({ event, onEventUpdated }: EventROITabProps) {
                       leads_generated: parseInt(e.target.value) || 0,
                     }))
                   }
-                  className="w-full px-3 py-2 bg-parchment border border-wood-medium/50 rounded-lg text-ink-black focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral"
                   data-oid="tfac:j9"
                 />
               ) : (
                 <p
-                  className="font-serif text-lg font-semibold text-ink-black"
+                  className="text-lg font-semibold text-foreground"
                   data-oid="9pffm2w"
                 >
                   {event.leads_generated ?? 0}
@@ -337,7 +337,7 @@ export function EventROITab({ event, onEventUpdated }: EventROITabProps) {
             </div>
             <div data-oid="-jwrpzw">
               <label
-                className="block text-sm font-medium text-wood-dark mb-1"
+                className="block text-sm font-medium text-foreground mb-1"
                 data-oid="qv:_a9u"
               >
                 Meetings Booked
@@ -353,12 +353,12 @@ export function EventROITab({ event, onEventUpdated }: EventROITabProps) {
                       meetings_booked: parseInt(e.target.value) || 0,
                     }))
                   }
-                  className="w-full px-3 py-2 bg-parchment border border-wood-medium/50 rounded-lg text-ink-black focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral"
                   data-oid="po:s:cr"
                 />
               ) : (
                 <p
-                  className="font-serif text-lg font-semibold text-ink-black"
+                  className="text-lg font-semibold text-foreground"
                   data-oid="osq492o"
                 >
                   {event.meetings_booked ?? 0}
@@ -367,7 +367,7 @@ export function EventROITab({ event, onEventUpdated }: EventROITabProps) {
             </div>
             <div data-oid="_dmd.ef">
               <label
-                className="block text-sm font-medium text-wood-dark mb-1"
+                className="block text-sm font-medium text-foreground mb-1"
                 data-oid="0pbxma-"
               >
                 Opportunities Created
@@ -383,12 +383,12 @@ export function EventROITab({ event, onEventUpdated }: EventROITabProps) {
                       opportunities_created: parseInt(e.target.value) || 0,
                     }))
                   }
-                  className="w-full px-3 py-2 bg-parchment border border-wood-medium/50 rounded-lg text-ink-black focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral"
                   data-oid="cp0zzhi"
                 />
               ) : (
                 <p
-                  className="font-serif text-lg font-semibold text-ink-black"
+                  className="text-lg font-semibold text-foreground"
                   data-oid="8adco8n"
                 >
                   {event.opportunities_created ?? 0}
@@ -397,19 +397,19 @@ export function EventROITab({ event, onEventUpdated }: EventROITabProps) {
             </div>
             <div data-oid="6xhrm-y">
               <label
-                className="block text-sm font-medium text-wood-dark mb-1"
+                className="block text-sm font-medium text-foreground mb-1"
                 data-oid="4y:umu4"
               >
                 Actual Spent
               </label>
               <p
-                className="font-serif text-lg font-semibold text-sepia"
+                className="text-lg font-semibold text-muted-foreground"
                 data-oid="f_imbfi"
               >
                 {formatCurrency(event.actual_spent)}
               </p>
               <p
-                className="text-xs text-sepia/70 mt-0.5"
+                className="text-xs text-muted-foreground/60 mt-0.5"
                 data-oid="ro33i3:"
               >
                 From expenses (read-only)
@@ -418,7 +418,7 @@ export function EventROITab({ event, onEventUpdated }: EventROITabProps) {
           </div>
           <div className="mt-4" data-oid="aruko3c">
             <label
-              className="block text-sm font-medium text-wood-dark mb-1"
+              className="block text-sm font-medium text-foreground mb-1"
               data-oid=":da4rks"
             >
               ROI Notes
@@ -430,13 +430,13 @@ export function EventROITab({ event, onEventUpdated }: EventROITabProps) {
                   setRoiForm((f) => ({ ...f, roi_notes: e.target.value }))
                 }
                 rows={3}
-                className="w-full px-3 py-2 bg-parchment border border-wood-medium/50 rounded-lg text-ink-black focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold"
+                className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral"
                 placeholder="Add context about ROI attribution, pipeline sources, etc."
                 data-oid="uyyjg:b"
               />
             ) : (
               <p
-                className="text-sm text-sepia whitespace-pre-wrap"
+                className="text-sm text-muted-foreground whitespace-pre-wrap"
                 data-oid="w26j-zq"
               >
                 {event.roi_notes || "No ROI notes yet."}

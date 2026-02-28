@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 
 // Cookie name must match the one in auth.ts
-const AUTH_COOKIE_NAME = 'counting-house-token';
+const AUTH_COOKIE_NAME = 'ghostly-token';
 
 // Routes that don't require authentication
 const PUBLIC_ROUTES = ['/login'];
@@ -46,8 +46,8 @@ async function verifyTokenFromCookie(token: string): Promise<boolean> {
 
     const secretKey = new TextEncoder().encode(secret);
     await jwtVerify(token, secretKey, {
-      issuer: 'counting-house',
-      audience: 'counting-house',
+      issuer: 'ghostly',
+      audience: 'ghostly',
     });
     return true;
   } catch {

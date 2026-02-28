@@ -16,7 +16,7 @@ import { sanitizeCurrency } from "@/lib/format";
 /* ============================================
    EVENT FORM COMPONENT
    ============================================
-   Victorian-styled form for creating and editing events.
+   Ghostly-themed form for creating and editing events.
    Supports both create and edit modes.
    ============================================ */
 
@@ -174,16 +174,16 @@ export function EventForm({
 
   const inputClasses = `
     w-full px-4 py-2.5 rounded-md
-    bg-parchment border border-wood-medium/40
-    text-ink-black placeholder-sepia/50
-    focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold
+    bg-background border border-border
+    text-foreground placeholder-muted-foreground/50
+    focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral
     transition-colors duration-200
     disabled:opacity-50 disabled:cursor-not-allowed
   `;
 
-  const labelClasses = "block text-sm font-medium text-wood-dark mb-1.5";
+  const labelClasses = "block text-sm font-medium text-foreground mb-1.5";
 
-  const errorClasses = "text-xs text-ink-red mt-1";
+  const errorClasses = "text-xs text-destructive mt-1";
 
   return (
     <Card data-oid="_ol-ebz">
@@ -198,7 +198,7 @@ export function EventForm({
           {/* Basic Information */}
           <div className="space-y-4" data-oid="71hkroa">
             <h4
-              className="text-sm font-semibold text-wood-dark border-b border-wood-medium/20 pb-2"
+              className="text-sm font-semibold text-foreground border-b border-border pb-2"
               data-oid="pdff3fx"
             >
               Basic Information
@@ -208,7 +208,7 @@ export function EventForm({
             <div data-oid="fwds4:a">
               <label htmlFor="name" className={labelClasses} data-oid="qpeb_86">
                 Event Name{" "}
-                <span className="text-ink-red" data-oid="4e90wfc">
+                <span className="text-destructive" data-oid="4e90wfc">
                   *
                 </span>
               </label>
@@ -242,7 +242,7 @@ export function EventForm({
                   data-oid="z2_5:uf"
                 >
                   Event Type{" "}
-                  <span className="text-ink-red" data-oid="3tsvqj2">
+                  <span className="text-destructive" data-oid="3tsvqj2">
                     *
                   </span>
                 </label>
@@ -274,7 +274,7 @@ export function EventForm({
                   data-oid="lpkne56"
                 >
                   Quarter{" "}
-                  <span className="text-ink-red" data-oid="k:25yk2">
+                  <span className="text-destructive" data-oid="k:25yk2">
                     *
                   </span>
                 </label>
@@ -370,7 +370,7 @@ export function EventForm({
           {/* Budget Information */}
           <div className="space-y-4" data-oid="zncxj2:">
             <h4
-              className="text-sm font-semibold text-wood-dark border-b border-wood-medium/20 pb-2"
+              className="text-sm font-semibold text-foreground border-b border-border pb-2"
               data-oid="hrzbq.4"
             >
               Budget & Goals
@@ -387,13 +387,13 @@ export function EventForm({
                   data-oid="b6an_kz"
                 >
                   Budget Amount{" "}
-                  <span className="text-ink-red" data-oid="-0t2bkw">
+                  <span className="text-destructive" data-oid="-0t2bkw">
                     *
                   </span>
                 </label>
                 <div className="relative" data-oid="efuruwx">
                   <span
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-sepia"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                     data-oid="g15-.c:"
                   >
                     $
@@ -482,7 +482,7 @@ export function EventForm({
           {/* Notes Section */}
           <div className="space-y-4" data-oid="f_s7410">
             <h4
-              className="text-sm font-semibold text-wood-dark border-b border-wood-medium/20 pb-2"
+              className="text-sm font-semibold text-foreground border-b border-border pb-2"
               data-oid="2ggrpsp"
             >
               Planning Notes

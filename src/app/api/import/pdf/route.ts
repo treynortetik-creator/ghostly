@@ -1,5 +1,5 @@
 /**
- * The Counting House - PDF Invoice Import API
+ * Ghostly - PDF Invoice Import API
  *
  * POST /api/import/pdf
  * Upload and parse PDF invoice, extract vendor/amount/date using best-effort regex

@@ -1,13 +1,13 @@
-# Scrooge Agent — Counting House API Specification
+# Ghostly Agent — API Specification
 
-> *"Every farthing accounted for, every ledger balanced, every penny traced back to its origin."*
+> Note: This spec describes the legacy agent API. The MCP server is now the primary integration point for AI agents.
 
-**Version:** 1.0.0  
-**Status:** Draft  
-**Author:** Virgil (Clawdbot) for Treynor Tetik  
-**Date:** June 2025  
-**Target System:** The Counting House (Next.js 16 / Supabase)  
-**Consumer:** Scrooge AI Agent
+**Version:** 1.0.0
+**Status:** Draft
+**Author:** Virgil (Clawdbot) for Treynor Tetik
+**Date:** June 2025
+**Target System:** Ghostly (Next.js 16 / Supabase)
+**Consumer:** Ghostly AI Agent
 
 ---
 
@@ -21,7 +21,7 @@
 6. [Existing Endpoints Reference](#6-existing-endpoints-reference)
 7. [Webhook System](#7-webhook-system)
 8. [Audit Log](#8-audit-log)
-9. [Scrooge-Specific Operations](#9-scrooge-specific-operations)
+9. [Agent-Specific Operations](#9-agent-specific-operations)
 10. [Rate Limiting & Error Handling](#10-rate-limiting--error-handling)
 11. [Database Migrations](#11-database-migrations)
 12. [Implementation Priority](#12-implementation-priority)
@@ -30,9 +30,9 @@
 
 ## 1. Overview
 
-### What is Scrooge?
+### What is the Ghostly Agent?
 
-Scrooge is an AI agent that acts as the autonomous financial operations layer for The Counting House. It:
+The Ghostly Agent is an AI agent that acts as the autonomous financial operations layer for Ghostly. It:
 
 - **Syncs** expense data from external systems (Brex, Monday.com)
 - **Monitors** budgets and alerts on overages or approaching limits
@@ -53,7 +53,7 @@ Scrooge is an AI agent that acts as the autonomous financial operations layer fo
 ### Base URL
 
 ```
-Production: https://example.invalid
+Production: https://ghostly.up.railway.app
 Local:      http://localhost:3000
 ```
 
@@ -63,17 +63,17 @@ Local:      http://localhost:3000
 
 ### Current: Cookie-based JWT
 
-The existing auth system uses `POST /api/auth/login` to obtain an HTTP-only JWT cookie (`counting-house-token`). This remains the primary auth method for the browser UI.
+The existing auth system uses `POST /api/auth/login` to obtain an HTTP-only JWT cookie (`ghostly-token`). This remains the primary auth method for the browser UI.
 
 ### New: API Key Authentication
 
-Scrooge authenticates via `x-api-key` header. This runs **alongside** cookie auth — either method is accepted.
+The agent authenticates via `x-api-key` header. This runs **alongside** cookie auth — either method is accepted.
 
 #### How It Works
 
 ```
-┌─────────────────┐     x-api-key: sk_scrooge_xxx     ┌──────────────────┐
-│   Scrooge Agent  │ ──────────────────────────────────▶│  Counting House  │
+┌─────────────────┐     x-api-key: gh_agent_xxx        ┌──────────────────┐
+│  Ghostly Agent   │ ──────────────────────────────────▶│  Ghostly         │
 └─────────────────┘                                     │  API Middleware   │
                                                         │                  │
                                                         │ 1. Check cookie  │
@@ -86,8 +86,8 @@ Scrooge authenticates via `x-api-key` header. This runs **alongside** cookie aut
 
 ```http
 GET /api/events?fiscal_year_id=abc-123 HTTP/1.1
-Host: example.invalid
-x-api-key: sk_scrooge_live_a1b2c3d4e5f6
+Host: ghostly.up.railway.app
+x-api-key: gh_agent_live_a1b2c3d4e5f6
 Accept: application/json
 ```
 
@@ -97,8 +97,8 @@ Accept: application/json
 sk_{agent_name}_{environment}_{random_32_chars}
 
 Examples:
-  sk_scrooge_live_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
-  sk_scrooge_test_x9y8z7w6v5u4t3s2r1q0p9o8n7m6l5k4
+  gh_agent_live_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+  gh_agent_test_x9y8z7w6v5u4t3s2r1q0p9o8n7m6l5k4
 ```
 
 #### API Key Storage
@@ -109,7 +109,7 @@ Keys are stored in a new `api_keys` table:
 CREATE TABLE api_keys (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   key_hash TEXT NOT NULL UNIQUE,       -- SHA-256 hash (never store plaintext)
-  agent_name TEXT NOT NULL,            -- 'scrooge', etc.
+  agent_name TEXT NOT NULL,            -- 'ghostly', etc.
   label TEXT,                          -- 'production', 'staging'
   permissions TEXT[] DEFAULT '{read,write}', -- scope array
   last_used_at TIMESTAMPTZ,
@@ -175,7 +175,7 @@ All POST and PUT endpoints support the `Idempotency-Key` header. When provided:
 
 ```http
 POST /api/expenses HTTP/1.1
-x-api-key: sk_scrooge_live_xxx
+x-api-key: gh_agent_live_xxx
 Idempotency-Key: 7f1c8a2e-3b4d-5e6f-7a8b-9c0d1e2f3a4b
 Content-Type: application/json
 
@@ -346,14 +346,14 @@ GET /api/health HTTP/1.1
 
 ### 4.2 `GET /api/stats` — Global Statistics
 
-Aggregated metrics across the active fiscal year. Designed for Scrooge's periodic sync and Slack reporting.
+Aggregated metrics across the active fiscal year. Designed for the agent's periodic sync and Slack reporting.
 
 **Auth:** `read` scope
 
 **Request:**
 ```http
 GET /api/stats HTTP/1.1
-x-api-key: sk_scrooge_live_xxx
+x-api-key: gh_agent_live_xxx
 ```
 
 **Query Params:**
@@ -427,7 +427,7 @@ Create multiple expenses in a single request. Essential for Brex sync and import
 **Request:**
 ```http
 POST /api/expenses/bulk HTTP/1.1
-x-api-key: sk_scrooge_live_xxx
+x-api-key: gh_agent_live_xxx
 Idempotency-Key: bulk-brex-import-2025-06-15
 Content-Type: application/json
 ```
@@ -567,7 +567,7 @@ Update multiple existing expenses. Common use case: reassigning expenses to diff
 **Request:**
 ```http
 PUT /api/expenses/bulk HTTP/1.1
-x-api-key: sk_scrooge_live_xxx
+x-api-key: gh_agent_live_xxx
 Idempotency-Key: bulk-reassign-2025-06-15
 Content-Type: application/json
 ```
@@ -646,14 +646,14 @@ Content-Type: application/json
 
 ### 4.5 `GET /api/events/upcoming` — Events Within N Days
 
-Returns events starting within the next N days. Designed for Scrooge's reminder system.
+Returns events starting within the next N days. Designed for the agent's reminder system.
 
 **Auth:** `read` scope
 
 **Request:**
 ```http
 GET /api/events/upcoming?days=30&fiscal_year_id=uuid HTTP/1.1
-x-api-key: sk_scrooge_live_xxx
+x-api-key: gh_agent_live_xxx
 ```
 
 **Query Params:**
@@ -744,7 +744,7 @@ Lightweight event stats without the full expense list. Perfect for dashboards an
 **Request:**
 ```http
 GET /api/events/abc-123/summary HTTP/1.1
-x-api-key: sk_scrooge_live_xxx
+x-api-key: gh_agent_live_xxx
 ```
 
 **Response `200 OK`:**
@@ -832,7 +832,7 @@ Register a URL to receive event notifications.
 **Request:**
 ```http
 POST /api/webhooks HTTP/1.1
-x-api-key: sk_scrooge_live_xxx
+x-api-key: gh_agent_live_xxx
 Idempotency-Key: webhook-reg-001
 Content-Type: application/json
 ```
@@ -840,7 +840,7 @@ Content-Type: application/json
 **Request Body:**
 ```json
 {
-  "url": "https://scrooge-agent.example.com/webhooks/counting-house",
+  "url": "https://ghostly-agent.example.com/webhooks/ghostly",
   "events": [
     "expense.created",
     "expense.updated",
@@ -851,7 +851,7 @@ Content-Type: application/json
     "import.pending"
   ],
   "secret": "whsec_a1b2c3d4e5f6g7h8",
-  "description": "Scrooge production webhook"
+  "description": "Ghostly agent production webhook"
 }
 ```
 
@@ -860,7 +860,7 @@ Content-Type: application/json
 {
   "webhook": {
     "id": "uuid-webhook-1",
-    "url": "https://scrooge-agent.example.com/webhooks/counting-house",
+    "url": "https://ghostly-agent.example.com/webhooks/ghostly",
     "events": [
       "expense.created",
       "expense.updated",
@@ -894,7 +894,7 @@ GET    /api/webhooks/:id/deliveries  — View delivery history
   "webhooks": [
     {
       "id": "uuid-webhook-1",
-      "url": "https://scrooge-agent.example.com/webhooks/counting-house",
+      "url": "https://ghostly-agent.example.com/webhooks/ghostly",
       "events": ["expense.created", "event.budget_exceeded"],
       "is_active": true,
       "last_delivery_at": "2025-06-15T09:00:00Z",
@@ -931,8 +931,8 @@ Query the audit log for change history. Essential for compliance and debugging.
 
 **Request:**
 ```http
-GET /api/audit-log?entity_type=expense&action=create&actor=agent:scrooge&per_page=50 HTTP/1.1
-x-api-key: sk_scrooge_live_xxx
+GET /api/audit-log?entity_type=expense&action=create&actor=agent:ghostly&per_page=50 HTTP/1.1
+x-api-key: gh_agent_live_xxx
 ```
 
 **Query Params:**
@@ -942,7 +942,7 @@ x-api-key: sk_scrooge_live_xxx
 | `entity_type` | string | `expense`, `event`, `checklist_item`, `team_member`, etc. |
 | `entity_id` | UUID | Filter to a specific entity |
 | `action` | string | `create`, `update`, `delete`, `bulk_create`, `bulk_update` |
-| `actor` | string | `user:treynor`, `agent:scrooge`, or prefix like `agent:` |
+| `actor` | string | `user:treynor`, `agent:ghostly`, or prefix like `agent:` |
 | `date_start` | ISO 8601 | Start of date range |
 | `date_end` | ISO 8601 | End of date range |
 | `page`, `per_page` | integer | Pagination |
@@ -956,7 +956,7 @@ x-api-key: sk_scrooge_live_xxx
       "entity_type": "expense",
       "entity_id": "uuid-expense-1",
       "action": "create",
-      "actor": "agent:scrooge",
+      "actor": "agent:ghostly",
       "actor_type": "agent",
       "changes": {
         "event_id": { "old": null, "new": "uuid-event-1" },
@@ -991,7 +991,7 @@ x-api-key: sk_scrooge_live_xxx
     "filters_applied": {
       "entity_type": "expense",
       "action": "create",
-      "actor": "agent:scrooge"
+      "actor": "agent:ghostly"
     }
   },
   "pagination": {
@@ -1017,7 +1017,7 @@ Returns only records where `updated_at > modified_after`. Critical for efficient
 
 ```http
 GET /api/expenses?modified_after=2025-06-14T00:00:00Z HTTP/1.1
-x-api-key: sk_scrooge_live_xxx
+x-api-key: gh_agent_live_xxx
 ```
 
 **Affected endpoints:**
@@ -1045,11 +1045,11 @@ The `server_time` field should be stored and used as `modified_after` for the ne
 
 #### `ids` — Batch Read
 
-Fetch multiple specific records by ID. Useful when Scrooge knows exactly which records it needs.
+Fetch multiple specific records by ID. Useful when the agent knows exactly which records it needs.
 
 ```http
 GET /api/events?ids=uuid1,uuid2,uuid3 HTTP/1.1
-x-api-key: sk_scrooge_live_xxx
+x-api-key: gh_agent_live_xxx
 ```
 
 - Max 100 IDs per request
@@ -1072,7 +1072,7 @@ x-api-key: sk_scrooge_live_xxx
 
 ```http
 GET /api/expenses?source_type=brex&modified_after=2025-06-01T00:00:00Z&is_duplicate=false HTTP/1.1
-x-api-key: sk_scrooge_live_xxx
+x-api-key: gh_agent_live_xxx
 ```
 
 ### 5.3 Enhanced Event Listing
@@ -1090,7 +1090,7 @@ x-api-key: sk_scrooge_live_xxx
 
 ```http
 GET /api/events?date_start_after=2025-07-01&date_start_before=2025-09-30&budget_status=warning HTTP/1.1
-x-api-key: sk_scrooge_live_xxx
+x-api-key: gh_agent_live_xxx
 ```
 
 ### 5.4 Enhanced Checklist Listing
@@ -1106,7 +1106,7 @@ x-api-key: sk_scrooge_live_xxx
 
 ```http
 GET /api/events/abc-123/checklist?status=overdue HTTP/1.1
-x-api-key: sk_scrooge_live_xxx
+x-api-key: gh_agent_live_xxx
 ```
 
 ### 5.5 Idempotency on Existing Write Endpoints
@@ -1304,7 +1304,7 @@ All webhook payloads follow the same envelope:
       "source_type": "brex",
       "source_reference": "brex-txn-12345"
     },
-    "actor": "agent:scrooge",
+    "actor": "agent:ghostly",
     "batch_id": "uuid-batch-1"
   }
 }
@@ -1542,7 +1542,7 @@ CREATE TABLE audit_log (
   entity_type TEXT NOT NULL,          -- 'expense', 'event', 'checklist_item', etc.
   entity_id UUID NOT NULL,
   action TEXT NOT NULL,               -- 'create', 'update', 'delete', 'bulk_create', 'bulk_update'
-  actor TEXT NOT NULL,                -- 'user:treynor' or 'agent:scrooge'
+  actor TEXT NOT NULL,                -- 'user:treynor' or 'agent:ghostly'
   actor_type TEXT NOT NULL,           -- 'user' or 'agent'
   changes JSONB NOT NULL DEFAULT '{}', -- { field: { old: x, new: y } }
   metadata JSONB DEFAULT '{}',        -- Extra context (idempotency key, batch ID, source)
@@ -1563,9 +1563,9 @@ CREATE INDEX idx_audit_type_created ON audit_log(entity_type, created_at);
 | Auth Method | Actor Value | Actor Type |
 |-------------|-------------|------------|
 | Cookie JWT (Treynor) | `user:treynor` | `user` |
-| API Key (Scrooge) | `agent:scrooge` | `agent` |
+| API Key (Ghostly Agent) | `agent:ghostly` | `agent` |
 | API Key (future agent) | `agent:{agent_name}` | `agent` |
-| System (cron, webhook retry) | `system:counting-house` | `system` |
+| System (cron, webhook retry) | `system:ghostly` | `system` |
 
 ### 8.3 What Gets Logged
 
@@ -1612,11 +1612,11 @@ For **deletes**, the `deleted_at` field is recorded:
 
 ---
 
-## 9. Scrooge-Specific Operations
+## 9. Agent-Specific Operations
 
 ### 9.1 Monday.com Sync
 
-Scrooge acts as middleware between Monday.com boards and Counting House. These endpoints let Scrooge push/pull data.
+The agent acts as middleware between Monday.com boards and Ghostly. These endpoints let the agent push/pull data.
 
 #### `POST /api/integrations/monday/sync`
 
@@ -1627,7 +1627,7 @@ Trigger a sync of event data from Monday.com.
 **Request:**
 ```http
 POST /api/integrations/monday/sync HTTP/1.1
-x-api-key: sk_scrooge_live_xxx
+x-api-key: gh_agent_live_xxx
 Idempotency-Key: monday-sync-2025-06-15
 Content-Type: application/json
 ```
@@ -1661,7 +1661,7 @@ Content-Type: application/json
       }
     }
   ],
-  "sync_direction": "monday_to_counting_house",
+  "sync_direction": "monday_to_ghostly",
   "conflict_resolution": "monday_wins"
 }
 ```
@@ -1698,7 +1698,7 @@ Content-Type: application/json
 
 #### `GET /api/integrations/monday/mapping`
 
-Get the current mapping between Monday.com items and Counting House events.
+Get the current mapping between Monday.com items and Ghostly events.
 
 **Response `200 OK`:**
 ```json
@@ -1719,7 +1719,7 @@ Get the current mapping between Monday.com items and Counting House events.
 
 #### `PUT /api/integrations/monday/mapping`
 
-Create or update a mapping between a Monday.com item and a Counting House event.
+Create or update a mapping between a Monday.com item and a Ghostly event.
 
 **Request Body:**
 ```json
@@ -1749,18 +1749,18 @@ CREATE TABLE monday_mappings (
 
 ### 9.2 Slack Notification Triggers
 
-Scrooge sends Slack notifications via its own Slack integration, but these endpoints let Counting House request that Scrooge send specific notifications.
+The agent sends Slack notifications via its own Slack integration, but these endpoints let Ghostly request that the agent send specific notifications.
 
 #### `POST /api/notifications/slack`
 
-Queue a Slack notification to be sent by Scrooge.
+Queue a Slack notification to be sent by the agent.
 
 **Auth:** `write` scope
 
 **Request:**
 ```http
 POST /api/notifications/slack HTTP/1.1
-x-api-key: sk_scrooge_live_xxx
+x-api-key: gh_agent_live_xxx
 Idempotency-Key: slack-budget-alert-uuid-event-1
 Content-Type: application/json
 ```
@@ -1805,7 +1805,7 @@ Content-Type: application/json
 | `checklist_overdue` | Overdue tasks summary | `#event-marketing` |
 | `weekly_summary` | Weekly budget/event summary | `#event-marketing` |
 | `import_ready` | Brex import ready for review | `#event-marketing` |
-| `custom` | Custom message from Scrooge | Specified in request |
+| `custom` | Custom message from the agent | Specified in request |
 
 **Database Table:**
 ```sql
@@ -1826,7 +1826,7 @@ CREATE TABLE notification_queue (
 
 ### 9.3 Document Generation Triggers
 
-Request that Counting House generate specific documents.
+Request that Ghostly generate specific documents.
 
 #### `POST /api/events/[id]/guide/generate`
 
@@ -1837,7 +1837,7 @@ Generate an event guide (from the PRD expansion — The Firm Phase 3).
 **Request:**
 ```http
 POST /api/events/abc-123/guide/generate HTTP/1.1
-x-api-key: sk_scrooge_live_xxx
+x-api-key: gh_agent_live_xxx
 Content-Type: application/json
 ```
 
@@ -1873,7 +1873,7 @@ Content-Type: application/json
 **Poll for completion:**
 ```http
 GET /api/events/abc-123/guide HTTP/1.1
-x-api-key: sk_scrooge_live_xxx
+x-api-key: gh_agent_live_xxx
 ```
 
 **Response `200 OK`:**
@@ -1901,7 +1901,7 @@ Generate a custom budget report.
 **Request:**
 ```http
 POST /api/export/report HTTP/1.1
-x-api-key: sk_scrooge_live_xxx
+x-api-key: gh_agent_live_xxx
 Content-Type: application/json
 ```
 
@@ -1991,14 +1991,14 @@ Update reminder configuration.
 
 #### `POST /api/reminders/check`
 
-Manually trigger a reminder check (Scrooge can call this on a schedule).
+Manually trigger a reminder check (the agent can call this on a schedule).
 
 **Auth:** `write` scope
 
 **Request:**
 ```http
 POST /api/reminders/check HTTP/1.1
-x-api-key: sk_scrooge_live_xxx
+x-api-key: gh_agent_live_xxx
 Content-Type: application/json
 ```
 
@@ -2190,7 +2190,7 @@ X-RateLimit-Reset: 1718450060
 
 ### 10.3 Circuit Breaker (Agent Best Practice)
 
-Scrooge should implement client-side circuit breaking:
+The agent should implement client-side circuit breaking:
 
 | State | Condition | Behavior |
 |-------|-----------|----------|
@@ -2380,7 +2380,7 @@ CREATE TABLE reminder_log (
 
 ### Phase 1 — Foundation (Must-Have) 🔴
 
-**Goal:** Enable Scrooge to authenticate, read data, and create expenses safely.
+**Goal:** Enable the agent to authenticate, read data, and create expenses safely.
 
 | # | Feature | Endpoints | Effort | Dependencies |
 |---|---------|-----------|--------|-------------|
@@ -2394,8 +2394,8 @@ CREATE TABLE reminder_log (
 **Total Phase 1:** ~21 hours (3 dev days)
 
 **Acceptance Criteria:**
-- [ ] Scrooge can authenticate with API key
-- [ ] Scrooge can create expenses in bulk with safe retries
+- [ ] The agent can authenticate with API key
+- [ ] The agent can create expenses in bulk with safe retries
 - [ ] All mutations are audit-logged with actor identity
 - [ ] Incremental sync is possible via `modified_after`
 - [ ] Health check returns system status
@@ -2421,7 +2421,7 @@ CREATE TABLE reminder_log (
 
 **Acceptance Criteria:**
 - [ ] Webhooks fire on expense creation and budget threshold crossing
-- [ ] Scrooge can query upcoming events with checklist status
+- [ ] The agent can query upcoming events with checklist status
 - [ ] Event summaries available for Slack reporting
 - [ ] Reminder system prevents duplicate notifications
 
@@ -2444,8 +2444,8 @@ CREATE TABLE reminder_log (
 **Total Phase 3:** ~35 hours (5 dev days)
 
 **Acceptance Criteria:**
-- [ ] Monday.com board syncs bidirectionally through Scrooge
-- [ ] Scrooge can trigger Slack notifications with rich formatting
+- [ ] Monday.com board syncs bidirectionally through the agent
+- [ ] The agent can trigger Slack notifications with rich formatting
 - [ ] Event guides generate automatically before events
 - [ ] Quarterly reports available on demand
 
@@ -2474,16 +2474,16 @@ Week 4-5: Phase 3 (Integration)
 
 ---
 
-## Appendix A: Scrooge Quick Start
+## Appendix A: Agent Quick Start
 
 ### 1. Authenticate
 
 ```bash
-curl -s https://example.invalid/api/health
+curl -s https://ghostly.up.railway.app/api/health
 # Verify system is healthy
 
-curl -s https://example.invalid/api/auth/me \
-  -H "x-api-key: sk_scrooge_live_xxx"
+curl -s https://ghostly.up.railway.app/api/auth/me \
+  -H "x-api-key: gh_agent_live_xxx"
 # Verify API key works
 ```
 
@@ -2491,29 +2491,29 @@ curl -s https://example.invalid/api/auth/me \
 
 ```bash
 # Get all events
-curl -s "https://example.invalid/api/events?per_page=200" \
-  -H "x-api-key: sk_scrooge_live_xxx"
+curl -s "https://ghostly.up.railway.app/api/events?per_page=200" \
+  -H "x-api-key: gh_agent_live_xxx"
 
 # Get all expenses
-curl -s "https://example.invalid/api/expenses?per_page=200" \
-  -H "x-api-key: sk_scrooge_live_xxx"
+curl -s "https://ghostly.up.railway.app/api/expenses?per_page=200" \
+  -H "x-api-key: gh_agent_live_xxx"
 
 # Get dashboard summary
-curl -s "https://example.invalid/api/dashboard/summary" \
-  -H "x-api-key: sk_scrooge_live_xxx"
+curl -s "https://ghostly.up.railway.app/api/dashboard/summary" \
+  -H "x-api-key: gh_agent_live_xxx"
 ```
 
 ### 3. Register Webhook
 
 ```bash
-curl -s -X POST "https://example.invalid/api/webhooks" \
-  -H "x-api-key: sk_scrooge_live_xxx" \
+curl -s -X POST "https://ghostly.up.railway.app/api/webhooks" \
+  -H "x-api-key: gh_agent_live_xxx" \
   -H "Content-Type: application/json" \
   -d '{
-    "url": "https://scrooge.example.com/webhook",
+    "url": "https://ghostly-agent.example.com/webhook",
     "events": ["expense.created", "event.budget_exceeded", "event.budget_warning"],
     "secret": "whsec_your_secret_here",
-    "description": "Scrooge production"
+    "description": "Ghostly agent production"
   }'
 ```
 
@@ -2521,15 +2521,15 @@ curl -s -X POST "https://example.invalid/api/webhooks" \
 
 ```bash
 # Use server_time from last sync as modified_after
-curl -s "https://example.invalid/api/expenses?modified_after=2025-06-14T10:30:00Z" \
-  -H "x-api-key: sk_scrooge_live_xxx"
+curl -s "https://ghostly.up.railway.app/api/expenses?modified_after=2025-06-14T10:30:00Z" \
+  -H "x-api-key: gh_agent_live_xxx"
 ```
 
 ### 5. Bulk Create Expenses
 
 ```bash
-curl -s -X POST "https://example.invalid/api/expenses/bulk" \
-  -H "x-api-key: sk_scrooge_live_xxx" \
+curl -s -X POST "https://ghostly.up.railway.app/api/expenses/bulk" \
+  -H "x-api-key: gh_agent_live_xxx" \
   -H "Idempotency-Key: brex-import-2025-06-15-batch-1" \
   -H "Content-Type: application/json" \
   -d '{
@@ -2556,9 +2556,9 @@ A machine-readable OpenAPI 3.1 spec will be generated from this document and pla
 GET /api/openapi.json
 ```
 
-This allows Scrooge to self-discover available endpoints and validate requests at runtime.
+This allows the agent to self-discover available endpoints and validate requests at runtime.
 
 ---
 
-*"Are there no prisons? Are there no workhouses? Then the Counting House's API must serve them all."*  
-— Scrooge API Spec v1.0.0
+*"The AI agent is invisible. The events aren't."*
+— Ghostly Agent API Spec v1.0.0

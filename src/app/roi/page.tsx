@@ -68,11 +68,11 @@ interface ROIDashboardData {
 }
 
 const typeColorClasses: Record<string, string> = {
-  executive: "bg-ink-gold/15 text-ink-gold border-ink-gold/30",
-  national: "bg-ink-green/15 text-ink-green border-ink-green/30",
-  state: "bg-wood-medium/15 text-wood-dark border-wood-medium/30",
-  regional: "bg-sepia/15 text-sepia border-sepia/30",
-  customer: "bg-ink-red/15 text-ink-red border-ink-red/30",
+  executive: "bg-spectral/10 text-spectral border-spectral",
+  national: "bg-emerald-400/10 text-emerald-400 border-emerald-400/30",
+  state: "bg-spectral/10 text-foreground border-border",
+  regional: "bg-muted-foreground/15 text-muted-foreground border-muted-foreground/30",
+  customer: "bg-red-400/10 text-destructive border-destructive/30",
 };
 
 export default function ROIDashboardPage() {
@@ -114,10 +114,10 @@ export default function ROIDashboardPage() {
   };
 
   const roiCellColor = (value: number | null) => {
-    if (value === null) return "text-sepia";
-    if (value > 0.05) return "text-ink-green";
-    if (value < -0.05) return "text-ink-red";
-    return "text-ink-gold";
+    if (value === null) return "text-muted-foreground";
+    if (value > 0.05) return "text-emerald-400";
+    if (value < -0.05) return "text-destructive";
+    return "text-spectral";
   };
 
   if (loading) {
@@ -125,11 +125,11 @@ export default function ROIDashboardPage() {
       <AppShell data-oid="vuo9.t0">
         <div className="animate-pulse space-y-6" data-oid="8x.7mzd">
           <div
-            className="h-9 w-64 bg-wood-medium/20 rounded mb-2"
+            className="h-9 w-64 bg-spectral/10 rounded mb-2"
             data-oid="kx-kref"
           />
           <div
-            className="h-5 w-80 bg-wood-medium/10 rounded"
+            className="h-5 w-80 bg-spectral/10 rounded"
             data-oid="k8i38_r"
           />
           <div
@@ -139,13 +139,13 @@ export default function ROIDashboardPage() {
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="h-32 bg-wood-medium/10 rounded-lg"
+                className="h-32 bg-spectral/10 rounded-lg"
                 data-oid="gom.gos"
               />
             ))}
           </div>
           <div
-            className="h-96 bg-wood-medium/10 rounded-lg"
+            className="h-96 bg-spectral/10 rounded-lg"
             data-oid="wanfkf1"
           />
         </div>
@@ -156,23 +156,23 @@ export default function ROIDashboardPage() {
   if (error || !data) {
     return (
       <AppShell data-oid="jy2313y">
-        <Card className="bg-ink-red/5 border-ink-red/20" data-oid="t_k6otu">
+        <Card className="bg-red-400/10 border-destructive/20" data-oid="t_k6otu">
           <CardContent className="py-12" data-oid="tg41oej">
             <div
               className="flex flex-col items-center justify-center text-center"
               data-oid="4kpo1oh"
             >
               <AlertTriangle
-                className="w-12 h-12 text-ink-red mb-4"
+                className="w-12 h-12 text-destructive mb-4"
                 data-oid="grl7zjg"
               />
               <h3
-                className="font-serif text-xl font-semibold text-ink-red mb-2"
+                className="text-xl font-semibold text-destructive mb-2"
                 data-oid="ym4lp9i"
               >
                 Failed to Load ROI Dashboard
               </h3>
-              <p className="text-sepia mb-6" data-oid="swlknaw">
+              <p className="text-muted-foreground mb-6" data-oid="swlknaw">
                 {error || "No data available"}
               </p>
               <Button
@@ -199,12 +199,12 @@ export default function ROIDashboardPage() {
       >
         <div data-oid="5wcog6x">
           <h1
-            className="text-3xl font-serif font-bold text-wood-dark"
+            className="text-3xl font-bold text-foreground"
             data-oid="xek0g.-"
           >
             Return on Investment
           </h1>
-          <p className="mt-1 text-sepia" data-oid="6_usjq2">
+          <p className="mt-1 text-muted-foreground" data-oid="6_usjq2">
             Event ROI performance across {data.totals.event_count} events
           </p>
         </div>
@@ -277,7 +277,7 @@ export default function ROIDashboardPage() {
           </CardHeader>
           <CardContent data-oid="_f2fit1">
             {data.by_event_type.length === 0 ? (
-              <p className="text-center text-sepia py-4" data-oid="q3s2dmx">
+              <p className="text-center text-muted-foreground py-4" data-oid="q3s2dmx">
                 No event data available.
               </p>
             ) : (
@@ -285,47 +285,47 @@ export default function ROIDashboardPage() {
                 <table className="w-full text-sm" data-oid="vd1vt6-">
                   <thead data-oid="f1i.plo">
                     <tr
-                      className="border-b border-wood-medium/20"
+                      className="border-b border-border"
                       data-oid="i1kwjyn"
                     >
                       <th
-                        className="text-left py-2 pr-4 font-medium text-wood-dark"
+                        className="text-left py-2 pr-4 font-medium text-foreground"
                         data-oid="v4zolie"
                       >
                         Type
                       </th>
                       <th
-                        className="text-right py-2 px-3 font-medium text-wood-dark"
+                        className="text-right py-2 px-3 font-medium text-foreground"
                         data-oid="oieg.6f"
                       >
                         Events
                       </th>
                       <th
-                        className="text-right py-2 px-3 font-medium text-wood-dark"
+                        className="text-right py-2 px-3 font-medium text-foreground"
                         data-oid="x3abbmy"
                       >
                         Spent
                       </th>
                       <th
-                        className="text-right py-2 px-3 font-medium text-wood-dark"
+                        className="text-right py-2 px-3 font-medium text-foreground"
                         data-oid="ysb1.1h"
                       >
                         Pipeline
                       </th>
                       <th
-                        className="text-right py-2 px-3 font-medium text-wood-dark"
+                        className="text-right py-2 px-3 font-medium text-foreground"
                         data-oid="3tii3q6"
                       >
                         Revenue
                       </th>
                       <th
-                        className="text-right py-2 px-3 font-medium text-wood-dark"
+                        className="text-right py-2 px-3 font-medium text-foreground"
                         data-oid=":q_c8u9"
                       >
                         Leads
                       </th>
                       <th
-                        className="text-right py-2 pl-3 font-medium text-wood-dark"
+                        className="text-right py-2 pl-3 font-medium text-foreground"
                         data-oid="5wpi5w0"
                       >
                         ROI
@@ -336,12 +336,12 @@ export default function ROIDashboardPage() {
                     {data.by_event_type.map((row) => (
                       <tr
                         key={row.event_type || 'unknown'}
-                        className="border-b border-wood-medium/10 hover:bg-parchment/50"
+                        className="border-b border-border hover:bg-background/50"
                         data-oid="rz3s8nl"
                       >
                         <td className="py-3 pr-4" data-oid="lq9rqye">
                           <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium border ${typeColorClasses[row.event_type?.toLowerCase?.()] || 'bg-sepia/15 text-sepia border-sepia/30'}`}
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium border ${typeColorClasses[row.event_type?.toLowerCase?.()] || 'bg-muted-foreground/15 text-muted-foreground border-muted-foreground/30'}`}
                             data-oid="nva0wc1"
                           >
                             {row.event_type || 'Uncategorized'}
@@ -402,7 +402,7 @@ export default function ROIDashboardPage() {
           </CardHeader>
           <CardContent data-oid="80hs8:1">
             {data.events.length === 0 ? (
-              <p className="text-center text-sepia py-8" data-oid="w8x3yq8">
+              <p className="text-center text-muted-foreground py-8" data-oid="w8x3yq8">
                 No events found.
               </p>
             ) : (
@@ -410,47 +410,47 @@ export default function ROIDashboardPage() {
                 <table className="w-full text-sm" data-oid="tstu2k:">
                   <thead data-oid="aynirkj">
                     <tr
-                      className="border-b border-wood-medium/20"
+                      className="border-b border-border"
                       data-oid="w3g2rl6"
                     >
                       <th
-                        className="text-left py-2 pr-4 font-medium text-wood-dark"
+                        className="text-left py-2 pr-4 font-medium text-foreground"
                         data-oid="6t60g5o"
                       >
                         Event
                       </th>
                       <th
-                        className="text-right py-2 px-3 font-medium text-wood-dark"
+                        className="text-right py-2 px-3 font-medium text-foreground"
                         data-oid="j0rbzu."
                       >
                         Spent
                       </th>
                       <th
-                        className="text-right py-2 px-3 font-medium text-wood-dark"
+                        className="text-right py-2 px-3 font-medium text-foreground"
                         data-oid="eozr683"
                       >
                         Pipeline
                       </th>
                       <th
-                        className="text-right py-2 px-3 font-medium text-wood-dark"
+                        className="text-right py-2 px-3 font-medium text-foreground"
                         data-oid="v3jui7o"
                       >
                         Revenue
                       </th>
                       <th
-                        className="text-right py-2 px-3 font-medium text-wood-dark"
+                        className="text-right py-2 px-3 font-medium text-foreground"
                         data-oid=".6v:_lj"
                       >
                         Leads
                       </th>
                       <th
-                        className="text-right py-2 px-3 font-medium text-wood-dark"
+                        className="text-right py-2 px-3 font-medium text-foreground"
                         data-oid="fvc8k1d"
                       >
                         Meetings
                       </th>
                       <th
-                        className="text-right py-2 pl-3 font-medium text-wood-dark"
+                        className="text-right py-2 pl-3 font-medium text-foreground"
                         data-oid="497:bym"
                       >
                         ROI
@@ -461,7 +461,7 @@ export default function ROIDashboardPage() {
                     {data.events.map((event) => (
                       <tr
                         key={event.id}
-                        className="border-b border-wood-medium/10 hover:bg-parchment/50"
+                        className="border-b border-border hover:bg-background/50"
                         data-oid="i_1bpek"
                       >
                         <td className="py-3 pr-4" data-oid="p3fuggo">
@@ -471,18 +471,18 @@ export default function ROIDashboardPage() {
                           >
                             <Link
                               href={`/events/${event.id}`}
-                              className="font-medium text-wood-dark hover:text-ink-gold transition-colors"
+                              className="font-medium text-foreground hover:text-spectral transition-colors"
                               data-oid="2g8hx5t"
                             >
                               {event.name}
                             </Link>
                             <ArrowUpRight
-                              className="w-3 h-3 text-sepia/50"
+                              className="w-3 h-3 text-muted-foreground/60"
                               data-oid="-l:5:oc"
                             />
                           </div>
                           <span
-                            className={`inline-flex items-center mt-1 px-2 py-0.5 rounded text-xs font-medium border ${typeColorClasses[event.event_type_record?.name?.toLowerCase() ?? ''] || 'bg-sepia/15 text-sepia border-sepia/30'}`}
+                            className={`inline-flex items-center mt-1 px-2 py-0.5 rounded text-xs font-medium border ${typeColorClasses[event.event_type_record?.name?.toLowerCase() ?? ''] || 'bg-muted-foreground/15 text-muted-foreground border-muted-foreground/30'}`}
                             data-oid="3dal06v"
                           >
                             {event.event_type_record?.name ?? 'Uncategorized'}

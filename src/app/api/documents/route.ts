@@ -1,5 +1,5 @@
 /**
- * The Counting House - Documents API
+ * Ghostly - Documents API
  *
  * Endpoints:
  * GET /api/documents - List documents with optional filters

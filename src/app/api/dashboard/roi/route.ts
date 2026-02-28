@@ -1,5 +1,5 @@
 /**
- * The Counting House - ROI Dashboard API
+ * Ghostly - ROI Dashboard API
  *
  * GET /api/dashboard/roi - Aggregate ROI across all events
  */

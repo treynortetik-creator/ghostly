@@ -1,5 +1,5 @@
 /**
- * The Counting House - Fiscal Years API
+ * Ghostly - Fiscal Years API
  *
  * Endpoints:
  * GET /api/fiscal-years - List all fiscal years

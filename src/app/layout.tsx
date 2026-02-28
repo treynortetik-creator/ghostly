@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Playfair_Display } from "next/font/google";
 import { ThemeProvider } from "@/components/providers";
 import "./globals.css";
 
@@ -14,16 +13,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const playfairDisplay = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-  style: ["normal", "italic"],
-});
-
 export const metadata: Metadata = {
   title: "Ghostly",
-  description: "AI-powered event financial management for B2B event marketing teams",
+  description: "Ghostly - AI-powered event management platform",
   icons: {
     icon: [
       { url: "/favicon.ico" },
@@ -46,7 +38,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${playfairDisplay.variable} antialiased paper-texture min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased ghost-texture min-h-screen`}
       >
         <ThemeProvider>
           {children}

@@ -23,7 +23,7 @@ import type {
    ============================================
    Main expenses management page showing all expenses
    with filtering, search, sorting, and add functionality.
-   Victorian theme: "The Expense Register"
+   Ghostly theme: "The Expense Register"
    ============================================ */
 
 interface ExpensesApiResponse {
@@ -311,13 +311,13 @@ export default function ExpensesPage() {
       >
         <div data-oid="yd26zxz">
           <h1
-            className="text-3xl font-serif font-bold text-wood-dark flex items-center gap-3"
+            className="text-3xl font-bold text-foreground flex items-center gap-3"
             data-oid="csaszdy"
           >
-            <Receipt className="w-8 h-8 text-ink-gold" data-oid="9q60mf8" />
+            <Receipt className="w-8 h-8 text-spectral" data-oid="9q60mf8" />
             The Expense Register
           </h1>
-          <p className="mt-1 text-sepia" data-oid="s200mmv">
+          <p className="mt-1 text-muted-foreground" data-oid="s200mmv">
             FY 2026 Expenses &middot; {formatCurrency(totalAmount)} total
             &middot; As of {formattedDate}
           </p>
@@ -394,10 +394,10 @@ export default function ExpensesPage() {
       {/* Footer Info */}
       {!isLoading && !error && expenses.length > 0 && (
         <div
-          className="text-center py-6 mt-8 border-t border-wood-medium/20"
+          className="text-center py-6 mt-8 border-t border-border"
           data-oid="pj-d2zz"
         >
-          <p className="text-xs text-sepia/60" data-oid="a0tditr">
+          <p className="text-xs text-muted-foreground/60" data-oid="a0tditr">
             Click on an event or category name to view its details.
           </p>
         </div>

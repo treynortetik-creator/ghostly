@@ -115,7 +115,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/csv' }
     const lines: string[] = [];
 
     // Title and metadata
-    lines.push(`"The Counting House - Export Report"`);
+    lines.push(`"Ghostly - Export Report"`);
     lines.push(`"Fiscal Year ${fiscalYear}"`);
     lines.push(`"Export Date: ${new Date().toISOString().split('T')[0]}"`);
     lines.push(`"Scope: ${scope === 'year' ? 'Full Year' : scope === 'quarter' ? quarter : scope === 'month' ? `Month ${month}` : `${dateStart} to ${dateEnd}`}"`);
@@ -205,7 +205,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/csv' }
     else if (scope === 'month') scopeLabel = `month-${month.toString().padStart(2, '0')}`;
     else if (scope === 'custom') scopeLabel = 'custom-range';
 
-    const filename = `counting-house-${fiscalYear}-${scopeLabel}.csv`;
+    const filename = `ghostly-${fiscalYear}-${scopeLabel}.csv`;
 
     // Return as downloadable file
     return new NextResponse(csvContent, {

@@ -1,5 +1,5 @@
 /**
- * The Counting House - Brex Import Confirmation API
+ * Ghostly - Brex Import Confirmation API
  *
  * POST /api/import/brex/confirm
  * Confirm and create expenses from reviewed Brex transactions

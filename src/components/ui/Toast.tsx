@@ -65,20 +65,20 @@ function ToastItem({
 
   const icon =
     toast.type === "success" ? (
-      <CheckCircle className="w-5 h-5 text-ink-green" />
+      <CheckCircle className="w-5 h-5 text-emerald-400" />
     ) : toast.type === "error" ? (
-      <XCircle className="w-5 h-5 text-ink-red" />
+      <XCircle className="w-5 h-5 text-red-400" />
     ) : (
-      <AlertTriangle className="w-5 h-5 text-ink-gold" />
+      <AlertTriangle className="w-5 h-5 text-amber-400" />
     );
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-wood-medium/40 bg-parchment px-4 py-3 shadow-lg dark:border-wood-medium dark:bg-parchment-dark animate-slide-in-right">
+    <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 shadow-lg glass-shadow animate-slide-in-right">
       {icon}
-      <span className="text-sm text-ink-black flex-1">{toast.message}</span>
+      <span className="text-sm text-foreground flex-1">{toast.message}</span>
       <button
         onClick={onDismiss}
-        className="text-sepia/50 hover:text-sepia"
+        className="text-muted-foreground/50 hover:text-muted-foreground"
       >
         <X className="w-4 h-4" />
       </button>

@@ -17,7 +17,7 @@ import { sanitizeCurrency } from "@/lib/format";
    ============================================
    Form for creating and editing event types.
    Used in the Settings > Event Types section.
-   Victorian theme: "The Category Ledger"
+   Ghostly theme: "The Category Ledger"
    ============================================ */
 
 export interface EventTypeFormData {
@@ -94,18 +94,18 @@ export function EventTypeForm({
     }
   };
 
-  // Shared input styles matching the Victorian theme
+  // Shared input styles matching the Ghostly theme
   const inputClasses = `
     w-full px-4 py-2.5 rounded-md
-    bg-parchment border border-wood-medium/40
-    text-ink-black placeholder-sepia/50
-    focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold
+    bg-background border border-border
+    text-foreground placeholder-muted-foreground/50
+    focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral
     transition-colors duration-200
     disabled:opacity-50 disabled:cursor-not-allowed
   `;
 
-  const labelClasses = "block text-sm font-medium text-wood-dark mb-1.5";
-  const errorClasses = "text-xs text-ink-red mt-1";
+  const labelClasses = "block text-sm font-medium text-foreground mb-1.5";
+  const errorClasses = "text-xs text-destructive mt-1";
 
   return (
     <Card data-oid="q1unkgz">
@@ -121,7 +121,7 @@ export function EventTypeForm({
           <div data-oid="i5bd0qh">
             <label htmlFor="name" className={labelClasses} data-oid="fnw_2dg">
               Name{" "}
-              <span className="text-ink-red" data-oid="h6h6se.">
+              <span className="text-destructive" data-oid="h6h6se.">
                 *
               </span>
             </label>
@@ -154,7 +154,7 @@ export function EventTypeForm({
             </label>
             <div className="relative" data-oid="3:_1hwj">
               <span
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-sepia"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 data-oid="ypssh1q"
               >
                 $

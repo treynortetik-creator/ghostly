@@ -1,5 +1,5 @@
 /**
- * The Counting House - Calendar API
+ * Ghostly - Calendar API
  *
  * GET /api/events/calendar?month=YYYY-MM - Events and tasks for a calendar month
  */

@@ -53,20 +53,20 @@ export function ExpenseDocumentsSection({
 
   if (isLoading) {
     return (
-      <div className="mt-6 pt-6 border-t border-wood-medium/20">
+      <div className="mt-6 pt-6 border-t border-border">
         <div className="animate-pulse">
-          <div className="h-6 w-40 bg-wood-medium/10 rounded mb-3" />
-          <div className="h-14 bg-wood-medium/10 rounded-lg" />
+          <div className="h-6 w-40 bg-spectral/10 rounded mb-3" />
+          <div className="h-14 bg-spectral/10 rounded-lg" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="mt-6 pt-6 border-t border-wood-medium/20">
+    <div className="mt-6 pt-6 border-t border-border">
       <div className="flex items-center gap-2 mb-3">
-        <Paperclip className="w-4 h-4 text-ink-gold" />
-        <h3 className="font-serif font-semibold text-wood-dark">
+        <Paperclip className="w-4 h-4 text-spectral" />
+        <h3 className="font-semibold text-foreground">
           Attachments ({documents.length})
         </h3>
       </div>

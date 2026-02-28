@@ -40,9 +40,9 @@ function getDaysUntilLabel(dateStr: string): { label: string; urgency: 'overdue'
 }
 
 const urgencyColors = {
-  overdue: 'text-ink-red',
-  today: 'text-ink-gold',
-  upcoming: 'text-sepia',
+  overdue: 'text-destructive',
+  today: 'text-spectral',
+  upcoming: 'text-muted-foreground',
 };
 
 export function UpcomingReminders() {
@@ -68,7 +68,7 @@ export function UpcomingReminders() {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-md bg-ink-gold/10 text-ink-gold">
+          <div className="p-2 rounded-md bg-spectral/10 text-spectral">
             <Bell className="w-5 h-5" />
           </div>
           <div>
@@ -81,22 +81,22 @@ export function UpcomingReminders() {
         {isLoading ? (
           <div className="space-y-3">
             {[1, 2, 3].map(i => (
-              <div key={i} className="animate-pulse flex items-center justify-between p-3 rounded-lg bg-wood-medium/5">
+              <div key={i} className="animate-pulse flex items-center justify-between p-3 rounded-lg bg-spectral/10">
                 <div className="space-y-2">
-                  <div className="h-4 w-40 bg-wood-medium/15 rounded" />
-                  <div className="h-3 w-28 bg-wood-medium/10 rounded" />
+                  <div className="h-4 w-40 bg-spectral/10 rounded" />
+                  <div className="h-3 w-28 bg-spectral/10 rounded" />
                 </div>
                 <div className="space-y-2 text-right">
-                  <div className="h-4 w-20 bg-wood-medium/15 rounded ml-auto" />
-                  <div className="h-3 w-16 bg-wood-medium/10 rounded ml-auto" />
+                  <div className="h-4 w-20 bg-spectral/10 rounded ml-auto" />
+                  <div className="h-3 w-16 bg-spectral/10 rounded ml-auto" />
                 </div>
               </div>
             ))}
           </div>
         ) : reminders.length === 0 ? (
           <div className="text-center py-6">
-            <Bell className="w-8 h-8 text-sepia/30 mx-auto mb-2" />
-            <p className="text-sm text-sepia">No upcoming reminders in the next 14 days.</p>
+            <Bell className="w-8 h-8 text-muted-foreground/60 mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">No upcoming reminders in the next 14 days.</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -104,13 +104,13 @@ export function UpcomingReminders() {
               const { label, urgency } = getDaysUntilLabel(reminder.reminder_date);
               return (
                 <Link key={reminder.id} href={`/events/${reminder.event_id}`}>
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-parchment border border-wood-medium/20 hover:border-wood-medium/40 transition-colors">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-background border border-border hover:border-border transition-colors">
                     <div className="min-w-0">
-                      <p className="font-medium text-ink-black truncate">{reminder.title}</p>
-                      <p className="text-sm text-sepia truncate">{reminder.event_name}</p>
+                      <p className="font-medium text-foreground truncate">{reminder.title}</p>
+                      <p className="text-sm text-muted-foreground truncate">{reminder.event_name}</p>
                     </div>
                     <div className="text-right ml-4 flex-shrink-0">
-                      <p className="text-sm font-medium tabular-nums text-ink-black">
+                      <p className="text-sm font-medium tabular-nums text-foreground">
                         {formatReminderDate(reminder.reminder_date)}
                       </p>
                       <p className={`text-xs ${urgencyColors[urgency]}`}>{label}</p>

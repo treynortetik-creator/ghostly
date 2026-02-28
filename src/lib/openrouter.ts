@@ -1,5 +1,5 @@
 /**
- * The Counting House - OpenRouter AI Integration
+ * Ghostly - OpenRouter AI Integration
  *
  * Provides AI-powered categorization for imported transactions.
  * Uses OpenRouter API to suggest event/category assignments.
@@ -85,7 +85,7 @@ export async function getAvailableModels(): Promise<OpenRouterModel[]> {
     headers: {
       'Authorization': `Bearer ${getApiKey()}`,
       'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-      'X-Title': 'The Counting House',
+      'X-Title': 'Ghostly',
     },
   });
 
@@ -159,7 +159,7 @@ export async function chatCompletion(
       'Authorization': `Bearer ${getApiKey()}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-      'X-Title': 'The Counting House',
+      'X-Title': 'Ghostly',
     },
     body: JSON.stringify({
       model,
@@ -215,7 +215,7 @@ export async function getCustomPrompt(
  * Default system prompt template for CSV transaction categorization.
  * Placeholders {events_list} and {categories_list} are substituted at runtime.
  */
-export const DEFAULT_CSV_PROMPT = `You are a financial categorization assistant for a corporate events budget tracking system called "The Counting House".
+export const DEFAULT_CSV_PROMPT = `You are a financial categorization assistant for a corporate events budget tracking system called "Ghostly".
 
 Your task is to analyze credit card transactions and suggest which event or budget category each transaction should be assigned to.
 
@@ -259,7 +259,7 @@ Respond with valid JSON only. No markdown, no explanation outside JSON.
  * Default system prompt template for PDF invoice extraction.
  * Placeholders {events_list} and {categories_list} are substituted at runtime.
  */
-export const DEFAULT_PDF_PROMPT = `You are an invoice data extraction and categorization assistant for "The Counting House", a corporate events budget tracking system.
+export const DEFAULT_PDF_PROMPT = `You are an invoice data extraction and categorization assistant for "Ghostly", a corporate events budget tracking system.
 
 Given the raw text extracted from a PDF invoice, extract the following fields and suggest an event/category assignment:
 

@@ -35,9 +35,9 @@ interface EventNotesTabProps {
 
 const noteTypeConfig: Record<string, { label: string; className: string }> = {
   competitor_alert: { label: '🎯 Competitor Alert', className: 'bg-amber-500/15 text-amber-400 border-amber-500/30 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700/40' },
-  general: { label: 'General', className: 'bg-wood-medium/15 text-sepia border-wood-medium/30' },
-  logistics: { label: 'Logistics', className: 'bg-ink-green/15 text-ink-green border-ink-green/30' },
-  budget: { label: 'Budget', className: 'bg-ink-gold/15 text-ink-gold border-ink-gold/30' },
+  general: { label: 'General', className: 'bg-spectral/10 text-muted-foreground border-border' },
+  logistics: { label: 'Logistics', className: 'bg-emerald-400/10 text-emerald-400 border-emerald-400/30' },
+  budget: { label: 'Budget', className: 'bg-spectral/10 text-spectral border-spectral' },
 };
 
 const noteTypeOptions = [
@@ -117,7 +117,7 @@ export function EventNotesTab({ eventId }: EventNotesTabProps) {
   if (isLoading) {
     return (
       <Card>
-        <CardContent className="py-8 text-center text-sepia">Loading notes...</CardContent>
+        <CardContent className="py-8 text-center text-muted-foreground">Loading notes...</CardContent>
       </Card>
     );
   }
@@ -135,8 +135,8 @@ export function EventNotesTab({ eventId }: EventNotesTabProps) {
       />
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-wood-dark flex items-center gap-2">
-          <MessageSquare className="w-5 h-5 text-ink-gold" />
+        <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <MessageSquare className="w-5 h-5 text-spectral" />
           Notes ({notes.length})
         </h3>
         <div className="flex gap-2">
@@ -153,25 +153,25 @@ export function EventNotesTab({ eventId }: EventNotesTabProps) {
 
       {/* Add Note Form */}
       {showAddForm && (
-        <Card className="border-ink-gold/30">
+        <Card className="border-spectral">
           <CardContent className="py-4 space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-sepia mb-1 block">Title (optional)</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Title (optional)</label>
                 <input
                   type="text"
                   value={newNote.title}
                   onChange={(e) => setNewNote({ ...newNote, title: e.target.value })}
                   placeholder="Note title..."
-                  className="w-full px-3 py-2 text-sm bg-parchment-dark border border-wood-medium/30 rounded-md text-wood-dark placeholder:text-sepia/50 focus:border-ink-gold focus:outline-none"
+                  className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 focus:border-spectral focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-sepia mb-1 block">Type</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Type</label>
                 <select
                   value={newNote.note_type}
                   onChange={(e) => setNewNote({ ...newNote, note_type: e.target.value })}
-                  className="w-full px-3 py-2 text-sm bg-parchment-dark border border-wood-medium/30 rounded-md text-wood-dark focus:border-ink-gold focus:outline-none"
+                  className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground focus:border-spectral focus:outline-none"
                 >
                   {noteTypeOptions.map((opt) => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -180,13 +180,13 @@ export function EventNotesTab({ eventId }: EventNotesTabProps) {
               </div>
             </div>
             <div>
-              <label className="text-xs font-medium text-sepia mb-1 block">Content</label>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Content</label>
               <textarea
                 value={newNote.content}
                 onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
                 placeholder="Write your note..."
                 rows={4}
-                className="w-full px-3 py-2 text-sm bg-parchment-dark border border-wood-medium/30 rounded-md text-wood-dark placeholder:text-sepia/50 focus:border-ink-gold focus:outline-none resize-y"
+                className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 focus:border-spectral focus:outline-none resize-y"
               />
             </div>
             <div className="flex justify-end gap-2">
@@ -202,7 +202,7 @@ export function EventNotesTab({ eventId }: EventNotesTabProps) {
       {/* Notes List */}
       {notes.length === 0 ? (
         <Card>
-          <CardContent className="py-8 text-center text-sepia">
+          <CardContent className="py-8 text-center text-muted-foreground">
             <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-40" />
             <p>No notes yet. Add one to track important details about this event.</p>
           </CardContent>
@@ -224,21 +224,21 @@ export function EventNotesTab({ eventId }: EventNotesTabProps) {
                       {/* Header row: type badge + title + pin icon */}
                       <div className="flex items-center gap-2 mb-1">
                         {note.pinned && (
-                          <Pin className="w-3.5 h-3.5 text-ink-gold flex-shrink-0" />
+                          <Pin className="w-3.5 h-3.5 text-spectral flex-shrink-0" />
                         )}
                         <span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full border ${typeConfig.className}`}>
                           {typeConfig.label}
                         </span>
                         {note.title && (
-                          <span className="text-sm font-semibold text-wood-dark truncate">{note.title}</span>
+                          <span className="text-sm font-semibold text-foreground truncate">{note.title}</span>
                         )}
                       </div>
 
                       {/* Content */}
-                      <p className="text-sm text-wood-dark whitespace-pre-wrap mt-1">{note.content}</p>
+                      <p className="text-sm text-foreground whitespace-pre-wrap mt-1">{note.content}</p>
 
                       {/* Footer: author + date */}
-                      <div className="flex items-center gap-3 mt-2 text-xs text-sepia">
+                      <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                         <span className="font-medium">{note.author}</span>
                         <span>·</span>
                         <span>{formatDateMedium(note.created_at)}</span>
@@ -249,14 +249,14 @@ export function EventNotesTab({ eventId }: EventNotesTabProps) {
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <button
                         onClick={() => handleTogglePin(note)}
-                        className="p-1.5 text-sepia hover:text-ink-gold transition-colors"
+                        className="p-1.5 text-muted-foreground hover:text-spectral transition-colors"
                         title={note.pinned ? 'Unpin' : 'Pin'}
                       >
                         {note.pinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
                       </button>
                       <button
                         onClick={() => setDeleteConfirmId(note.id)}
-                        className="p-1.5 text-sepia hover:text-ink-red transition-colors"
+                        className="p-1.5 text-muted-foreground hover:text-destructive transition-colors"
                         title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />

@@ -3,7 +3,7 @@ import { createHash, timingSafeEqual, randomBytes } from 'crypto';
 import { cookies } from 'next/headers';
 
 // Cookie name for the auth token
-const AUTH_COOKIE_NAME = 'counting-house-token';
+const AUTH_COOKIE_NAME = 'ghostly-token';
 
 // Token expiration time (24 hours)
 const TOKEN_EXPIRATION = '24h';
@@ -77,8 +77,8 @@ export async function createToken(username: string): Promise<string> {
   const token = await new SignJWT({ username })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setIssuer('counting-house')
-    .setAudience('counting-house')
+    .setIssuer('ghostly')
+    .setAudience('ghostly')
     .setExpirationTime(TOKEN_EXPIRATION)
     .sign(secret);
 
@@ -92,8 +92,8 @@ export async function verifyToken(token: string): Promise<TokenPayload | null> {
   try {
     const secret = getJwtSecret();
     const { payload } = await jwtVerify(token, secret, {
-      issuer: 'counting-house',
-      audience: 'counting-house',
+      issuer: 'ghostly',
+      audience: 'ghostly',
     });
     return payload as TokenPayload;
   } catch {

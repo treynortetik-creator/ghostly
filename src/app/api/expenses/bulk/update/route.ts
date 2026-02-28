@@ -1,5 +1,5 @@
 /**
- * The Counting House - Bulk Expense Update API
+ * Ghostly - Bulk Expense Update API
  *
  * Endpoints:
  * PUT /api/expenses/bulk/update - Update multiple expenses in one request

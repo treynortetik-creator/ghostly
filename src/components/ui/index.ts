@@ -1,4 +1,4 @@
-// UI Components - The Counting House
+// UI Components - Ghostly
 // Victorian-styled components for budget tracking
 
 export { Button, IconButton, ButtonGroup, buttonVariants } from './Button';

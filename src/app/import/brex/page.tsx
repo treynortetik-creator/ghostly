@@ -36,7 +36,7 @@ import {
    1. Upload CSV file
    2. Review transactions with AI suggestions
    3. Confirm and import
-   Victorian theme: "The Receiving Office"
+   Ghostly theme: "The Receiving Office"
    ============================================ */
 
 type ImportStep = "upload" | "review" | "confirm" | "complete";
@@ -230,7 +230,7 @@ export default function BrexImportPage() {
       <div className="mb-8" data-oid="epcmj9a">
         <Link
           href="/import"
-          className="inline-flex items-center gap-1 text-sm text-sepia hover:text-wood-dark transition-colors mb-4"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
           data-oid="bporqfl"
         >
           <ArrowLeft className="w-4 h-4" data-oid="lyb484u" />
@@ -238,13 +238,13 @@ export default function BrexImportPage() {
         </Link>
 
         <h1
-          className="text-3xl font-serif font-bold text-wood-dark flex items-center gap-3"
+          className="text-3xl font-bold text-foreground flex items-center gap-3"
           data-oid="24u2lzn"
         >
-          <CreditCard className="w-8 h-8 text-ink-gold" data-oid="5hyre8u" />
+          <CreditCard className="w-8 h-8 text-spectral" data-oid="5hyre8u" />
           Brex CSV Import
         </h1>
-        <p className="mt-1 text-sepia" data-oid="zx9u0nv">
+        <p className="mt-1 text-muted-foreground" data-oid="zx9u0nv">
           Import credit card transactions with AI-assisted categorization
         </p>
       </div>
@@ -268,10 +268,10 @@ export default function BrexImportPage() {
                     transition-all duration-200
                     ${
                       isActive
-                        ? "bg-ink-gold text-ink-black"
+                        ? "bg-spectral text-foreground"
                         : isPast
-                          ? "bg-ink-green text-parchment"
-                          : "bg-wood-medium/20 text-sepia"
+                          ? "bg-emerald-400 text-phantom"
+                          : "bg-spectral/10 text-muted-foreground"
                     }
                   `}
                   data-oid="tbcjocj"
@@ -286,7 +286,7 @@ export default function BrexImportPage() {
                   <div
                     className={`
                       w-12 sm:w-24 h-0.5 mx-2
-                      ${isPast ? "bg-ink-green" : "bg-wood-medium/20"}
+                      ${isPast ? "bg-emerald-400" : "bg-spectral/10"}
                     `}
                     data-oid="52_tgdi"
                   />
@@ -296,7 +296,7 @@ export default function BrexImportPage() {
           })}
         </div>
         <div
-          className="flex justify-between max-w-xl mt-2 text-xs text-sepia"
+          className="flex justify-between max-w-xl mt-2 text-xs text-muted-foreground"
           data-oid=".jy2n4w"
         >
           <span data-oid="v3w0486">Upload</span>
@@ -309,18 +309,18 @@ export default function BrexImportPage() {
       {/* Error Display */}
       {error && (
         <div
-          className="mb-6 flex items-start gap-3 p-4 bg-ink-red/10 border border-ink-red/30 rounded-lg"
+          className="mb-6 flex items-start gap-3 p-4 bg-red-400/10 border border-destructive/30 rounded-lg"
           data-oid="azmjupq"
         >
           <AlertCircle
-            className="w-5 h-5 text-ink-red shrink-0 mt-0.5"
+            className="w-5 h-5 text-destructive shrink-0 mt-0.5"
             data-oid="l4qq65a"
           />
           <div data-oid="e.:_gjw">
-            <p className="font-medium text-ink-red" data-oid="0ytd6jg">
+            <p className="font-medium text-destructive" data-oid="0ytd6jg">
               Error
             </p>
-            <p className="text-sm text-ink-red/80" data-oid="jwi9-.6">
+            <p className="text-sm text-destructive/80" data-oid="jwi9-.6">
               {error}
             </p>
           </div>
@@ -332,7 +332,7 @@ export default function BrexImportPage() {
         <Card data-oid="8.jdet9">
           <CardHeader data-oid="1vqkykj">
             <CardTitle className="flex items-center gap-2" data-oid="puopfu7">
-              <Upload className="w-5 h-5 text-ink-gold" data-oid="ts-nlej" />
+              <Upload className="w-5 h-5 text-spectral" data-oid="ts-nlej" />
               Upload Brex Export
             </CardTitle>
             <CardDescription data-oid="pf89v.:">
@@ -352,18 +352,18 @@ export default function BrexImportPage() {
 
             {/* AI Feature Note */}
             <div
-              className="mt-6 flex items-start gap-3 p-4 bg-ink-gold/10 border border-ink-gold/30 rounded-lg"
+              className="mt-6 flex items-start gap-3 p-4 bg-spectral/10 border border-spectral rounded-lg"
               data-oid="6yg.29l"
             >
               <Sparkles
-                className="w-5 h-5 text-ink-gold shrink-0 mt-0.5"
+                className="w-5 h-5 text-spectral shrink-0 mt-0.5"
                 data-oid="w:nyh2k"
               />
               <div data-oid="94sx4u:">
-                <p className="font-medium text-ink-gold" data-oid="cncupyb">
+                <p className="font-medium text-spectral" data-oid="cncupyb">
                   AI-Powered Suggestions
                 </p>
-                <p className="text-sm text-sepia mt-1" data-oid="qrm8:mm">
+                <p className="text-sm text-muted-foreground mt-1" data-oid="qrm8:mm">
                   Our AI assistant will analyze each transaction and suggest the
                   most appropriate event or budget category based on vendor
                   names and memos. You&apos;ll have the chance to review and
@@ -380,16 +380,16 @@ export default function BrexImportPage() {
           {/* Meta Info */}
           {meta && (
             <div
-              className="flex items-center gap-4 text-sm text-sepia"
+              className="flex items-center gap-4 text-sm text-muted-foreground"
               data-oid="of_.szn"
             >
               <span data-oid="tjpoy56">
                 File:{" "}
-                <strong className="text-ink-black" data-oid="-.25543">
+                <strong className="text-foreground" data-oid="-.25543">
                   {meta.fileName}
                 </strong>
               </span>
-              <span className="text-wood-medium/50" data-oid="0rzn5vk">
+              <span className="text-muted-foreground/50" data-oid="0rzn5vk">
                 |
               </span>
               <span data-oid="nnytnch">
@@ -397,11 +397,11 @@ export default function BrexImportPage() {
               </span>
               {meta.withSuggestions > 0 && (
                 <>
-                  <span className="text-wood-medium/50" data-oid="mz_efvu">
+                  <span className="text-muted-foreground/50" data-oid="mz_efvu">
                     |
                   </span>
                   <span
-                    className="flex items-center gap-1 text-ink-gold"
+                    className="flex items-center gap-1 text-spectral"
                     data-oid="8xdujhr"
                   >
                     <Sparkles className="w-3 h-3" data-oid="2u11:97" />
@@ -411,10 +411,10 @@ export default function BrexImportPage() {
               )}
               {meta.duplicates > 0 && (
                 <>
-                  <span className="text-wood-medium/50" data-oid="rtckwu7">
+                  <span className="text-muted-foreground/50" data-oid="rtckwu7">
                     |
                   </span>
-                  <span className="text-ink-red" data-oid="eq95nfn">
+                  <span className="text-destructive" data-oid="eq95nfn">
                     {meta.duplicates} potential duplicates
                   </span>
                 </>
@@ -434,7 +434,7 @@ export default function BrexImportPage() {
 
           {/* Action Buttons */}
           <div
-            className="flex items-center justify-end gap-4 pt-4 border-t border-wood-medium/20"
+            className="flex items-center justify-end gap-4 pt-4 border-t border-border"
             data-oid="esuhz7w"
           >
             <Button
@@ -474,22 +474,22 @@ export default function BrexImportPage() {
         <Card elevated data-oid="loa:m4:">
           <CardContent className="py-12 text-center" data-oid="ldzlrqt">
             <div
-              className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-ink-green/20 mb-6"
+              className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-400/10 mb-6"
               data-oid="ro_.n9v"
             >
               <CheckCircle
-                className="w-8 h-8 text-ink-green"
+                className="w-8 h-8 text-emerald-400"
                 data-oid="qqkq9q3"
               />
             </div>
 
             <h2
-              className="text-2xl font-serif font-bold text-wood-dark mb-2"
+              className="text-2xl font-bold text-foreground mb-2"
               data-oid="874jxxm"
             >
               Import Complete!
             </h2>
-            <p className="text-sepia mb-8" data-oid="673myr2">
+            <p className="text-muted-foreground mb-8" data-oid="673myr2">
               Your Brex transactions have been successfully imported into the
               ledger.
             </p>
@@ -500,58 +500,58 @@ export default function BrexImportPage() {
               data-oid="sj:nisv"
             >
               <div
-                className="bg-parchment p-4 rounded-lg border border-wood-medium/20"
+                className="bg-background p-4 rounded-lg border border-border"
                 data-oid="hwrs:h4"
               >
                 <p
-                  className="text-2xl font-serif font-bold text-ink-green"
+                  className="text-2xl font-bold text-emerald-400"
                   data-oid="vs6qx1p"
                 >
                   {importResult.summary.created}
                 </p>
-                <p className="text-xs text-sepia" data-oid="6ss7cro">
+                <p className="text-xs text-muted-foreground" data-oid="6ss7cro">
                   Created
                 </p>
               </div>
               <div
-                className="bg-parchment p-4 rounded-lg border border-wood-medium/20"
+                className="bg-background p-4 rounded-lg border border-border"
                 data-oid="xf::kmv"
               >
                 <p
-                  className="text-2xl font-serif font-bold text-ink-gold"
+                  className="text-2xl font-bold text-spectral"
                   data-oid="05s44.r"
                 >
                   {importResult.summary.replaced}
                 </p>
-                <p className="text-xs text-sepia" data-oid="ysat.58">
+                <p className="text-xs text-muted-foreground" data-oid="ysat.58">
                   Replaced
                 </p>
               </div>
               <div
-                className="bg-parchment p-4 rounded-lg border border-wood-medium/20"
+                className="bg-background p-4 rounded-lg border border-border"
                 data-oid="eh4kkr5"
               >
                 <p
-                  className="text-2xl font-serif font-bold text-ink-black"
+                  className="text-2xl font-bold text-foreground"
                   data-oid="p33k5a7"
                 >
                   {importResult.summary.total}
                 </p>
-                <p className="text-xs text-sepia" data-oid="x1wfnov">
+                <p className="text-xs text-muted-foreground" data-oid="x1wfnov">
                   Total
                 </p>
               </div>
               <div
-                className="bg-parchment p-4 rounded-lg border border-wood-medium/20"
+                className="bg-background p-4 rounded-lg border border-border"
                 data-oid="-7p-2yc"
               >
                 <p
-                  className="text-2xl font-serif font-bold text-ink-black"
+                  className="text-2xl font-bold text-foreground"
                   data-oid="_r3j7h2"
                 >
                   {formatCurrency(importResult.summary.totalAmount)}
                 </p>
-                <p className="text-xs text-sepia" data-oid="mal-idb">
+                <p className="text-xs text-muted-foreground" data-oid="mal-idb">
                   Amount
                 </p>
               </div>
@@ -589,10 +589,10 @@ export default function BrexImportPage() {
 
       {/* Footer */}
       <div
-        className="text-center py-6 mt-8 border-t border-wood-medium/20"
+        className="text-center py-6 mt-8 border-t border-border"
         data-oid="aihz2p8"
       >
-        <p className="text-xs text-sepia/60 italic" data-oid="evwdn42">
+        <p className="text-xs text-muted-foreground/60 italic" data-oid="evwdn42">
           &ldquo;Every farthing has its place, and every place its
           farthing.&rdquo;
         </p>

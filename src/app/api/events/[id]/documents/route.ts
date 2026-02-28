@@ -1,5 +1,5 @@
 /**
- * The Counting House - Event Documents API
+ * Ghostly - Event Documents API
  *
  * GET /api/events/:id/documents - List documents for an event
  */

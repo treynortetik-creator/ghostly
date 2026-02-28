@@ -19,7 +19,7 @@ import {
    EXPORT OPTIONS COMPONENT
    ============================================
    Scope and format selection for exporting
-   ledger data. Victorian theme with brass
+   ledger data. Ghostly theme with brass
    radio-style selection controls.
    ============================================ */
 
@@ -157,8 +157,8 @@ export function ExportOptions({
                     transition-all duration-200
                     ${
                       isSelected
-                        ? "border-ink-gold bg-ink-gold/5 ring-1 ring-ink-gold/30"
-                        : "border-wood-medium/30 hover:border-wood-medium/50 hover:bg-parchment"
+                        ? "border-spectral bg-spectral/10 ring-1 ring-spectral/30"
+                        : "border-border hover:border-border hover:bg-background"
                     }
                   `}
                   data-oid=":h3ztvd"
@@ -166,7 +166,7 @@ export function ExportOptions({
                   <div
                     className={`
                     p-2 rounded-lg shrink-0
-                    ${isSelected ? "bg-ink-gold/15 text-ink-gold" : "bg-wood-medium/10 text-wood-medium"}
+                    ${isSelected ? "bg-spectral/10 text-spectral" : "bg-spectral/10 text-muted-foreground"}
                   `}
                     data-oid="vadn-do"
                   >
@@ -175,20 +175,20 @@ export function ExportOptions({
                   <div className="flex-1 min-w-0" data-oid="-kfncyv">
                     <div className="flex items-center gap-2" data-oid="_s.x9su">
                       <span
-                        className={`font-medium ${isSelected ? "text-wood-dark" : "text-sepia"}`}
+                        className={`font-medium ${isSelected ? "text-foreground" : "text-muted-foreground"}`}
                         data-oid="s44f3-z"
                       >
                         {option.label}
                       </span>
                       {isSelected && (
                         <div
-                          className="w-2 h-2 rounded-full bg-ink-gold"
+                          className="w-2 h-2 rounded-full bg-spectral"
                           data-oid="e4g9fin"
                         />
                       )}
                     </div>
                     <p
-                      className="text-xs text-sepia/70 mt-0.5"
+                      className="text-xs text-muted-foreground/60 mt-0.5"
                       data-oid="ou-5c:9"
                     >
                       {option.description}
@@ -202,11 +202,11 @@ export function ExportOptions({
           {/* Additional Options Based on Scope */}
           {scope === "quarter" && (
             <div
-              className="mt-6 pt-6 border-t border-wood-medium/20"
+              className="mt-6 pt-6 border-t border-border"
               data-oid="7hmoi:i"
             >
               <label
-                className="block text-sm font-medium text-sepia mb-3"
+                className="block text-sm font-medium text-muted-foreground mb-3"
                 data-oid="5socxgj"
               >
                 Select Quarter
@@ -220,20 +220,20 @@ export function ExportOptions({
                       px-4 py-3 rounded-md border-2 text-center transition-all
                       ${
                         quarter === q.value
-                          ? "border-ink-gold bg-ink-gold/10 text-wood-dark"
-                          : "border-wood-medium/30 hover:border-wood-medium/50 text-sepia"
+                          ? "border-spectral bg-spectral/10 text-foreground"
+                          : "border-border hover:border-border text-muted-foreground"
                       }
                     `}
                     data-oid="ndysrpv"
                   >
                     <span
-                      className="font-serif font-semibold"
+                      className="font-semibold"
                       data-oid=".4qrews"
                     >
                       {q.label}
                     </span>
                     <p
-                      className="text-[10px] text-sepia/70 mt-0.5"
+                      className="text-[10px] text-muted-foreground/60 mt-0.5"
                       data-oid="47ek1f."
                     >
                       {q.months}
@@ -242,7 +242,7 @@ export function ExportOptions({
                 ))}
               </div>
               <p
-                className="text-xs text-sepia/60 mt-2 italic"
+                className="text-xs text-muted-foreground/60 mt-2 italic"
                 data-oid="rlmjwk3"
               >
                 Fiscal Year {fiscalYear}: {quarter} (
@@ -253,11 +253,11 @@ export function ExportOptions({
 
           {scope === "month" && (
             <div
-              className="mt-6 pt-6 border-t border-wood-medium/20"
+              className="mt-6 pt-6 border-t border-border"
               data-oid="8.1_aew"
             >
               <label
-                className="block text-sm font-medium text-sepia mb-3"
+                className="block text-sm font-medium text-muted-foreground mb-3"
                 data-oid="2_g2ba."
               >
                 Select Month
@@ -265,9 +265,9 @@ export function ExportOptions({
               <select
                 value={month}
                 onChange={(e) => onMonthChange(parseInt(e.target.value))}
-                className="w-full px-4 py-3 rounded-md border-2 border-wood-medium/30
-                  bg-parchment text-wood-dark font-medium
-                  focus:border-ink-gold focus:ring-2 focus:ring-ink-gold/20 focus:outline-none
+                className="w-full px-4 py-3 rounded-md border-2 border-border
+                  bg-background text-foreground font-medium
+                  focus:border-spectral focus:ring-2 focus:ring-spectral/20 focus:outline-none
                   transition-all"
                 data-oid="lvtrvnu"
               >
@@ -282,11 +282,11 @@ export function ExportOptions({
 
           {scope === "custom" && (
             <div
-              className="mt-6 pt-6 border-t border-wood-medium/20"
+              className="mt-6 pt-6 border-t border-border"
               data-oid="e97nh53"
             >
               <label
-                className="block text-sm font-medium text-sepia mb-3"
+                className="block text-sm font-medium text-muted-foreground mb-3"
                 data-oid="wx03haf"
               >
                 Custom Date Range
@@ -294,7 +294,7 @@ export function ExportOptions({
               <div className="grid gap-4 sm:grid-cols-2" data-oid="-1.8:3l">
                 <div data-oid="ydfou57">
                   <label
-                    className="block text-xs text-sepia/70 mb-1"
+                    className="block text-xs text-muted-foreground/60 mb-1"
                     data-oid="1nogicg"
                   >
                     Start Date
@@ -303,16 +303,16 @@ export function ExportOptions({
                     type="date"
                     value={dateStart}
                     onChange={(e) => onDateStartChange(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-md border-2 border-wood-medium/30
-                      bg-parchment text-wood-dark
-                      focus:border-ink-gold focus:ring-2 focus:ring-ink-gold/20 focus:outline-none
+                    className="w-full px-4 py-2.5 rounded-md border-2 border-border
+                      bg-background text-foreground
+                      focus:border-spectral focus:ring-2 focus:ring-spectral/20 focus:outline-none
                       transition-all"
                     data-oid="zhf5ar9"
                   />
                 </div>
                 <div data-oid="_276zsk">
                   <label
-                    className="block text-xs text-sepia/70 mb-1"
+                    className="block text-xs text-muted-foreground/60 mb-1"
                     data-oid="01fk9jb"
                   >
                     End Date
@@ -321,9 +321,9 @@ export function ExportOptions({
                     type="date"
                     value={dateEnd}
                     onChange={(e) => onDateEndChange(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-md border-2 border-wood-medium/30
-                      bg-parchment text-wood-dark
-                      focus:border-ink-gold focus:ring-2 focus:ring-ink-gold/20 focus:outline-none
+                    className="w-full px-4 py-2.5 rounded-md border-2 border-border
+                      bg-background text-foreground
+                      focus:border-spectral focus:ring-2 focus:ring-spectral/20 focus:outline-none
                       transition-all"
                     data-oid="4bo.b-5"
                   />
@@ -357,8 +357,8 @@ export function ExportOptions({
                     transition-all duration-200
                     ${
                       isSelected
-                        ? "border-ink-green bg-ink-green/5 ring-1 ring-ink-green/30"
-                        : "border-wood-medium/30 hover:border-wood-medium/50 hover:bg-parchment"
+                        ? "border-emerald-400 bg-emerald-400/10 ring-1 ring-emerald-400/30"
+                        : "border-border hover:border-border hover:bg-background"
                     }
                   `}
                   data-oid="cxkemid"
@@ -366,7 +366,7 @@ export function ExportOptions({
                   <div
                     className={`
                     p-2 rounded-lg shrink-0
-                    ${isSelected ? "bg-ink-green/15 text-ink-green" : "bg-wood-medium/10 text-wood-medium"}
+                    ${isSelected ? "bg-emerald-400/10 text-emerald-400" : "bg-spectral/10 text-muted-foreground"}
                   `}
                     data-oid="8m9gmoi"
                   >
@@ -375,20 +375,20 @@ export function ExportOptions({
                   <div className="flex-1 min-w-0" data-oid="jyaozxi">
                     <div className="flex items-center gap-2" data-oid="ysvgim-">
                       <span
-                        className={`font-medium ${isSelected ? "text-wood-dark" : "text-sepia"}`}
+                        className={`font-medium ${isSelected ? "text-foreground" : "text-muted-foreground"}`}
                         data-oid="a:kvee9"
                       >
                         {option.label}
                       </span>
                       {isSelected && (
                         <div
-                          className="w-2 h-2 rounded-full bg-ink-green"
+                          className="w-2 h-2 rounded-full bg-emerald-400"
                           data-oid="j_mdb_7"
                         />
                       )}
                     </div>
                     <p
-                      className="text-xs text-sepia/70 mt-0.5"
+                      className="text-xs text-muted-foreground/60 mt-0.5"
                       data-oid="bzc60r_"
                     >
                       {option.description}
@@ -401,17 +401,17 @@ export function ExportOptions({
 
           {/* Format Details */}
           <div
-            className="mt-4 p-4 rounded-lg bg-parchment border border-wood-medium/20"
+            className="mt-4 p-4 rounded-lg bg-background border border-border"
             data-oid="aaukb16"
           >
             {format === "csv" ? (
               <div className="flex items-start gap-3" data-oid="4ed11--">
                 <FileText
-                  className="w-5 h-5 text-sepia shrink-0 mt-0.5"
+                  className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5"
                   data-oid="d_it_zf"
                 />
                 <div data-oid="7zney2b">
-                  <p className="text-sm text-sepia" data-oid="764xxl.">
+                  <p className="text-sm text-muted-foreground" data-oid="764xxl.">
                     A single CSV file with all expense records. Compatible with
                     Excel, Google Sheets, and other spreadsheet applications.
                   </p>
@@ -420,20 +420,20 @@ export function ExportOptions({
             ) : (
               <div className="flex items-start gap-3" data-oid="nuvp1xj">
                 <FileSpreadsheet
-                  className="w-5 h-5 text-sepia shrink-0 mt-0.5"
+                  className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5"
                   data-oid="c4:k2iu"
                 />
                 <div data-oid="uo2ycyl">
-                  <p className="text-sm text-sepia" data-oid="pxc8w3g">
+                  <p className="text-sm text-muted-foreground" data-oid="pxc8w3g">
                     An Excel workbook with multiple worksheets:
                   </p>
                   <ul
-                    className="mt-2 space-y-1 text-xs text-sepia/70"
+                    className="mt-2 space-y-1 text-xs text-muted-foreground/60"
                     data-oid="nf72012"
                   >
                     <li className="flex items-center gap-2" data-oid="dwkf.p5">
                       <span
-                        className="w-1 h-1 rounded-full bg-ink-gold"
+                        className="w-1 h-1 rounded-full bg-spectral"
                         data-oid="3j8thls"
                       />
                       <span data-oid="dfaplu-">
@@ -443,7 +443,7 @@ export function ExportOptions({
                     </li>
                     <li className="flex items-center gap-2" data-oid="w2ugr3j">
                       <span
-                        className="w-1 h-1 rounded-full bg-ink-gold"
+                        className="w-1 h-1 rounded-full bg-spectral"
                         data-oid="5_alae8"
                       />
                       <span data-oid="q-1zqef">
@@ -453,7 +453,7 @@ export function ExportOptions({
                     </li>
                     <li className="flex items-center gap-2" data-oid="gypsdug">
                       <span
-                        className="w-1 h-1 rounded-full bg-ink-gold"
+                        className="w-1 h-1 rounded-full bg-spectral"
                         data-oid="6xzl3fb"
                       />
                       <span data-oid="c39ht6f">
@@ -463,7 +463,7 @@ export function ExportOptions({
                     </li>
                     <li className="flex items-center gap-2" data-oid="0a:v7.t">
                       <span
-                        className="w-1 h-1 rounded-full bg-ink-gold"
+                        className="w-1 h-1 rounded-full bg-spectral"
                         data-oid="193ctko"
                       />
                       <span data-oid="5gsbsdz">

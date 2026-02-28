@@ -1,5 +1,5 @@
 /**
- * The Counting House - Webhook Test API
+ * Ghostly - Webhook Test API
  *
  * POST /api/webhooks/test - Send a test payload to a webhook
  */
@@ -35,7 +35,7 @@ export const POST = withApiHandler({ permission: 'admin', resource: 'webhooks/te
       event_type: 'webhook.test',
       timestamp: new Date().toISOString(),
       data: {
-        message: 'This is a test webhook delivery from The Counting House.',
+        message: 'This is a test webhook delivery from Ghostly.',
         webhook_id: webhook.id,
       },
     };
@@ -43,7 +43,7 @@ export const POST = withApiHandler({ permission: 'admin', resource: 'webhooks/te
     const payloadBody = JSON.stringify(testPayload);
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'User-Agent': 'CountingHouse-Webhooks/1.0',
+      'User-Agent': 'Ghostly-Webhooks/1.0',
     };
 
     if (webhook.secret) {

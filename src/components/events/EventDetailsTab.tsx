@@ -53,7 +53,7 @@ export function EventDetailsTab({ event, expenses }: EventDetailsTabProps) {
               data-oid="kqk1wd-"
             >
               <DollarSign
-                className="w-5 h-5 text-ink-gold"
+                className="w-5 h-5 text-spectral"
                 data-oid="sb62cj9"
               />
               Budget Overview
@@ -82,7 +82,7 @@ export function EventDetailsTab({ event, expenses }: EventDetailsTabProps) {
                   data-oid="fti5a1e"
                 >
                   <Receipt
-                    className="w-5 h-5 text-ink-gold"
+                    className="w-5 h-5 text-spectral"
                     data-oid="wnvxwl4"
                   />
                   Expenses
@@ -109,14 +109,14 @@ export function EventDetailsTab({ event, expenses }: EventDetailsTabProps) {
             {expenses.length === 0 ? (
               <div className="text-center py-8" data-oid="7ey88up">
                 <Receipt
-                  className="w-10 h-10 text-sepia/30 mx-auto mb-3"
+                  className="w-10 h-10 text-muted-foreground/60 mx-auto mb-3"
                   data-oid="8.qbh64"
                 />
-                <p className="text-sepia" data-oid="av0a4_:">
+                <p className="text-muted-foreground" data-oid="av0a4_:">
                   No expenses recorded yet.
                 </p>
                 <p
-                  className="text-sm text-sepia/70 mt-1"
+                  className="text-sm text-muted-foreground/60 mt-1"
                   data-oid="ar8cqve"
                 >
                   Add expenses to track spending against this event's
@@ -128,7 +128,7 @@ export function EventDetailsTab({ event, expenses }: EventDetailsTabProps) {
                 {expenses.map((expense) => (
                   <div
                     key={expense.id}
-                    className="flex items-center justify-between p-4 rounded-lg bg-parchment border border-wood-medium/20 hover:border-wood-medium/40 transition-colors"
+                    className="flex items-center justify-between p-4 rounded-lg bg-background border border-border hover:border-border transition-colors"
                     data-oid="8ns_66k"
                   >
                     <div className="flex-1 min-w-0" data-oid="vsdp-c:">
@@ -137,7 +137,7 @@ export function EventDetailsTab({ event, expenses }: EventDetailsTabProps) {
                         data-oid="dtmtr44"
                       >
                         <span
-                          className="font-medium text-ink-black"
+                          className="font-medium text-foreground"
                           data-oid="b6g.jt3"
                         >
                           {expense.vendor || "Unknown Vendor"}
@@ -160,14 +160,14 @@ export function EventDetailsTab({ event, expenses }: EventDetailsTabProps) {
                       </div>
                       {expense.memo && (
                         <p
-                          className="text-sm text-sepia mt-1 truncate"
+                          className="text-sm text-muted-foreground mt-1 truncate"
                           data-oid="hkxme.h"
                         >
                           {expense.memo}
                         </p>
                       )}
                       <p
-                        className="text-xs text-sepia/70 mt-1"
+                        className="text-xs text-muted-foreground/60 mt-1"
                         data-oid="s6y:2dv"
                       >
                         {new Date(expense.expense_date).toLocaleDateString(
@@ -182,7 +182,7 @@ export function EventDetailsTab({ event, expenses }: EventDetailsTabProps) {
                     </div>
                     <div className="text-right ml-4" data-oid=":.wjhs-">
                       <span
-                        className="font-serif font-semibold text-lg tabular-nums text-ink-black"
+                        className="font-semibold text-lg tabular-nums text-foreground"
                         data-oid="o7q.ypc"
                       >
                         {formatCurrency(expense.amount)}
@@ -195,11 +195,11 @@ export function EventDetailsTab({ event, expenses }: EventDetailsTabProps) {
           </CardContent>
           {expenses.length > 0 && (
             <CardFooter className="justify-between" data-oid="b.b9q5i">
-              <span className="text-sm text-sepia" data-oid="dhz17.v">
+              <span className="text-sm text-muted-foreground" data-oid="dhz17.v">
                 Total Expenses
               </span>
               <span
-                className="font-serif font-bold text-lg tabular-nums text-wood-dark"
+                className="font-bold text-lg tabular-nums text-foreground"
                 data-oid="uw1fnuc"
               >
                 {formatCurrency(event.actual_spent)}
@@ -220,7 +220,7 @@ export function EventDetailsTab({ event, expenses }: EventDetailsTabProps) {
                 data-oid="99gnf8q"
               >
                 <Target
-                  className="w-5 h-5 text-ink-gold"
+                  className="w-5 h-5 text-spectral"
                   data-oid="h1twci6"
                 />
                 Opportunity Goals
@@ -229,14 +229,14 @@ export function EventDetailsTab({ event, expenses }: EventDetailsTabProps) {
             <CardContent className="space-y-4" data-oid="orx7m9.">
               {event.expansion_goal > 0 && (
                 <div
-                  className="flex items-center justify-between p-3 rounded-lg bg-parchment border border-wood-medium/20"
+                  className="flex items-center justify-between p-3 rounded-lg bg-background border border-border"
                   data-oid="g71kywl"
                 >
-                  <span className="text-sepia" data-oid="uc7mac8">
+                  <span className="text-muted-foreground" data-oid="uc7mac8">
                     Expansion
                   </span>
                   <span
-                    className="font-serif font-semibold text-xl tabular-nums text-ink-black"
+                    className="font-semibold text-xl tabular-nums text-foreground"
                     data-oid="etpbyc."
                   >
                     {event.expansion_goal}
@@ -245,14 +245,14 @@ export function EventDetailsTab({ event, expenses }: EventDetailsTabProps) {
               )}
               {event.net_new_goal > 0 && (
                 <div
-                  className="flex items-center justify-between p-3 rounded-lg bg-parchment border border-wood-medium/20"
+                  className="flex items-center justify-between p-3 rounded-lg bg-background border border-border"
                   data-oid="6u0v49i"
                 >
-                  <span className="text-sepia" data-oid="avusurm">
+                  <span className="text-muted-foreground" data-oid="avusurm">
                     Net New
                   </span>
                   <span
-                    className="font-serif font-semibold text-xl tabular-nums text-ink-green"
+                    className="font-semibold text-xl tabular-nums text-emerald-400"
                     data-oid="g6:pild"
                   >
                     {event.net_new_goal}
@@ -274,7 +274,7 @@ export function EventDetailsTab({ event, expenses }: EventDetailsTabProps) {
                 data-oid="icz.id."
               >
                 <FileText
-                  className="w-5 h-5 text-ink-gold"
+                  className="w-5 h-5 text-spectral"
                   data-oid="2rw9ah4"
                 />
                 Planning Notes
@@ -284,13 +284,13 @@ export function EventDetailsTab({ event, expenses }: EventDetailsTabProps) {
               {event.approach_notes && (
                 <div data-oid="kumdph6">
                   <h4
-                    className="text-sm font-medium text-wood-dark mb-1"
+                    className="text-sm font-medium text-foreground mb-1"
                     data-oid=".y:.z49"
                   >
                     Approach
                   </h4>
                   <p
-                    className="text-sm text-sepia whitespace-pre-wrap"
+                    className="text-sm text-muted-foreground whitespace-pre-wrap"
                     data-oid="4c.-sul"
                   >
                     {event.approach_notes}
@@ -300,13 +300,13 @@ export function EventDetailsTab({ event, expenses }: EventDetailsTabProps) {
               {event.marketing_notes && (
                 <div data-oid="nrpyngy">
                   <h4
-                    className="text-sm font-medium text-wood-dark mb-1"
+                    className="text-sm font-medium text-foreground mb-1"
                     data-oid=":0oyjv2"
                   >
                     Marketing
                   </h4>
                   <p
-                    className="text-sm text-sepia whitespace-pre-wrap"
+                    className="text-sm text-muted-foreground whitespace-pre-wrap"
                     data-oid="exa2wcl"
                   >
                     {event.marketing_notes}
@@ -316,13 +316,13 @@ export function EventDetailsTab({ event, expenses }: EventDetailsTabProps) {
               {event.sales_notes && (
                 <div data-oid="fd-ghzg">
                   <h4
-                    className="text-sm font-medium text-wood-dark mb-1"
+                    className="text-sm font-medium text-foreground mb-1"
                     data-oid="i7ekru2"
                   >
                     Sales
                   </h4>
                   <p
-                    className="text-sm text-sepia whitespace-pre-wrap"
+                    className="text-sm text-muted-foreground whitespace-pre-wrap"
                     data-oid="rxh_rj6"
                   >
                     {event.sales_notes}
@@ -342,37 +342,37 @@ export function EventDetailsTab({ event, expenses }: EventDetailsTabProps) {
           </CardHeader>
           <CardContent className="space-y-2 text-sm" data-oid="crp6e5f">
             <div className="flex justify-between" data-oid="8rgqk:s">
-              <span className="text-sepia" data-oid="f05qyyu">
+              <span className="text-muted-foreground" data-oid="f05qyyu">
                 Event ID
               </span>
               <span
-                className="font-mono text-xs text-wood-dark"
+                className="font-mono text-xs text-foreground"
                 data-oid="o_yq58p"
               >
                 {event.id}
               </span>
             </div>
             <div className="flex justify-between" data-oid="fysbj-t">
-              <span className="text-sepia" data-oid="2edhrb3">
+              <span className="text-muted-foreground" data-oid="2edhrb3">
                 Fiscal Year
               </span>
-              <span className="text-wood-dark" data-oid="m7hh.bo">
+              <span className="text-foreground" data-oid="m7hh.bo">
                 2026
               </span>
             </div>
             <div className="flex justify-between" data-oid="2b163pj">
-              <span className="text-sepia" data-oid="kbrdqjk">
+              <span className="text-muted-foreground" data-oid="kbrdqjk">
                 Created
               </span>
-              <span className="text-wood-dark" data-oid=":t0m6:k">
+              <span className="text-foreground" data-oid=":t0m6:k">
                 {new Date(event.created_at).toLocaleDateString()}
               </span>
             </div>
             <div className="flex justify-between" data-oid="2rd-uk7">
-              <span className="text-sepia" data-oid="o913ty0">
+              <span className="text-muted-foreground" data-oid="o913ty0">
                 Last Updated
               </span>
-              <span className="text-wood-dark" data-oid="hm90o7l">
+              <span className="text-foreground" data-oid="hm90o7l">
                 {new Date(event.updated_at).toLocaleDateString()}
               </span>
             </div>

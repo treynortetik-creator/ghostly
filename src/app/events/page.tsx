@@ -16,7 +16,7 @@ import type { EventWithTotals } from "@/types/database";
    ============================================
    Main events management page showing all events
    with filtering, search, and add functionality.
-   Victorian theme: "The Event Ledger"
+   Ghostly theme: "The Event Ledger"
    ============================================ */
 
 interface EventsApiResponse {
@@ -108,13 +108,13 @@ export default function EventsPage() {
       >
         <div data-oid="hsjmlip">
           <h1
-            className="text-3xl font-serif font-bold text-wood-dark flex items-center gap-3"
+            className="text-3xl font-bold text-foreground flex items-center gap-3"
             data-oid="qfgfujw"
           >
-            <Calendar className="w-8 h-8 text-ink-gold" data-oid="0s4j:z." />
+            <Calendar className="w-8 h-8 text-spectral" data-oid="0s4j:z." />
             The Event Ledger
           </h1>
-          <p className="mt-1 text-sepia" data-oid="3-0ey.i">
+          <p className="mt-1 text-muted-foreground" data-oid="3-0ey.i">
             FY 2026 Events &middot; As of {formattedDate}
           </p>
         </div>
@@ -172,10 +172,10 @@ export default function EventsPage() {
       {/* Footer Info */}
       {!isLoading && !error && events.length > 0 && (
         <div
-          className="text-center py-6 mt-8 border-t border-wood-medium/20"
+          className="text-center py-6 mt-8 border-t border-border"
           data-oid="qf.l20z"
         >
-          <p className="text-xs text-sepia/60" data-oid="f15.15f">
+          <p className="text-xs text-muted-foreground/60" data-oid="f15.15f">
             Click on any event to view full details and manage expenses.
           </p>
         </div>

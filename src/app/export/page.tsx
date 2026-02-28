@@ -16,7 +16,7 @@ import {
 /* ============================================
    EXPORT LEDGER PAGE
    ============================================
-   Victorian-themed export page for downloading
+   Ghostly-themed export page for downloading
    budget data in CSV or Excel format.
    Theme: "The Ledger Dispatch"
    ============================================ */
@@ -147,8 +147,8 @@ export default function ExportPage() {
       const contentDisposition = response.headers.get("Content-Disposition");
       let filename =
         format === "csv"
-          ? `counting-house-export-${fiscalYear}.csv`
-          : `counting-house-export-${fiscalYear}.xlsx`;
+          ? `ghostly-export-${fiscalYear}.csv`
+          : `ghostly-export-${fiscalYear}.xlsx`;
 
       if (contentDisposition) {
         const match = contentDisposition.match(/filename="?([^"]+)"?/);
@@ -182,13 +182,13 @@ export default function ExportPage() {
       {/* Page Header */}
       <div className="mb-8" data-oid="rupzpjv">
         <h1
-          className="text-3xl font-serif font-bold text-wood-dark flex items-center gap-3"
+          className="text-3xl font-bold text-foreground flex items-center gap-3"
           data-oid="tkto6sa"
         >
-          <Download className="w-8 h-8 text-ink-gold" data-oid="qpbtrwz" />
+          <Download className="w-8 h-8 text-spectral" data-oid="qpbtrwz" />
           The Ledger Dispatch
         </h1>
-        <p className="mt-1 text-sepia" data-oid="msevj49">
+        <p className="mt-1 text-muted-foreground" data-oid="msevj49">
           Export your ledger records for analysis or archival purposes
         </p>
       </div>
@@ -251,14 +251,14 @@ export default function ExportPage() {
               {/* Status Messages */}
               {exportStatus === "success" && (
                 <div
-                  className="mt-4 p-3 rounded-lg bg-ink-green/10 border border-ink-green/30 flex items-start gap-2"
+                  className="mt-4 p-3 rounded-lg bg-emerald-400/10 border border-emerald-400/30 flex items-start gap-2"
                   data-oid="_mf4did"
                 >
                   <CheckCircle
-                    className="w-5 h-5 text-ink-green shrink-0"
+                    className="w-5 h-5 text-emerald-400 shrink-0"
                     data-oid="fcbrc1u"
                   />
-                  <p className="text-sm text-ink-green" data-oid="a24b3pl">
+                  <p className="text-sm text-emerald-400" data-oid="a24b3pl">
                     {exportMessage}
                   </p>
                 </div>
@@ -266,14 +266,14 @@ export default function ExportPage() {
 
               {exportStatus === "error" && (
                 <div
-                  className="mt-4 p-3 rounded-lg bg-ink-red/10 border border-ink-red/30 flex items-start gap-2"
+                  className="mt-4 p-3 rounded-lg bg-red-400/10 border border-destructive/30 flex items-start gap-2"
                   data-oid="5_-2ks1"
                 >
                   <AlertCircle
-                    className="w-5 h-5 text-ink-red shrink-0"
+                    className="w-5 h-5 text-destructive shrink-0"
                     data-oid="o8067-v"
                   />
-                  <p className="text-sm text-ink-red" data-oid="n4mr1tq">
+                  <p className="text-sm text-destructive" data-oid="n4mr1tq">
                     {exportMessage}
                   </p>
                 </div>
@@ -283,29 +283,29 @@ export default function ExportPage() {
 
           {/* Export Notes */}
           <div
-            className="p-4 rounded-lg bg-parchment border border-wood-medium/20"
+            className="p-4 rounded-lg bg-background border border-border"
             data-oid="hu.ggzd"
           >
             <h4
-              className="font-serif font-semibold text-wood-dark text-sm mb-2"
+              className="font-semibold text-foreground text-sm mb-2"
               data-oid="6-.d6wf"
             >
               Export Notes
             </h4>
             <ul
-              className="space-y-1.5 text-xs text-sepia/80"
+              className="space-y-1.5 text-xs text-muted-foreground/60"
               data-oid="q5cvcpb"
             >
               <li className="flex items-start gap-2" data-oid="69hmpv3">
                 <span
-                  className="w-1.5 h-1.5 rounded-full bg-ink-gold/60 shrink-0 mt-1.5"
+                  className="w-1.5 h-1.5 rounded-full bg-spectral/10 shrink-0 mt-1.5"
                   data-oid=".6us0ri"
                 />
                 CSV files contain a single sheet with all expenses
               </li>
               <li className="flex items-start gap-2" data-oid="6j8wtzs">
                 <span
-                  className="w-1.5 h-1.5 rounded-full bg-ink-gold/60 shrink-0 mt-1.5"
+                  className="w-1.5 h-1.5 rounded-full bg-spectral/10 shrink-0 mt-1.5"
                   data-oid="x_evx.n"
                 />
                 Excel files include separate worksheets for events, categories,
@@ -313,7 +313,7 @@ export default function ExportPage() {
               </li>
               <li className="flex items-start gap-2" data-oid="gki-ihx">
                 <span
-                  className="w-1.5 h-1.5 rounded-full bg-ink-gold/60 shrink-0 mt-1.5"
+                  className="w-1.5 h-1.5 rounded-full bg-spectral/10 shrink-0 mt-1.5"
                   data-oid=".75slj2"
                 />
                 All monetary values are in USD
@@ -325,10 +325,10 @@ export default function ExportPage() {
 
       {/* Footer Quote */}
       <div
-        className="text-center py-6 mt-8 border-t border-wood-medium/20"
+        className="text-center py-6 mt-8 border-t border-border"
         data-oid="fz8jf05"
       >
-        <p className="text-xs text-sepia/60 italic" data-oid="h1ey9n7">
+        <p className="text-xs text-muted-foreground/60 italic" data-oid="h1ey9n7">
           &ldquo;A well-kept ledger is a merchant&apos;s finest
           testimony.&rdquo;
         </p>

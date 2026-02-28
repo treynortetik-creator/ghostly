@@ -1,5 +1,5 @@
 /**
- * The Counting House - Expenses API
+ * Ghostly - Expenses API
  *
  * Endpoints:
  * GET /api/expenses - List all expenses with optional filters

@@ -151,15 +151,15 @@ export default function CategoryDetailPage({ params }: PageProps) {
       <AppShell data-oid="9lrtno2">
         <div className="animate-pulse space-y-6" data-oid=".i57wz-">
           <div
-            className="h-8 w-32 bg-wood-medium/10 rounded"
+            className="h-8 w-32 bg-spectral/10 rounded"
             data-oid="bm9r:e."
           />
           <div
-            className="h-64 bg-wood-medium/10 rounded-lg"
+            className="h-64 bg-spectral/10 rounded-lg"
             data-oid="w8q5e0:"
           />
           <div
-            className="h-48 bg-wood-medium/10 rounded-lg"
+            className="h-48 bg-spectral/10 rounded-lg"
             data-oid="bjv_z48"
           />
         </div>
@@ -171,23 +171,23 @@ export default function CategoryDetailPage({ params }: PageProps) {
   if (error || !category) {
     return (
       <AppShell data-oid="5:as4lc">
-        <Card className="bg-ink-red/5 border-ink-red/20" data-oid="kxd3-cw">
+        <Card className="bg-red-400/10 border-destructive/20" data-oid="kxd3-cw">
           <CardContent className="py-12" data-oid="0z4i:vk">
             <div
               className="flex flex-col items-center justify-center text-center"
               data-oid="py-hyq4"
             >
               <AlertTriangle
-                className="w-12 h-12 text-ink-red mb-4"
+                className="w-12 h-12 text-destructive mb-4"
                 data-oid="15.day_"
               />
               <h3
-                className="font-serif text-xl font-semibold text-ink-red mb-2"
+                className="text-xl font-semibold text-destructive mb-2"
                 data-oid="v364_6s"
               >
                 {error || "Category Not Found"}
               </h3>
-              <p className="text-sepia mb-6" data-oid="2tfpgzw">
+              <p className="text-muted-foreground mb-6" data-oid="2tfpgzw">
                 The requested category could not be loaded.
               </p>
               <Link href="/categories" data-oid="jreu0qp">
@@ -211,7 +211,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
         <div className="mb-6" data-oid="teoc3bw">
           <Link
             href="/categories"
-            className="inline-flex items-center text-sm text-sepia hover:text-wood-dark transition-colors"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
             data-oid="kgru06u"
           >
             <ArrowLeft className="w-4 h-4 mr-1" data-oid="x_xu3j0" />
@@ -238,7 +238,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
       <div className="mb-6" data-oid="hj7kivv">
         <Link
           href="/categories"
-          className="inline-flex items-center text-sm text-sepia hover:text-wood-dark transition-colors"
+          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
           data-oid="-77id58"
         >
           <ArrowLeft className="w-4 h-4 mr-1" data-oid="6xnw:g0" />
@@ -256,9 +256,9 @@ export default function CategoryDetailPage({ params }: PageProps) {
             className="flex flex-wrap items-center gap-3 mb-2"
             data-oid="8gb_7:u"
           >
-            <Folder className="w-6 h-6 text-ink-gold" data-oid="405b:52" />
+            <Folder className="w-6 h-6 text-spectral" data-oid="405b:52" />
             <h1
-              className="text-3xl font-serif font-bold text-wood-dark"
+              className="text-3xl font-bold text-foreground"
               data-oid="3e7kwu."
             >
               {category.name}
@@ -266,7 +266,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
           </div>
 
           {category.description && (
-            <p className="text-sepia max-w-2xl" data-oid="e60o806">
+            <p className="text-muted-foreground max-w-2xl" data-oid="e60o806">
               {category.description}
             </p>
           )}
@@ -306,7 +306,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
       {/* Delete Confirmation */}
       {showDeleteConfirm && (
         <Card
-          className="mb-6 bg-ink-red/5 border-ink-red/30"
+          className="mb-6 bg-red-400/10 border-destructive/30"
           data-oid="t3c6nar"
         >
           <CardContent className="py-4" data-oid="4hvvl:3">
@@ -316,14 +316,14 @@ export default function CategoryDetailPage({ params }: PageProps) {
             >
               <div className="flex items-center gap-3" data-oid="63mmy1f">
                 <AlertTriangle
-                  className="w-5 h-5 text-ink-red"
+                  className="w-5 h-5 text-destructive"
                   data-oid="6t4surm"
                 />
                 <div data-oid="bah37t1">
-                  <p className="font-medium text-ink-black" data-oid="1dpc_tp">
+                  <p className="font-medium text-foreground" data-oid="1dpc_tp">
                     Are you sure you want to delete this category?
                   </p>
-                  <p className="text-sm text-sepia" data-oid="ruix:zi">
+                  <p className="text-sm text-muted-foreground" data-oid="ruix:zi">
                     This action can be undone by an administrator.
                   </p>
                 </div>
@@ -362,7 +362,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
             <CardHeader data-oid="5cj9azw">
               <CardTitle className="flex items-center gap-2" data-oid="y:wy4i:">
                 <DollarSign
-                  className="w-5 h-5 text-ink-gold"
+                  className="w-5 h-5 text-spectral"
                   data-oid="5lxglsh"
                 />
                 Budget Overview
@@ -391,7 +391,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
                     data-oid="dgfy:0g"
                   >
                     <Receipt
-                      className="w-5 h-5 text-ink-gold"
+                      className="w-5 h-5 text-spectral"
                       data-oid="_o.oo3k"
                     />
                     Expenses
@@ -418,13 +418,13 @@ export default function CategoryDetailPage({ params }: PageProps) {
               {expenses.length === 0 ? (
                 <div className="text-center py-8" data-oid="-7:yvaz">
                   <Receipt
-                    className="w-10 h-10 text-sepia/30 mx-auto mb-3"
+                    className="w-10 h-10 text-muted-foreground/60 mx-auto mb-3"
                     data-oid="0xol7-k"
                   />
-                  <p className="text-sepia" data-oid="wvdihvj">
+                  <p className="text-muted-foreground" data-oid="wvdihvj">
                     No expenses recorded yet.
                   </p>
-                  <p className="text-sm text-sepia/70 mt-1" data-oid="b46j-.p">
+                  <p className="text-sm text-muted-foreground/60 mt-1" data-oid="b46j-.p">
                     Add expenses to track spending against this category's
                     budget.
                   </p>
@@ -434,7 +434,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
                   {expenses.map((expense) => (
                     <div
                       key={expense.id}
-                      className="flex items-center justify-between p-4 rounded-lg bg-parchment border border-wood-medium/20 hover:border-wood-medium/40 transition-colors"
+                      className="flex items-center justify-between p-4 rounded-lg bg-background border border-border hover:border-border transition-colors"
                       data-oid="jdnzjbw"
                     >
                       <div className="flex-1 min-w-0" data-oid=":nf3jjh">
@@ -443,7 +443,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
                           data-oid="5gj-8m:"
                         >
                           <span
-                            className="font-medium text-ink-black"
+                            className="font-medium text-foreground"
                             data-oid="hn_vyrf"
                           >
                             {expense.vendor || "Unknown Vendor"}
@@ -466,14 +466,14 @@ export default function CategoryDetailPage({ params }: PageProps) {
                         </div>
                         {expense.memo && (
                           <p
-                            className="text-sm text-sepia mt-1 truncate"
+                            className="text-sm text-muted-foreground mt-1 truncate"
                             data-oid="f:gfs3m"
                           >
                             {expense.memo}
                           </p>
                         )}
                         <p
-                          className="text-xs text-sepia/70 mt-1"
+                          className="text-xs text-muted-foreground/60 mt-1"
                           data-oid="790s1i:"
                         >
                           {new Date(expense.expense_date).toLocaleDateString(
@@ -488,7 +488,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
                       </div>
                       <div className="text-right ml-4" data-oid="99w-5x9">
                         <span
-                          className="font-serif font-semibold text-lg tabular-nums text-ink-black"
+                          className="font-semibold text-lg tabular-nums text-foreground"
                           data-oid=".jwz6ie"
                         >
                           {formatCurrency(expense.amount)}
@@ -501,11 +501,11 @@ export default function CategoryDetailPage({ params }: PageProps) {
             </CardContent>
             {expenses.length > 0 && (
               <CardFooter className="justify-between" data-oid="fmlfu2x">
-                <span className="text-sm text-sepia" data-oid="r2oxctu">
+                <span className="text-sm text-muted-foreground" data-oid="r2oxctu">
                   Total Expenses
                 </span>
                 <span
-                  className="font-serif font-bold text-lg tabular-nums text-wood-dark"
+                  className="font-bold text-lg tabular-nums text-foreground"
                   data-oid="e-rfbnh"
                 >
                   {formatCurrency(category.actual_spent)}
@@ -526,7 +526,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
                   data-oid=":4tfri-"
                 >
                   <FileText
-                    className="w-5 h-5 text-ink-gold"
+                    className="w-5 h-5 text-spectral"
                     data-oid="a0f.3m9"
                   />
                   Description
@@ -534,7 +534,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
               </CardHeader>
               <CardContent data-oid="stoi3gy">
                 <p
-                  className="text-sm text-sepia whitespace-pre-wrap"
+                  className="text-sm text-muted-foreground whitespace-pre-wrap"
                   data-oid="xg9b0uw"
                 >
                   {category.description}
@@ -552,37 +552,37 @@ export default function CategoryDetailPage({ params }: PageProps) {
             </CardHeader>
             <CardContent className="space-y-2 text-sm" data-oid="6e90qz4">
               <div className="flex justify-between" data-oid="bek-34l">
-                <span className="text-sepia" data-oid="hh_6vke">
+                <span className="text-muted-foreground" data-oid="hh_6vke">
                   Category ID
                 </span>
                 <span
-                  className="font-mono text-xs text-wood-dark"
+                  className="font-mono text-xs text-foreground"
                   data-oid="c0x20t0"
                 >
                   {category.id}
                 </span>
               </div>
               <div className="flex justify-between" data-oid="q1amc94">
-                <span className="text-sepia" data-oid="w1svncg">
+                <span className="text-muted-foreground" data-oid="w1svncg">
                   Fiscal Year
                 </span>
-                <span className="text-wood-dark" data-oid="2zojygx">
+                <span className="text-foreground" data-oid="2zojygx">
                   2026
                 </span>
               </div>
               <div className="flex justify-between" data-oid="xefqd4p">
-                <span className="text-sepia" data-oid="li5bwxr">
+                <span className="text-muted-foreground" data-oid="li5bwxr">
                   Created
                 </span>
-                <span className="text-wood-dark" data-oid="ubfy.bt">
+                <span className="text-foreground" data-oid="ubfy.bt">
                   {new Date(category.created_at).toLocaleDateString()}
                 </span>
               </div>
               <div className="flex justify-between" data-oid="aefoyoc">
-                <span className="text-sepia" data-oid=":_shhtg">
+                <span className="text-muted-foreground" data-oid=":_shhtg">
                   Last Updated
                 </span>
-                <span className="text-wood-dark" data-oid="6ssv0nv">
+                <span className="text-foreground" data-oid="6ssv0nv">
                   {new Date(category.updated_at).toLocaleDateString()}
                 </span>
               </div>

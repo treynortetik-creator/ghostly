@@ -146,29 +146,29 @@ export function DocumentUpload({
           transition-colors duration-200
           ${
             isDragging
-              ? "border-ink-gold bg-ink-gold/5"
-              : "border-wood-medium/30 hover:border-wood-medium/50 bg-parchment/50"
+              ? "border-spectral bg-spectral/10"
+              : "border-border hover:border-border bg-background/50"
           }
           ${isUploading ? "pointer-events-none opacity-60" : ""}
         `}
       >
         {isUploading ? (
           <>
-            <Loader2 className="w-8 h-8 text-ink-gold animate-spin mb-2" />
-            <p className="text-sm text-sepia">{uploadProgress}</p>
+            <Loader2 className="w-8 h-8 text-spectral animate-spin mb-2" />
+            <p className="text-sm text-muted-foreground">{uploadProgress}</p>
           </>
         ) : (
           <>
             <Upload
-              className={`w-8 h-8 mb-2 ${isDragging ? "text-ink-gold" : "text-sepia/50"}`}
+              className={`w-8 h-8 mb-2 ${isDragging ? "text-spectral" : "text-muted-foreground/60"}`}
             />
-            <p className="text-sm text-sepia">
-              <span className="font-medium text-wood-dark">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">
                 Drop files here
               </span>{" "}
               or click to upload
             </p>
-            <p className="text-xs text-sepia/70 mt-1">
+            <p className="text-xs text-muted-foreground/60 mt-1">
               PDF or DOCX — max 10 MB
             </p>
           </>
@@ -185,9 +185,9 @@ export function DocumentUpload({
 
       {/* Error message */}
       {error && (
-        <div className="flex items-center gap-2 p-3 rounded-lg bg-ink-red/5 border border-ink-red/20">
-          <X className="w-4 h-4 text-ink-red flex-shrink-0" />
-          <p className="text-sm text-ink-red">{error}</p>
+        <div className="flex items-center gap-2 p-3 rounded-lg bg-red-400/10 border border-destructive/20">
+          <X className="w-4 h-4 text-destructive flex-shrink-0" />
+          <p className="text-sm text-destructive">{error}</p>
         </div>
       )}
     </div>

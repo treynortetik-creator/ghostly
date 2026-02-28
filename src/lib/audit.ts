@@ -1,5 +1,5 @@
 /**
- * Audit Logger - Tracks all mutations in The Counting House
+ * Audit Logger - Tracks all mutations in Ghostly
  *
  * Non-blocking: audit failures never break the main request.
  * Logs to the audit_log table via Supabase.

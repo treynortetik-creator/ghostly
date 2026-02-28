@@ -1,5 +1,5 @@
 /**
- * Shared constants for The Counting House
+ * Shared constants for Ghostly
  */
 
 /** Maximum file upload size in bytes (configurable via DOCUMENT_MAX_SIZE_MB env var) */

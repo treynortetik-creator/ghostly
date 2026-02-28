@@ -22,7 +22,7 @@ import {
    EVENT TYPE SUMMARY
    ============================================
    Displays budget breakdown by event type with
-   Victorian-styled cards and progress bars.
+   Ghostly-themed cards and progress bars.
    ============================================ */
 
 export interface EventTypeData {
@@ -69,9 +69,9 @@ function EventTypeRow({ data }: { data: EventTypeData }) {
   const isOverBudget = data.actual > data.budget;
 
   const getStatusColor = () => {
-    if (isOverBudget) return "text-ink-red";
-    if (percentage >= 80) return "text-ink-gold";
-    return "text-ink-green";
+    if (isOverBudget) return "text-destructive";
+    if (percentage >= 80) return "text-spectral";
+    return "text-emerald-400";
   };
 
   // Skip event types with no budget
@@ -81,14 +81,14 @@ function EventTypeRow({ data }: { data: EventTypeData }) {
 
   return (
     <div
-      className="p-4 rounded-lg bg-parchment border border-wood-medium/20 hover:border-wood-medium/40 transition-colors"
+      className="p-4 rounded-lg bg-background border border-border hover:border-border transition-colors"
       data-oid="czilw_:"
     >
       {/* Header Row */}
       <div className="flex items-start justify-between mb-3" data-oid="9kilj00">
         <div className="flex items-center gap-3" data-oid="yznbn:y">
           <div
-            className="p-2 rounded-md bg-wood-medium/10 text-wood-medium"
+            className="p-2 rounded-md bg-spectral/10 text-muted-foreground"
             data-oid="czazt85"
           >
             <EventTypeIcon
@@ -98,11 +98,11 @@ function EventTypeRow({ data }: { data: EventTypeData }) {
             />
           </div>
           <div data-oid="23h4ygx">
-            <h4 className="font-semibold text-ink-black" data-oid="g6d9c3d">
+            <h4 className="font-semibold text-foreground" data-oid="g6d9c3d">
               {data.type} Events
             </h4>
             {data.description && (
-              <p className="text-xs text-sepia" data-oid="uw_at-f">
+              <p className="text-xs text-muted-foreground" data-oid="uw_at-f">
                 {data.description}
               </p>
             )}
@@ -129,26 +129,26 @@ function EventTypeRow({ data }: { data: EventTypeData }) {
 
       {/* Stats Row */}
       <div
-        className="flex items-center justify-between mt-3 pt-3 border-t border-wood-medium/15 text-sm"
+        className="flex items-center justify-between mt-3 pt-3 border-t border-border text-sm"
         data-oid="mp:xt9h"
       >
         <div data-oid="eqb2tc.">
-          <span className="text-sepia" data-oid="x3:e4mv">
+          <span className="text-muted-foreground" data-oid="x3:e4mv">
             Spent:{" "}
           </span>
           <span
-            className="font-medium tabular-nums text-ink-black"
+            className="font-medium tabular-nums text-foreground"
             data-oid="47kxbkw"
           >
             {formatCurrency(data.actual)}
           </span>
         </div>
         <div data-oid="6ymekcr">
-          <span className="text-sepia" data-oid="aua1l08">
+          <span className="text-muted-foreground" data-oid="aua1l08">
             Budget:{" "}
           </span>
           <span
-            className="font-medium tabular-nums text-ink-black"
+            className="font-medium tabular-nums text-foreground"
             data-oid="hlr59f9"
           >
             {formatCurrency(data.budget)}
@@ -182,16 +182,16 @@ export function EventTypeSummary({ data, className }: EventTypeSummaryProps) {
             </CardDescription>
           </div>
           <div className="text-right" data-oid="u.qofrm">
-            <p className="text-sm text-sepia" data-oid="ntufiez">
+            <p className="text-sm text-muted-foreground" data-oid="ntufiez">
               Events Total
             </p>
             <p
-              className="font-serif font-bold text-lg text-ink-black tabular-nums"
+              className="font-bold text-lg text-foreground tabular-nums"
               data-oid="1maqpn4"
             >
               {formatCurrency(totalActual)}
               <span
-                className="text-sepia font-normal text-sm"
+                className="text-muted-foreground font-normal text-sm"
                 data-oid="m5f5f61"
               >
                 {" "}

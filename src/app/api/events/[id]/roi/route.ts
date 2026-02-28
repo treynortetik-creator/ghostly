@@ -1,5 +1,5 @@
 /**
- * The Counting House - Event ROI API
+ * Ghostly - Event ROI API
  *
  * GET /api/events/[id]/roi - Get ROI summary with computed metrics
  */

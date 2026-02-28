@@ -1,5 +1,5 @@
 /**
- * Webhook Delivery System for The Counting House
+ * Webhook Delivery System for Ghostly
  *
  * Queues and delivers webhook events to registered endpoints.
  * Non-blocking: failures are logged but never break the caller.
@@ -80,7 +80,7 @@ async function deliverWebhook(
   const body = JSON.stringify(payload);
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'User-Agent': 'CountingHouse-Webhooks/1.0',
+    'User-Agent': 'Ghostly-Webhooks/1.0',
   };
 
   if (secret) {

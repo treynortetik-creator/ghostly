@@ -1,5 +1,5 @@
 /**
- * Upcoming Reminders API (Scrooge endpoint)
+ * Upcoming Reminders API (AI agent endpoint)
  *
  * GET /api/reminders/upcoming?days=N - All pending reminders in date range
  *

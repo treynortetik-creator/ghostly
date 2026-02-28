@@ -1,4 +1,4 @@
-// Dashboard Components - The Counting House
+// Dashboard Components - Ghostly
 // Victorian-styled dashboard components for budget overview
 
 export { BudgetOverviewCard } from './BudgetOverviewCard';

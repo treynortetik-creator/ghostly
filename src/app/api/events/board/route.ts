@@ -1,5 +1,5 @@
 /**
- * The Counting House - Board API
+ * Ghostly - Board API
  *
  * GET /api/events/board - Events grouped by stage for Kanban board view
  */

@@ -1,5 +1,5 @@
 /**
- * The Counting House - Single Webhook API
+ * Ghostly - Single Webhook API
  *
  * Endpoints:
  * GET    /api/webhooks/:id - Get webhook with recent deliveries

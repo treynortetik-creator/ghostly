@@ -22,7 +22,7 @@ import type { EventTypeWithTotals } from "@/types/database";
    Section component for managing event types
    on the Settings page. Handles listing, creating,
    editing, and archiving event types.
-   Victorian theme: "The Category Registry"
+   Ghostly theme: "The Category Registry"
    ============================================ */
 
 interface EventTypesSectionProps {
@@ -213,7 +213,7 @@ export function EventTypesSection({
         <div className="flex items-center justify-between" data-oid="x7d5.b2">
           <div className="flex items-center gap-3" data-oid="chh78wg">
             <div
-              className="p-2 rounded-md bg-ink-gold/10 text-ink-gold"
+              className="p-2 rounded-md bg-spectral/10 text-spectral"
               data-oid="ugojhwx"
             >
               <Layers className="w-5 h-5" data-oid="d_bheg6" />
@@ -240,19 +240,19 @@ export function EventTypesSection({
       </CardHeader>
       <CardContent data-oid="wv7nmi5">
         {isLoading && (
-          <div className="text-center py-8 text-sepia" data-oid="89-j-rk">
+          <div className="text-center py-8 text-muted-foreground" data-oid="89-j-rk">
             Loading event types...
           </div>
         )}
 
         {error && (
-          <div className="text-center py-8 text-ink-red" data-oid="lsjz:p2">
+          <div className="text-center py-8 text-destructive" data-oid="lsjz:p2">
             {error}
           </div>
         )}
 
         {!isLoading && !error && eventTypes.length === 0 && (
-          <div className="text-center py-8 text-sepia" data-oid="4n2q7at">
+          <div className="text-center py-8 text-muted-foreground" data-oid="4n2q7at">
             No event types configured for this fiscal year.
           </div>
         )}
@@ -262,24 +262,24 @@ export function EventTypesSection({
             {eventTypes.map((et) => (
               <div
                 key={et.id}
-                className="flex items-center gap-3 p-3 rounded-lg bg-parchment border border-wood-medium/20 hover:border-wood-medium/40 transition-colors group"
+                className="flex items-center gap-3 p-3 rounded-lg bg-background border border-border hover:border-border transition-colors group"
                 data-oid="q58.wpr"
               >
                 <div className="flex-1 min-w-0" data-oid="tc5.5ho">
                   <div className="flex items-center gap-2" data-oid="r53ylp.">
                     <span
-                      className="font-medium text-wood-dark"
+                      className="font-medium text-foreground"
                       data-oid="2x9wea8"
                     >
                       {et.name}
                     </span>
-                    <span className="text-xs text-sepia" data-oid="wjfwerf">
+                    <span className="text-xs text-muted-foreground" data-oid="wjfwerf">
                       ({et.event_count} event{et.event_count !== 1 ? "s" : ""})
                     </span>
                   </div>
                   {et.description && (
                     <p
-                      className="text-xs text-sepia truncate"
+                      className="text-xs text-muted-foreground truncate"
                       data-oid="eax95_8"
                     >
                       {et.description}
@@ -289,12 +289,12 @@ export function EventTypesSection({
 
                 <div className="text-right" data-oid="215i0fe">
                   <p
-                    className="font-medium text-ink-gold tabular-nums"
+                    className="font-medium text-spectral tabular-nums"
                     data-oid="5va0_nw"
                   >
                     {formatCurrencyCompact(et.budget_amount)}
                   </p>
-                  <p className="text-xs text-sepia" data-oid="ive67h8">
+                  <p className="text-xs text-muted-foreground" data-oid="ive67h8">
                     {formatCurrencyCompact(et.actual_spent)} spent
                   </p>
                 </div>
@@ -309,7 +309,7 @@ export function EventTypesSection({
                       e.stopPropagation();
                       setOpenMenu(openMenu === et.id ? null : et.id);
                     }}
-                    className="p-1.5 rounded hover:bg-wood-medium/10 text-sepia hover:text-wood-dark transition-colors"
+                    className="p-1.5 rounded hover:bg-spectral/10 text-muted-foreground hover:text-foreground transition-colors"
                     disabled={disabled}
                     aria-expanded={openMenu === et.id}
                     aria-haspopup="true"
@@ -322,7 +322,7 @@ export function EventTypesSection({
                   {openMenu === et.id && (
                     <div
                       role="menu"
-                      className="absolute right-0 top-full mt-1 w-36 bg-parchment border border-wood-medium/20 rounded-lg shadow-lg z-50"
+                      className="absolute right-0 top-full mt-1 w-36 bg-background border border-border rounded-lg shadow-lg z-50"
                       data-oid="mps8.8a"
                     >
                       <button
@@ -331,7 +331,7 @@ export function EventTypesSection({
                           setEditingType(et);
                           setOpenMenu(null);
                         }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-wood-dark hover:bg-wood-light/30 rounded-t-lg transition-colors"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-spectral-light/30 rounded-t-lg transition-colors"
                         data-oid="ln-d-ya"
                       >
                         <Pencil className="w-4 h-4" data-oid="jmrkxhu" />
@@ -343,7 +343,7 @@ export function EventTypesSection({
                           setArchiveConfirmId(et.id);
                           setOpenMenu(null);
                         }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink-red hover:bg-ink-red/10 rounded-b-lg transition-colors"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-red-400/10 rounded-b-lg transition-colors"
                         data-oid="me4pro5"
                       >
                         <Archive className="w-4 h-4" data-oid="9fxc06:" />

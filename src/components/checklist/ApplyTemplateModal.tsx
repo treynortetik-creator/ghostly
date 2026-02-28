@@ -63,26 +63,26 @@ export function ApplyTemplateModal({
 
   return (
     <div
-      className="fixed inset-0 bg-ink-black/50 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
       data-oid="pmmeyga"
     >
       <div
-        className="bg-parchment rounded-lg border border-wood-medium/40 parchment-shadow w-full max-w-md"
+        className="bg-background rounded-lg border border-border glass-shadow w-full max-w-md"
         data-oid="q.o1mj3"
       >
         <div
-          className="px-6 py-4 border-b border-wood-medium/20 flex items-center justify-between"
+          className="px-6 py-4 border-b border-border flex items-center justify-between"
           data-oid=".h5o8e4"
         >
           <h2
-            className="font-serif text-xl font-semibold text-wood-dark"
+            className="text-xl font-semibold text-foreground"
             data-oid="bwzu2w6"
           >
             Apply Template
           </h2>
           <button
             onClick={onCancel}
-            className="text-sepia hover:text-wood-dark"
+            className="text-muted-foreground hover:text-foreground"
             data-oid="-ya.h:d"
           >
             <X className="w-5 h-5" data-oid="k1r9_wx" />
@@ -91,11 +91,11 @@ export function ApplyTemplateModal({
 
         <div className="px-6 py-4" data-oid="34-z0dw">
           {isFetching ? (
-            <p className="text-sm text-sepia" data-oid="y570jsl">
+            <p className="text-sm text-muted-foreground" data-oid="y570jsl">
               Loading templates...
             </p>
           ) : templates.length === 0 ? (
-            <p className="text-sm text-sepia" data-oid="onymwty">
+            <p className="text-sm text-muted-foreground" data-oid="onymwty">
               No templates available.
             </p>
           ) : (
@@ -105,8 +105,8 @@ export function ApplyTemplateModal({
                   key={t.id}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-colors ${
                     selectedId === t.id
-                      ? "border-ink-gold bg-ink-gold/5"
-                      : "border-wood-medium/20 hover:bg-parchment-dark"
+                      ? "border-spectral bg-spectral/10"
+                      : "border-border hover:bg-card"
                   }`}
                   data-oid="1rim31-"
                 >
@@ -121,17 +121,17 @@ export function ApplyTemplateModal({
                   />
 
                   <FileText
-                    className="w-5 h-5 text-wood-medium flex-shrink-0"
+                    className="w-5 h-5 text-muted-foreground flex-shrink-0"
                     data-oid="w3q7nt7"
                   />
                   <div className="flex-1" data-oid=".5anetz">
                     <p
-                      className="text-sm font-medium text-wood-dark"
+                      className="text-sm font-medium text-foreground"
                       data-oid="2l3to5m"
                     >
                       {t.name}
                     </p>
-                    <p className="text-xs text-sepia" data-oid="fr7f7es">
+                    <p className="text-xs text-muted-foreground" data-oid="fr7f7es">
                       {t.item_count} tasks
                       {t.event_type && ` · ${t.event_type}`}
                       {t.is_default && " · Default"}
@@ -139,11 +139,11 @@ export function ApplyTemplateModal({
                   </div>
                   {selectedId === t.id && (
                     <div
-                      className="w-4 h-4 rounded-full bg-ink-gold flex items-center justify-center"
+                      className="w-4 h-4 rounded-full bg-spectral flex items-center justify-center"
                       data-oid="79pp27_"
                     >
                       <div
-                        className="w-2 h-2 rounded-full bg-parchment"
+                        className="w-2 h-2 rounded-full bg-background"
                         data-oid="svqtgr."
                       />
                     </div>
@@ -155,7 +155,7 @@ export function ApplyTemplateModal({
         </div>
 
         <div
-          className="px-6 py-4 border-t border-wood-medium/20 flex justify-end gap-3"
+          className="px-6 py-4 border-t border-border flex justify-end gap-3"
           data-oid="q_hwf0k"
         >
           <Button variant="secondary" onClick={onCancel} data-oid="rnhpm3u">

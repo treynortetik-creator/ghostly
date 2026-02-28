@@ -1,5 +1,5 @@
 /**
- * The Counting House - Error Logs API
+ * Ghostly - Error Logs API
  *
  * GET    /api/admin/errors - List error logs (admin only)
  * POST   /api/admin/errors - Log an error from client (admin only)

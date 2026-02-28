@@ -4,30 +4,27 @@ import { cn } from "@/lib/utils";
 /* ============================================
    CARD COMPONENT
    ============================================
-   Victorian-styled card with parchment background,
-   wood-tone borders, and stacked paper shadow effect.
+   Ghostly glass-morphism card with ethereal
+   borders and spectral glow effects.
    ============================================ */
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  /** Add decorative corner flourishes */
-  flourish?: boolean;
+  /** Add spectral glow effect */
+  glow?: boolean;
   /** Elevated shadow for emphasis */
   elevated?: boolean;
-  /** Add subtle ledger lines to the background */
-  ledgerLines?: boolean;
 }
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, flourish, elevated, ledgerLines, children, ...props }, ref) => {
+  ({ className, glow, elevated, children, ...props }, ref) => {
     return (
       <div
         ref={ref}
         className={cn(
-          "bg-parchment-dark rounded-lg border border-wood-medium/40",
+          "bg-card rounded-xl border border-border",
           "transition-all duration-200",
-          elevated ? "parchment-shadow hover:shadow-lg" : "parchment-shadow",
-          flourish && "corner-flourish",
-          ledgerLines && "ledger-lines",
+          elevated ? "glass-shadow hover:shadow-lg" : "glass-shadow",
+          glow && "glass-glow-sm",
           className,
         )}
         {...props}
@@ -53,7 +50,7 @@ const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
         ref={ref}
         className={cn(
           "px-6 py-4",
-          divider && "border-b border-wood-medium/20",
+          divider && "border-b border-border",
           className,
         )}
         {...props}
@@ -75,7 +72,7 @@ const CardTitle = forwardRef<
     <h3
       ref={ref}
       className={cn(
-        "font-serif text-xl font-semibold text-wood-dark tracking-tight",
+        "text-xl font-semibold text-foreground tracking-tight",
         className,
       )}
       {...props}
@@ -95,7 +92,7 @@ const CardDescription = forwardRef<
   return (
     <p
       ref={ref}
-      className={cn("text-sm text-sepia mt-1", className)}
+      className={cn("text-sm text-muted-foreground mt-1", className)}
       {...props}
       data-oid="l7du_qo"
     >
@@ -135,7 +132,7 @@ const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
         ref={ref}
         className={cn(
           "px-6 py-4",
-          divider && "border-t border-wood-medium/20",
+          divider && "border-t border-border",
           className,
         )}
         {...props}
@@ -160,9 +157,9 @@ export interface StatCardProps extends HTMLAttributes<HTMLDivElement> {
 const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
   ({ className, title, value, subtitle, trend, icon, ...props }, ref) => {
     const trendColors = {
-      positive: "text-ink-green",
-      negative: "text-ink-red",
-      neutral: "text-sepia",
+      positive: "text-emerald-400",
+      negative: "text-red-400",
+      neutral: "text-muted-foreground",
     };
 
     return (
@@ -175,13 +172,13 @@ const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
         <CardContent className="py-5" data-oid="z4hujv3">
           <div className="flex items-start justify-between" data-oid="-6cx7.c">
             <div className="space-y-1" data-oid="ygvnpn_">
-              <p className="text-sm font-medium text-sepia" data-oid="ql49qus">
+              <p className="text-sm font-medium text-muted-foreground" data-oid="ql49qus">
                 {title}
               </p>
               <p
                 className={cn(
-                  "text-2xl font-serif font-bold tabular-nums",
-                  trend ? trendColors[trend] : "text-ink-black",
+                  "text-2xl font-bold tabular-nums",
+                  trend ? trendColors[trend] : "text-foreground",
                 )}
                 data-oid="b9vdz1_"
               >
@@ -191,7 +188,7 @@ const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
                 <p
                   className={cn(
                     "text-xs",
-                    trend ? trendColors[trend] : "text-sepia/70",
+                    trend ? trendColors[trend] : "text-muted-foreground/70",
                   )}
                   data-oid="n5r9mgd"
                 >
@@ -201,7 +198,7 @@ const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
             </div>
             {icon && (
               <div
-                className="p-2 rounded-lg bg-wood-medium/10 text-wood-medium"
+                className="p-2 rounded-lg bg-spectral/10 text-spectral"
                 data-oid="94zsqw3"
               >
                 {icon}
@@ -215,7 +212,7 @@ const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
           data-oid="etau9uy"
         >
           <div
-            className="absolute -top-8 -right-8 w-16 h-16 bg-gradient-to-br from-ink-gold/5 to-transparent rotate-45"
+            className="absolute -top-8 -right-8 w-16 h-16 bg-gradient-to-br from-spectral/5 to-transparent rotate-45"
             data-oid="z5cc2lj"
           />
         </div>

@@ -32,23 +32,23 @@ export function ChecklistSection({
     <Card className="overflow-hidden" data-oid="up4taay">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-3 flex items-center justify-between bg-wood-dark/5 hover:bg-wood-dark/10 transition-colors"
+        className="w-full px-4 py-3 flex items-center justify-between bg-ghost-dark/5 hover:bg-ghost-dark/10 transition-colors"
         data-oid="vx9fppb"
       >
         <div className="flex items-center gap-2" data-oid="xww4354">
           {isOpen ? (
             <ChevronDown
-              className="w-4 h-4 text-wood-medium"
+              className="w-4 h-4 text-muted-foreground"
               data-oid="9g6y3cw"
             />
           ) : (
             <ChevronRight
-              className="w-4 h-4 text-wood-medium"
+              className="w-4 h-4 text-muted-foreground"
               data-oid="d3f561k"
             />
           )}
           <h4
-            className="font-serif text-sm font-semibold text-wood-dark"
+            className="text-sm font-semibold text-foreground"
             data-oid="qzgllh6"
           >
             {checklistPhaseLabels[phase]}
@@ -57,8 +57,8 @@ export function ChecklistSection({
         <span
           className={`text-xs font-medium px-2 py-0.5 rounded ${
             completed === total && total > 0
-              ? "bg-ink-green/20 text-ink-green"
-              : "bg-wood-medium/10 text-sepia"
+              ? "bg-emerald-400/10 text-emerald-400"
+              : "bg-spectral/10 text-muted-foreground"
           }`}
           data-oid=".w_g18."
         >

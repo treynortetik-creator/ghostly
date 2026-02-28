@@ -1,4 +1,4 @@
-# The Counting House - Comprehensive Codebase Analysis
+# Ghostly - Comprehensive Codebase Analysis
 
 > Generated 2026-02-06 by 4-agent parallel review team
 
@@ -12,7 +12,7 @@ Four specialized agents analyzed the entire codebase in parallel: security audit
 |--------|----------|
 | Security | 2 CRITICAL, 4 HIGH, 7 MEDIUM, 5 LOW, 5 INFO |
 | Code Quality | 4 HIGH, 6 MEDIUM, 7 LOW |
-| Feature Gaps | PRD: 96% complete, Scrooge Phase 1: 100% (with gaps), Phase 2: 63%, Phase 3: 0% |
+| Feature Gaps | PRD: 96% complete, Agent API Phase 1: 100% (with gaps), Phase 2: 63%, Phase 3: 0% |
 | Bugs | 2 HIGH, 5 MEDIUM, 9 LOW |
 
 **Tests:** All 34 existing tests pass. But test coverage is critically low (single file covers only `business-logic.ts`).
@@ -79,7 +79,7 @@ Missing: `X-Content-Type-Options`, `X-Frame-Options`, `Strict-Transport-Security
 
 ### 10. MEDIUM - Missing Audit Logging on Most Mutations (Code Quality #6)
 **Files:** Categories, event-types, team, settings, bulk imports - all missing `logAudit` calls
-Only expenses and events have audit logging. The Scrooge spec requires comprehensive audit coverage.
+Only expenses and events have audit logging. The agent API spec requires comprehensive audit coverage.
 
 **Fix:** Add `logAudit()` calls to all mutation handlers.
 
@@ -182,7 +182,7 @@ Only expenses and events have audit logging. The Scrooge spec requires comprehen
 | Victorian theme | Implemented |
 | Full-text search across all fields | **Partial** (vendor only) |
 
-### Scrooge API Spec Coverage
+### Agent API Spec Coverage
 
 #### Phase 1 - Foundation (6/6 Implemented, with detail gaps)
 | Feature | Status | Gap |
@@ -268,7 +268,7 @@ Event Types management, Team Members CRUD, Event Team Assignments, Checklist Tem
 15. Scope idempotency keys per API key (M6)
 
 ### Long-Term (Feature Completion)
-16. Implement webhook system (Scrooge Phase 2)
+16. Implement webhook system (Agent API Phase 2)
 17. Complete `modified_after`/`ids` on all list endpoints
 18. Implement rate limiting
-19. Scrooge Phase 3 features (Monday.com, Slack, etc.)
+19. Agent API Phase 3 features (Monday.com, Slack, etc.)

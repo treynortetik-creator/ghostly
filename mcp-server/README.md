@@ -1,8 +1,8 @@
-# Shindig MCP Server
+# Ghostly MCP Server
 
-Connects Claude Desktop, Cursor, and any MCP-compatible AI client to your [Counting House](https://github.com/treynortetik-creator/counting_house) event management platform via the **Model Context Protocol**.
+Connects Claude Desktop, Cursor, and any MCP-compatible AI client to your [Ghostly](https://github.com/treynortetik-creator/ghostly) event management platform via the **Model Context Protocol**.
 
-> **What this means:** Instead of building an internal AI agent layer (rejected approach), Shindig exposes its core functionality as MCP tools. Users bring their own Claude/GPT account, point it at this MCP server, and their AI can create events, track budgets, assign vendors, and pull event summaries — all through natural language.
+> **What this means:** Instead of building an internal AI agent layer (rejected approach), Ghostly exposes its core functionality as MCP tools. Users bring their own Claude/GPT account, point it at this MCP server, and their AI can create events, track budgets, assign vendors, and pull event summaries — all through natural language.
 
 ---
 
@@ -13,11 +13,11 @@ Claude Desktop / Cursor / Any MCP Client
            │
            │  stdio (MCP protocol)
            ▼
-   shindig-mcp server (this package)
+   ghostly-mcp server (this package)
            │
            │  HTTP + x-api-key
            ▼
-   Counting House REST API
+   Ghostly REST API
            │
            ▼
       Supabase Database
@@ -28,19 +28,19 @@ Claude Desktop / Cursor / Any MCP Client
 ## Prerequisites
 
 - Node.js 18 or higher
-- A running Counting House instance (self-hosted or Railway)
-- A Counting House API key (see Setup below)
+- A running Ghostly instance (self-hosted or Railway)
+- A Ghostly API key (see Setup below)
 
 ---
 
 ## Setup
 
-### 1. Get a Counting House API Key
+### 1. Get a Ghostly API Key
 
-1. Log into your Counting House instance
+1. Log into your Ghostly instance
 2. Go to **Settings → API Keys**
 3. Click **Create API Key**
-4. Set `agent_name` to `shindig-mcp` and permissions to `["read", "write"]`
+4. Set `agent_name` to `ghostly-mcp` and permissions to `["read", "write"]`
 5. Copy the generated key (shown once)
 
 ### 2. Build the MCP Server
@@ -57,25 +57,25 @@ This compiles TypeScript to `dist/index.js`.
 
 Add to your `claude_desktop_config.json`:
 
-**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`  
+**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
   "mcpServers": {
-    "shindig": {
+    "ghostly": {
       "command": "node",
-      "args": ["/absolute/path/to/counting_house/mcp-server/dist/index.js"],
+      "args": ["/absolute/path/to/ghostly/mcp-server/dist/index.js"],
       "env": {
-        "COUNTING_HOUSE_URL": "https://your-counting-house.railway.app",
-        "COUNTING_HOUSE_API_KEY": "ch_live_xxxxxxxxxxxxxxxxxxxx"
+        "GHOSTLY_URL": "https://your-ghostly-instance.railway.app",
+        "GHOSTLY_API_KEY": "gh_live_xxxxxxxxxxxxxxxxxxxx"
       }
     }
   }
 }
 ```
 
-Restart Claude Desktop. You'll see "shindig" appear in the tools list.
+Restart Claude Desktop. You'll see "ghostly" appear in the tools list.
 
 ---
 
@@ -109,8 +109,8 @@ Once connected, you can ask Claude:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `COUNTING_HOUSE_URL` | ✅ | Base URL of your Counting House instance (no trailing slash) |
-| `COUNTING_HOUSE_API_KEY` | ✅ | API key from Counting House Settings → API Keys |
+| `GHOSTLY_URL` | Yes | Base URL of your Ghostly instance (no trailing slash) |
+| `GHOSTLY_API_KEY` | Yes | API key from Ghostly Settings → API Keys |
 
 ---
 
@@ -124,14 +124,14 @@ npm run dev
 npm run build
 
 # Test the server manually (MCP uses stdio)
-echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | COUNTING_HOUSE_URL=http://localhost:3000 COUNTING_HOUSE_API_KEY=test node dist/index.js
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | GHOSTLY_URL=http://localhost:3000 GHOSTLY_API_KEY=test node dist/index.js
 ```
 
 ---
 
-## Tier Model (Shindig Business)
+## Tier Model (Ghostly Business)
 
-- **Tier 1 (self-serve):** User subscribes to Counting House platform + sets up their own Claude account and this MCP server themselves.
+- **Tier 1 (self-serve):** User subscribes to Ghostly platform + sets up their own Claude account and this MCP server themselves.
 - **Tier 2 (white glove):** Treynor creates the API key, builds the MCP config, and links it to their Claude Desktop instance. One-time setup fee, high margin.
 
 ---

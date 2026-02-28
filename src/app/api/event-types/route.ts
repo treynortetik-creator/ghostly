@@ -1,5 +1,5 @@
 /**
- * The Counting House - Event Types API
+ * Ghostly - Event Types API
  *
  * Endpoints:
  * GET /api/event-types - List event types for a fiscal year

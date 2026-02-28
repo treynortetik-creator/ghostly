@@ -202,7 +202,7 @@ export function EventShipmentsTab({ eventId }: EventShipmentsTabProps) {
   if (isLoading) {
     return (
       <Card>
-        <CardContent className="py-8 text-center text-sepia">Loading shipments...</CardContent>
+        <CardContent className="py-8 text-center text-muted-foreground">Loading shipments...</CardContent>
       </Card>
     );
   }
@@ -220,8 +220,8 @@ export function EventShipmentsTab({ eventId }: EventShipmentsTabProps) {
       />
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-wood-dark flex items-center gap-2">
-          <Package className="w-5 h-5 text-ink-gold" />
+        <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <Package className="w-5 h-5 text-spectral" />
           Shipments ({shipments.length})
         </h3>
         <div className="flex gap-2">
@@ -238,25 +238,25 @@ export function EventShipmentsTab({ eventId }: EventShipmentsTabProps) {
 
       {/* Add Shipment Form */}
       {showAddForm && (
-        <Card className="border-ink-gold/30">
+        <Card className="border-spectral">
           <CardContent className="py-4 space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="md:col-span-2">
-                <label className="text-xs font-medium text-sepia mb-1 block">Description *</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Description *</label>
                 <input
                   type="text"
                   value={newShipment.description}
                   onChange={(e) => setNewShipment({ ...newShipment, description: e.target.value })}
                   placeholder="What's being shipped..."
-                  className="w-full px-3 py-2 text-sm bg-parchment-dark border border-wood-medium/30 rounded-md text-wood-dark placeholder:text-sepia/50 focus:border-ink-gold focus:outline-none"
+                  className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 focus:border-spectral focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-sepia mb-1 block">Carrier</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Carrier</label>
                 <select
                   value={newShipment.carrier}
                   onChange={(e) => setNewShipment({ ...newShipment, carrier: e.target.value })}
-                  className="w-full px-3 py-2 text-sm bg-parchment-dark border border-wood-medium/30 rounded-md text-wood-dark focus:border-ink-gold focus:outline-none"
+                  className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground focus:border-spectral focus:outline-none"
                 >
                   {carrierOptions.map((opt) => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -264,61 +264,61 @@ export function EventShipmentsTab({ eventId }: EventShipmentsTabProps) {
                 </select>
               </div>
               <div>
-                <label className="text-xs font-medium text-sepia mb-1 block">Tracking Number</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Tracking Number</label>
                 <input
                   type="text"
                   value={newShipment.tracking_number}
                   onChange={(e) => setNewShipment({ ...newShipment, tracking_number: e.target.value })}
                   placeholder="1Z999AA1234567890"
-                  className="w-full px-3 py-2 text-sm bg-parchment-dark border border-wood-medium/30 rounded-md text-wood-dark placeholder:text-sepia/50 focus:border-ink-gold focus:outline-none"
+                  className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 focus:border-spectral focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-sepia mb-1 block">Shipped From</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Shipped From</label>
                 <input
                   type="text"
                   value={newShipment.shipped_from}
                   onChange={(e) => setNewShipment({ ...newShipment, shipped_from: e.target.value })}
                   placeholder="Origin location"
-                  className="w-full px-3 py-2 text-sm bg-parchment-dark border border-wood-medium/30 rounded-md text-wood-dark placeholder:text-sepia/50 focus:border-ink-gold focus:outline-none"
+                  className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 focus:border-spectral focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-sepia mb-1 block">Shipped To</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Shipped To</label>
                 <input
                   type="text"
                   value={newShipment.shipped_to}
                   onChange={(e) => setNewShipment({ ...newShipment, shipped_to: e.target.value })}
                   placeholder="Destination location"
-                  className="w-full px-3 py-2 text-sm bg-parchment-dark border border-wood-medium/30 rounded-md text-wood-dark placeholder:text-sepia/50 focus:border-ink-gold focus:outline-none"
+                  className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 focus:border-spectral focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-sepia mb-1 block">Ship Date</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Ship Date</label>
                 <input
                   type="date"
                   value={newShipment.ship_date}
                   onChange={(e) => setNewShipment({ ...newShipment, ship_date: e.target.value })}
-                  className="w-full px-3 py-2 text-sm bg-parchment-dark border border-wood-medium/30 rounded-md text-wood-dark focus:border-ink-gold focus:outline-none"
+                  className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground focus:border-spectral focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-sepia mb-1 block">Estimated Delivery</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Estimated Delivery</label>
                 <input
                   type="date"
                   value={newShipment.estimated_delivery}
                   onChange={(e) => setNewShipment({ ...newShipment, estimated_delivery: e.target.value })}
-                  className="w-full px-3 py-2 text-sm bg-parchment-dark border border-wood-medium/30 rounded-md text-wood-dark focus:border-ink-gold focus:outline-none"
+                  className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground focus:border-spectral focus:outline-none"
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="text-xs font-medium text-sepia mb-1 block">Notes</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Notes</label>
                 <textarea
                   value={newShipment.notes}
                   onChange={(e) => setNewShipment({ ...newShipment, notes: e.target.value })}
                   placeholder="Additional notes..."
                   rows={3}
-                  className="w-full px-3 py-2 text-sm bg-parchment-dark border border-wood-medium/30 rounded-md text-wood-dark placeholder:text-sepia/50 focus:border-ink-gold focus:outline-none resize-y"
+                  className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 focus:border-spectral focus:outline-none resize-y"
                 />
               </div>
             </div>
@@ -335,7 +335,7 @@ export function EventShipmentsTab({ eventId }: EventShipmentsTabProps) {
       {/* Shipments List */}
       {shipments.length === 0 ? (
         <Card>
-          <CardContent className="py-8 text-center text-sepia">
+          <CardContent className="py-8 text-center text-muted-foreground">
             <Package className="w-8 h-8 mx-auto mb-2 opacity-40" />
             <p>No shipments yet. Add one to track deliveries for this event.</p>
           </CardContent>
@@ -361,14 +361,14 @@ export function EventShipmentsTab({ eventId }: EventShipmentsTabProps) {
                             href={trackingUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-ink-gold hover:text-ink-gold/80 transition-colors"
+                            className="inline-flex items-center gap-1 text-xs text-spectral hover:text-spectral/80 transition-colors"
                           >
                             <ExternalLink className="w-3 h-3" />
                             Track
                           </a>
                         )}
                         {shipment.carrier && (
-                          <span className="inline-flex items-center gap-1 text-xs text-sepia">
+                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                             <Truck className="w-3 h-3" />
                             {shipment.carrier}
                           </span>
@@ -376,10 +376,10 @@ export function EventShipmentsTab({ eventId }: EventShipmentsTabProps) {
                       </div>
 
                       {/* Description */}
-                      <p className="text-sm font-medium text-wood-dark mb-1">{shipment.description}</p>
+                      <p className="text-sm font-medium text-foreground mb-1">{shipment.description}</p>
 
                       {/* Details grid */}
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-sepia">
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
                         {shipment.shipped_from && (
                           <div><span className="font-medium">From:</span> {shipment.shipped_from}</div>
                         )}
@@ -399,11 +399,11 @@ export function EventShipmentsTab({ eventId }: EventShipmentsTabProps) {
 
                       {/* Notes */}
                       {shipment.notes && (
-                        <p className="text-xs text-sepia mt-2 whitespace-pre-wrap">{shipment.notes}</p>
+                        <p className="text-xs text-muted-foreground mt-2 whitespace-pre-wrap">{shipment.notes}</p>
                       )}
 
                       {/* Footer: created by + date */}
-                      <div className="flex items-center gap-3 mt-2 text-xs text-sepia">
+                      <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                         <span className="font-medium">{shipment.created_by}</span>
                         <span>·</span>
                         <span>{formatDateMedium(shipment.created_at)}</span>
@@ -415,7 +415,7 @@ export function EventShipmentsTab({ eventId }: EventShipmentsTabProps) {
                       <select
                         value={shipment.status}
                         onChange={(e) => handleUpdateStatus(shipment, e.target.value)}
-                        className="text-xs px-2 py-1 bg-parchment-dark border border-wood-medium/30 rounded text-wood-dark focus:border-ink-gold focus:outline-none"
+                        className="text-xs px-2 py-1 bg-card border border-border rounded text-foreground focus:border-spectral focus:outline-none"
                       >
                         {statusOptions.map((opt) => (
                           <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -423,7 +423,7 @@ export function EventShipmentsTab({ eventId }: EventShipmentsTabProps) {
                       </select>
                       <button
                         onClick={() => setDeleteConfirmId(shipment.id)}
-                        className="p-1.5 text-sepia hover:text-ink-red transition-colors"
+                        className="p-1.5 text-muted-foreground hover:text-destructive transition-colors"
                         title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />

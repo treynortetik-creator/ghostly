@@ -10,7 +10,7 @@ import type { Expense, CategoryWithTotals } from "@/types/database";
 /* ============================================
    CATEGORY LIST COMPONENT
    ============================================
-   Victorian-styled list of budget categories
+   Ghostly-themed list of budget categories
    with search and summary statistics.
    ============================================ */
 
@@ -70,13 +70,13 @@ export function CategoryList({
     return (
       <div className="space-y-4" data-oid="oc11j8r">
         <div
-          className="h-12 bg-wood-medium/10 rounded animate-pulse"
+          className="h-12 bg-spectral/10 rounded animate-pulse"
           data-oid="_xnvf2z"
         />
         {[1, 2, 3, 4, 5].map((i) => (
           <div
             key={i}
-            className="h-20 bg-wood-medium/10 rounded-lg animate-pulse"
+            className="h-20 bg-spectral/10 rounded-lg animate-pulse"
             data-oid="egb4u0a"
           />
         ))}
@@ -87,23 +87,23 @@ export function CategoryList({
   // Error state
   if (error) {
     return (
-      <Card className="bg-ink-red/5 border-ink-red/20" data-oid="8rfy4oy">
+      <Card className="bg-red-400/10 border-destructive/20" data-oid="8rfy4oy">
         <CardContent className="py-12" data-oid="chjh.ht">
           <div
             className="flex flex-col items-center justify-center text-center"
             data-oid="79:v5pr"
           >
             <AlertTriangle
-              className="w-12 h-12 text-ink-red mb-4"
+              className="w-12 h-12 text-destructive mb-4"
               data-oid="vhjim.m"
             />
             <h3
-              className="font-serif text-xl font-semibold text-ink-red mb-2"
+              className="text-xl font-semibold text-destructive mb-2"
               data-oid="pr9uva6"
             >
               Failed to Load Categories
             </h3>
-            <p className="text-sepia" data-oid="oxyjf13">
+            <p className="text-muted-foreground" data-oid="oxyjf13">
               {error}
             </p>
           </div>
@@ -119,7 +119,7 @@ export function CategoryList({
         <div className="flex justify-end" data-oid="ummi78x">
           <div className="relative" data-oid="_qbzerr">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-sepia"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
               data-oid="2p04218"
             />
             <input
@@ -129,9 +129,9 @@ export function CategoryList({
               onChange={(e) => setSearchQuery(e.target.value)}
               className="
                 pl-10 pr-4 py-2 rounded-md w-full lg:w-64
-                bg-parchment border border-wood-medium/40
-                text-ink-black placeholder-sepia/50
-                focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold
+                bg-background border border-border
+                text-foreground placeholder-muted-foreground/50
+                focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral
                 transition-colors duration-200
               "
               data-oid="ftcly_e"
@@ -142,49 +142,49 @@ export function CategoryList({
 
       {/* Summary stats */}
       <div
-        className="flex flex-wrap items-center gap-4 py-3 px-4 bg-parchment-dark rounded-lg border border-wood-medium/20"
+        className="flex flex-wrap items-center gap-4 py-3 px-4 bg-card rounded-lg border border-border"
         data-oid="-diiog1"
       >
-        <span className="text-sm text-sepia" data-oid="_pvwuuw">
-          <span className="font-semibold text-wood-dark" data-oid="js7t6yw">
+        <span className="text-sm text-muted-foreground" data-oid="_pvwuuw">
+          <span className="font-semibold text-foreground" data-oid="js7t6yw">
             {totals.count}
           </span>{" "}
           categories
         </span>
-        <span className="text-wood-medium/30" data-oid="z4cwanc">
+        <span className="text-muted-foreground/30" data-oid="z4cwanc">
           |
         </span>
-        <span className="text-sm text-sepia" data-oid="ydrhr:1">
+        <span className="text-sm text-muted-foreground" data-oid="ydrhr:1">
           Budget:{" "}
           <span
-            className="font-semibold tabular-nums text-wood-dark"
+            className="font-semibold tabular-nums text-foreground"
             data-oid="jcuom4."
           >
             {formatCurrency(totals.budget)}
           </span>
         </span>
-        <span className="text-wood-medium/30" data-oid="03.4vfo">
+        <span className="text-muted-foreground/30" data-oid="03.4vfo">
           |
         </span>
-        <span className="text-sm text-sepia" data-oid="9yl9nrq">
+        <span className="text-sm text-muted-foreground" data-oid="9yl9nrq">
           Spent:{" "}
           <span
-            className="font-semibold tabular-nums text-wood-dark"
+            className="font-semibold tabular-nums text-foreground"
             data-oid="in3sr0u"
           >
             {formatCurrency(totals.actual)}
           </span>
         </span>
-        <span className="text-wood-medium/30" data-oid="cx7g2ep">
+        <span className="text-muted-foreground/30" data-oid="cx7g2ep">
           |
         </span>
-        <span className="text-sm text-sepia" data-oid="39i86l4">
+        <span className="text-sm text-muted-foreground" data-oid="39i86l4">
           Remaining:{" "}
           <span
             className={`font-semibold tabular-nums ${
               totals.budget - totals.actual < 0
-                ? "text-ink-red"
-                : "text-ink-green"
+                ? "text-destructive"
+                : "text-emerald-400"
             }`}
             data-oid=".xh0cwn"
           >
@@ -202,16 +202,16 @@ export function CategoryList({
               data-oid="l4n:e_0"
             >
               <Folder
-                className="w-12 h-12 text-sepia/40 mb-4"
+                className="w-12 h-12 text-muted-foreground/60 mb-4"
                 data-oid="ghk571q"
               />
               <h3
-                className="font-serif text-xl font-semibold text-wood-dark mb-2"
+                className="text-xl font-semibold text-foreground mb-2"
                 data-oid="wsv0tw7"
               >
                 No Categories Found
               </h3>
-              <p className="text-sepia" data-oid="fa7nlkk">
+              <p className="text-muted-foreground" data-oid="fa7nlkk">
                 {searchQuery
                   ? "Try adjusting your search query."
                   : "No budget categories have been created yet."}

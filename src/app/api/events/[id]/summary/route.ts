@@ -1,5 +1,5 @@
 /**
- * The Counting House - Event Summary API
+ * Ghostly - Event Summary API
  *
  * GET /api/events/[id]/summary - Quick stats for a single event
  */

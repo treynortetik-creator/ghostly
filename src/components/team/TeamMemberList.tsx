@@ -16,8 +16,8 @@ export function TeamMemberList({
 }: TeamMemberListProps) {
   if (members.length === 0) {
     return (
-      <div className="text-center py-12 text-sepia" data-oid="1ptlj_b">
-        <p className="font-serif text-lg" data-oid="7slbb45">
+      <div className="text-center py-12 text-muted-foreground" data-oid="1ptlj_b">
+        <p className="text-lg" data-oid="7slbb45">
           No staff on the rolls
         </p>
         <p className="text-sm mt-1" data-oid="d5xf9gr">

@@ -1,11 +1,11 @@
-# The Counting House — PRD
+# Ghostly — PRD
 
-> *"There is nothing in the world so irresistibly contagious as laughter and good humor... except perhaps a well-balanced ledger."*
+> *"The AI agent is invisible. The events aren't."*
 
 ## Overview
-Budget tracking app for SafelyYou events. Track target budgets vs actuals by event and category. Import expenses from Brex CSV and PDF invoices. AI-assisted categorization.
+AI-powered event financial management for B2B event marketing teams. Track target budgets vs actuals by event and category. Import expenses from Brex CSV and PDF invoices. AI-assisted categorization.
 
-**Theme:** Victorian bookkeeper / Dickensian counting house. Think Scrooge's office — ledgers, quill pens, green eyeshades, sepia tones.
+**Theme:** Ghostly — clean, modern dark UI with spectral accent colors. The AI works invisibly behind the scenes.
 
 ## User
 - Single user: Treynor
@@ -112,8 +112,8 @@ SUPABASE_SERVICE_ROLE_KEY=xxx
 OPENROUTER_API_KEY=xxx
 ```
 
-## Theme: The Counting House
-Victorian bookkeeper aesthetic. Dickensian counting house. Scrooge's office vibes.
+## Theme: Ghostly
+Clean, modern dark UI with spectral highlights. The AI agent is invisible — the events aren't.
 
 ### Color Palette
 ```css

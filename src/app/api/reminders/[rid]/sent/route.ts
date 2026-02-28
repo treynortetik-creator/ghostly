@@ -1,7 +1,7 @@
 /**
- * Mark Reminder as Sent (Scrooge endpoint)
+ * Mark Reminder as Sent (AI agent endpoint)
  *
- * PATCH /api/reminders/:rid/sent - Scrooge marks a reminder as sent
+ * PATCH /api/reminders/:rid/sent - AI agent marks a reminder as sent
  */
 
 import { NextRequest, NextResponse } from 'next/server';

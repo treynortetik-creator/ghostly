@@ -153,87 +153,87 @@ export function TransactionReview({
       {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4" data-oid="0hz.twu">
         <div
-          className="bg-parchment-dark border border-wood-medium/30 rounded-lg p-3"
+          className="bg-card border border-border rounded-lg p-3"
           data-oid="uu81xbx"
         >
           <p
-            className="text-xs text-sepia uppercase tracking-wider"
+            className="text-xs text-muted-foreground uppercase tracking-wider"
             data-oid="8sfl9df"
           >
             Total
           </p>
           <p
-            className="text-lg font-serif font-bold text-ink-black"
+            className="text-lg font-bold text-foreground"
             data-oid="-7j8dc4"
           >
             {stats.total}
           </p>
         </div>
         <div
-          className="bg-parchment-dark border border-wood-medium/30 rounded-lg p-3"
+          className="bg-card border border-border rounded-lg p-3"
           data-oid="42w_46b"
         >
           <p
-            className="text-xs text-sepia uppercase tracking-wider"
+            className="text-xs text-muted-foreground uppercase tracking-wider"
             data-oid="3hdydsp"
           >
             Amount
           </p>
           <p
-            className="text-lg font-serif font-bold text-ink-black"
+            className="text-lg font-bold text-foreground"
             data-oid="719ofze"
           >
             {formatCurrency(stats.totalAmount)}
           </p>
         </div>
         <div
-          className="bg-parchment-dark border border-wood-medium/30 rounded-lg p-3"
+          className="bg-card border border-border rounded-lg p-3"
           data-oid="2.vbacc"
         >
           <p
-            className="text-xs text-sepia uppercase tracking-wider flex items-center gap-1"
+            className="text-xs text-muted-foreground uppercase tracking-wider flex items-center gap-1"
             data-oid="dipjoq7"
           >
-            <Sparkles className="w-3 h-3 text-ink-gold" data-oid="13vgffl" />
+            <Sparkles className="w-3 h-3 text-spectral" data-oid="13vgffl" />
             AI Suggestions
           </p>
           <p
-            className="text-lg font-serif font-bold text-ink-gold"
+            className="text-lg font-bold text-spectral"
             data-oid="m6gdu-n"
           >
             {stats.withSuggestions}
           </p>
         </div>
         <div
-          className="bg-parchment-dark border border-wood-medium/30 rounded-lg p-3"
+          className="bg-card border border-border rounded-lg p-3"
           data-oid="xoi666f"
         >
           <p
-            className="text-xs text-sepia uppercase tracking-wider flex items-center gap-1"
+            className="text-xs text-muted-foreground uppercase tracking-wider flex items-center gap-1"
             data-oid="ycjj8ce"
           >
-            <Copy className="w-3 h-3 text-ink-red" data-oid="wo2gjtd" />
+            <Copy className="w-3 h-3 text-destructive" data-oid="wo2gjtd" />
             Duplicates
           </p>
           <p
-            className="text-lg font-serif font-bold text-ink-red"
+            className="text-lg font-bold text-destructive"
             data-oid="kn.lnhv"
           >
             {stats.duplicates}
           </p>
         </div>
         <div
-          className="bg-parchment-dark border border-wood-medium/30 rounded-lg p-3"
+          className="bg-card border border-border rounded-lg p-3"
           data-oid="6j_gzy4"
         >
           <p
-            className="text-xs text-sepia uppercase tracking-wider"
+            className="text-xs text-muted-foreground uppercase tracking-wider"
             data-oid=".-.e6zz"
           >
             Pending
           </p>
           <p
-            className="text-lg font-serif font-bold text-sepia"
+            className="text-lg font-bold text-muted-foreground"
             data-oid="ojs8qmw"
           >
             {stats.pending}
@@ -267,19 +267,19 @@ export function TransactionReview({
 
       {/* Transactions Table */}
       <div
-        className="bg-parchment-dark border border-wood-medium/30 rounded-lg overflow-hidden"
+        className="bg-card border border-border rounded-lg overflow-hidden"
         data-oid="rfdorks"
       >
         <div className="overflow-x-auto" data-oid="lov7jm:">
           <table className="w-full" data-oid="l.mgjog">
             <thead data-oid="j21lyr3">
               <tr
-                className="bg-wood-medium/10 border-b border-wood-medium/20"
+                className="bg-spectral/10 border-b border-border"
                 data-oid="mf2j57a"
               >
                 <th className="w-8 px-3 py-3" data-oid="d-6ojpi" />
                 <th
-                  className="px-3 py-3 text-left text-xs font-semibold text-sepia uppercase tracking-wider cursor-pointer hover:text-wood-dark"
+                  className="px-3 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-foreground"
                   onClick={() => toggleSort("date")}
                   data-oid="6zn7p2l"
                 >
@@ -288,7 +288,7 @@ export function TransactionReview({
                   </span>
                 </th>
                 <th
-                  className="px-3 py-3 text-left text-xs font-semibold text-sepia uppercase tracking-wider cursor-pointer hover:text-wood-dark"
+                  className="px-3 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-foreground"
                   onClick={() => toggleSort("vendor")}
                   data-oid=":lhi-ez"
                 >
@@ -297,7 +297,7 @@ export function TransactionReview({
                   </span>
                 </th>
                 <th
-                  className="px-3 py-3 text-right text-xs font-semibold text-sepia uppercase tracking-wider cursor-pointer hover:text-wood-dark"
+                  className="px-3 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-foreground"
                   onClick={() => toggleSort("amount")}
                   data-oid=":1.3diu"
                 >
@@ -309,19 +309,19 @@ export function TransactionReview({
                   </span>
                 </th>
                 <th
-                  className="px-3 py-3 text-left text-xs font-semibold text-sepia uppercase tracking-wider"
+                  className="px-3 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider"
                   data-oid="xx88n:7"
                 >
                   Assignment
                 </th>
                 <th
-                  className="px-3 py-3 text-center text-xs font-semibold text-sepia uppercase tracking-wider"
+                  className="px-3 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider"
                   data-oid="4a6wz1."
                 >
                   Status
                 </th>
                 <th
-                  className="px-3 py-3 text-center text-xs font-semibold text-sepia uppercase tracking-wider"
+                  className="px-3 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider"
                   data-oid="ry7mb74"
                 >
                   Action
@@ -329,7 +329,7 @@ export function TransactionReview({
               </tr>
             </thead>
             <tbody
-              className="divide-y divide-wood-medium/10"
+              className="divide-y divide-border"
               data-oid="w3ui587"
             >
               {sortedTransactions.map((transaction) => {
@@ -341,9 +341,9 @@ export function TransactionReview({
                       key={transaction.id}
                       className={cn(
                         "transition-colors",
-                        transaction.isDuplicate && "bg-ink-red/5",
+                        transaction.isDuplicate && "bg-red-400/10",
                         transaction.status === "skipped" && "opacity-50",
-                        transaction.status === "accepted" && "bg-ink-green/5",
+                        transaction.status === "accepted" && "bg-emerald-400/10",
                       )}
                       data-oid="li52rv2"
                     >
@@ -351,17 +351,17 @@ export function TransactionReview({
                       <td className="px-3 py-3" data-oid="jarqix1">
                         <button
                           onClick={() => toggleExpanded(transaction.id)}
-                          className="p-1 hover:bg-wood-medium/10 rounded transition-colors"
+                          className="p-1 hover:bg-spectral/10 rounded transition-colors"
                           data-oid="utgu3cw"
                         >
                           {isExpanded ? (
                             <ChevronUp
-                              className="w-4 h-4 text-sepia"
+                              className="w-4 h-4 text-muted-foreground"
                               data-oid="w3ppumf"
                             />
                           ) : (
                             <ChevronDown
-                              className="w-4 h-4 text-sepia"
+                              className="w-4 h-4 text-muted-foreground"
                               data-oid="98hab7y"
                             />
                           )}
@@ -370,7 +370,7 @@ export function TransactionReview({
 
                       {/* Date */}
                       <td
-                        className="px-3 py-3 text-sm text-ink-black whitespace-nowrap"
+                        className="px-3 py-3 text-sm text-foreground whitespace-nowrap"
                         data-oid="df_1luc"
                       >
                         {formatDateMedium(transaction.date)}
@@ -383,14 +383,14 @@ export function TransactionReview({
                           data-oid="r1b9of2"
                         >
                           <span
-                            className="text-sm font-medium text-ink-black truncate max-w-[200px]"
+                            className="text-sm font-medium text-foreground truncate max-w-[200px]"
                             data-oid="l9y54am"
                           >
                             {transaction.vendor}
                           </span>
                           {transaction.isDuplicate && (
                             <span
-                              className="flex items-center gap-1 px-1.5 py-0.5 text-xs rounded bg-ink-red/10 text-ink-red border border-ink-red/30"
+                              className="flex items-center gap-1 px-1.5 py-0.5 text-xs rounded bg-red-400/10 text-destructive border border-destructive/30"
                               title="Potential duplicate"
                               data-oid="m4_ha4m"
                             >
@@ -403,7 +403,7 @@ export function TransactionReview({
 
                       {/* Amount */}
                       <td
-                        className="px-3 py-3 text-sm text-right font-mono font-medium text-ink-black whitespace-nowrap"
+                        className="px-3 py-3 text-sm text-right font-mono font-medium text-foreground whitespace-nowrap"
                         data-oid=":t54vmq"
                       >
                         {formatCurrency(transaction.amount)}
@@ -431,7 +431,7 @@ export function TransactionReview({
                       <td className="px-3 py-3 text-center" data-oid="p:kt-:c">
                         {transaction.status === "accepted" && (
                           <span
-                            className="inline-flex items-center gap-1 text-xs text-ink-green"
+                            className="inline-flex items-center gap-1 text-xs text-emerald-400"
                             data-oid="xq9kcnl"
                           >
                             <CheckCircle
@@ -442,7 +442,7 @@ export function TransactionReview({
                         )}
                         {transaction.status === "skipped" && (
                           <span
-                            className="inline-flex items-center gap-1 text-xs text-sepia"
+                            className="inline-flex items-center gap-1 text-xs text-muted-foreground"
                             data-oid="4r0bod7"
                           >
                             <XCircle className="w-4 h-4" data-oid="muye6o." />
@@ -450,7 +450,7 @@ export function TransactionReview({
                         )}
                         {transaction.status === "replace" && (
                           <span
-                            className="inline-flex items-center gap-1 text-xs text-ink-gold"
+                            className="inline-flex items-center gap-1 text-xs text-spectral"
                             data-oid="fyu4-q_"
                           >
                             <ArrowRight
@@ -461,7 +461,7 @@ export function TransactionReview({
                         )}
                         {transaction.status === "pending" && (
                           <span
-                            className="inline-flex items-center gap-1 text-xs text-sepia/50"
+                            className="inline-flex items-center gap-1 text-xs text-muted-foreground/60"
                             data-oid="953ay-f"
                           >
                             &mdash;
@@ -482,8 +482,8 @@ export function TransactionReview({
                             className={cn(
                               "p-1.5 rounded transition-colors",
                               transaction.status === "accepted"
-                                ? "bg-ink-green/20 text-ink-green"
-                                : "hover:bg-ink-green/10 text-sepia hover:text-ink-green",
+                                ? "bg-emerald-400/10 text-emerald-400"
+                                : "hover:bg-emerald-400/10 text-muted-foreground hover:text-emerald-400",
                             )}
                             title="Accept"
                             aria-label="Accept transaction"
@@ -501,8 +501,8 @@ export function TransactionReview({
                             className={cn(
                               "p-1.5 rounded transition-colors",
                               transaction.status === "skipped"
-                                ? "bg-sepia/20 text-sepia"
-                                : "hover:bg-sepia/10 text-sepia/50 hover:text-sepia",
+                                ? "bg-muted-foreground/20 text-muted-foreground"
+                                : "hover:bg-muted-foreground/10 text-muted-foreground/60 hover:text-muted-foreground",
                             )}
                             title="Skip"
                             aria-label="Skip transaction"
@@ -518,8 +518,8 @@ export function TransactionReview({
                               className={cn(
                                 "p-1.5 rounded transition-colors",
                                 transaction.status === "replace"
-                                  ? "bg-ink-gold/20 text-ink-gold"
-                                  : "hover:bg-ink-gold/10 text-sepia/50 hover:text-ink-gold",
+                                  ? "bg-spectral/10 text-spectral"
+                                  : "hover:bg-spectral/10 text-muted-foreground/60 hover:text-spectral",
                               )}
                               title="Replace existing"
                               aria-label="Replace existing expense"
@@ -537,7 +537,7 @@ export function TransactionReview({
 
                     {/* Expanded Details Row */}
                     {isExpanded && (
-                      <tr className="bg-wood-medium/5" data-oid="yq_-q81">
+                      <tr className="bg-spectral/10" data-oid="yq_-q81">
                         <td
                           colSpan={7}
                           className="px-6 py-4"
@@ -548,13 +548,13 @@ export function TransactionReview({
                             {transaction.memo && (
                               <div data-oid="glvoy3v">
                                 <span
-                                  className="text-xs font-semibold text-sepia uppercase tracking-wider"
+                                  className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
                                   data-oid="n.fewwb"
                                 >
                                   Memo:
                                 </span>
                                 <p
-                                  className="mt-1 text-sm text-ink-black"
+                                  className="mt-1 text-sm text-foreground"
                                   data-oid="srykxxi"
                                 >
                                   {transaction.memo}
@@ -566,22 +566,22 @@ export function TransactionReview({
                             {transaction.isDuplicate &&
                               transaction.duplicateOf && (
                                 <div
-                                  className="flex items-start gap-2 p-3 bg-ink-red/10 border border-ink-red/30 rounded"
+                                  className="flex items-start gap-2 p-3 bg-red-400/10 border border-destructive/30 rounded"
                                   data-oid="81z90ee"
                                 >
                                   <AlertTriangle
-                                    className="w-4 h-4 text-ink-red shrink-0 mt-0.5"
+                                    className="w-4 h-4 text-destructive shrink-0 mt-0.5"
                                     data-oid="r5..tjp"
                                   />
                                   <div data-oid="mge:mlt">
                                     <p
-                                      className="text-sm font-medium text-ink-red"
+                                      className="text-sm font-medium text-destructive"
                                       data-oid="_tcurqv"
                                     >
                                       Potential Duplicate Detected
                                     </p>
                                     <p
-                                      className="text-xs text-ink-red/80 mt-1"
+                                      className="text-xs text-destructive/80 mt-1"
                                       data-oid="jg_lj5n"
                                     >
                                       Existing expense:{" "}
@@ -600,22 +600,22 @@ export function TransactionReview({
                             {transaction.suggestedAssignment &&
                               transaction.aiConfidence && (
                                 <div
-                                  className="flex items-start gap-2 p-3 bg-ink-gold/10 border border-ink-gold/30 rounded"
+                                  className="flex items-start gap-2 p-3 bg-spectral/10 border border-spectral rounded"
                                   data-oid="y0ixng1"
                                 >
                                   <Sparkles
-                                    className="w-4 h-4 text-ink-gold shrink-0 mt-0.5"
+                                    className="w-4 h-4 text-spectral shrink-0 mt-0.5"
                                     data-oid="0_pu949"
                                   />
                                   <div data-oid="fr-x4ob">
                                     <p
-                                      className="text-sm font-medium text-ink-gold"
+                                      className="text-sm font-medium text-spectral"
                                       data-oid="a3h995f"
                                     >
                                       AI Suggestion
                                     </p>
                                     <p
-                                      className="text-xs text-sepia mt-1"
+                                      className="text-xs text-muted-foreground mt-1"
                                       data-oid="ix17px9"
                                     >
                                       Based on vendor name and memo, this

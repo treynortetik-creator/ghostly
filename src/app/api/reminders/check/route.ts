@@ -1,8 +1,8 @@
 /**
- * The Counting House - Reminder Check API
+ * Ghostly - Reminder Check API
  *
  * Endpoints:
- * POST /api/reminders/check - Check for due reminders (Scrooge calls this)
+ * POST /api/reminders/check - Check for due reminders (AI agent calls this)
  */
 
 import { NextRequest, NextResponse } from 'next/server';

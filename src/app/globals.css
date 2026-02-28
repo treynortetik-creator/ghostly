@@ -4,29 +4,30 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================
-   THE COUNTING HOUSE - Victorian Theme System
+   GHOSTLY - Ethereal Theme System
    ============================================
-   A refined ledger aesthetic inspired by 1850s
-   British counting houses and bookkeepers' offices.
+   A refined spectral aesthetic with glass-morphism,
+   deep purple undertones, and frosted glass UI.
+   Dark mode is the signature look.
    ============================================ */
 
 @theme inline {
   /* Typography */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-playfair);
 
-  /* Victorian Color Palette */
-  --color-wood-dark: var(--wood-dark);
-  --color-wood-medium: var(--wood-medium);
-  --color-wood-light: var(--wood-light);
-  --color-parchment: var(--parchment);
-  --color-parchment-dark: var(--parchment-dark);
-  --color-ink-black: var(--ink-black);
-  --color-ink-green: var(--ink-green);
-  --color-ink-red: var(--ink-red);
-  --color-ink-gold: var(--ink-gold);
-  --color-sepia: var(--sepia);
+  /* Ghostly Color Palette */
+  --color-ghost-dark: var(--ghost-dark);
+  --color-ghost-medium: var(--ghost-medium);
+  --color-ghost-light: var(--ghost-light);
+  --color-phantom: var(--phantom);
+  --color-phantom-dark: var(--phantom-dark);
+  --color-spectral: var(--spectral);
+  --color-spectral-light: var(--spectral-light);
+  --color-spectral-soft: var(--spectral-soft);
+  --color-ether: var(--ether);
+  --color-ether-light: var(--ether-light);
+  --color-mist: var(--mist);
 
   /* Shadcn Mappings */
   --color-background: var(--background);
@@ -48,7 +49,7 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Chart colors mapped to Victorian palette */
+  /* Chart colors */
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -76,129 +77,138 @@
 }
 
 :root {
-  /* Border Radius - slightly rounded for aged elegance */
-  --radius: 0.375rem;
+  /* Border Radius */
+  --radius: 0.5rem;
 
   /* ========================================
-     VICTORIAN COLOR PALETTE
+     GHOSTLY COLOR PALETTE - Light Mode
      ======================================== */
 
-  /* Wood Tones - Mahogany furniture */
-  --wood-dark: #3d2314;      /* Dark mahogany - headers, nav */
-  --wood-medium: #5c3d2e;    /* Medium wood - borders, accents */
-  --wood-light: #8b6914;     /* Light wood/brass - highlights */
+  /* Ghost Tones - Light mode surfaces */
+  --ghost-dark: #1A1025;
+  --ghost-medium: #EFEDF5;
+  --ghost-light: #F8F7FC;
 
-  /* Parchment - Aged paper backgrounds */
-  --parchment: #f5f0e1;      /* Aged paper - main background */
-  --parchment-dark: #ebe3d1; /* Darker parchment - cards */
-  --parchment-darker: #ddd5c3; /* Even darker - hover states */
+  /* Phantom - Text and contrast */
+  --phantom: #1A1025;
+  --phantom-dark: #6B5F82;
 
-  /* Ink Colors - Period-accurate ledger inks */
-  --ink-black: #2c2416;      /* Aged iron gall ink - primary text */
-  --ink-green: #1a472a;      /* Ledger green - positive/under budget */
-  --ink-red: #8b2500;        /* Ledger red - negative/over budget */
-  --ink-gold: #b8860b;       /* Gold ink - accents, totals */
-  --sepia: #704214;          /* Sepia - secondary text */
+  /* Spectral - Purple accents */
+  --spectral: #7C3AED;
+  --spectral-light: #8B5CF6;
+  --spectral-soft: #C4B5FD;
 
-  /* Semantic mappings to Victorian palette */
-  --background: #f5f0e1;
-  --foreground: #2c2416;
-  --card: #ebe3d1;
-  --card-foreground: #2c2416;
-  --popover: #ebe3d1;
-  --popover-foreground: #2c2416;
-  --primary: #3d2314;
-  --primary-foreground: #f5f0e1;
-  --secondary: #ddd5c3;
-  --secondary-foreground: #3d2314;
-  --muted: #ddd5c3;
-  --muted-foreground: #704214;
-  --accent: #b8860b;
-  --accent-foreground: #2c2416;
-  --destructive: #8b2500;
-  --border: #5c3d2e;
-  --input: #5c3d2e;
-  --ring: #b8860b;
+  /* Ether - Teal secondary */
+  --ether: #06B6D4;
+  --ether-light: #67E8F9;
 
-  /* Chart colors - Victorian-appropriate */
-  --chart-1: #1a472a; /* Ledger green */
-  --chart-2: #b8860b; /* Gold */
-  --chart-3: #5c3d2e; /* Wood medium */
-  --chart-4: #704214; /* Sepia */
-  --chart-5: #8b2500; /* Ledger red */
+  /* Mist - Muted text */
+  --mist: #9B8FB8;
 
-  /* Sidebar - Wood tones */
-  --sidebar: #3d2314;
-  --sidebar-foreground: #f5f0e1;
-  --sidebar-primary: #b8860b;
-  --sidebar-primary-foreground: #2c2416;
-  --sidebar-accent: #5c3d2e;
-  --sidebar-accent-foreground: #f5f0e1;
-  --sidebar-border: #5c3d2e;
-  --sidebar-ring: #b8860b;
+  /* Semantic mappings - Light Mode */
+  --background: #F8F7FC;
+  --foreground: #1A1025;
+  --card: #EFEDF5;
+  --card-foreground: #1A1025;
+  --popover: #EFEDF5;
+  --popover-foreground: #1A1025;
+  --primary: #7C3AED;
+  --primary-foreground: #F8F7FC;
+  --secondary: #EFEDF5;
+  --secondary-foreground: #1A1025;
+  --muted: #EFEDF5;
+  --muted-foreground: #6B5F82;
+  --accent: #8B5CF6;
+  --accent-foreground: #F8F7FC;
+  --destructive: #F87171;
+  --border: rgba(139, 92, 246, 0.15);
+  --input: rgba(139, 92, 246, 0.15);
+  --ring: #7C3AED;
+
+  /* Chart colors - Light mode */
+  --chart-1: #7C3AED;
+  --chart-2: #06B6D4;
+  --chart-3: #34D399;
+  --chart-4: #FBBF24;
+  --chart-5: #F87171;
+
+  /* Sidebar - Light mode */
+  --sidebar: #EFEDF5;
+  --sidebar-foreground: #1A1025;
+  --sidebar-primary: #7C3AED;
+  --sidebar-primary-foreground: #F8F7FC;
+  --sidebar-accent: rgba(139, 92, 246, 0.1);
+  --sidebar-accent-foreground: #1A1025;
+  --sidebar-border: rgba(139, 92, 246, 0.15);
+  --sidebar-ring: #7C3AED;
 }
 
 /* ========================================
-   DARK MODE - Victorian Counting House at Night
+   DARK MODE - Ghostly Ethereal Night
    ========================================
-   Deep charcoal-brown backgrounds with warm undertones,
-   like a counting house lit by gaslight and candleflame.
+   Deep purple-black backgrounds with spectral
+   glass-morphism and purple glow accents.
+   This is the signature Ghostly look.
    ======================================== */
 
 .dark {
-  /* Wood Tones - Lighter for visibility on dark backgrounds */
-  --wood-dark: #5c4a3a;
-  --wood-medium: #7a6350;
-  --wood-light: #a8892e;
+  /* Ghost Tones - Dark mode surfaces */
+  --ghost-dark: #0A0612;
+  --ghost-medium: #130D1E;
+  --ghost-light: #1E1533;
 
-  /* Parchment - Deep charcoal with warm brown undertone */
-  --parchment: #1a1612;
-  --parchment-dark: #242018;
-  --parchment-darker: #2e281f;
+  /* Phantom - Text and contrast */
+  --phantom: #F0ECF9;
+  --phantom-dark: #9B8FB8;
 
-  /* Ink Colors - Brighter for contrast on dark backgrounds */
-  --ink-black: #d4c9b0;
-  --ink-green: #2d8a5e;
-  --ink-red: #c44425;
-  --ink-gold: #d4a017;
-  --sepia: #a08050;
+  /* Spectral - Purple accents */
+  --spectral: #8B5CF6;
+  --spectral-light: #A78BFA;
+  --spectral-soft: #C4B5FD;
 
-  /* Semantic mappings */
-  --background: #1a1612;
-  --foreground: #d4c9b0;
-  --card: #242018;
-  --card-foreground: #d4c9b0;
-  --popover: #242018;
-  --popover-foreground: #d4c9b0;
-  --primary: #d4c9b0;
-  --primary-foreground: #1a1612;
-  --secondary: #2e281f;
-  --secondary-foreground: #c4b898;
-  --muted: #2e281f;
-  --muted-foreground: #a08050;
-  --accent: #d4a017;
-  --accent-foreground: #1a1612;
-  --destructive: #c44425;
-  --border: #7a6350;
-  --input: #7a6350;
-  --ring: #d4a017;
+  /* Ether - Teal secondary */
+  --ether: #06B6D4;
+  --ether-light: #67E8F9;
 
-  /* Chart colors - Brighter Victorian palette */
-  --chart-1: #2d8a5e;
-  --chart-2: #d4a017;
-  --chart-3: #7a6350;
-  --chart-4: #a08050;
-  --chart-5: #c44425;
+  /* Mist - Muted text */
+  --mist: #6B5F82;
 
-  /* Sidebar - Deep wood tones */
-  --sidebar: #242018;
-  --sidebar-foreground: #d4c9b0;
-  --sidebar-primary: #d4a017;
-  --sidebar-primary-foreground: #1a1612;
-  --sidebar-accent: #2e281f;
-  --sidebar-accent-foreground: #d4c9b0;
-  --sidebar-border: #7a6350;
-  --sidebar-ring: #d4a017;
+  /* Semantic mappings - Dark Mode */
+  --background: #0A0612;
+  --foreground: #F0ECF9;
+  --card: #130D1E;
+  --card-foreground: #F0ECF9;
+  --popover: #130D1E;
+  --popover-foreground: #F0ECF9;
+  --primary: #8B5CF6;
+  --primary-foreground: #0A0612;
+  --secondary: #1E1533;
+  --secondary-foreground: #F0ECF9;
+  --muted: #1E1533;
+  --muted-foreground: #6B5F82;
+  --accent: #A78BFA;
+  --accent-foreground: #0A0612;
+  --destructive: #F87171;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: #8B5CF6;
+
+  /* Chart colors - Dark mode (brighter) */
+  --chart-1: #8B5CF6;
+  --chart-2: #06B6D4;
+  --chart-3: #34D399;
+  --chart-4: #FBBF24;
+  --chart-5: #F87171;
+
+  /* Sidebar - Dark mode */
+  --sidebar: #130D1E;
+  --sidebar-foreground: #F0ECF9;
+  --sidebar-primary: #8B5CF6;
+  --sidebar-primary-foreground: #F0ECF9;
+  --sidebar-accent: #1E1533;
+  --sidebar-accent-foreground: #F0ECF9;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #8B5CF6;
 }
 
 /* ========================================
@@ -221,49 +231,45 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Subtle paper texture via layered gradients */
-  .paper-texture {
-    background-color: var(--parchment);
+  /* Ghostly texture - subtle dark gradient with purple undertones */
+  .ghost-texture {
+    background-color: var(--background);
     background-image:
-      /* Fine grain noise simulation */
-      radial-gradient(ellipse at 20% 30%, rgba(139, 105, 20, 0.03) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 70%, rgba(112, 66, 20, 0.03) 0%, transparent 50%),
-      radial-gradient(ellipse at 50% 50%, rgba(92, 61, 46, 0.02) 0%, transparent 70%),
-      /* Subtle aged paper variation */
+      radial-gradient(ellipse at 20% 30%, rgba(139, 92, 246, 0.03) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(6, 182, 212, 0.02) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.02) 0%, transparent 70%),
       linear-gradient(180deg,
-        rgba(255, 255, 255, 0.02) 0%,
+        rgba(139, 92, 246, 0.02) 0%,
         transparent 20%,
         transparent 80%,
-        rgba(0, 0, 0, 0.02) 100%
+        rgba(6, 182, 212, 0.01) 100%
       );
   }
 
-  /* Dark mode paper texture - aged paper by candlelight */
-  .dark .paper-texture {
-    background-color: var(--parchment);
+  /* Dark mode ghost texture */
+  .dark .ghost-texture {
+    background-color: var(--background);
     background-image:
-      radial-gradient(ellipse at 20% 30%, rgba(164, 130, 46, 0.04) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 70%, rgba(160, 128, 80, 0.04) 0%, transparent 50%),
-      radial-gradient(ellipse at 50% 50%, rgba(122, 99, 80, 0.03) 0%, transparent 70%),
+      radial-gradient(ellipse at 20% 30%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(6, 182, 212, 0.03) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 70%),
       linear-gradient(180deg,
-        rgba(255, 255, 255, 0.01) 0%,
+        rgba(139, 92, 246, 0.03) 0%,
         transparent 20%,
         transparent 80%,
-        rgba(0, 0, 0, 0.03) 100%
+        rgba(0, 0, 0, 0.05) 100%
       );
-  }
-
-  /* Dark mode heading colors - wood-dark is too dark on dark bg */
-  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
-    color: var(--wood-light);
   }
 
   /* Typography refinements */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-serif), Georgia, 'Times New Roman', serif;
     font-weight: 600;
     letter-spacing: -0.01em;
-    color: var(--wood-dark);
+    color: var(--foreground);
+  }
+
+  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+    color: var(--phantom);
   }
 
   /* Tabular figures for numbers in data contexts */
@@ -282,124 +288,127 @@
    DECORATIVE ELEMENTS
    ======================================== */
 
-/* Victorian flourish - horizontal rule */
-.flourish {
+/* Ghost divider - simple line with purple glow center */
+.ghost-divider {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: var(--wood-medium);
+  color: var(--mist);
 }
 
-.flourish::before,
-.flourish::after {
+.ghost-divider::before,
+.ghost-divider::after {
   content: '';
   flex: 1;
   height: 1px;
   background: linear-gradient(
     90deg,
     transparent,
-    var(--wood-medium) 20%,
-    var(--wood-medium) 80%,
+    rgba(139, 92, 246, 0.3) 40%,
+    rgba(139, 92, 246, 0.3) 60%,
     transparent
   );
 }
 
-/* Corner flourish for cards */
-.corner-flourish {
-  position: relative;
-}
-
-.corner-flourish::before {
-  content: '';
-  position: absolute;
-  top: -1px;
-  left: -1px;
-  width: 20px;
-  height: 20px;
-  border-top: 2px solid var(--wood-medium);
-  border-left: 2px solid var(--wood-medium);
-  border-top-left-radius: 4px;
-  opacity: 0.6;
-}
-
-.corner-flourish::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  right: -1px;
-  width: 20px;
-  height: 20px;
-  border-bottom: 2px solid var(--wood-medium);
-  border-right: 2px solid var(--wood-medium);
-  border-bottom-right-radius: 4px;
-  opacity: 0.6;
-}
-
-/* Ledger line pattern */
-.ledger-lines {
-  background-image: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 1.5rem,
-    rgba(92, 61, 46, 0.08) 1.5rem,
-    rgba(92, 61, 46, 0.08) calc(1.5rem + 1px)
-  );
-}
-
-/* Ink well shadow - deep shadow for nav/headers */
-.ink-shadow {
+/* Spectral shadow - purple-tinted glow */
+.spectral-shadow {
   box-shadow:
-    0 4px 6px -1px rgba(44, 36, 22, 0.15),
-    0 2px 4px -2px rgba(44, 36, 22, 0.1),
-    inset 0 -1px 0 rgba(139, 105, 20, 0.1);
+    0 4px 6px -1px rgba(139, 92, 246, 0.1),
+    0 2px 4px -2px rgba(139, 92, 246, 0.06),
+    0 0 20px rgba(139, 92, 246, 0.08);
 }
 
-/* Parchment card shadow - stacked paper effect */
-.parchment-shadow {
+/* Glass shadow - subtle glass elevation */
+.glass-shadow {
   box-shadow:
-    0 1px 2px rgba(44, 36, 22, 0.08),
-    0 2px 4px rgba(44, 36, 22, 0.06),
-    0 4px 8px rgba(44, 36, 22, 0.04),
-    0 0 0 1px rgba(92, 61, 46, 0.1);
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.08),
+    0 4px 8px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
-/* Pressed/inset effect for inputs */
-.inset-shadow {
+/* Glass inset - subtle inset for inputs */
+.glass-inset {
   box-shadow:
-    inset 0 1px 2px rgba(44, 36, 22, 0.1),
-    inset 0 0 0 1px rgba(92, 61, 46, 0.15);
+    inset 0 1px 2px rgba(0, 0, 0, 0.15),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 /* Dark mode shadow overrides */
-.dark .ink-shadow {
+.dark .spectral-shadow {
   box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.4),
-    0 2px 4px -2px rgba(0, 0, 0, 0.3),
-    inset 0 -1px 0 rgba(168, 137, 46, 0.08);
+    0 4px 6px -1px rgba(0, 0, 0, 0.3),
+    0 2px 4px -2px rgba(0, 0, 0, 0.2),
+    0 0 20px rgba(139, 92, 246, 0.12);
 }
 
-.dark .parchment-shadow {
+.dark .glass-shadow {
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.2),
-    0 2px 4px rgba(0, 0, 0, 0.15),
-    0 4px 8px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(122, 99, 80, 0.2);
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
-.dark .inset-shadow {
+.dark .glass-inset {
   box-shadow:
-    inset 0 1px 2px rgba(0, 0, 0, 0.3),
-    inset 0 0 0 1px rgba(122, 99, 80, 0.25);
+    inset 0 1px 2px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 /* ========================================
-   ANIMATIONS - Subtle, Period-Appropriate
+   GLASS-MORPHISM UTILITIES
+   ======================================== */
+
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-hover:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(139, 92, 246, 0.2);
+}
+
+.glass-glow {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
+}
+
+.glass-glow-sm {
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.1);
+}
+
+/* Light mode glass adjustments */
+:root .glass {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(139, 92, 246, 0.12);
+}
+
+:root .glass-hover:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(139, 92, 246, 0.25);
+}
+
+.dark .glass {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .glass-hover:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(139, 92, 246, 0.2);
+}
+
+/* ========================================
+   ANIMATIONS
    ======================================== */
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -407,25 +416,23 @@
   }
 }
 
-@keyframes pageFlip {
-  0% {
-    transform: rotateY(-3deg);
-    opacity: 0.8;
-  }
-  100% {
-    transform: rotateY(0deg);
-    opacity: 1;
-  }
-}
-
-@keyframes inkFade {
+@keyframes ghostFade {
   from {
     opacity: 0;
-    filter: blur(1px);
+    filter: blur(4px);
   }
   to {
     opacity: 1;
     filter: blur(0);
+  }
+}
+
+@keyframes ghostFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
   }
 }
 
@@ -448,12 +455,12 @@
   animation: slideInRight 0.3s ease-out forwards;
 }
 
-.animate-page-flip {
-  animation: pageFlip 0.4s ease-out forwards;
+.animate-ghost-fade {
+  animation: ghostFade 0.5s ease-out forwards;
 }
 
-.animate-ink-fade {
-  animation: inkFade 0.5s ease-out forwards;
+.animate-ghost-float {
+  animation: ghostFloat 3s ease-in-out infinite;
 }
 
 /* Stagger children animation */
@@ -482,43 +489,42 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--parchment-dark);
+  background: var(--ghost-medium);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--wood-medium);
+  background: var(--mist);
   border-radius: 4px;
-  border: 2px solid var(--parchment-dark);
+  border: 2px solid var(--ghost-medium);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--wood-dark);
+  background: var(--spectral);
 }
 
 /* Firefox scrollbars */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--wood-medium) var(--parchment-dark);
+  scrollbar-color: var(--mist) var(--ghost-medium);
 }
 
 /* Dark mode scrollbars */
 .dark ::-webkit-scrollbar-track {
-  background: var(--parchment-dark);
+  background: var(--ghost-medium);
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: var(--wood-medium);
-  border-color: var(--parchment-dark);
+  background: var(--mist);
+  border-color: var(--ghost-medium);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: var(--wood-light);
+  background: var(--spectral);
 }
 
-/* Dark mode Firefox scrollbars */
 .dark * {
-  scrollbar-color: var(--wood-medium) var(--parchment-dark);
+  scrollbar-color: var(--mist) var(--ghost-medium);
 }
 
 /* ========================================
@@ -526,24 +532,24 @@
    ======================================== */
 
 /* Text colors */
-.text-positive { color: var(--ink-green); }
-.text-negative { color: var(--ink-red); }
-.text-accent { color: var(--ink-gold); }
-.text-muted { color: var(--sepia); }
+.text-positive { color: #34D399; }
+.text-negative { color: #F87171; }
+.text-accent { color: var(--spectral); }
+.text-muted { color: var(--mist); }
 
 /* Background colors */
-.bg-positive { background-color: var(--ink-green); }
-.bg-negative { background-color: var(--ink-red); }
-.bg-accent { background-color: var(--ink-gold); }
+.bg-positive { background-color: #34D399; }
+.bg-negative { background-color: #F87171; }
+.bg-accent { background-color: var(--spectral); }
 
 /* Semi-transparent variants */
-.bg-positive-subtle { background-color: rgba(26, 71, 42, 0.1); }
-.bg-negative-subtle { background-color: rgba(139, 37, 0, 0.1); }
-.bg-accent-subtle { background-color: rgba(184, 134, 11, 0.1); }
+.bg-positive-subtle { background-color: rgba(52, 211, 153, 0.1); }
+.bg-negative-subtle { background-color: rgba(248, 113, 113, 0.1); }
+.bg-accent-subtle { background-color: rgba(139, 92, 246, 0.1); }
 
 /* Focus states */
 .focus-ring {
-  @apply outline-none ring-2 ring-ink-gold ring-offset-2 ring-offset-parchment;
+  @apply outline-none ring-2 ring-spectral ring-offset-2 ring-offset-background;
 }
 
 /* ========================================
@@ -558,15 +564,30 @@ input[type="date"],
 input[type="search"],
 textarea,
 select {
-  @apply bg-parchment border border-wood-medium/50 rounded-md;
-  @apply text-ink-black placeholder:text-sepia/60;
-  @apply transition-all duration-200;
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--foreground);
+  transition: all 0.2s ease;
+}
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+input[type="number"]::placeholder,
+input[type="date"]::placeholder,
+input[type="search"]::placeholder,
+textarea::placeholder {
+  color: var(--mist);
+  opacity: 0.8;
 }
 
 input:focus,
 textarea:focus,
 select:focus {
-  @apply border-ink-gold ring-2 ring-ink-gold/20 outline-none;
+  border-color: var(--spectral);
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+  outline: none;
 }
 
 /* Dark mode form elements */
@@ -578,15 +599,22 @@ select:focus {
 .dark input[type="search"],
 .dark textarea,
 .dark select {
-  background-color: var(--parchment-dark);
-  border-color: var(--wood-medium);
-  color: var(--ink-black);
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: var(--phantom);
 }
 
 .dark input::placeholder,
 .dark textarea::placeholder {
-  color: var(--sepia);
+  color: var(--mist);
   opacity: 0.6;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: var(--spectral);
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25);
 }
 
 /* ========================================
@@ -594,22 +622,21 @@ select:focus {
    ======================================== */
 
 ::selection {
-  background-color: rgba(184, 134, 11, 0.25);
-  color: var(--ink-black);
+  background-color: rgba(139, 92, 246, 0.25);
+  color: var(--foreground);
 }
 
 ::-moz-selection {
-  background-color: rgba(184, 134, 11, 0.25);
-  color: var(--ink-black);
+  background-color: rgba(139, 92, 246, 0.25);
+  color: var(--foreground);
 }
 
-/* Dark mode selection */
 .dark ::selection {
-  background-color: rgba(212, 160, 23, 0.3);
-  color: var(--ink-black);
+  background-color: rgba(139, 92, 246, 0.35);
+  color: var(--phantom);
 }
 
 .dark ::-moz-selection {
-  background-color: rgba(212, 160, 23, 0.3);
-  color: var(--ink-black);
+  background-color: rgba(139, 92, 246, 0.35);
+  color: var(--phantom);
 }

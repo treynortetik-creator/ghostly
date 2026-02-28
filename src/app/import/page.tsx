@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/Button";
    Central hub for all import methods:
    - Brex CSV import (with AI categorization)
    - PDF invoice import
-   Victorian theme: "The Receiving Ledger"
+   Ghostly theme: "The Receiving Ledger"
    ============================================ */
 
 interface ImportOption {
@@ -75,13 +75,13 @@ export default function ImportHubPage() {
       {/* Page Header */}
       <div className="mb-8" data-oid="5h23zm_">
         <h1
-          className="text-3xl font-serif font-bold text-wood-dark flex items-center gap-3"
+          className="text-3xl font-bold text-foreground flex items-center gap-3"
           data-oid="y6hjz-8"
         >
-          <Upload className="w-8 h-8 text-ink-gold" data-oid="d0kmhti" />
+          <Upload className="w-8 h-8 text-spectral" data-oid="d0kmhti" />
           The Receiving Ledger
         </h1>
-        <p className="mt-1 text-sepia" data-oid="vybupdh">
+        <p className="mt-1 text-muted-foreground" data-oid="vybupdh">
           Import expenses from external sources into your ledger
         </p>
       </div>
@@ -102,7 +102,7 @@ export default function ImportHubPage() {
               {!option.available && (
                 <div className="absolute top-4 right-4" data-oid="ils7ltn">
                   <span
-                    className="px-2 py-1 text-xs font-medium bg-sepia/15 text-sepia rounded border border-sepia/30"
+                    className="px-2 py-1 text-xs font-medium bg-muted-foreground/15 text-muted-foreground rounded border border-muted-foreground/30"
                     data-oid="ek4g_r-"
                   >
                     Coming Soon
@@ -113,11 +113,11 @@ export default function ImportHubPage() {
               <CardHeader data-oid="2gw8621">
                 <div className="flex items-start gap-4" data-oid="i13l50v">
                   <div
-                    className="p-3 rounded-lg bg-wood-medium/10 border border-wood-medium/20"
+                    className="p-3 rounded-lg bg-spectral/10 border border-border"
                     data-oid="1802ymf"
                   >
                     <Icon
-                      className="w-6 h-6 text-ink-gold"
+                      className="w-6 h-6 text-spectral"
                       data-oid="ph3vjjr"
                     />
                   </div>
@@ -136,11 +136,11 @@ export default function ImportHubPage() {
                   {option.details.map((detail, index) => (
                     <li
                       key={index}
-                      className="flex items-start gap-2 text-sm text-sepia"
+                      className="flex items-start gap-2 text-sm text-muted-foreground"
                       data-oid="-6:aroa"
                     >
                       <span
-                        className="mt-1 w-1.5 h-1.5 rounded-full bg-ink-gold/60 shrink-0"
+                        className="mt-1 w-1.5 h-1.5 rounded-full bg-spectral/10 shrink-0"
                         data-oid="wm_1-ah"
                       />
                       {detail}
@@ -183,28 +183,28 @@ export default function ImportHubPage() {
         <CardContent className="py-6" data-oid="rb4c7r.">
           <div className="flex items-start gap-4" data-oid=".1bir32">
             <div
-              className="p-2 rounded-lg bg-ink-green/10 border border-ink-green/20"
+              className="p-2 rounded-lg bg-emerald-400/10 border border-emerald-400/20"
               data-oid="bolgaqj"
             >
               <FileSpreadsheet
-                className="w-5 h-5 text-ink-green"
+                className="w-5 h-5 text-emerald-400"
                 data-oid="hiti-53"
               />
             </div>
             <div data-oid="8mshtq3">
               <h3
-                className="font-serif font-semibold text-wood-dark"
+                className="font-semibold text-foreground"
                 data-oid="87z359t"
               >
                 Brex CSV Format
               </h3>
-              <p className="mt-1 text-sm text-sepia" data-oid="x_v3wmk">
+              <p className="mt-1 text-sm text-muted-foreground" data-oid="x_v3wmk">
                 Export your transactions from Brex using their &ldquo;Export to
                 CSV&rdquo; feature. The expected columns are: Transaction date,
                 Amount, Merchant, and Memo.
               </p>
               <p
-                className="mt-2 text-xs text-sepia/70 font-mono bg-parchment px-3 py-2 rounded border border-wood-medium/20"
+                className="mt-2 text-xs text-muted-foreground/60 font-mono bg-background px-3 py-2 rounded border border-border"
                 data-oid="d4dk:24"
               >
                 Transaction date, Amount, Original amount, Original currency,
@@ -217,10 +217,10 @@ export default function ImportHubPage() {
 
       {/* Footer */}
       <div
-        className="text-center py-6 mt-8 border-t border-wood-medium/20"
+        className="text-center py-6 mt-8 border-t border-border"
         data-oid="zkvpt7:"
       >
-        <p className="text-xs text-sepia/60 italic" data-oid="1yrexh9">
+        <p className="text-xs text-muted-foreground/60 italic" data-oid="1yrexh9">
           &ldquo;A penny saved is a penny earned, but a penny tracked is wisdom
           discerned.&rdquo;
         </p>

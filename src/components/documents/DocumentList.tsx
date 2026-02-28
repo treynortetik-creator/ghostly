@@ -74,9 +74,9 @@ export function DocumentList({
   if (documents.length === 0) {
     return (
       <div className="text-center py-8">
-        <FileText className="w-10 h-10 text-sepia/30 mx-auto mb-3" />
-        <p className="text-sepia">No documents attached yet.</p>
-        <p className="text-sm text-sepia/70 mt-1">
+        <FileText className="w-10 h-10 text-muted-foreground/60 mx-auto mb-3" />
+        <p className="text-muted-foreground">No documents attached yet.</p>
+        <p className="text-sm text-muted-foreground/60 mt-1">
           Upload a PDF or DOCX to attach it here.
         </p>
       </div>
@@ -88,16 +88,16 @@ export function DocumentList({
       <ToastContainer toasts={toasts} removeToast={removeToast} />
       {documents.map((doc) => (
         <div key={doc.id}>
-          <div className="flex items-center justify-between p-3 rounded-lg bg-parchment border border-wood-medium/20 hover:border-wood-medium/40 transition-colors">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-background border border-border hover:border-border transition-colors">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <span className="text-xl flex-shrink-0">
                 {getFileIcon(doc.mime_type)}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="font-medium text-ink-black truncate">
+                <p className="font-medium text-foreground truncate">
                   {doc.original_filename}
                 </p>
-                <p className="text-xs text-sepia/70">
+                <p className="text-xs text-muted-foreground/60">
                   {formatFileSize(doc.file_size_bytes)} ·{" "}
                   Uploaded by {doc.uploaded_by === "user" ? "you" : doc.uploaded_by} ·{" "}
                   {formatDateShort(doc.created_at)}
@@ -143,7 +143,7 @@ export function DocumentList({
                       onClick={() => setConfirmDeleteId(doc.id)}
                       title="Delete"
                     >
-                      <Trash2 className="w-4 h-4 text-ink-red/70" />
+                      <Trash2 className="w-4 h-4 text-destructive/70" />
                     </Button>
                   )}
                 </>

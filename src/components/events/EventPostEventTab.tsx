@@ -163,7 +163,7 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
   if (isLoading) {
     return (
       <Card>
-        <CardContent className="py-8 text-center text-sepia">Loading post-event notes...</CardContent>
+        <CardContent className="py-8 text-center text-muted-foreground">Loading post-event notes...</CardContent>
       </Card>
     );
   }
@@ -180,17 +180,17 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
         onCancel={() => setDeleteConfirmId(null)}
       />
       {/* Structured Debrief Form */}
-      <Card className="border-ink-gold/30">
+      <Card className="border-spectral">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ClipboardCheck className="w-5 h-5 text-ink-gold" />
+            <ClipboardCheck className="w-5 h-5 text-spectral" />
             Post-Event Debrief
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {debriefSections.map((section) => (
             <div key={section.key}>
-              <label className="text-sm font-medium text-wood-dark mb-1 block">
+              <label className="text-sm font-medium text-foreground mb-1 block">
                 {section.title}
               </label>
               <textarea
@@ -198,7 +198,7 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
                 onChange={(e) => setDebriefForm({ ...debriefForm, [section.key]: e.target.value })}
                 placeholder={section.placeholder}
                 rows={4}
-                className="w-full px-3 py-2 text-sm bg-parchment-dark border border-wood-medium/30 rounded-md text-wood-dark placeholder:text-sepia/50 focus:border-ink-gold focus:outline-none resize-y"
+                className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 focus:border-spectral focus:outline-none resize-y"
               />
             </div>
           ))}
@@ -218,8 +218,8 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
       <div className="space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-wood-dark flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-ink-gold" />
+          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-spectral" />
             Additional Post-Event Notes ({freeFormNotes.length})
           </h3>
           <div className="flex gap-2">
@@ -236,26 +236,26 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
 
         {/* Add Note Form */}
         {showAddForm && (
-          <Card className="border-ink-gold/30">
+          <Card className="border-spectral">
             <CardContent className="py-4 space-y-3">
               <div>
-                <label className="text-xs font-medium text-sepia mb-1 block">Title (optional)</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Title (optional)</label>
                 <input
                   type="text"
                   value={newNote.title}
                   onChange={(e) => setNewNote({ ...newNote, title: e.target.value })}
                   placeholder="Note title..."
-                  className="w-full px-3 py-2 text-sm bg-parchment-dark border border-wood-medium/30 rounded-md text-wood-dark placeholder:text-sepia/50 focus:border-ink-gold focus:outline-none"
+                  className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 focus:border-spectral focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-sepia mb-1 block">Content</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Content</label>
                 <textarea
                   value={newNote.content}
                   onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
                   placeholder="Write your post-event note..."
                   rows={4}
-                  className="w-full px-3 py-2 text-sm bg-parchment-dark border border-wood-medium/30 rounded-md text-wood-dark placeholder:text-sepia/50 focus:border-ink-gold focus:outline-none resize-y"
+                  className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 focus:border-spectral focus:outline-none resize-y"
                 />
               </div>
               <div className="flex justify-end gap-2">
@@ -271,7 +271,7 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
         {/* Notes List */}
         {freeFormNotes.length === 0 ? (
           <Card>
-            <CardContent className="py-8 text-center text-sepia">
+            <CardContent className="py-8 text-center text-muted-foreground">
               <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-40" />
               <p>No additional post-event notes yet.</p>
             </CardContent>
@@ -285,19 +285,19 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
                     <div className="flex-1 min-w-0">
                       {/* Header row: type badge + title */}
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full border bg-ink-green/15 text-ink-green border-ink-green/30">
+                        <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full border bg-emerald-400/10 text-emerald-400 border-emerald-400/30">
                           Post-Event
                         </span>
                         {note.title && (
-                          <span className="text-sm font-semibold text-wood-dark truncate">{note.title}</span>
+                          <span className="text-sm font-semibold text-foreground truncate">{note.title}</span>
                         )}
                       </div>
 
                       {/* Content */}
-                      <p className="text-sm text-wood-dark whitespace-pre-wrap mt-1">{note.content}</p>
+                      <p className="text-sm text-foreground whitespace-pre-wrap mt-1">{note.content}</p>
 
                       {/* Footer: author + date */}
-                      <div className="flex items-center gap-3 mt-2 text-xs text-sepia">
+                      <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                         <span className="font-medium">{note.author}</span>
                         <span>·</span>
                         <span>{formatDateMedium(note.created_at)}</span>
@@ -308,7 +308,7 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <button
                         onClick={() => setDeleteConfirmId(note.id)}
-                        className="p-1.5 text-sepia hover:text-ink-red transition-colors"
+                        className="p-1.5 text-muted-foreground hover:text-destructive transition-colors"
                         title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />

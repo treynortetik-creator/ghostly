@@ -1,5 +1,5 @@
 /**
- * The Counting House - Import Components
+ * Ghostly - Import Components
  * Components for Brex CSV and PDF import functionality
  */
 

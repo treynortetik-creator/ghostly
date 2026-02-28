@@ -1,5 +1,5 @@
 /**
- * The Counting House - Events API
+ * Ghostly - Events API
  *
  * Endpoints:
  * GET /api/events - List all events with optional filters

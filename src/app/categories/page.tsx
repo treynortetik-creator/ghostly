@@ -18,7 +18,7 @@ import type { CategoryWithTotals } from "@/types/database";
    ============================================
    Main budget categories management page showing
    all non-event budget buckets with budget progress.
-   Victorian theme: "The Category Ledger"
+   Ghostly theme: "The Category Ledger"
    ============================================ */
 
 interface CategoriesApiResponse {
@@ -109,13 +109,13 @@ export default function CategoriesPage() {
       >
         <div data-oid="s_r5i5j">
           <h1
-            className="text-3xl font-serif font-bold text-wood-dark flex items-center gap-3"
+            className="text-3xl font-bold text-foreground flex items-center gap-3"
             data-oid="ijfwbw-"
           >
-            <Folder className="w-8 h-8 text-ink-gold" data-oid="k5afxd1" />
+            <Folder className="w-8 h-8 text-spectral" data-oid="k5afxd1" />
             The Category Ledger
           </h1>
-          <p className="mt-1 text-sepia" data-oid="2634td4">
+          <p className="mt-1 text-muted-foreground" data-oid="2634td4">
             FY 2026 Budget Categories &middot; As of {formattedDate}
           </p>
         </div>
@@ -172,10 +172,10 @@ export default function CategoriesPage() {
       {/* Footer Info */}
       {!isLoading && !error && categories.length > 0 && (
         <div
-          className="text-center py-6 mt-8 border-t border-wood-medium/20"
+          className="text-center py-6 mt-8 border-t border-border"
           data-oid="w1ejhe0"
         >
-          <p className="text-xs text-sepia/60" data-oid="xmx-i.n">
+          <p className="text-xs text-muted-foreground/60" data-oid="xmx-i.n">
             Click on any category to view full details and manage expenses.
           </p>
         </div>

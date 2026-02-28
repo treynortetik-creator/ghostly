@@ -11,7 +11,7 @@ import type { FiscalYear } from "@/types/database";
    ============================================
    Dropdown to select the current fiscal year
    with option to create new fiscal years.
-   Victorian theme: "The Annual Registry"
+   Ghostly theme: "The Annual Registry"
    ============================================ */
 
 interface FiscalYearSelectorProps {
@@ -115,10 +115,10 @@ export function FiscalYearSelector({
           className="text-lg flex items-center gap-2"
           data-oid="di8qxbs"
         >
-          <Calendar className="w-5 h-5 text-ink-gold" data-oid="uxd1zvz" />
+          <Calendar className="w-5 h-5 text-spectral" data-oid="uxd1zvz" />
           Fiscal Year
         </CardTitle>
-        <p className="text-sm text-sepia mt-1" data-oid="48:ywgn">
+        <p className="text-sm text-muted-foreground mt-1" data-oid="48:ywgn">
           Select the active fiscal year for budgeting
         </p>
       </CardHeader>
@@ -132,43 +132,43 @@ export function FiscalYearSelector({
             disabled={disabled || isLoading}
             className={`
               w-full flex items-center justify-between px-4 py-3
-              bg-parchment border border-wood-medium/40 rounded-md
-              text-wood-dark font-medium
+              bg-background border border-border rounded-md
+              text-foreground font-medium
               transition-all duration-200
               ${
                 disabled || isLoading
                   ? "opacity-50 cursor-not-allowed"
-                  : "hover:border-wood-medium cursor-pointer"
+                  : "hover:border-border cursor-pointer"
               }
-              ${isOpen ? "border-ink-gold ring-1 ring-ink-gold/30" : ""}
+              ${isOpen ? "border-spectral ring-1 ring-spectral/30" : ""}
             `}
             data-oid="rb7g-4m"
           >
             <span className="flex items-center gap-2" data-oid="737ggr1">
               {isLoading ? (
-                <span className="text-sepia" data-oid="223v9un">
+                <span className="text-muted-foreground" data-oid="223v9un">
                   Loading...
                 </span>
               ) : selectedYear ? (
                 <>
-                  <span className="font-serif text-lg" data-oid=".grkgw1">
+                  <span className="text-lg" data-oid=".grkgw1">
                     FY {selectedYear.year}
                   </span>
                   <span
-                    className="text-xs text-sepia bg-wood-medium/10 px-2 py-0.5 rounded"
+                    className="text-xs text-muted-foreground bg-spectral/10 px-2 py-0.5 rounded"
                     data-oid="bpr0boh"
                   >
                     Current
                   </span>
                 </>
               ) : (
-                <span className="text-sepia" data-oid="ewk2dnx">
+                <span className="text-muted-foreground" data-oid="ewk2dnx">
                   Select fiscal year
                 </span>
               )}
             </span>
             <ChevronDown
-              className={`w-5 h-5 text-sepia transition-transform ${isOpen ? "rotate-180" : ""}`}
+              className={`w-5 h-5 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`}
               data-oid="evo8q_w"
             />
           </button>
@@ -177,7 +177,7 @@ export function FiscalYearSelector({
           {isOpen && (
             <div
               className="absolute top-full left-0 right-0 mt-1 z-10
-              bg-parchment border border-wood-medium/40 rounded-md shadow-lg
+              bg-background border border-border rounded-md shadow-lg
               max-h-64 overflow-y-auto"
               data-oid="3:8g0ip"
             >
@@ -195,18 +195,18 @@ export function FiscalYearSelector({
                     text-left transition-colors
                     ${
                       fy.id === value
-                        ? "bg-ink-gold/10 text-wood-dark"
-                        : "hover:bg-wood-medium/10 text-wood-dark"
+                        ? "bg-spectral/10 text-foreground"
+                        : "hover:bg-spectral/10 text-foreground"
                     }
                   `}
                   data-oid="_jj1m0o"
                 >
-                  <span className="font-serif" data-oid="54ceyq5">
+                  <span className="" data-oid="54ceyq5">
                     FY {fy.year}
                   </span>
                   {fy.id === value && (
                     <Check
-                      className="w-4 h-4 text-ink-gold"
+                      className="w-4 h-4 text-spectral"
                       data-oid=":h8is01"
                     />
                   )}
@@ -215,7 +215,7 @@ export function FiscalYearSelector({
 
               {/* Divider */}
               <div
-                className="border-t border-wood-medium/20 my-1"
+                className="border-t border-border my-1"
                 data-oid="f8n8bin"
               />
 
@@ -228,7 +228,7 @@ export function FiscalYearSelector({
                     setNewYear(String(new Date().getFullYear() + 1));
                   }}
                   className="w-full flex items-center gap-2 px-4 py-3
-                    text-ink-gold hover:bg-ink-gold/10 transition-colors"
+                    text-spectral hover:bg-spectral/10 transition-colors"
                   data-oid="rdoxa5i"
                 >
                   <Plus className="w-4 h-4" data-oid="gz_2nuj" />
@@ -243,8 +243,8 @@ export function FiscalYearSelector({
                     min="2000"
                     max="2100"
                     placeholder="Enter year (e.g., 2027)"
-                    className="w-full px-3 py-2 bg-parchment-dark border border-wood-medium/40
-                      rounded text-wood-dark focus:outline-none focus:ring-1 focus:ring-ink-gold"
+                    className="w-full px-3 py-2 bg-card border border-border
+                      rounded text-foreground focus:outline-none focus:ring-1 focus:ring-spectral"
                     data-oid="6l.frxk"
                   />
 
@@ -279,13 +279,13 @@ export function FiscalYearSelector({
 
         {/* Error Message */}
         {error && (
-          <p className="mt-2 text-sm text-ink-red" data-oid="bxikt3s">
+          <p className="mt-2 text-sm text-destructive" data-oid="bxikt3s">
             {error}
           </p>
         )}
 
         {/* Help Text */}
-        <p className="mt-3 text-xs text-sepia/70" data-oid="7zp_jn6">
+        <p className="mt-3 text-xs text-muted-foreground/60" data-oid="7zp_jn6">
           The fiscal year determines which budget periods are displayed
           throughout the application.
         </p>

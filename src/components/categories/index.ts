@@ -1,5 +1,5 @@
 /**
- * The Counting House - Category Components Exports
+ * Ghostly - Category Components Exports
  */
 
 export { CategoryForm } from './CategoryForm';

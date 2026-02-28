@@ -37,7 +37,7 @@ import type { AssignmentOption } from "@/components/import/AssignmentSelector";
    2. Review/edit extracted data (vendor, amount, date)
    3. Select event or category assignment
    4. Confirm and save expense
-   Victorian theme: "The Invoice Archive"
+   Ghostly theme: "The Invoice Archive"
    ============================================ */
 
 type ImportStep = "upload" | "review" | "complete";
@@ -290,7 +290,7 @@ export default function PDFImportPage() {
       <div className="mb-8" data-oid="2faecv:">
         <Link
           href="/import"
-          className="inline-flex items-center gap-1 text-sm text-sepia hover:text-wood-dark transition-colors mb-4"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
           data-oid="cf.t.y:"
         >
           <ArrowLeft className="w-4 h-4" data-oid="rqtrsra" />
@@ -298,13 +298,13 @@ export default function PDFImportPage() {
         </Link>
 
         <h1
-          className="text-3xl font-serif font-bold text-wood-dark flex items-center gap-3"
+          className="text-3xl font-bold text-foreground flex items-center gap-3"
           data-oid="-3grmlz"
         >
-          <FileText className="w-8 h-8 text-ink-gold" data-oid="z2awoy4" />
+          <FileText className="w-8 h-8 text-spectral" data-oid="z2awoy4" />
           PDF Invoice Import
         </h1>
-        <p className="mt-1 text-sepia" data-oid="f6::kec">
+        <p className="mt-1 text-muted-foreground" data-oid="f6::kec">
           Extract expense details from PDF invoices and receipts
         </p>
       </div>
@@ -328,10 +328,10 @@ export default function PDFImportPage() {
                     transition-all duration-200
                     ${
                       isActive
-                        ? "bg-ink-gold text-ink-black"
+                        ? "bg-spectral text-foreground"
                         : isPast
-                          ? "bg-ink-green text-parchment"
-                          : "bg-wood-medium/20 text-sepia"
+                          ? "bg-emerald-400 text-phantom"
+                          : "bg-spectral/10 text-muted-foreground"
                     }
                   `}
                   data-oid="ix_qu4y"
@@ -346,7 +346,7 @@ export default function PDFImportPage() {
                   <div
                     className={`
                       w-16 sm:w-28 h-0.5 mx-2
-                      ${isPast ? "bg-ink-green" : "bg-wood-medium/20"}
+                      ${isPast ? "bg-emerald-400" : "bg-spectral/10"}
                     `}
                     data-oid="zlauc4u"
                   />
@@ -356,7 +356,7 @@ export default function PDFImportPage() {
           })}
         </div>
         <div
-          className="flex justify-between max-w-md mt-2 text-xs text-sepia"
+          className="flex justify-between max-w-md mt-2 text-xs text-muted-foreground"
           data-oid="tjp9nai"
         >
           <span data-oid="f6_fuoa">Upload</span>
@@ -368,18 +368,18 @@ export default function PDFImportPage() {
       {/* Error Display */}
       {error && (
         <div
-          className="mb-6 flex items-start gap-3 p-4 bg-ink-red/10 border border-ink-red/30 rounded-lg"
+          className="mb-6 flex items-start gap-3 p-4 bg-red-400/10 border border-destructive/30 rounded-lg"
           data-oid="9-2wl.j"
         >
           <AlertCircle
-            className="w-5 h-5 text-ink-red shrink-0 mt-0.5"
+            className="w-5 h-5 text-destructive shrink-0 mt-0.5"
             data-oid="glyzuxg"
           />
           <div data-oid="10sh3:h">
-            <p className="font-medium text-ink-red" data-oid="6pdv9a5">
+            <p className="font-medium text-destructive" data-oid="6pdv9a5">
               Error
             </p>
-            <p className="text-sm text-ink-red/80" data-oid="g6ytii-">
+            <p className="text-sm text-destructive/80" data-oid="g6ytii-">
               {error}
             </p>
           </div>
@@ -391,7 +391,7 @@ export default function PDFImportPage() {
         <Card data-oid="uadmscx">
           <CardHeader data-oid="webj-f8">
             <CardTitle className="flex items-center gap-2" data-oid="9y.bcwl">
-              <Upload className="w-5 h-5 text-ink-gold" data-oid="tcols:6" />
+              <Upload className="w-5 h-5 text-spectral" data-oid="tcols:6" />
               Upload PDF Invoice
             </CardTitle>
             <CardDescription data-oid="c00gbr4">
@@ -410,18 +410,18 @@ export default function PDFImportPage() {
 
             {/* Info Note */}
             <div
-              className="mt-6 flex items-start gap-3 p-4 bg-sepia/10 border border-sepia/30 rounded-lg"
+              className="mt-6 flex items-start gap-3 p-4 bg-muted-foreground/10 border border-muted-foreground/30 rounded-lg"
               data-oid="cz-h0af"
             >
               <FileText
-                className="w-5 h-5 text-sepia shrink-0 mt-0.5"
+                className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5"
                 data-oid="_xg55cy"
               />
               <div data-oid="398dlri">
-                <p className="font-medium text-wood-dark" data-oid="duyvley">
+                <p className="font-medium text-foreground" data-oid="duyvley">
                   Extraction Tips
                 </p>
-                <p className="text-sm text-sepia mt-1" data-oid="fo.lten">
+                <p className="text-sm text-muted-foreground mt-1" data-oid="fo.lten">
                   For best results, upload PDFs with selectable text (not
                   scanned images). The system looks for common invoice patterns
                   to identify vendor names, total amounts, and dates. You can
@@ -438,17 +438,17 @@ export default function PDFImportPage() {
           {/* AI Powered Badge */}
           {pdfResult.aiPowered && (
             <div
-              className="flex items-center gap-2 p-3 bg-ink-gold/10 border border-ink-gold/30 rounded-lg"
+              className="flex items-center gap-2 p-3 bg-spectral/10 border border-spectral rounded-lg"
               data-oid="b62agdp"
             >
-              <Sparkles className="w-4 h-4 text-ink-gold" data-oid="u:r00x." />
+              <Sparkles className="w-4 h-4 text-spectral" data-oid="u:r00x." />
               <span
-                className="text-sm font-medium text-ink-gold"
+                className="text-sm font-medium text-spectral"
                 data-oid=".8x0fb8"
               >
                 AI-Powered Extraction
               </span>
-              <span className="text-xs text-sepia" data-oid="lh73eyc">
+              <span className="text-xs text-muted-foreground" data-oid="lh73eyc">
                 — Fields extracted and assignment suggested by AI
               </span>
             </div>
@@ -493,10 +493,10 @@ export default function PDFImportPage() {
                     inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
                     ${
                       pdfResult.suggestedAssignment.confidence >= 0.7
-                        ? "bg-ink-green/10 text-ink-green"
+                        ? "bg-emerald-400/10 text-emerald-400"
                         : pdfResult.suggestedAssignment.confidence >= 0.4
-                          ? "bg-ink-gold/10 text-ink-gold"
-                          : "bg-ink-red/10 text-ink-red"
+                          ? "bg-spectral/10 text-spectral"
+                          : "bg-red-400/10 text-destructive"
                     }
                   `}
                       data-oid=".qbix84"
@@ -514,7 +514,7 @@ export default function PDFImportPage() {
 
           {/* Action Buttons */}
           <div
-            className="flex items-center justify-end gap-4 pt-4 border-t border-wood-medium/20"
+            className="flex items-center justify-end gap-4 pt-4 border-t border-border"
             data-oid="hzhmzs9"
           >
             <Button
@@ -541,65 +541,65 @@ export default function PDFImportPage() {
         <Card elevated data-oid="9hxq6v.">
           <CardContent className="py-12 text-center" data-oid="5m8ogpa">
             <div
-              className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-ink-green/20 mb-6"
+              className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-400/10 mb-6"
               data-oid="istmcww"
             >
               <CheckCircle
-                className="w-8 h-8 text-ink-green"
+                className="w-8 h-8 text-emerald-400"
                 data-oid="27urqdr"
               />
             </div>
 
             <h2
-              className="text-2xl font-serif font-bold text-wood-dark mb-2"
+              className="text-2xl font-bold text-foreground mb-2"
               data-oid="mkik2:d"
             >
               Expense Saved!
             </h2>
-            <p className="text-sepia mb-8" data-oid="hsl3-lk">
+            <p className="text-muted-foreground mb-8" data-oid="hsl3-lk">
               Your invoice has been successfully imported into the ledger.
             </p>
 
             {/* Summary */}
             <div
-              className="max-w-sm mx-auto bg-parchment p-6 rounded-lg border border-wood-medium/20 text-left mb-8"
+              className="max-w-sm mx-auto bg-background p-6 rounded-lg border border-border text-left mb-8"
               data-oid="gxht9:y"
             >
               <dl className="space-y-3" data-oid="oy744st">
                 <div className="flex justify-between" data-oid="otco8ko">
-                  <dt className="text-sepia" data-oid="m0tvphr">
+                  <dt className="text-muted-foreground" data-oid="m0tvphr">
                     Vendor
                   </dt>
-                  <dd className="font-medium text-ink-black" data-oid="e.esj26">
+                  <dd className="font-medium text-foreground" data-oid="e.esj26">
                     {savedExpense.vendor}
                   </dd>
                 </div>
                 <div className="flex justify-between" data-oid="j:uvtjx">
-                  <dt className="text-sepia" data-oid=":wf7wv-">
+                  <dt className="text-muted-foreground" data-oid=":wf7wv-">
                     Amount
                   </dt>
-                  <dd className="font-medium text-ink-black" data-oid="42xi._b">
+                  <dd className="font-medium text-foreground" data-oid="42xi._b">
                     {formatCurrency(savedExpense.amount)}
                   </dd>
                 </div>
                 <div className="flex justify-between" data-oid="n7lmemx">
-                  <dt className="text-sepia" data-oid="de3:6mw">
+                  <dt className="text-muted-foreground" data-oid="de3:6mw">
                     Date
                   </dt>
-                  <dd className="font-medium text-ink-black" data-oid="-z70xnf">
+                  <dd className="font-medium text-foreground" data-oid="-z70xnf">
                     {savedExpense.date}
                   </dd>
                 </div>
                 <div
-                  className="flex justify-between pt-3 border-t border-wood-medium/20"
+                  className="flex justify-between pt-3 border-t border-border"
                   data-oid=":5:bo0i"
                 >
-                  <dt className="text-sepia" data-oid="._vfm.m">
+                  <dt className="text-muted-foreground" data-oid="._vfm.m">
                     {savedExpense.assignmentType === "event"
                       ? "Event"
                       : "Category"}
                   </dt>
-                  <dd className="font-medium text-ink-black" data-oid="mht1zsq">
+                  <dd className="font-medium text-foreground" data-oid="mht1zsq">
                     {savedExpense.assignmentName}
                   </dd>
                 </div>
@@ -632,10 +632,10 @@ export default function PDFImportPage() {
 
       {/* Footer */}
       <div
-        className="text-center py-6 mt-8 border-t border-wood-medium/20"
+        className="text-center py-6 mt-8 border-t border-border"
         data-oid="atkffkb"
       >
-        <p className="text-xs text-sepia/60 italic" data-oid="8-401e9">
+        <p className="text-xs text-muted-foreground/60 italic" data-oid="8-401e9">
           &ldquo;Keep a faithful record of thy receipts and
           disbursements.&rdquo;
         </p>

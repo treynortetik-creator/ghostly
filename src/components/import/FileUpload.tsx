@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
    FILE UPLOAD COMPONENT
    ============================================
    Drag-and-drop CSV file upload with validation.
-   Victorian-themed styling with parchment background.
+   Ghostly-themed styling with ghost background.
    ============================================ */
 
 interface FileUploadProps {
@@ -145,12 +145,12 @@ export function FileUpload({
         }}
         className={cn(
           "relative border-2 border-dashed rounded-lg p-8 transition-all duration-200",
-          "bg-parchment hover:bg-parchment-dark cursor-pointer",
-          "focus:outline-none focus:ring-2 focus:ring-ink-gold focus:ring-offset-2",
+          "bg-background hover:bg-card cursor-pointer",
+          "focus:outline-none focus:ring-2 focus:ring-spectral focus:ring-offset-2",
           isDragging
-            ? "border-ink-gold bg-ink-gold/5 scale-[1.01]"
-            : "border-wood-medium/40 hover:border-wood-medium",
-          displayError && "border-ink-red/50 bg-ink-red/5",
+            ? "border-spectral bg-spectral/10 scale-[1.01]"
+            : "border-border hover:border-border",
+          displayError && "border-destructive/50 bg-red-400/10",
           isLoading && "opacity-60 pointer-events-none",
         )}
         onClick={handleBrowseClick}
@@ -175,8 +175,8 @@ export function FileUpload({
             className={cn(
               "p-4 rounded-full mb-4 transition-colors",
               isDragging
-                ? "bg-ink-gold/20 text-ink-gold"
-                : "bg-wood-medium/10 text-wood-medium",
+                ? "bg-spectral/10 text-spectral"
+                : "bg-spectral/10 text-muted-foreground",
             )}
             data-oid="l422net"
           >
@@ -185,12 +185,12 @@ export function FileUpload({
 
           {/* Text */}
           <h3
-            className="font-serif font-semibold text-wood-dark mb-1"
+            className="font-semibold text-foreground mb-1"
             data-oid="nmf2ab9"
           >
             {isDragging ? "Drop your file here" : "Upload CSV File"}
           </h3>
-          <p className="text-sm text-sepia mb-4" data-oid="bq:na44">
+          <p className="text-sm text-muted-foreground mb-4" data-oid="bq:na44">
             Drag and drop your Brex export here, or click to browse
           </p>
 
@@ -210,7 +210,7 @@ export function FileUpload({
           </Button>
 
           {/* File Info */}
-          <p className="text-xs text-sepia/60 mt-4" data-oid="ikmbeiz">
+          <p className="text-xs text-muted-foreground/60 mt-4" data-oid="ikmbeiz">
             Accepted: {accept} &middot; Max size: {maxSizeMB}MB
           </p>
         </div>
@@ -219,26 +219,26 @@ export function FileUpload({
       {/* Selected File Display */}
       {selectedFile && !displayError && (
         <div
-          className="flex items-center gap-3 p-3 bg-ink-green/10 border border-ink-green/30 rounded-lg"
+          className="flex items-center gap-3 p-3 bg-emerald-400/10 border border-emerald-400/30 rounded-lg"
           data-oid="l7l:u4g"
         >
-          <div className="p-2 bg-ink-green/20 rounded" data-oid="phlnyx.">
-            <FileText className="w-5 h-5 text-ink-green" data-oid="4.y0fyl" />
+          <div className="p-2 bg-emerald-400/10 rounded" data-oid="phlnyx.">
+            <FileText className="w-5 h-5 text-emerald-400" data-oid="4.y0fyl" />
           </div>
           <div className="flex-1 min-w-0" data-oid="9ndiy9x">
             <p
-              className="font-medium text-ink-black truncate"
+              className="font-medium text-foreground truncate"
               data-oid="zvtv0rl"
             >
               {selectedFile.name}
             </p>
-            <p className="text-xs text-sepia" data-oid="n.b_h:j">
+            <p className="text-xs text-muted-foreground" data-oid="n.b_h:j">
               {(selectedFile.size / 1024).toFixed(1)} KB
             </p>
           </div>
           <div className="flex items-center gap-2" data-oid="g2xnzaf">
             <CheckCircle
-              className="w-5 h-5 text-ink-green"
+              className="w-5 h-5 text-emerald-400"
               data-oid="nli80n7"
             />
             <button
@@ -246,7 +246,7 @@ export function FileUpload({
                 e.stopPropagation();
                 handleClearFile();
               }}
-              className="p-1 text-sepia hover:text-ink-red transition-colors"
+              className="p-1 text-muted-foreground hover:text-destructive transition-colors"
               disabled={isLoading}
               aria-label="Remove selected file"
               data-oid="0xr-m17"
@@ -260,18 +260,18 @@ export function FileUpload({
       {/* Error Display */}
       {displayError && (
         <div
-          className="flex items-start gap-3 p-3 bg-ink-red/10 border border-ink-red/30 rounded-lg"
+          className="flex items-start gap-3 p-3 bg-red-400/10 border border-destructive/30 rounded-lg"
           data-oid="9judt4u"
         >
           <AlertCircle
-            className="w-5 h-5 text-ink-red shrink-0 mt-0.5"
+            className="w-5 h-5 text-destructive shrink-0 mt-0.5"
             data-oid="6b-_w54"
           />
           <div className="flex-1" data-oid="e18h01h">
-            <p className="font-medium text-ink-red" data-oid=":oztd_e">
+            <p className="font-medium text-destructive" data-oid=":oztd_e">
               Upload Error
             </p>
-            <p className="text-sm text-ink-red/80" data-oid="bshuvp7">
+            <p className="text-sm text-destructive/80" data-oid="bshuvp7">
               {displayError}
             </p>
           </div>
@@ -280,7 +280,7 @@ export function FileUpload({
               e.stopPropagation();
               handleClearFile();
             }}
-            className="p-1 text-ink-red/60 hover:text-ink-red transition-colors"
+            className="p-1 text-destructive/60 hover:text-destructive transition-colors"
             data-oid="3uod091"
           >
             <X className="w-4 h-4" data-oid="k7f4b0f" />
@@ -291,11 +291,11 @@ export function FileUpload({
       {/* Loading Overlay */}
       {isLoading && (
         <div
-          className="flex items-center justify-center gap-2 text-sepia"
+          className="flex items-center justify-center gap-2 text-muted-foreground"
           data-oid="s.-ws6n"
         >
           <div
-            className="w-4 h-4 border-2 border-ink-gold/30 border-t-ink-gold rounded-full animate-spin"
+            className="w-4 h-4 border-2 border-spectral border-t-spectral rounded-full animate-spin"
             data-oid="y9c3lk8"
           />
           <span className="text-sm" data-oid="l-oicon">

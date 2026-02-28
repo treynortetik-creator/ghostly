@@ -99,26 +99,26 @@ export function ImportConfirmation({
     <div className={cn("space-y-6", className)} data-oid="-hs_i:c">
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4" data-oid="y948d3g">
-        <Card className="bg-ink-green/5 border-ink-green/30" data-oid="mb92pwf">
+        <Card className="bg-emerald-400/10 border-emerald-400/30" data-oid="mb92pwf">
           <CardContent className="py-4" data-oid="qzxxiet">
             <div className="flex items-center gap-3" data-oid="380av1k">
               <div
-                className="p-2 bg-ink-green/20 rounded-lg"
+                className="p-2 bg-emerald-400/10 rounded-lg"
                 data-oid="-_-pznp"
               >
                 <CheckCircle
-                  className="w-5 h-5 text-ink-green"
+                  className="w-5 h-5 text-emerald-400"
                   data-oid="4to86y8"
                 />
               </div>
               <div data-oid=".h31c3_">
                 <p
-                  className="text-2xl font-serif font-bold text-ink-green"
+                  className="text-2xl font-bold text-emerald-400"
                   data-oid="u1ldnul"
                 >
                   {summary.accepted.length}
                 </p>
-                <p className="text-xs text-sepia" data-oid=".a2bmu2">
+                <p className="text-xs text-muted-foreground" data-oid=".a2bmu2">
                   To Import
                 </p>
               </div>
@@ -126,23 +126,23 @@ export function ImportConfirmation({
           </CardContent>
         </Card>
 
-        <Card className="bg-ink-gold/5 border-ink-gold/30" data-oid="jry4oz5">
+        <Card className="bg-spectral/10 border-spectral" data-oid="jry4oz5">
           <CardContent className="py-4" data-oid="slsxofc">
             <div className="flex items-center gap-3" data-oid="cxphk6u">
-              <div className="p-2 bg-ink-gold/20 rounded-lg" data-oid="w86b7_t">
+              <div className="p-2 bg-spectral/10 rounded-lg" data-oid="w86b7_t">
                 <ArrowRight
-                  className="w-5 h-5 text-ink-gold"
+                  className="w-5 h-5 text-spectral"
                   data-oid="jim3m.l"
                 />
               </div>
               <div data-oid="z4-szuw">
                 <p
-                  className="text-2xl font-serif font-bold text-ink-gold"
+                  className="text-2xl font-bold text-spectral"
                   data-oid="w6xe5fr"
                 >
                   {summary.replacing.length}
                 </p>
-                <p className="text-xs text-sepia" data-oid="h12_1e:">
+                <p className="text-xs text-muted-foreground" data-oid="h12_1e:">
                   To Replace
                 </p>
               </div>
@@ -150,20 +150,20 @@ export function ImportConfirmation({
           </CardContent>
         </Card>
 
-        <Card className="bg-sepia/5 border-sepia/30" data-oid="sdtobld">
+        <Card className="bg-muted-foreground/5 border-muted-foreground/30" data-oid="sdtobld">
           <CardContent className="py-4" data-oid="rrjo3-w">
             <div className="flex items-center gap-3" data-oid="wujm-xq">
-              <div className="p-2 bg-sepia/20 rounded-lg" data-oid="2ok3ibe">
-                <XCircle className="w-5 h-5 text-sepia" data-oid="0-9da-7" />
+              <div className="p-2 bg-muted-foreground/20 rounded-lg" data-oid="2ok3ibe">
+                <XCircle className="w-5 h-5 text-muted-foreground" data-oid="0-9da-7" />
               </div>
               <div data-oid="u2brmap">
                 <p
-                  className="text-2xl font-serif font-bold text-sepia"
+                  className="text-2xl font-bold text-muted-foreground"
                   data-oid="6c9:clr"
                 >
                   {summary.skipped.length}
                 </p>
-                <p className="text-xs text-sepia" data-oid="mi1iuqu">
+                <p className="text-xs text-muted-foreground" data-oid="mi1iuqu">
                   To Skip
                 </p>
               </div>
@@ -172,30 +172,30 @@ export function ImportConfirmation({
         </Card>
 
         <Card
-          className="bg-wood-medium/5 border-wood-medium/30"
+          className="bg-spectral/10 border-border"
           data-oid="j7t87i5"
         >
           <CardContent className="py-4" data-oid="jqki2:d">
             <div className="flex items-center gap-3" data-oid="z:ij.i5">
               <div
-                className="p-2 bg-wood-medium/20 rounded-lg"
+                className="p-2 bg-spectral/10 rounded-lg"
                 data-oid="t7tkb15"
               >
                 <DollarSign
-                  className="w-5 h-5 text-wood-medium"
+                  className="w-5 h-5 text-muted-foreground"
                   data-oid="a9vzez2"
                 />
               </div>
               <div data-oid="w_70e78">
                 <p
-                  className="text-2xl font-serif font-bold text-wood-dark"
+                  className="text-2xl font-bold text-foreground"
                   data-oid="j-9og4g"
                 >
                   {formatCurrency(
                     summary.acceptedAmount + summary.replacingAmount,
                   )}
                 </p>
-                <p className="text-xs text-sepia" data-oid="o0:5t:h">
+                <p className="text-xs text-muted-foreground" data-oid="o0:5t:h">
                   Total Amount
                 </p>
               </div>
@@ -207,18 +207,18 @@ export function ImportConfirmation({
       {/* Warnings */}
       {summary.withoutAssignment.length > 0 && (
         <div
-          className="flex items-start gap-3 p-4 bg-ink-red/10 border border-ink-red/30 rounded-lg"
+          className="flex items-start gap-3 p-4 bg-red-400/10 border border-destructive/30 rounded-lg"
           data-oid="0rwtgiw"
         >
           <AlertCircle
-            className="w-5 h-5 text-ink-red shrink-0 mt-0.5"
+            className="w-5 h-5 text-destructive shrink-0 mt-0.5"
             data-oid="n9dbu8g"
           />
           <div data-oid="bo80rk6">
-            <p className="font-medium text-ink-red" data-oid="wtldx34">
+            <p className="font-medium text-destructive" data-oid="wtldx34">
               Missing Assignments
             </p>
-            <p className="text-sm text-ink-red/80 mt-1" data-oid="t5:moq1">
+            <p className="text-sm text-destructive/80 mt-1" data-oid="t5:moq1">
               {summary.withoutAssignment.length} transaction(s) are marked to
               import but have no event or category assigned. Please go back and
               assign them or mark them as skipped.
@@ -229,18 +229,18 @@ export function ImportConfirmation({
 
       {summary.pending.length > 0 && (
         <div
-          className="flex items-start gap-3 p-4 bg-ink-gold/10 border border-ink-gold/30 rounded-lg"
+          className="flex items-start gap-3 p-4 bg-spectral/10 border border-spectral rounded-lg"
           data-oid="m8ij2fe"
         >
           <AlertCircle
-            className="w-5 h-5 text-ink-gold shrink-0 mt-0.5"
+            className="w-5 h-5 text-spectral shrink-0 mt-0.5"
             data-oid="hrm:azi"
           />
           <div data-oid=".6dz2am">
-            <p className="font-medium text-ink-gold" data-oid="k5lbbip">
+            <p className="font-medium text-spectral" data-oid="k5lbbip">
               Pending Decisions
             </p>
-            <p className="text-sm text-sepia mt-1" data-oid="m1oj9qa">
+            <p className="text-sm text-muted-foreground mt-1" data-oid="m1oj9qa">
               {summary.pending.length} transaction(s) still need to be marked as
               accepted, skipped, or replaced. Please go back and make a decision
               for each.
@@ -260,7 +260,7 @@ export function ImportConfirmation({
                 data-oid="c8ap0v7"
               >
                 <Calendar
-                  className="w-4 h-4 text-ink-gold"
+                  className="w-4 h-4 text-spectral"
                   data-oid="40gvgm5"
                 />
                 By Event
@@ -268,7 +268,7 @@ export function ImportConfirmation({
             </CardHeader>
             <CardContent className="py-0" data-oid="7k2a1s5">
               <div
-                className="divide-y divide-wood-medium/10"
+                className="divide-y divide-border"
                 data-oid=".ufvv_2"
               >
                 {summary.byEvent.map((item, index) => (
@@ -279,17 +279,17 @@ export function ImportConfirmation({
                   >
                     <div data-oid="jly9_rv">
                       <p
-                        className="text-sm font-medium text-ink-black"
+                        className="text-sm font-medium text-foreground"
                         data-oid=".f0tz49"
                       >
                         {item.name}
                       </p>
-                      <p className="text-xs text-sepia" data-oid="a072soy">
+                      <p className="text-xs text-muted-foreground" data-oid="a072soy">
                         {item.count} transaction(s)
                       </p>
                     </div>
                     <p
-                      className="text-sm font-mono font-medium text-ink-black"
+                      className="text-sm font-mono font-medium text-foreground"
                       data-oid="3uh04sa"
                     >
                       {formatCurrency(item.amount)}
@@ -310,7 +310,7 @@ export function ImportConfirmation({
                 data-oid="f8xd1je"
               >
                 <FolderOpen
-                  className="w-4 h-4 text-ink-green"
+                  className="w-4 h-4 text-emerald-400"
                   data-oid="ugvez6-"
                 />
                 By Category
@@ -318,7 +318,7 @@ export function ImportConfirmation({
             </CardHeader>
             <CardContent className="py-0" data-oid="nv6yrmk">
               <div
-                className="divide-y divide-wood-medium/10"
+                className="divide-y divide-border"
                 data-oid="a2vrh2r"
               >
                 {summary.byCategory.map((item, index) => (
@@ -329,17 +329,17 @@ export function ImportConfirmation({
                   >
                     <div data-oid="-az6.4d">
                       <p
-                        className="text-sm font-medium text-ink-black"
+                        className="text-sm font-medium text-foreground"
                         data-oid="m1lg99b"
                       >
                         {item.name}
                       </p>
-                      <p className="text-xs text-sepia" data-oid="d2y-1ag">
+                      <p className="text-xs text-muted-foreground" data-oid="d2y-1ag">
                         {item.count} transaction(s)
                       </p>
                     </div>
                     <p
-                      className="text-sm font-mono font-medium text-ink-black"
+                      className="text-sm font-mono font-medium text-foreground"
                       data-oid="ey5jx31"
                     >
                       {formatCurrency(item.amount)}
@@ -364,7 +364,7 @@ export function ImportConfirmation({
             className="py-0 max-h-64 overflow-y-auto"
             data-oid="z6_fh5-"
           >
-            <div className="divide-y divide-wood-medium/10" data-oid="b_bb:tk">
+            <div className="divide-y divide-border" data-oid="b_bb:tk">
               {summary.accepted.slice(0, 10).map((t) => (
                 <div
                   key={t.id}
@@ -373,18 +373,18 @@ export function ImportConfirmation({
                 >
                   <div className="flex-1 min-w-0" data-oid="6:3ab9e">
                     <p
-                      className="text-sm font-medium text-ink-black truncate"
+                      className="text-sm font-medium text-foreground truncate"
                       data-oid="8aoid04"
                     >
                       {t.vendor}
                     </p>
-                    <p className="text-xs text-sepia" data-oid="uk8j30b">
+                    <p className="text-xs text-muted-foreground" data-oid="uk8j30b">
                       {new Date(t.date).toLocaleDateString()} &middot;{" "}
                       {t.suggestedAssignment?.name || "Unassigned"}
                     </p>
                   </div>
                   <p
-                    className="text-sm font-mono font-medium text-ink-black ml-4"
+                    className="text-sm font-mono font-medium text-foreground ml-4"
                     data-oid="psbroa4"
                   >
                     {formatCurrency(t.amount)}
@@ -393,7 +393,7 @@ export function ImportConfirmation({
               ))}
               {summary.accepted.length > 10 && (
                 <div
-                  className="py-3 text-center text-sm text-sepia"
+                  className="py-3 text-center text-sm text-muted-foreground"
                   data-oid="lc51eyr"
                 >
                   ... and {summary.accepted.length - 10} more

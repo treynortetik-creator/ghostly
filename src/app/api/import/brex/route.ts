@@ -1,5 +1,5 @@
 /**
- * The Counting House - Brex CSV Import API
+ * Ghostly - Brex CSV Import API
  *
  * POST /api/import/brex
  * Upload and parse Brex CSV file, get AI suggestions for categorization

@@ -1,5 +1,5 @@
 /**
- * The Counting House - Reminder Config API
+ * Ghostly - Reminder Config API
  *
  * Endpoints:
  * GET  /api/reminders/config - List all reminder configurations

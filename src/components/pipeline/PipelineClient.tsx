@@ -152,29 +152,29 @@ export function PipelineClient() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <h1 className="font-serif text-2xl font-semibold text-wood-dark tracking-tight">
+          <h1 className="text-2xl font-semibold text-foreground tracking-tight">
             The Pipeline
           </h1>
 
           <div className="flex items-center gap-4">
             {/* View toggle */}
-            <div className="inline-flex rounded-md overflow-hidden border border-wood-medium/30">
+            <div className="inline-flex rounded-md overflow-hidden border border-border">
               <button
                 onClick={() => setView('calendar')}
                 className={`px-3 py-1.5 text-sm font-medium transition-colors ${
                   view === 'calendar'
-                    ? 'bg-wood-medium text-ink-gold'
-                    : 'text-sepia/70 hover:bg-parchment-dark'
+                    ? 'bg-ghost-light text-spectral'
+                    : 'text-muted-foreground/60 hover:bg-card'
                 }`}
               >
                 Calendar
               </button>
               <button
                 onClick={() => setView('board')}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors border-l border-wood-medium/30 ${
+                className={`px-3 py-1.5 text-sm font-medium transition-colors border-l border-border ${
                   view === 'board'
-                    ? 'bg-wood-medium text-ink-gold'
-                    : 'text-sepia/70 hover:bg-parchment-dark'
+                    ? 'bg-ghost-light text-spectral'
+                    : 'text-muted-foreground/60 hover:bg-card'
                 }`}
               >
                 Board
@@ -186,7 +186,7 @@ export function PipelineClient() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={handlePrevMonth}
-                  className="p-1.5 rounded hover:bg-parchment-dark text-sepia/70 hover:text-ink-gold transition-colors"
+                  className="p-1.5 rounded hover:bg-card text-muted-foreground/60 hover:text-spectral transition-colors"
                   aria-label="Previous month"
                 >
                   <ChevronLeft className="w-5 h-5" />
@@ -194,14 +194,14 @@ export function PipelineClient() {
 
                 <button
                   onClick={handleToday}
-                  className="px-3 py-1 text-sm font-serif font-medium text-wood-dark min-w-[140px] text-center hover:text-ink-gold transition-colors"
+                  className="px-3 py-1 text-sm font-medium text-foreground min-w-[140px] text-center hover:text-spectral transition-colors"
                 >
                   {format(currentMonth, 'MMMM yyyy')}
                 </button>
 
                 <button
                   onClick={handleNextMonth}
-                  className="p-1.5 rounded hover:bg-parchment-dark text-sepia/70 hover:text-ink-gold transition-colors"
+                  className="p-1.5 rounded hover:bg-card text-muted-foreground/60 hover:text-spectral transition-colors"
                   aria-label="Next month"
                 >
                   <ChevronRight className="w-5 h-5" />
@@ -214,7 +214,7 @@ export function PipelineClient() {
               <button
                 onClick={() => fetchBoardData()}
                 disabled={boardLoading}
-                className="p-1.5 rounded hover:bg-parchment-dark text-sepia/70 hover:text-ink-gold transition-colors disabled:opacity-50"
+                className="p-1.5 rounded hover:bg-card text-muted-foreground/60 hover:text-spectral transition-colors disabled:opacity-50"
                 aria-label="Refresh board"
               >
                 <RefreshCw className={`w-4 h-4 ${boardLoading ? 'animate-spin' : ''}`} />
@@ -228,15 +228,15 @@ export function PipelineClient() {
           <>
             {isLoading ? (
               <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-6 h-6 text-ink-gold animate-spin" />
-                <span className="ml-3 text-sm text-sepia">Loading calendar...</span>
+                <Loader2 className="w-6 h-6 text-spectral animate-spin" />
+                <span className="ml-3 text-sm text-muted-foreground">Loading calendar...</span>
               </div>
             ) : error ? (
               <div className="flex flex-col items-center justify-center py-20 space-y-3">
-                <p className="text-sm text-ink-red">{error}</p>
+                <p className="text-sm text-destructive">{error}</p>
                 <button
                   onClick={() => fetchCalendarData(currentMonth)}
-                  className="text-sm text-ink-gold hover:text-wood-dark transition-colors"
+                  className="text-sm text-spectral hover:text-foreground transition-colors"
                 >
                   Try again
                 </button>
@@ -254,15 +254,15 @@ export function PipelineClient() {
           <>
             {boardLoading && !boardFetched.current ? (
               <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-6 h-6 text-ink-gold animate-spin" />
-                <span className="ml-3 text-sm text-sepia">Loading board...</span>
+                <Loader2 className="w-6 h-6 text-spectral animate-spin" />
+                <span className="ml-3 text-sm text-muted-foreground">Loading board...</span>
               </div>
             ) : boardError ? (
               <div className="flex flex-col items-center justify-center py-20 space-y-3">
-                <p className="text-sm text-ink-red">{boardError}</p>
+                <p className="text-sm text-destructive">{boardError}</p>
                 <button
                   onClick={() => fetchBoardData()}
-                  className="text-sm text-ink-gold hover:text-wood-dark transition-colors"
+                  className="text-sm text-spectral hover:text-foreground transition-colors"
                 >
                   Try again
                 </button>

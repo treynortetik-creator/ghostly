@@ -1,5 +1,5 @@
 /**
- * The Counting House - Supabase Server Client
+ * Ghostly - Supabase Server Client
  * Creates Supabase clients for use in Server Components, Route Handlers, and Server Actions
  */
 

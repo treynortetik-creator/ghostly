@@ -29,7 +29,7 @@ import { formatCurrency } from "@/lib/format";
 /* ============================================
    EXPENSE LIST COMPONENT
    ============================================
-   Victorian-styled list of expenses with filtering,
+   Ghostly-themed list of expenses with filtering,
    search, sorting, pagination, and bulk actions.
    ============================================ */
 
@@ -248,13 +248,13 @@ export function ExpenseList({
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) {
       return (
-        <ArrowUpDown className="w-4 h-4 text-sepia/40" data-oid="jl1tud6" />
+        <ArrowUpDown className="w-4 h-4 text-muted-foreground/60" data-oid="jl1tud6" />
       );
     }
     return sortOrder === "asc" ? (
-      <ArrowUp className="w-4 h-4 text-ink-gold" data-oid="a7totka" />
+      <ArrowUp className="w-4 h-4 text-spectral" data-oid="a7totka" />
     ) : (
-      <ArrowDown className="w-4 h-4 text-ink-gold" data-oid="hrqfxdt" />
+      <ArrowDown className="w-4 h-4 text-spectral" data-oid="hrqfxdt" />
     );
   };
 
@@ -263,13 +263,13 @@ export function ExpenseList({
     return (
       <div className="space-y-4" data-oid="sowf2w9">
         <div
-          className="h-24 bg-wood-medium/10 rounded animate-pulse"
+          className="h-24 bg-spectral/10 rounded animate-pulse"
           data-oid="jn5ukp-"
         />
         {[1, 2, 3, 4, 5].map((i) => (
           <div
             key={i}
-            className="h-20 bg-wood-medium/10 rounded-lg animate-pulse"
+            className="h-20 bg-spectral/10 rounded-lg animate-pulse"
             data-oid="omf2-7s"
           />
         ))}
@@ -280,23 +280,23 @@ export function ExpenseList({
   // Error state
   if (error) {
     return (
-      <Card className="bg-ink-red/5 border-ink-red/20" data-oid="r1il0fv">
+      <Card className="bg-red-400/10 border-destructive/20" data-oid="r1il0fv">
         <CardContent className="py-12" data-oid="lzcqwr7">
           <div
             className="flex flex-col items-center justify-center text-center"
             data-oid="s8f5ft2"
           >
             <AlertTriangle
-              className="w-12 h-12 text-ink-red mb-4"
+              className="w-12 h-12 text-destructive mb-4"
               data-oid="kj3h9s-"
             />
             <h3
-              className="font-serif text-xl font-semibold text-ink-red mb-2"
+              className="text-xl font-semibold text-destructive mb-2"
               data-oid="4aw6zx8"
             >
               Failed to Load Expenses
             </h3>
-            <p className="text-sepia" data-oid="zx9f0b5">
+            <p className="text-muted-foreground" data-oid="zx9f0b5">
               {error}
             </p>
           </div>
@@ -332,7 +332,7 @@ export function ExpenseList({
 
       {/* Summary stats and sort controls */}
       <div
-        className="flex flex-wrap items-center justify-between gap-4 py-3 px-4 bg-parchment-dark rounded-lg border border-wood-medium/20"
+        className="flex flex-wrap items-center justify-between gap-4 py-3 px-4 bg-card rounded-lg border border-border"
         data-oid=":9lks02"
       >
         <div className="flex flex-wrap items-center gap-4" data-oid="_m5_m_o">
@@ -348,22 +348,22 @@ export function ExpenseList({
                 selectedIds.size === paginatedExpenses.length
               }
               onChange={handleSelectAll}
-              className="w-4 h-4 rounded border-wood-medium/40 text-ink-gold focus:ring-ink-gold/50"
+              className="w-4 h-4 rounded border-border text-spectral focus:ring-spectral/50"
               data-oid="c8fvpxt"
             />
 
-            <span className="text-sm text-sepia" data-oid="q.5-4kp">
+            <span className="text-sm text-muted-foreground" data-oid="q.5-4kp">
               Select all
             </span>
           </label>
 
           {selectedIds.size > 0 && (
             <>
-              <span className="text-wood-medium/30" data-oid="qorsw7:">
+              <span className="text-muted-foreground/30" data-oid="qorsw7:">
                 |
               </span>
               <span
-                className="text-sm text-ink-gold font-medium"
+                className="text-sm text-spectral font-medium"
                 data-oid="u2670f2"
               >
                 {selectedIds.size} selected
@@ -382,25 +382,25 @@ export function ExpenseList({
 
           {selectedIds.size === 0 && (
             <>
-              <span className="text-wood-medium/30" data-oid="xgetq5f">
+              <span className="text-muted-foreground/30" data-oid="xgetq5f">
                 |
               </span>
-              <span className="text-sm text-sepia" data-oid="9k82yxs">
+              <span className="text-sm text-muted-foreground" data-oid="9k82yxs">
                 <span
-                  className="font-semibold text-wood-dark"
+                  className="font-semibold text-foreground"
                   data-oid="2zg-3ma"
                 >
                   {totals.count}
                 </span>{" "}
                 expense{totals.count !== 1 ? "s" : ""}
               </span>
-              <span className="text-wood-medium/30" data-oid="1be:-_t">
+              <span className="text-muted-foreground/30" data-oid="1be:-_t">
                 |
               </span>
-              <span className="text-sm text-sepia" data-oid="w5v1ylw">
+              <span className="text-sm text-muted-foreground" data-oid="w5v1ylw">
                 Total:{" "}
                 <span
-                  className="font-semibold tabular-nums text-wood-dark"
+                  className="font-semibold tabular-nums text-foreground"
                   data-oid="bn2b7yu"
                 >
                   {formatCurrency(totals.amount)}
@@ -412,7 +412,7 @@ export function ExpenseList({
 
         {/* Sort controls */}
         <div className="flex items-center gap-2" data-oid="ajbn9ib">
-          <span className="text-sm text-sepia mr-1" data-oid="ukw401e">
+          <span className="text-sm text-muted-foreground mr-1" data-oid="ukw401e">
             Sort:
           </span>
           <button
@@ -420,7 +420,7 @@ export function ExpenseList({
             className={`
               inline-flex items-center gap-1 px-2 py-1 rounded text-sm
               transition-colors duration-200
-              ${sortField === "date" ? "bg-ink-gold/10 text-ink-gold" : "text-sepia hover:bg-wood-medium/10"}
+              ${sortField === "date" ? "bg-spectral/10 text-spectral" : "text-muted-foreground hover:bg-spectral/10"}
             `}
             data-oid="yqju6j0"
           >
@@ -432,7 +432,7 @@ export function ExpenseList({
             className={`
               inline-flex items-center gap-1 px-2 py-1 rounded text-sm
               transition-colors duration-200
-              ${sortField === "amount" ? "bg-ink-gold/10 text-ink-gold" : "text-sepia hover:bg-wood-medium/10"}
+              ${sortField === "amount" ? "bg-spectral/10 text-spectral" : "text-muted-foreground hover:bg-spectral/10"}
             `}
             data-oid="vx14.gm"
           >
@@ -444,7 +444,7 @@ export function ExpenseList({
             className={`
               inline-flex items-center gap-1 px-2 py-1 rounded text-sm
               transition-colors duration-200
-              ${sortField === "vendor" ? "bg-ink-gold/10 text-ink-gold" : "text-sepia hover:bg-wood-medium/10"}
+              ${sortField === "vendor" ? "bg-spectral/10 text-spectral" : "text-muted-foreground hover:bg-spectral/10"}
             `}
             data-oid="2eq3r.p"
           >
@@ -463,16 +463,16 @@ export function ExpenseList({
               data-oid="i1tdfcs"
             >
               <Receipt
-                className="w-12 h-12 text-sepia/40 mb-4"
+                className="w-12 h-12 text-muted-foreground/60 mb-4"
                 data-oid="uxf:8wf"
               />
               <h3
-                className="font-serif text-xl font-semibold text-wood-dark mb-2"
+                className="text-xl font-semibold text-foreground mb-2"
                 data-oid="8-z-k3a"
               >
                 No Expenses Found
               </h3>
-              <p className="text-sepia" data-oid="c0daf.1">
+              <p className="text-muted-foreground" data-oid="c0daf.1">
                 {Object.values(filters).some((v) => v !== "" && v !== "all")
                   ? "Try adjusting your filters."
                   : "No expenses have been recorded yet."}
@@ -494,7 +494,7 @@ export function ExpenseList({
                   type="checkbox"
                   checked={selectedIds.has(expense.id)}
                   onChange={() => handleSelectOne(expense.id)}
-                  className="w-4 h-4 rounded border-wood-medium/40 text-ink-gold focus:ring-ink-gold/50 cursor-pointer"
+                  className="w-4 h-4 rounded border-border text-spectral focus:ring-spectral/50 cursor-pointer"
                   data-oid="e7cxdnw"
                 />
               </div>
@@ -515,12 +515,12 @@ export function ExpenseList({
       {/* Pagination Controls */}
       {sortedExpenses.length > 0 && (
         <div
-          className="flex flex-wrap items-center justify-between gap-4 py-4 px-4 mt-4 bg-parchment-dark rounded-lg border border-wood-medium/20"
+          className="flex flex-wrap items-center justify-between gap-4 py-4 px-4 mt-4 bg-card rounded-lg border border-border"
           data-oid="rm.l2dq"
         >
           {/* Page size selector */}
           <div className="flex items-center gap-2" data-oid="iyfmhar">
-            <span className="text-sm text-sepia" data-oid="5b0-1ox">
+            <span className="text-sm text-muted-foreground" data-oid="5b0-1ox">
               Show:
             </span>
             <select
@@ -529,7 +529,7 @@ export function ExpenseList({
                 setPageSize(Number(e.target.value) as PageSize);
                 setCurrentPage(1);
               }}
-              className="px-2 py-1 text-sm rounded border border-wood-medium/30 bg-parchment text-wood-dark focus:ring-ink-gold/50 focus:border-ink-gold"
+              className="px-2 py-1 text-sm rounded border border-border bg-background text-foreground focus:ring-spectral/50 focus:border-spectral"
               data-oid="93qtwi_"
             >
               <option value={25} data-oid="y56oegm">
@@ -542,19 +542,19 @@ export function ExpenseList({
                 100
               </option>
             </select>
-            <span className="text-sm text-sepia" data-oid="a8dd.uc">
+            <span className="text-sm text-muted-foreground" data-oid="a8dd.uc">
               per page
             </span>
           </div>
 
           {/* Page info */}
-          <span className="text-sm text-sepia" data-oid="97zox4p">
+          <span className="text-sm text-muted-foreground" data-oid="97zox4p">
             Showing{" "}
-            <span className="font-semibold text-wood-dark" data-oid="e6.pahl">
+            <span className="font-semibold text-foreground" data-oid="e6.pahl">
               {startItem}-{endItem}
             </span>{" "}
             of{" "}
-            <span className="font-semibold text-wood-dark" data-oid="t:6xpuh">
+            <span className="font-semibold text-foreground" data-oid="t:6xpuh">
               {sortedExpenses.length}
             </span>
           </span>
@@ -571,13 +571,13 @@ export function ExpenseList({
               <ChevronLeft className="w-4 h-4" data-oid="7v:a1of" />
               Previous
             </Button>
-            <span className="text-sm text-sepia px-2" data-oid="8j98y_z">
+            <span className="text-sm text-muted-foreground px-2" data-oid="8j98y_z">
               Page{" "}
-              <span className="font-semibold text-wood-dark" data-oid="t:54loi">
+              <span className="font-semibold text-foreground" data-oid="t:54loi">
                 {currentPage}
               </span>{" "}
               of{" "}
-              <span className="font-semibold text-wood-dark" data-oid="8r2gsx8">
+              <span className="font-semibold text-foreground" data-oid="8r2gsx8">
                 {totalPages}
               </span>
             </span>

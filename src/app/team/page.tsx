@@ -95,12 +95,12 @@ export default function TeamPage() {
       >
         <div data-oid="3j9b-rp">
           <h1
-            className="text-3xl font-serif font-bold text-wood-dark"
+            className="text-3xl font-bold text-foreground"
             data-oid="sh-l5lz"
           >
             The Partners &amp; Staff
           </h1>
-          <p className="text-sepia mt-1" data-oid="btum3s5">
+          <p className="text-muted-foreground mt-1" data-oid="btum3s5">
             {members.length} member{members.length !== 1 ? "s" : ""} on the
             rolls
           </p>
@@ -135,11 +135,11 @@ export default function TeamPage() {
       {isLoading ? (
         <div className="animate-pulse space-y-4" data-oid="kf:alp9">
           <div
-            className="h-32 bg-wood-medium/10 rounded-lg"
+            className="h-32 bg-spectral/10 rounded-lg"
             data-oid="b_4og91"
           />
           <div
-            className="h-32 bg-wood-medium/10 rounded-lg"
+            className="h-32 bg-spectral/10 rounded-lg"
             data-oid="3whm9q2"
           />
         </div>

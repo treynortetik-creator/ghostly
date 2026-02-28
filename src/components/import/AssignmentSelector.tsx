@@ -83,10 +83,10 @@ export function AssignmentSelector({
   };
 
   const getConfidenceColor = (confidence?: number) => {
-    if (!confidence) return "text-sepia";
-    if (confidence >= 0.8) return "text-ink-green";
-    if (confidence >= 0.5) return "text-ink-gold";
-    return "text-ink-red";
+    if (!confidence) return "text-muted-foreground";
+    if (confidence >= 0.8) return "text-emerald-400";
+    if (confidence >= 0.5) return "text-spectral";
+    return "text-destructive";
   };
 
   const getConfidenceLabel = (confidence?: number) => {
@@ -109,11 +109,11 @@ export function AssignmentSelector({
         disabled={disabled}
         className={cn(
           "w-full flex items-center gap-2 px-3 py-2 text-left text-sm",
-          "bg-parchment border border-wood-medium/40 rounded-md",
+          "bg-background border border-border rounded-md",
           "transition-all duration-200",
-          "hover:border-wood-medium focus:outline-none focus:ring-2 focus:ring-ink-gold/30",
+          "hover:border-border focus:outline-none focus:ring-2 focus:ring-spectral/30",
           disabled && "opacity-50 cursor-not-allowed",
-          isOpen && "ring-2 ring-ink-gold/30 border-wood-medium",
+          isOpen && "ring-2 ring-spectral/30 border-border",
         )}
         data-oid="z5qupg1"
       >
@@ -121,12 +121,12 @@ export function AssignmentSelector({
         {value ? (
           value.type === "event" ? (
             <Calendar
-              className="w-4 h-4 text-ink-gold shrink-0"
+              className="w-4 h-4 text-spectral shrink-0"
               data-oid="jofsl-c"
             />
           ) : (
             <FolderOpen
-              className="w-4 h-4 text-ink-green shrink-0"
+              className="w-4 h-4 text-emerald-400 shrink-0"
               data-oid="e0.w27b"
             />
           )
@@ -136,7 +136,7 @@ export function AssignmentSelector({
 
         {/* Value Display */}
         <span
-          className={cn("flex-1 truncate", !value && "text-sepia/60")}
+          className={cn("flex-1 truncate", !value && "text-muted-foreground/60")}
           data-oid="3uyu63y"
         >
           {value ? value.name : placeholder}
@@ -147,7 +147,7 @@ export function AssignmentSelector({
           <span
             className={cn(
               "flex items-center gap-1 px-1.5 py-0.5 text-xs rounded",
-              "bg-ink-gold/10 border border-ink-gold/30",
+              "bg-spectral/10 border border-spectral",
               getConfidenceColor(aiConfidence),
             )}
             title={`AI suggested with ${aiConfidence ? Math.round(aiConfidence * 100) : "?"}% confidence`}
@@ -166,7 +166,7 @@ export function AssignmentSelector({
         {value && !disabled && (
           <button
             onClick={handleClear}
-            className="p-0.5 text-sepia/60 hover:text-ink-red transition-colors"
+            className="p-0.5 text-muted-foreground/60 hover:text-destructive transition-colors"
             data-oid="t0w202-"
           >
             <X className="w-3.5 h-3.5" data-oid="zodpv_l" />
@@ -176,7 +176,7 @@ export function AssignmentSelector({
         {/* Chevron */}
         <ChevronDown
           className={cn(
-            "w-4 h-4 text-sepia transition-transform",
+            "w-4 h-4 text-muted-foreground transition-transform",
             isOpen && "rotate-180",
           )}
           data-oid="4-bsjnb"
@@ -188,14 +188,14 @@ export function AssignmentSelector({
         <div
           className={cn(
             "absolute z-50 w-full mt-1 py-1",
-            "bg-parchment-dark border border-wood-medium/40 rounded-md shadow-lg",
+            "bg-card border border-border rounded-md shadow-lg",
             "max-h-64 overflow-hidden",
           )}
           data-oid="nai.vkx"
         >
           {/* Search Input */}
           <div
-            className="px-2 pb-2 border-b border-wood-medium/20"
+            className="px-2 pb-2 border-b border-border"
             data-oid="qjdn6po"
           >
             <input
@@ -206,8 +206,8 @@ export function AssignmentSelector({
               onChange={(e) => setSearchTerm(e.target.value)}
               className={cn(
                 "w-full px-2 py-1.5 text-sm",
-                "bg-parchment border border-wood-medium/30 rounded",
-                "focus:outline-none focus:ring-1 focus:ring-ink-gold/30",
+                "bg-background border border-border rounded",
+                "focus:outline-none focus:ring-1 focus:ring-spectral/30",
               )}
               autoFocus
               data-oid="3cs.b1w"
@@ -220,7 +220,7 @@ export function AssignmentSelector({
             {events.length > 0 && (
               <div data-oid="agdd.u8">
                 <div
-                  className="px-3 py-1.5 text-xs font-semibold text-sepia/70 uppercase tracking-wider bg-wood-medium/5"
+                  className="px-3 py-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider bg-spectral/10"
                   data-oid="4zwq-ol"
                 >
                   Events
@@ -231,13 +231,13 @@ export function AssignmentSelector({
                     onClick={() => handleSelect(option)}
                     className={cn(
                       "w-full flex items-center gap-2 px-3 py-2 text-left text-sm",
-                      "hover:bg-ink-gold/10 transition-colors",
-                      value?.id === option.id && "bg-ink-gold/15",
+                      "hover:bg-spectral/10 transition-colors",
+                      value?.id === option.id && "bg-spectral/10",
                     )}
                     data-oid="a34do.n"
                   >
                     <Calendar
-                      className="w-4 h-4 text-ink-gold shrink-0"
+                      className="w-4 h-4 text-spectral shrink-0"
                       data-oid="ng88zsq"
                     />
                     <span className="flex-1 truncate" data-oid="9yrnpy8">
@@ -245,7 +245,7 @@ export function AssignmentSelector({
                     </span>
                     {option.quarter && (
                       <span
-                        className="text-xs text-sepia/60"
+                        className="text-xs text-muted-foreground/60"
                         data-oid="q6jwipd"
                       >
                         {option.quarter}
@@ -260,7 +260,7 @@ export function AssignmentSelector({
             {categories.length > 0 && (
               <div data-oid="3icdzxw">
                 <div
-                  className="px-3 py-1.5 text-xs font-semibold text-sepia/70 uppercase tracking-wider bg-wood-medium/5"
+                  className="px-3 py-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider bg-spectral/10"
                   data-oid="c10ygjb"
                 >
                   Budget Categories
@@ -271,13 +271,13 @@ export function AssignmentSelector({
                     onClick={() => handleSelect(option)}
                     className={cn(
                       "w-full flex items-center gap-2 px-3 py-2 text-left text-sm",
-                      "hover:bg-ink-green/10 transition-colors",
-                      value?.id === option.id && "bg-ink-green/15",
+                      "hover:bg-emerald-400/10 transition-colors",
+                      value?.id === option.id && "bg-emerald-400/10",
                     )}
                     data-oid="9pdq04."
                   >
                     <FolderOpen
-                      className="w-4 h-4 text-ink-green shrink-0"
+                      className="w-4 h-4 text-emerald-400 shrink-0"
                       data-oid="z67znb:"
                     />
                     <span className="flex-1 truncate" data-oid="kzsqgp3">
@@ -291,7 +291,7 @@ export function AssignmentSelector({
             {/* Empty State */}
             {filteredOptions.length === 0 && (
               <div
-                className="px-3 py-4 text-center text-sm text-sepia/60"
+                className="px-3 py-4 text-center text-sm text-muted-foreground/60"
                 data-oid="jbr0zxq"
               >
                 No matching options found

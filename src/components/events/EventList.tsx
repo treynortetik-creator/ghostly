@@ -16,7 +16,7 @@ import type {
 /* ============================================
    EVENT LIST COMPONENT
    ============================================
-   Victorian-styled list of events with filtering,
+   Ghostly-themed list of events with filtering,
    search, and grouped display options.
    ============================================ */
 
@@ -177,13 +177,13 @@ export function EventList({
     return (
       <div className="space-y-4" data-oid="c4vl7k1">
         <div
-          className="h-12 bg-wood-medium/10 rounded animate-pulse"
+          className="h-12 bg-spectral/10 rounded animate-pulse"
           data-oid="f21x_be"
         />
         {[1, 2, 3, 4, 5].map((i) => (
           <div
             key={i}
-            className="h-24 bg-wood-medium/10 rounded-lg animate-pulse"
+            className="h-24 bg-spectral/10 rounded-lg animate-pulse"
             data-oid="p3nle8e"
           />
         ))}
@@ -194,23 +194,23 @@ export function EventList({
   // Error state
   if (error) {
     return (
-      <Card className="bg-ink-red/5 border-ink-red/20" data-oid="nz46xca">
+      <Card className="bg-red-400/10 border-destructive/20" data-oid="nz46xca">
         <CardContent className="py-12" data-oid="wr4.6bw">
           <div
             className="flex flex-col items-center justify-center text-center"
             data-oid="x..mit2"
           >
             <AlertTriangle
-              className="w-12 h-12 text-ink-red mb-4"
+              className="w-12 h-12 text-destructive mb-4"
               data-oid="kh2xw.q"
             />
             <h3
-              className="font-serif text-xl font-semibold text-ink-red mb-2"
+              className="text-xl font-semibold text-destructive mb-2"
               data-oid="err9::2"
             >
               Failed to Load Events
             </h3>
-            <p className="text-sepia" data-oid="hr_n547">
+            <p className="text-muted-foreground" data-oid="hr_n547">
               {error}
             </p>
           </div>
@@ -239,7 +239,7 @@ export function EventList({
         {showSearch && (
           <div className="relative" data-oid="s397ru-">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-sepia"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
               data-oid="py0uo0n"
             />
             <input
@@ -249,9 +249,9 @@ export function EventList({
               onChange={(e) => setSearchQuery(e.target.value)}
               className="
                 pl-10 pr-4 py-2 rounded-md w-full lg:w-64
-                bg-parchment border border-wood-medium/40
-                text-ink-black placeholder-sepia/50
-                focus:outline-none focus:ring-2 focus:ring-ink-gold/50 focus:border-ink-gold
+                bg-background border border-border
+                text-foreground placeholder-muted-foreground/50
+                focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral
                 transition-colors duration-200
               "
               data-oid="k6de68r"
@@ -272,49 +272,49 @@ export function EventList({
 
       {/* Summary stats */}
       <div
-        className="flex flex-wrap items-center gap-4 py-3 px-4 bg-parchment-dark rounded-lg border border-wood-medium/20"
+        className="flex flex-wrap items-center gap-4 py-3 px-4 bg-card rounded-lg border border-border"
         data-oid="g6t2llt"
       >
-        <span className="text-sm text-sepia" data-oid="embdgzy">
-          <span className="font-semibold text-wood-dark" data-oid="0hl1hvr">
+        <span className="text-sm text-muted-foreground" data-oid="embdgzy">
+          <span className="font-semibold text-foreground" data-oid="0hl1hvr">
             {totals.count}
           </span>{" "}
           events
         </span>
-        <span className="text-wood-medium/30" data-oid="3um0i2f">
+        <span className="text-muted-foreground/30" data-oid="3um0i2f">
           |
         </span>
-        <span className="text-sm text-sepia" data-oid="nbq1ehy">
+        <span className="text-sm text-muted-foreground" data-oid="nbq1ehy">
           Budget:{" "}
           <span
-            className="font-semibold tabular-nums text-wood-dark"
+            className="font-semibold tabular-nums text-foreground"
             data-oid="vwm_xss"
           >
             {formatCurrency(totals.budget)}
           </span>
         </span>
-        <span className="text-wood-medium/30" data-oid="bxu9hcs">
+        <span className="text-muted-foreground/30" data-oid="bxu9hcs">
           |
         </span>
-        <span className="text-sm text-sepia" data-oid="y_96eoc">
+        <span className="text-sm text-muted-foreground" data-oid="y_96eoc">
           Spent:{" "}
           <span
-            className="font-semibold tabular-nums text-wood-dark"
+            className="font-semibold tabular-nums text-foreground"
             data-oid="oh-0jeh"
           >
             {formatCurrency(totals.actual)}
           </span>
         </span>
-        <span className="text-wood-medium/30" data-oid="usf_tfl">
+        <span className="text-muted-foreground/30" data-oid="usf_tfl">
           |
         </span>
-        <span className="text-sm text-sepia" data-oid=":wo3i.j">
+        <span className="text-sm text-muted-foreground" data-oid=":wo3i.j">
           Remaining:{" "}
           <span
             className={`font-semibold tabular-nums ${
               totals.budget - totals.actual < 0
-                ? "text-ink-red"
-                : "text-ink-green"
+                ? "text-destructive"
+                : "text-emerald-400"
             }`}
             data-oid="bfmla.d"
           >
@@ -332,16 +332,16 @@ export function EventList({
               data-oid="hhl-fcg"
             >
               <Calendar
-                className="w-12 h-12 text-sepia/40 mb-4"
+                className="w-12 h-12 text-muted-foreground/60 mb-4"
                 data-oid="lh610j0"
               />
               <h3
-                className="font-serif text-xl font-semibold text-wood-dark mb-2"
+                className="text-xl font-semibold text-foreground mb-2"
                 data-oid="0jgf8t8"
               >
                 No Events Found
               </h3>
-              <p className="text-sepia" data-oid="9.bb6w7">
+              <p className="text-muted-foreground" data-oid="9.bb6w7">
                 {searchQuery || activeFilterCount > 0
                   ? "Try adjusting your filters or search query."
                   : "No events have been registered yet."}
@@ -372,12 +372,12 @@ export function EventList({
                   data-oid="bkh_-yk"
                 >
                   <h3
-                    className="font-serif text-lg font-semibold text-wood-dark"
+                    className="text-lg font-semibold text-foreground"
                     data-oid="bbw7e:0"
                   >
                     {quarter === "TBD" ? "To Be Determined" : quarter}
                   </h3>
-                  <div className="text-sm text-sepia" data-oid="03g1nzi">
+                  <div className="text-sm text-muted-foreground" data-oid="03g1nzi">
                     <span className="tabular-nums" data-oid="f:623t3">
                       {formatCurrency(quarterSpent)}
                     </span>

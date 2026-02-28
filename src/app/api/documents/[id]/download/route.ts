@@ -1,5 +1,5 @@
 /**
- * The Counting House - Document Download API
+ * Ghostly - Document Download API
  *
  * GET /api/documents/:id/download - Download the actual file
  */

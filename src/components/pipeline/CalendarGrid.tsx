@@ -200,13 +200,13 @@ export function CalendarGrid({
   }, [weekRows, events]);
 
   return (
-    <div className="border border-wood-medium/30 rounded-lg overflow-hidden bg-parchment">
+    <div className="border border-border rounded-lg overflow-hidden bg-background">
       {/* Day headers */}
       <div className="grid grid-cols-7">
         {DAY_HEADERS.map((day) => (
           <div
             key={day}
-            className="px-2 py-1.5 text-center text-xs font-medium text-sepia/70 bg-parchment-dark border-b border-wood-medium/20"
+            className="px-2 py-1.5 text-center text-xs font-medium text-muted-foreground/60 bg-card border-b border-border"
           >
             {day}
           </div>
@@ -236,13 +236,13 @@ export function CalendarGrid({
               return (
                 <div
                   key={dayIdx}
-                  className={`border-r border-b border-wood-medium/20 p-1 relative ${
-                    !inMonth ? 'bg-parchment-dark/50' : ''
-                  } ${today ? 'ring-2 ring-ink-gold/50 ring-inset' : ''}`}
+                  className={`border-r border-b border-border p-1 relative ${
+                    !inMonth ? 'bg-card/50' : ''
+                  } ${today ? 'ring-2 ring-spectral/50 ring-inset' : ''}`}
                 >
                   <span
                     className={`text-xs font-medium ${
-                      !inMonth ? 'text-sepia/30' : today ? 'text-ink-gold font-bold' : 'text-sepia'
+                      !inMonth ? 'text-muted-foreground/60' : today ? 'text-spectral font-bold' : 'text-muted-foreground'
                     }`}
                   >
                     {date.getDate()}
@@ -293,7 +293,7 @@ export function CalendarGrid({
 
             {/* Overflow indicator */}
             {hiddenCount > 0 && (
-              <div className="absolute bottom-1 left-1 text-[10px] text-sepia/60 pointer-events-none">
+              <div className="absolute bottom-1 left-1 text-[10px] text-muted-foreground/60 pointer-events-none">
                 +{hiddenCount} more
               </div>
             )}

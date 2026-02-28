@@ -5,8 +5,8 @@ import { formatCurrency } from "@/lib/format";
 /* ============================================
    PROGRESS BAR COMPONENT
    ============================================
-   Victorian-styled progress bar for budget tracking.
-   Uses ledger colors:
+   Ghostly progress bar with spectral glow.
+   Uses status colors:
    - Green: Under 80% of budget (healthy)
    - Yellow/Gold: 80-100% of budget (caution)
    - Red: Over budget (alert)
@@ -52,29 +52,29 @@ const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
     const getColor = () => {
       if (colorOverride) {
         return {
-          green: "bg-ink-green",
-          gold: "bg-ink-gold",
-          red: "bg-ink-red",
+          green: "bg-emerald-400",
+          gold: "bg-amber-400",
+          red: "bg-red-400",
         }[colorOverride];
       }
 
-      if (isOverBudget) return "bg-ink-red";
-      if (percentage >= 80) return "bg-ink-gold";
-      return "bg-ink-green";
+      if (isOverBudget) return "bg-red-400";
+      if (percentage >= 80) return "bg-amber-400";
+      return "bg-emerald-400";
     };
 
     const getTrackColor = () => {
       if (colorOverride) {
         return {
-          green: "bg-ink-green/15",
-          gold: "bg-ink-gold/15",
-          red: "bg-ink-red/15",
+          green: "bg-emerald-400/15",
+          gold: "bg-amber-400/15",
+          red: "bg-red-400/15",
         }[colorOverride];
       }
 
-      if (isOverBudget) return "bg-ink-red/15";
-      if (percentage >= 80) return "bg-ink-gold/15";
-      return "bg-ink-green/15";
+      if (isOverBudget) return "bg-red-400/15";
+      if (percentage >= 80) return "bg-amber-400/15";
+      return "bg-emerald-400/15";
     };
 
     const sizeClasses = {
@@ -118,7 +118,7 @@ const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
               <span className="font-medium tabular-nums" data-oid="j5i51u6">
                 {formatValue(value)} / {formatValue(max)}
               </span>
-              <span className="text-sepia tabular-nums" data-oid="ys-y3yr">
+              <span className="text-muted-foreground tabular-nums" data-oid="ys-y3yr">
                 {percentage.toFixed(0)}%
               </span>
             </div>
@@ -171,11 +171,11 @@ const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
         {/* Over budget indicator */}
         {isOverBudget && (
           <div
-            className="mt-1.5 flex items-center gap-1.5 text-ink-red text-xs font-medium"
+            className="mt-1.5 flex items-center gap-1.5 text-red-400 text-xs font-medium"
             data-oid="a5w4z8d"
           >
             <span
-              className="inline-block w-1.5 h-1.5 rounded-full bg-ink-red animate-pulse"
+              className="inline-block w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse"
               data-oid="-6tgk_f"
             />
 
@@ -206,9 +206,9 @@ const BudgetProgress = forwardRef<HTMLDivElement, BudgetProgressProps>(
     const percentage = budget > 0 ? (spent / budget) * 100 : 0;
 
     const getStatusColor = () => {
-      if (remaining < 0) return "text-ink-red";
-      if (percentage >= 80) return "text-ink-gold";
-      return "text-ink-green";
+      if (remaining < 0) return "text-red-400";
+      if (percentage >= 80) return "text-amber-400";
+      return "text-emerald-400";
     };
 
     const getStatusText = () => {
@@ -221,7 +221,7 @@ const BudgetProgress = forwardRef<HTMLDivElement, BudgetProgressProps>(
       <div
         ref={ref}
         className={cn(
-          "p-4 rounded-lg bg-parchment-dark border border-wood-medium/30",
+          "p-4 rounded-lg bg-card border border-border",
           className,
         )}
         {...props}
@@ -234,11 +234,11 @@ const BudgetProgress = forwardRef<HTMLDivElement, BudgetProgressProps>(
         >
           <div className="flex items-center gap-2" data-oid="k7lks:x">
             {icon && (
-              <span className="text-wood-medium" data-oid="oefuwir">
+              <span className="text-spectral" data-oid="oefuwir">
                 {icon}
               </span>
             )}
-            <span className="font-medium text-ink-black" data-oid="v1unod.">
+            <span className="font-medium text-foreground" data-oid="v1unod.">
               {label}
             </span>
           </div>
@@ -256,29 +256,29 @@ const BudgetProgress = forwardRef<HTMLDivElement, BudgetProgressProps>(
         {/* Stats */}
         <div className="mt-3 grid grid-cols-3 gap-2 text-xs" data-oid="6q2pj:6">
           <div data-oid="pf:k-:p">
-            <span className="text-sepia block" data-oid="bvg-4eb">
+            <span className="text-muted-foreground block" data-oid="bvg-4eb">
               Spent
             </span>
             <span
-              className="font-medium tabular-nums text-ink-black"
+              className="font-medium tabular-nums text-foreground"
               data-oid="9ho92fi"
             >
               {formatCurrency(spent)}
             </span>
           </div>
           <div className="text-center" data-oid=":pj0myx">
-            <span className="text-sepia block" data-oid="rkh4ma.">
+            <span className="text-muted-foreground block" data-oid="rkh4ma.">
               Budget
             </span>
             <span
-              className="font-medium tabular-nums text-ink-black"
+              className="font-medium tabular-nums text-foreground"
               data-oid="rn0p1:2"
             >
               {formatCurrency(budget)}
             </span>
           </div>
           <div className="text-right" data-oid="pz9qg4k">
-            <span className="text-sepia block" data-oid="xmkdt4x">
+            <span className="text-muted-foreground block" data-oid="xmkdt4x">
               Remaining
             </span>
             <span
@@ -308,9 +308,9 @@ const MiniProgress = forwardRef<HTMLDivElement, MiniProgressProps>(
     const isOverBudget = value > max;
 
     const getColor = () => {
-      if (isOverBudget) return "bg-ink-red";
-      if (percentage >= 80) return "bg-ink-gold";
-      return "bg-ink-green";
+      if (isOverBudget) return "bg-red-400";
+      if (percentage >= 80) return "bg-amber-400";
+      return "bg-emerald-400";
     };
 
     return (
@@ -322,14 +322,14 @@ const MiniProgress = forwardRef<HTMLDivElement, MiniProgressProps>(
       >
         {label && (
           <span
-            className="text-xs text-sepia whitespace-nowrap"
+            className="text-xs text-muted-foreground whitespace-nowrap"
             data-oid="kcxo2dh"
           >
             {label}
           </span>
         )}
         <div
-          className="w-16 h-1.5 rounded-full bg-wood-medium/20 overflow-hidden"
+          className="w-16 h-1.5 rounded-full bg-muted overflow-hidden"
           data-oid="6or3n-j"
         >
           <div
@@ -341,7 +341,7 @@ const MiniProgress = forwardRef<HTMLDivElement, MiniProgressProps>(
         <span
           className={cn(
             "text-xs font-medium tabular-nums",
-            isOverBudget ? "text-ink-red" : "text-sepia",
+            isOverBudget ? "text-red-400" : "text-muted-foreground",
           )}
           data-oid="zs9308i"
         >
