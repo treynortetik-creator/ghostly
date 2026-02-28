@@ -432,7 +432,77 @@ export const agentTools: AgentTool[] = [
     },
   },
 
-  // 11. search
+  // 11. get_event_documents
+  {
+    name: 'get_event_documents',
+    description:
+      'List documents attached to an event. Returns filenames, AI summaries, and tags — not full content. Use read_document for full content.',
+    parameters: {
+      type: 'object',
+      properties: {
+        event_id: {
+          type: 'string',
+          description: 'Event UUID to list documents for',
+        },
+      },
+      required: ['event_id'],
+    },
+    execute: async (args, ctx) => {
+      const result = await internalFetch(ctx, 'GET', `/api/agent/tools/event-documents?event_id=${encodeURIComponent(String(args.event_id))}`);
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 12. read_document
+  {
+    name: 'read_document',
+    description:
+      'Get the full extracted text of a specific document. Use get_event_documents first to find the document ID.',
+    parameters: {
+      type: 'object',
+      properties: {
+        document_id: {
+          type: 'string',
+          description: 'Document UUID to read',
+        },
+      },
+      required: ['document_id'],
+    },
+    execute: async (args, ctx) => {
+      const result = await internalFetch(ctx, 'GET', `/api/agent/tools/read-document?document_id=${encodeURIComponent(String(args.document_id))}`);
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 13. attach_document
+  {
+    name: 'attach_document',
+    description:
+      'Link a document to an event. IMPORTANT: Always ask the user to confirm the event before calling this.',
+    parameters: {
+      type: 'object',
+      properties: {
+        document_id: {
+          type: 'string',
+          description: 'Document UUID to attach',
+        },
+        event_id: {
+          type: 'string',
+          description: 'Event UUID to attach the document to',
+        },
+      },
+      required: ['document_id', 'event_id'],
+    },
+    execute: async (args, ctx) => {
+      const result = await internalFetch(ctx, 'POST', '/api/agent/tools/attach-document', {
+        document_id: args.document_id,
+        event_id: args.event_id,
+      });
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 14. search
   {
     name: 'search',
     description:

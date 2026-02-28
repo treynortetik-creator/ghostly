@@ -433,6 +433,20 @@ export async function POST(request: NextRequest) {
       cookieHeader,
     };
 
+    // ─── Fire-and-forget summarization for non-image uploads ─────────────
+    for (const file of uploadedFiles) {
+      if (!isImageType(file.mime_type)) {
+        fetch(`${baseUrl}/api/documents/${file.document_id}/summarize`, {
+          method: 'POST',
+          headers: {
+            'Cookie': cookieHeader,
+            'x-organization-id': orgId,
+            'x-auth-type': 'cookie',
+          },
+        }).catch(() => {});
+      }
+    }
+
     // ─── Tool-use loop ───────────────────────────────────────────────────
     const toolCallMessages: Array<{ role: string; content: string | null; tool_calls?: ToolCall[] }> = [];
     let finalContent = '';
