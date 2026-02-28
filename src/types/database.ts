@@ -1627,6 +1627,9 @@ export interface Database {
           event_id: string | null;
           expense_id: string | null;
           uploaded_by: string;
+          ai_summary: string | null;
+          ai_tags: string[];
+          chat_session_id: string | null;
           created_at: string | null;
           updated_at: string | null;
           deleted_at: string | null;
@@ -1642,6 +1645,9 @@ export interface Database {
           event_id?: string | null;
           expense_id?: string | null;
           uploaded_by?: string;
+          ai_summary?: string | null;
+          ai_tags?: string[];
+          chat_session_id?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
           deleted_at?: string | null;
@@ -1657,6 +1663,9 @@ export interface Database {
           event_id?: string | null;
           expense_id?: string | null;
           uploaded_by?: string;
+          ai_summary?: string | null;
+          ai_tags?: string[];
+          chat_session_id?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
           deleted_at?: string | null;
@@ -1672,6 +1681,12 @@ export interface Database {
             foreignKeyName: 'documents_expense_id_fkey';
             columns: ['expense_id'];
             referencedRelation: 'expenses';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'documents_chat_session_id_fkey';
+            columns: ['chat_session_id'];
+            referencedRelation: 'chat_sessions';
             referencedColumns: ['id'];
           }
         ];
@@ -1779,6 +1794,7 @@ export interface Database {
           content: string | null;
           tool_calls: Record<string, unknown>[] | null;
           tool_results: Record<string, unknown>[] | null;
+          attachments: Record<string, unknown>[];
           created_at: string | null;
         };
         Insert: {
@@ -1788,6 +1804,7 @@ export interface Database {
           content?: string | null;
           tool_calls?: Record<string, unknown>[] | null;
           tool_results?: Record<string, unknown>[] | null;
+          attachments?: Record<string, unknown>[];
           created_at?: string | null;
         };
         Update: {
@@ -1797,6 +1814,7 @@ export interface Database {
           content?: string | null;
           tool_calls?: Record<string, unknown>[] | null;
           tool_results?: Record<string, unknown>[] | null;
+          attachments?: Record<string, unknown>[];
           created_at?: string | null;
         };
         Relationships: [

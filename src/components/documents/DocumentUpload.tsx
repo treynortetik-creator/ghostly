@@ -13,7 +13,23 @@ interface DocumentUploadProps {
 const ALLOWED_TYPES = [
   "application/pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "text/csv",
+  "text/plain",
+  "text/markdown",
+  "application/json",
+  "image/png",
+  "image/jpeg",
+  "image/gif",
+  "image/webp",
+  "message/rfc822",
 ];
+
+const ALLOWED_EXTENSIONS = [
+  "pdf", "docx", "xlsx", "csv", "txt", "md",
+  "json", "png", "jpg", "jpeg", "gif", "webp", "eml",
+];
+
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 
 function getFileIcon(mimeType: string) {
@@ -39,11 +55,11 @@ export function DocumentUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validateFile = (file: File): string | null => {
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      const ext = file.name.split(".").pop()?.toLowerCase();
-      if (ext !== "pdf" && ext !== "docx") {
-        return "Invalid file type. Only PDF and DOCX files are allowed.";
-      }
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    const mimeOk = ALLOWED_TYPES.includes(file.type);
+    const extOk = ext ? ALLOWED_EXTENSIONS.includes(ext) : false;
+    if (!mimeOk && !extOk) {
+      return "Invalid file type. Allowed: PDF, DOCX, XLSX, CSV, TXT, MD, JSON, PNG, JPG, GIF, WebP, EML.";
     }
     if (file.size > MAX_SIZE) {
       return "File too large. Maximum size is 10 MB.";
@@ -169,7 +185,7 @@ export function DocumentUpload({
               or click to upload
             </p>
             <p className="text-xs text-muted-foreground/60 mt-1">
-              PDF or DOCX — max 10 MB
+              PDF, DOCX, XLSX, CSV, TXT, MD, JSON, PNG, JPG, GIF, WebP, EML — max 10 MB
             </p>
           </>
         )}
@@ -177,7 +193,7 @@ export function DocumentUpload({
         <input
           ref={fileInputRef}
           type="file"
-          accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          accept=".pdf,.docx,.xlsx,.csv,.txt,.md,.json,.png,.jpg,.jpeg,.gif,.webp,.eml"
           onChange={handleFileSelect}
           className="hidden"
         />

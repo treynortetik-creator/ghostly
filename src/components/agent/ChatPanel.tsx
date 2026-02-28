@@ -18,6 +18,7 @@ import {
   ChevronRight,
   Trash2,
   MessageSquare,
+  Paperclip,
 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -142,6 +143,12 @@ function renderMarkdown(text: string): ReactNode {
   return text.split("\n").map((line, i) => renderMarkdownLine(line, i));
 }
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const MAX_FILES = 5;
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const FILE_ACCEPT = ".pdf,.docx,.xlsx,.csv,.txt,.md,.json,.png,.jpg,.jpeg,.gif,.webp,.eml";
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
@@ -158,9 +165,12 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
   const [agentName, setAgentName] = useState("Ghostly");
   const [contextPercent, setContextPercent] = useState(0);
   const [showCompactedDivider, setShowCompactedDivider] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -228,6 +238,7 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
     setInput("");
     setContextPercent(0);
     setShowCompactedDivider(false);
+    setPendingFiles([]);
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
@@ -244,32 +255,112 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
     }
   };
 
+  // ─── File handlers ──────────────────────────────────────────────────
+  const addFiles = useCallback((fileList: FileList | File[]) => {
+    const newFiles = Array.from(fileList).filter(
+      (f) => f.size <= MAX_FILE_SIZE && f.size > 0
+    );
+    setPendingFiles((prev) => {
+      const combined = [...prev, ...newFiles];
+      return combined.slice(0, MAX_FILES);
+    });
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragOver(false);
+      if (e.dataTransfer.files.length > 0) {
+        addFiles(e.dataTransfer.files);
+      }
+    },
+    [addFiles]
+  );
+
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files.length > 0) {
+        addFiles(e.target.files);
+      }
+      // Reset so same file can be selected again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    },
+    [addFiles]
+  );
+
+  const removePendingFile = useCallback((index: number) => {
+    setPendingFiles((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  // ─── Send message ──────────────────────────────────────────────────
   const sendMessage = async () => {
     const trimmed = input.trim();
-    if (!trimmed || isStreaming) return;
+    const hasFiles = pendingFiles.length > 0;
+    if ((!trimmed && !hasFiles) || isStreaming) return;
+
+    const fileNames = pendingFiles.map((f) => f.name);
+    const displayContent = trimmed
+      ? fileNames.length > 0
+        ? `${trimmed}\n[${fileNames.join(", ")}]`
+        : trimmed
+      : `[${fileNames.join(", ")}]`;
 
     const userMsg: ChatMessage = {
       id: `temp-${Date.now()}`,
       role: "user",
-      content: trimmed,
+      content: displayContent,
       created_at: new Date().toISOString(),
     };
     setMessages((prev) => [...prev, userMsg]);
+
+    const filesToSend = [...pendingFiles];
     setInput("");
+    setPendingFiles([]);
     setIsStreaming(true);
     setStreamingContent("");
     setStreamingToolCalls([]);
 
     try {
-      const res = await fetch("/api/agent/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          session_id: currentSessionId,
-          message: trimmed,
-          event_id: eventId,
-        }),
-      });
+      let res: Response;
+
+      if (filesToSend.length > 0) {
+        const formData = new FormData();
+        formData.append("message", trimmed);
+        if (currentSessionId) formData.append("session_id", currentSessionId);
+        if (eventId) formData.append("event_id", eventId);
+        for (const file of filesToSend) {
+          formData.append("files", file);
+        }
+        res = await fetch("/api/agent/chat", {
+          method: "POST",
+          body: formData,
+        });
+      } else {
+        res = await fetch("/api/agent/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            session_id: currentSessionId,
+            message: trimmed,
+            event_id: eventId,
+          }),
+        });
+      }
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "Request failed" }));
@@ -431,7 +522,17 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
           flex flex-col
           ${isOpen ? "translate-x-0" : "translate-x-full"}
         `}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
+        {/* Drag overlay */}
+        {isDragOver && (
+          <div className="absolute inset-0 z-50 bg-spectral/10 backdrop-blur-sm border-2 border-dashed border-spectral rounded-lg flex flex-col items-center justify-center pointer-events-none">
+            <Paperclip className="w-10 h-10 text-spectral mb-2" />
+            <p className="text-sm font-medium text-spectral">Drop files here</p>
+          </div>
+        )}
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card/80 backdrop-blur-sm shrink-0">
           <div className="flex items-center gap-3 min-w-0">
@@ -629,7 +730,48 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
 
         {/* Input */}
         <div className="border-t border-border bg-card/80 backdrop-blur-sm px-4 py-3 shrink-0">
+          {/* Pending files preview */}
+          {pendingFiles.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {pendingFiles.map((file, i) => (
+                <div
+                  key={`${file.name}-${i}`}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-spectral/10 border border-spectral/20 text-xs text-foreground max-w-[180px]"
+                >
+                  <Paperclip className="w-3 h-3 text-spectral shrink-0" />
+                  <span className="truncate">{file.name}</span>
+                  <button
+                    onClick={() => removePendingFile(i)}
+                    className="p-0.5 rounded hover:bg-spectral/20 text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="flex items-end gap-2">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isStreaming || pendingFiles.length >= MAX_FILES}
+              className="
+                p-2.5 rounded-lg text-muted-foreground
+                hover:text-foreground hover:bg-spectral/10
+                disabled:opacity-40 disabled:cursor-not-allowed
+                transition-colors shrink-0
+              "
+              title="Attach files"
+            >
+              <Paperclip className="w-4 h-4" />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept={FILE_ACCEPT}
+              onChange={handleFileSelect}
+              className="hidden"
+            />
             <textarea
               ref={inputRef}
               value={input}
@@ -653,7 +795,7 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
             />
             <button
               onClick={sendMessage}
-              disabled={!input.trim() || isStreaming}
+              disabled={(!input.trim() && pendingFiles.length === 0) || isStreaming}
               className="
                 p-2.5 rounded-lg bg-spectral text-white
                 hover:bg-spectral-light disabled:opacity-40 disabled:cursor-not-allowed

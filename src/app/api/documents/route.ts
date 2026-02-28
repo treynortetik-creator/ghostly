@@ -19,9 +19,22 @@ import { randomUUID } from 'crypto';
 const ALLOWED_MIME_TYPES = [
   'application/pdf',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/csv',
+  'text/plain',
+  'text/markdown',
+  'application/json',
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+  'image/webp',
+  'message/rfc822',
 ];
 
-const ALLOWED_EXTENSIONS = ['.pdf', '.docx'];
+const ALLOWED_EXTENSIONS = [
+  '.pdf', '.docx', '.xlsx', '.csv', '.txt', '.md',
+  '.json', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.eml',
+];
 
 const UPLOAD_DIR = process.env.DOCUMENT_UPLOAD_DIR || 'uploads';
 
@@ -45,19 +58,26 @@ function isUploadRateLimited(ip: string): boolean {
 }
 
 // Magic bytes for file type verification
-const PDF_MAGIC = new Uint8Array([0x25, 0x50, 0x44, 0x46]); // %PDF
-const DOCX_MAGIC = new Uint8Array([0x50, 0x4b, 0x03, 0x04]); // PK\x03\x04 (ZIP/DOCX)
+const MAGIC_BYTES: Record<string, number[]> = {
+  '.pdf': [0x25, 0x50, 0x44, 0x46],         // %PDF
+  '.docx': [0x50, 0x4b, 0x03, 0x04],        // PK (ZIP)
+  '.xlsx': [0x50, 0x4b, 0x03, 0x04],        // PK (ZIP)
+  '.png': [0x89, 0x50, 0x4e, 0x47],         // PNG header
+  '.jpg': [0xff, 0xd8, 0xff],               // JPEG SOI
+  '.jpeg': [0xff, 0xd8, 0xff],              // JPEG SOI
+  '.gif': [0x47, 0x49, 0x46],               // GIF
+};
+
+// Text-based types skip magic byte check
+const SKIP_MAGIC_CHECK = new Set(['.csv', '.txt', '.md', '.json', '.eml', '.webp']);
 
 function verifyMagicBytes(buffer: Buffer, ext: string): boolean {
-  if (buffer.length < 4) return false;
-  const header = new Uint8Array(buffer.slice(0, 4));
-  if (ext === '.pdf') {
-    return header.every((b, i) => b === PDF_MAGIC[i]);
-  }
-  if (ext === '.docx') {
-    return header.every((b, i) => b === DOCX_MAGIC[i]);
-  }
-  return false;
+  if (SKIP_MAGIC_CHECK.has(ext)) return true;
+  const expected = MAGIC_BYTES[ext];
+  if (!expected) return false;
+  if (buffer.length < expected.length) return false;
+  const header = new Uint8Array(buffer.slice(0, expected.length));
+  return expected.every((b, i) => header[i] === b);
 }
 
 /**
@@ -198,15 +218,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'documents' 
     const ext = path.extname(file.name).toLowerCase();
     if (!ALLOWED_MIME_TYPES.includes(file.type) || !ALLOWED_EXTENSIONS.includes(ext)) {
       return NextResponse.json(
-        { error: 'Invalid file type. Only PDF and DOCX files are allowed.' },
-        { status: 400 }
-      );
-    }
-
-    // Validate XOR constraint
-    if (eventId && expenseId) {
-      return NextResponse.json(
-        { error: 'Cannot link document to both an event and an expense.' },
+        { error: 'Invalid file type. Allowed types: PDF, DOCX, XLSX, CSV, TXT, MD, JSON, PNG, JPG, GIF, WebP, EML.' },
         { status: 400 }
       );
     }

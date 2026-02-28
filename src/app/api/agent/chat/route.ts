@@ -2,7 +2,7 @@
  * Ghostly Agent - Chat API Route
  *
  * POST /api/agent/chat
- * Body: { session_id?: string, message: string, event_id?: string }
+ * Body: JSON { session_id?, message, event_id? } or multipart/form-data with files
  *
  * Handles the full agent conversation loop:
  * 1. Create/load session
@@ -25,6 +25,11 @@ import { agentTools, findTool, toolsToOpenRouterFormat } from '@/lib/agent/tools
 import { buildSystemPrompt } from '@/lib/agent/system-prompt';
 import type { ToolExecutionContext } from '@/lib/agent/tools';
 import { logError } from '@/lib/error-logger';
+import { extractTextFromFile, isImageType } from '@/lib/agent/file-processor';
+import { MAX_FILE_SIZE_BYTES } from '@/lib/constants';
+import path from 'path';
+import fs from 'fs/promises';
+import { randomUUID } from 'crypto';
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1';
 
@@ -109,12 +114,97 @@ export async function POST(request: NextRequest) {
 
   try {
     const orgId = getOrgId(request);
-    const body = await request.json();
-    const { message, event_id } = body;
-    let { session_id } = body;
 
-    if (!message || typeof message !== 'string' || message.trim().length === 0) {
-      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+    // ─── Parse request body (JSON or multipart) ─────────────────────────
+    let message = '';
+    let event_id: string | undefined;
+    let session_id: string | undefined;
+    const uploadedFiles: Array<{
+      document_id: string;
+      filename: string;
+      mime_type: string;
+      storage_path: string;
+    }> = [];
+
+    const contentType = request.headers.get('content-type') || '';
+    const UPLOAD_DIR = process.env.DOCUMENT_UPLOAD_DIR || 'uploads';
+
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await request.formData();
+      message = (formData.get('message') as string) || '';
+      event_id = (formData.get('event_id') as string) || undefined;
+      session_id = (formData.get('session_id') as string) || undefined;
+
+      // Process uploaded files (max 5)
+      const files = formData.getAll('files') as File[];
+      const filesToProcess = files.slice(0, 5);
+
+      const supabaseForFiles = await createClient();
+
+      for (const file of filesToProcess) {
+        if (!(file instanceof File) || file.size === 0) continue;
+        if (file.size > MAX_FILE_SIZE_BYTES) continue;
+
+        const ext = path.extname(file.name).toLowerCase() || '.bin';
+        const now = new Date();
+        const year = now.getFullYear().toString();
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const docId = randomUUID();
+        const storagePath = `uploads/${year}/${month}/${docId}${ext}`;
+
+        // Write file to disk
+        const uploadBase = path.isAbsolute(UPLOAD_DIR)
+          ? UPLOAD_DIR
+          : path.join(process.cwd(), UPLOAD_DIR);
+        const absolutePath = path.join(uploadBase, year, month);
+        await fs.mkdir(absolutePath, { recursive: true });
+        const buffer = Buffer.from(await file.arrayBuffer());
+        await fs.writeFile(path.join(absolutePath, `${docId}${ext}`), buffer);
+
+        // Sanitize filename
+        let cleanName = file.name.replace(/[/\\:\0]/g, '_');
+        if (cleanName.length > 200) {
+          const fileExt = path.extname(cleanName);
+          cleanName = cleanName.substring(0, 200 - fileExt.length) + fileExt;
+        }
+
+        // Insert document record (chat_session_id set after session creation)
+        const { data: newDoc } = await supabaseForFiles
+          .from('documents')
+          .insert({
+            organization_id: orgId,
+            filename: cleanName,
+            original_filename: file.name,
+            mime_type: file.type,
+            file_size_bytes: file.size,
+            storage_path: storagePath,
+            source: 'upload',
+            uploaded_by: 'user',
+          })
+          .select('id')
+          .single();
+
+        if (newDoc) {
+          uploadedFiles.push({
+            document_id: newDoc.id,
+            filename: cleanName,
+            mime_type: file.type,
+            storage_path: storagePath,
+          });
+        }
+      }
+    } else {
+      const body = await request.json();
+      message = body.message || '';
+      event_id = body.event_id;
+      session_id = body.session_id;
+    }
+
+    // Require either a message or files
+    const hasMessage = typeof message === 'string' && message.trim().length > 0;
+    const hasFiles = uploadedFiles.length > 0;
+    if (!hasMessage && !hasFiles) {
+      return NextResponse.json({ error: 'Message or files required' }, { status: 400 });
     }
 
     const apiKey = process.env.OPENROUTER_API_KEY;
@@ -137,7 +227,7 @@ export async function POST(request: NextRequest) {
         .insert({
           organization_id: orgId,
           event_id: event_id || null,
-          title: message.slice(0, 100),
+          title: message.trim() ? message.slice(0, 100) : `File upload (${uploadedFiles.length} file${uploadedFiles.length !== 1 ? 's' : ''})`,
         })
         .select()
         .single();
@@ -158,6 +248,15 @@ export async function POST(request: NextRequest) {
       // Carry forward existing context state
       sessionContextTokens = existingSession.context_tokens_used ?? 0;
       existingContextSummary = existingSession.context_summary ?? null;
+    }
+
+    // ─── Link uploaded files to session ─────────────────────────────────
+    if (uploadedFiles.length > 0 && session_id) {
+      const docIds = uploadedFiles.map((f) => f.document_id);
+      await supabase
+        .from('documents')
+        .update({ chat_session_id: session_id })
+        .in('id', docIds);
     }
 
     // ─── Load conversation history ───────────────────────────────────────
@@ -274,14 +373,46 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // ─── Build user content with file context ──────────────────────────
+    let userContent = message.trim();
+
+    if (uploadedFiles.length > 0) {
+      const fileContextParts: string[] = [];
+      for (const uf of uploadedFiles) {
+        if (isImageType(uf.mime_type)) {
+          fileContextParts.push(`[Attached image: ${uf.filename}]`);
+        } else {
+          try {
+            const text = await extractTextFromFile(uf.storage_path, uf.mime_type);
+            fileContextParts.push(
+              `--- Attached file: ${uf.filename} ---\n${text}\n--- End of file ---`
+            );
+          } catch {
+            fileContextParts.push(`[Could not extract text from: ${uf.filename}]`);
+          }
+        }
+      }
+      const fileContext = fileContextParts.join('\n\n');
+      userContent = userContent
+        ? `${userContent}\n\n${fileContext}`
+        : fileContext;
+    }
+
     // Add the new user message
-    messages.push({ role: 'user', content: message.trim() });
+    messages.push({ role: 'user', content: userContent });
 
     // ─── Save the user message to DB ─────────────────────────────────────
+    const attachments = uploadedFiles.map((f) => ({
+      document_id: f.document_id,
+      filename: f.filename,
+      mime_type: f.mime_type,
+    }));
+
     await supabase.from('chat_messages').insert({
       session_id,
       role: 'user',
-      content: message.trim(),
+      content: message.trim() || (uploadedFiles.length > 0 ? `[${uploadedFiles.length} file(s) attached]` : ''),
+      attachments: attachments.length > 0 ? attachments : [],
     });
 
     // ─── Build tool context ──────────────────────────────────────────────
