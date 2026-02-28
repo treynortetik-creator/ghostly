@@ -335,6 +335,9 @@ export interface Document {
   event_id: string | null;
   expense_id: string | null;
   uploaded_by: string;
+  ai_summary: string | null;
+  ai_tags: string[];
+  chat_session_id: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -646,6 +649,7 @@ export interface ChatMessage {
   content: string | null;
   tool_calls: Record<string, unknown>[] | null;
   tool_results: Record<string, unknown>[] | null;
+  attachments: Record<string, unknown>[];
   created_at: string | null;
 }
 

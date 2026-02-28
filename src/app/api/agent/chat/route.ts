@@ -141,11 +141,17 @@ export async function POST(request: NextRequest) {
 
       const supabaseForFiles = await createClient();
 
+      const ALLOWED_CHAT_EXTENSIONS = [
+        '.pdf', '.docx', '.xlsx', '.csv', '.txt', '.md',
+        '.json', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.eml',
+      ];
+
       for (const file of filesToProcess) {
         if (!(file instanceof File) || file.size === 0) continue;
         if (file.size > MAX_FILE_SIZE_BYTES) continue;
 
         const ext = path.extname(file.name).toLowerCase() || '.bin';
+        if (!ALLOWED_CHAT_EXTENSIONS.includes(ext)) continue;
         const now = new Date();
         const year = now.getFullYear().toString();
         const month = (now.getMonth() + 1).toString().padStart(2, '0');
