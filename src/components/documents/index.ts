@@ -2,3 +2,8 @@ export { DocumentUpload } from './DocumentUpload';
 export { DocumentList } from './DocumentList';
 export { EventDocumentsTab } from './EventDocumentsTab';
 export { ExpenseDocumentsSection } from './ExpenseDocumentsSection';
+export { TemplateCard } from './TemplateCard';
+export { TemplateBuilder } from './TemplateBuilder';
+export { SortableSection } from './SortableSection';
+export { GeneratedDocRow } from './GeneratedDocRow';
+export { MarkdownViewer } from './MarkdownViewer';

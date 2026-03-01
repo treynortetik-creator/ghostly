@@ -146,6 +146,10 @@ export const GET = withApiHandler({ permission: 'read', resource: 'documents' },
     if (unlinked) {
       query = query.is('event_id', null).is('expense_id', null);
     }
+    const source = searchParams.get('source') as 'upload' | 'api' | 'generated' | null;
+    if (source) {
+      query = query.eq('source', source);
+    }
     if (modifiedAfter) {
       query = query.gt('updated_at', modifiedAfter);
     }

@@ -16,6 +16,7 @@ import {
   Menu,
   X,
   Users,
+  Contact2,
   Sun,
   Moon,
   Monitor,
@@ -24,6 +25,7 @@ import {
   Webhook,
   ScrollText,
   Bot,
+  FileText,
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/components/providers";
@@ -44,6 +46,8 @@ const navItems: NavItem[] = [
   { name: "Categories", href: "/categories", icon: FolderOpen },
   { name: "Expenses", href: "/expenses", icon: Receipt },
   { name: "Team", href: "/team", icon: Users },
+  { name: "Contacts", href: "/contacts", icon: Contact2 },
+  { name: "Documents", href: "/documents", icon: FileText },
   { name: "ROI", href: "/roi", icon: TrendingUp },
   { name: "Webhooks", href: "/webhooks", icon: Webhook },
   { name: "Settings", href: "/settings", icon: Settings },
