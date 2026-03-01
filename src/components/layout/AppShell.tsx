@@ -38,25 +38,74 @@ interface NavItem {
   name: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  children?: NavItem[];
 }
 
-const navItems: NavItem[] = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Events", href: "/events", icon: Calendar },
-  { name: "Pipeline", href: "/pipeline", icon: Workflow },
-  { name: "Categories", href: "/categories", icon: FolderOpen },
-  { name: "Expenses", href: "/expenses", icon: Receipt },
-  { name: "Team", href: "/team", icon: Users },
-  { name: "Contacts", href: "/contacts", icon: Contact2 },
-  { name: "Documents", href: "/documents", icon: FileText },
-  { name: "ROI", href: "/roi", icon: TrendingUp },
-  { name: "Webhooks", href: "/webhooks", icon: Webhook },
-  { name: "Integrations", href: "/integrations", icon: Zap },
-  { name: "Settings", href: "/settings", icon: Settings },
-  { name: "Agent", href: "/settings/agent", icon: Bot },
-  { name: "Admin", href: "/admin", icon: Shield },
-  { name: "Audit Log", href: "/admin/audit", icon: ScrollText },
+interface NavGroup {
+  label?: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
+  {
+    items: [
+      { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { name: "Events", href: "/events", icon: Calendar },
+      { name: "Pipeline", href: "/pipeline", icon: Workflow },
+    ],
+  },
+  {
+    label: "Manage",
+    items: [
+      { name: "Expenses", href: "/expenses", icon: Receipt },
+      { name: "Categories", href: "/categories", icon: FolderOpen },
+      { name: "Contacts", href: "/contacts", icon: Contact2 },
+      { name: "Team", href: "/team", icon: Users },
+      { name: "Documents", href: "/documents", icon: FileText },
+      { name: "ROI", href: "/roi", icon: TrendingUp },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      { name: "Integrations", href: "/integrations", icon: Zap },
+      { name: "Webhooks", href: "/webhooks", icon: Webhook },
+      {
+        name: "Settings",
+        href: "/settings",
+        icon: Settings,
+        children: [{ name: "Agent", href: "/settings/agent", icon: Bot }],
+      },
+      {
+        name: "Admin",
+        href: "/admin",
+        icon: Shield,
+        children: [
+          { name: "Audit Log", href: "/admin/audit", icon: ScrollText },
+        ],
+      },
+    ],
+  },
 ];
+
+// Flatten all nav items for active-state detection
+const allNavItems: NavItem[] = navGroups.flatMap((g) =>
+  g.items.flatMap((item) => [item, ...(item.children ?? [])])
+);
+
+function isItemActive(item: NavItem, pathname: string): boolean {
+  const isExact = pathname === item.href;
+  const isPrefix = item.href !== "/" && pathname.startsWith(item.href + "/");
+  const hasMoreSpecificMatch =
+    isPrefix &&
+    allNavItems.some(
+      (other) =>
+        other.href !== item.href &&
+        other.href.startsWith(item.href + "/") &&
+        (pathname === other.href || pathname.startsWith(other.href + "/"))
+    );
+  return isExact || (isPrefix && !hasMoreSpecificMatch);
+}
 
 const SIDEBAR_KEY = "sidebar-collapsed";
 
@@ -161,58 +210,99 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Navigation items */}
-        <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
-          {navItems.map((item) => {
-            const isExact = pathname === item.href;
-            const isPrefix =
-              item.href !== "/" && pathname.startsWith(item.href + "/");
-            // Don't highlight a parent route if a more specific child nav item matches
-            const hasMoreSpecificMatch =
-              isPrefix &&
-              navItems.some(
-                (other) =>
-                  other.href !== item.href &&
-                  other.href.startsWith(item.href + "/") &&
-                  (pathname === other.href ||
-                    pathname.startsWith(other.href + "/"))
-              );
-            const isActive = isExact || (isPrefix && !hasMoreSpecificMatch);
-            const Icon = item.icon;
-
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                title={isCollapsed ? item.name : undefined}
-                className={`
-                  group relative flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md
-                  transition-all duration-200
-                  ${
-                    isActive
-                      ? "bg-spectral/10 text-spectral border-l-2 border-spectral"
-                      : "text-sidebar-foreground/60 hover:bg-spectral/5 hover:text-sidebar-foreground"
-                  }
-                `}
-              >
-                <Icon className="w-5 h-5 shrink-0" />
-                <span
-                  className={`
-                    whitespace-nowrap transition-all duration-300 overflow-hidden
-                    ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"}
-                  `}
-                >
-                  {item.name}
-                </span>
-
-                {/* Tooltip on hover when collapsed */}
-                {isCollapsed && (
-                  <span className="absolute left-full ml-2 px-2 py-1 rounded bg-ghost-light text-phantom text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
-                    {item.name}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
+        <nav className="flex-1 overflow-y-auto px-3 py-3">
+          {navGroups.map((group, gi) => (
+            <div key={group.label ?? "primary"} className={gi > 0 ? "mt-4" : ""}>
+              {/* Section label or collapsed divider */}
+              {group.label && (
+                isCollapsed ? (
+                  <div className="px-2 mb-2">
+                    <div className="h-px bg-gradient-to-r from-transparent via-spectral/15 to-transparent" />
+                  </div>
+                ) : (
+                  <div className="px-3 mb-1.5">
+                    <span className="text-[10px] font-medium text-sidebar-foreground/40 tracking-widest uppercase">
+                      {group.label}
+                    </span>
+                  </div>
+                )
+              )}
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const isActive = isItemActive(item, pathname);
+                  const Icon = item.icon;
+                  return (
+                    <div key={item.name}>
+                      <Link
+                        href={item.href}
+                        title={isCollapsed ? item.name : undefined}
+                        className={`
+                          group relative flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md
+                          transition-all duration-200
+                          ${
+                            isActive
+                              ? "bg-spectral/10 text-spectral border-l-2 border-spectral"
+                              : "text-sidebar-foreground/60 hover:bg-spectral/5 hover:text-sidebar-foreground"
+                          }
+                        `}
+                      >
+                        <Icon className="w-5 h-5 shrink-0" />
+                        <span
+                          className={`
+                            whitespace-nowrap transition-all duration-300 overflow-hidden
+                            ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"}
+                          `}
+                        >
+                          {item.name}
+                        </span>
+                        {isCollapsed && (
+                          <span className="absolute left-full ml-2 px-2 py-1 rounded bg-ghost-light text-phantom text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+                            {item.name}
+                          </span>
+                        )}
+                      </Link>
+                      {/* Nested children */}
+                      {item.children?.map((child) => {
+                        const isChildActive = isItemActive(child, pathname);
+                        const ChildIcon = child.icon;
+                        return (
+                          <Link
+                            key={child.name}
+                            href={child.href}
+                            title={isCollapsed ? child.name : undefined}
+                            className={`
+                              group relative flex items-center rounded-md transition-all duration-200
+                              ${isCollapsed ? "gap-3 px-3 py-2 text-sm" : "gap-2 pl-11 pr-3 py-1.5 text-[13px]"}
+                              ${
+                                isChildActive
+                                  ? "text-spectral"
+                                  : "text-sidebar-foreground/45 hover:text-sidebar-foreground/70"
+                              }
+                            `}
+                          >
+                            <ChildIcon className={`shrink-0 ${isCollapsed ? "w-5 h-5" : "w-3.5 h-3.5"}`} />
+                            <span
+                              className={`
+                                whitespace-nowrap transition-all duration-300 overflow-hidden
+                                ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"}
+                              `}
+                            >
+                              {child.name}
+                            </span>
+                            {isCollapsed && (
+                              <span className="absolute left-full ml-2 px-2 py-1 rounded bg-ghost-light text-phantom text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+                                {child.name}
+                              </span>
+                            )}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* Bottom section */}
@@ -362,43 +452,67 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
-              {navItems.map((item) => {
-                const isExact = pathname === item.href;
-                const isPrefix =
-                  item.href !== "/" && pathname.startsWith(item.href + "/");
-                const hasMoreSpecificMatch =
-                  isPrefix &&
-                  navItems.some(
-                    (other) =>
-                      other.href !== item.href &&
-                      other.href.startsWith(item.href + "/") &&
-                      (pathname === other.href ||
-                        pathname.startsWith(other.href + "/"))
-                  );
-                const isActive = isExact || (isPrefix && !hasMoreSpecificMatch);
-                const Icon = item.icon;
-
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`
-                      flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md
-                      transition-all duration-200
-                      ${
-                        isActive
-                          ? "bg-spectral/10 text-spectral border-l-2 border-spectral"
-                          : "text-sidebar-foreground/60 hover:bg-spectral/5 hover:text-sidebar-foreground"
-                      }
-                    `}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span>{item.name}</span>
-                  </Link>
-                );
-              })}
+            <nav className="flex-1 overflow-y-auto px-3 py-3">
+              {navGroups.map((group, gi) => (
+                <div key={group.label ?? "primary"} className={gi > 0 ? "mt-4" : ""}>
+                  {group.label && (
+                    <div className="px-3 mb-1.5">
+                      <span className="text-[10px] font-medium text-sidebar-foreground/40 tracking-widest uppercase">
+                        {group.label}
+                      </span>
+                    </div>
+                  )}
+                  <div className="space-y-0.5">
+                    {group.items.map((item) => {
+                      const isActive = isItemActive(item, pathname);
+                      const Icon = item.icon;
+                      return (
+                        <div key={item.name}>
+                          <Link
+                            href={item.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className={`
+                              flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md
+                              transition-all duration-200
+                              ${
+                                isActive
+                                  ? "bg-spectral/10 text-spectral border-l-2 border-spectral"
+                                  : "text-sidebar-foreground/60 hover:bg-spectral/5 hover:text-sidebar-foreground"
+                              }
+                            `}
+                          >
+                            <Icon className="w-5 h-5" />
+                            <span>{item.name}</span>
+                          </Link>
+                          {item.children?.map((child) => {
+                            const isChildActive = isItemActive(child, pathname);
+                            const ChildIcon = child.icon;
+                            return (
+                              <Link
+                                key={child.name}
+                                href={child.href}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className={`
+                                  flex items-center gap-2 pl-11 pr-3 py-1.5 text-[13px] font-medium rounded-md
+                                  transition-all duration-200
+                                  ${
+                                    isChildActive
+                                      ? "text-spectral"
+                                      : "text-sidebar-foreground/45 hover:text-sidebar-foreground/70"
+                                  }
+                                `}
+                              >
+                                <ChildIcon className="w-3.5 h-3.5" />
+                                <span>{child.name}</span>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </nav>
 
             {/* Bottom section */}
