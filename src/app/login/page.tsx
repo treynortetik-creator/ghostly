@@ -194,7 +194,7 @@ function LegacyAuthForm({ isSecondary }: { isSecondary: boolean }) {
       }
 
       // Redirect to dashboard on success
-      router.push('/');
+      router.push('/dashboard');
       router.refresh();
     } catch {
       setError('An error occurred. Please try again.');

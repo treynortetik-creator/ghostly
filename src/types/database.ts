@@ -2507,6 +2507,36 @@ export interface Database {
           }
         ];
       };
+      waitlist: {
+        Row: {
+          id: string;
+          email: string;
+          name: string;
+          company: string | null;
+          role: string | null;
+          source: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          name: string;
+          company?: string | null;
+          role?: string | null;
+          source?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          name?: string;
+          company?: string | null;
+          role?: string | null;
+          source?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

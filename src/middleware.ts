@@ -44,7 +44,7 @@ function logAuditFromMiddleware(params: {
 }
 
 // Routes that don't require authentication
-const PUBLIC_ROUTES = ['/login'];
+const PUBLIC_ROUTES = ['/login', '/'];
 
 // API routes that don't require authentication
 const PUBLIC_API_ROUTES = [
@@ -54,6 +54,7 @@ const PUBLIC_API_ROUTES = [
   '/api/integrations/slack/oauth/callback',
   '/api/integrations/slack/events',
   '/api/integrations/slack/commands',
+  '/api/waitlist',
 ];
 
 /**
@@ -211,12 +212,12 @@ export async function middleware(request: NextRequest) {
 
   // Allow public routes without authentication
   if (isPublicRoute(pathname)) {
-    if (pathname === '/login') {
+    if (pathname === '/login' || pathname === '/') {
       const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
       if (token) {
         const isValid = await verifyTokenFromCookie(token);
         if (isValid) {
-          return withRequestId(NextResponse.redirect(new URL('/', request.url)), requestId);
+          return withRequestId(NextResponse.redirect(new URL('/dashboard', request.url)), requestId);
         }
       }
     }

@@ -77,5 +77,5 @@ export async function GET(request: NextRequest) {
   }
 
   // Default: redirect to dashboard
-  return NextResponse.redirect(new URL('/', request.url))
+  return NextResponse.redirect(new URL('/dashboard', request.url))
 }
