@@ -60,6 +60,18 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'templates/[i
       return NextResponse.json({ error: 'Template not found' }, { status: 404 });
     }
 
+    // Validate sections BEFORE any DB writes
+    if (Array.isArray(body.sections)) {
+      for (const s of body.sections) {
+        if (!s.title || String(s.title).trim() === '') {
+          return NextResponse.json({ error: 'All sections must have a title' }, { status: 400 });
+        }
+        if (s.content_type && !VALID_CONTENT_TYPES.includes(s.content_type)) {
+          return NextResponse.json({ error: `Invalid content_type: ${s.content_type}` }, { status: 400 });
+        }
+      }
+    }
+
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (body.name !== undefined) updates.name = String(body.name).trim();
     if (body.description !== undefined) updates.description = body.description ? String(body.description).trim() : null;
@@ -72,15 +84,6 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'templates/[i
     if (updateError) throw updateError;
 
     if (Array.isArray(body.sections)) {
-      for (const s of body.sections) {
-        if (!s.title || String(s.title).trim() === '') {
-          return NextResponse.json({ error: 'All sections must have a title' }, { status: 400 });
-        }
-        if (s.content_type && !VALID_CONTENT_TYPES.includes(s.content_type)) {
-          return NextResponse.json({ error: `Invalid content_type: ${s.content_type}` }, { status: 400 });
-        }
-      }
-
       await supabase
         .from('template_sections')
         .delete()

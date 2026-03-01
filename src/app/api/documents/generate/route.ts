@@ -67,8 +67,8 @@ export const POST = withApiHandler({ permission: 'write', resource: 'documents/g
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    // Load related data in parallel
-    const [teamResult, checklistResult, contactsResult, expensesResult] = await Promise.all([
+    // Load related data in parallel (no expense data — confidential)
+    const [teamResult, checklistResult, contactsResult] = await Promise.all([
       supabase
         .from('event_team_assignments')
         .select('*, team_members(*)')
@@ -82,12 +82,6 @@ export const POST = withApiHandler({ permission: 'write', resource: 'documents/g
         .from('event_contacts')
         .select('*, contacts(*)')
         .eq('event_id', event_id),
-      supabase
-        .from('expenses')
-        .select('vendor, amount, memo, expense_date')
-        .eq('event_id', event_id)
-        .is('deleted_at', null)
-        .order('expense_date', { ascending: true }),
     ]);
 
     const teamAssignments = (teamResult.data || []).map((a: Record<string, unknown>) => {
@@ -105,7 +99,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'documents/g
     const checklist = (checklistResult.data || []).map((item: Record<string, unknown>) => ({
       title: item.title,
       phase: item.phase,
-      is_complete: item.is_complete,
+      is_complete: !!item.completed_at,
       due_date: item.due_date || null,
       assigned_to: item.assigned_to || null,
       description: item.description || null,
@@ -124,9 +118,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'documents/g
       };
     });
 
-    const expenses = expensesResult.data || [];
-
-    // Build the AI prompt
+    // Build the AI prompt (budget/expense data excluded — confidential)
     const eventContext = JSON.stringify({
       event: {
         name: event.name,
@@ -146,7 +138,6 @@ export const POST = withApiHandler({ permission: 'write', resource: 'documents/g
       team_assignments: teamAssignments,
       checklist_items: checklist,
       contacts,
-      expenses,
     }, null, 2);
 
     const sectionInstructions = sections.map((s: Record<string, unknown>, i: number) => {
@@ -178,24 +169,39 @@ ${sectionInstructions}`;
       return NextResponse.json({ error: 'OpenRouter API key not configured' }, { status: 500 });
     }
 
-    const orResponse = await fetch(`${OPENROUTER_API_URL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-        'X-Title': 'Ghostly Document Generator',
-      },
-      body: JSON.stringify({
-        model: AGENT_MODEL,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature: 0.3,
-        max_tokens: 8000,
-      }),
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60_000);
+
+    let orResponse: Response;
+    try {
+      orResponse = await fetch(`${OPENROUTER_API_URL}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+          'X-Title': 'Ghostly Document Generator',
+        },
+        body: JSON.stringify({
+          model: AGENT_MODEL,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          temperature: 0.3,
+          max_tokens: 8000,
+        }),
+        signal: controller.signal,
+      });
+    } catch (err) {
+      clearTimeout(timeout);
+      if (err instanceof Error && err.name === 'AbortError') {
+        return NextResponse.json({ error: 'Document generation timed out' }, { status: 504 });
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!orResponse.ok) {
       const errText = await orResponse.text();
