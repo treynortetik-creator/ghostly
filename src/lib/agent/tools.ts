@@ -554,6 +554,60 @@ export const agentTools: AgentTool[] = [
       }, null, 2);
     },
   },
+
+  // 15. generate_document
+  {
+    name: 'generate_document',
+    description:
+      'Generate a document from a template for a specific event. The AI fills each template section with event data (team, contacts, checklist, etc) and saves it as a markdown file. Use get_events to find the event_id first. Available templates: "Run of Show" (operational playbook) and "Event Guide" (attendee reference). Users may also have custom templates.',
+    parameters: {
+      type: 'object',
+      properties: {
+        template_name: {
+          type: 'string',
+          description: 'Name of the template to use (e.g., "Run of Show", "Event Guide")',
+        },
+        event_id: {
+          type: 'string',
+          description: 'Event UUID to generate the document for',
+        },
+      },
+      required: ['template_name', 'event_id'],
+    },
+    execute: async (args, ctx) => {
+      // First, look up template by name
+      const templatesResult = await internalFetch(ctx, 'GET', '/api/templates');
+      const templates = ((templatesResult as Record<string, unknown>).templates as Record<string, unknown>[]) ?? [];
+      const template = templates.find(
+        (t) => String(t.name).toLowerCase() === String(args.template_name).toLowerCase()
+      );
+
+      if (!template) {
+        const available = templates.map((t) => t.name).join(', ');
+        return JSON.stringify({
+          error: `Template "${args.template_name}" not found. Available templates: ${available || 'none — ask the user to create one first'}`,
+        });
+      }
+
+      // Generate the document
+      const result = await internalFetch(ctx, 'POST', '/api/documents/generate', {
+        template_id: template.id,
+        event_id: args.event_id,
+      });
+
+      const data = result as Record<string, unknown>;
+      const doc = data.document as Record<string, unknown>;
+
+      return JSON.stringify({
+        success: true,
+        document_id: doc?.id,
+        filename: doc?.filename,
+        template_name: data.template_name,
+        event_name: data.event_name,
+        message: `Generated "${data.template_name}" for ${data.event_name}. Document saved and attached to the event.`,
+      }, null, 2);
+    },
+  },
 ];
 
 /**
