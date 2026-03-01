@@ -17,7 +17,9 @@ export type QuarterType = 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'TBD';
 
 export type ExpenseSource = 'brex' | 'pdf' | 'manual';
 
-export type DocumentSource = 'upload' | 'api';
+export type DocumentSource = 'upload' | 'api' | 'generated';
+
+export type SectionContentType = 'text' | 'table' | 'list' | 'custom';
 
 export type ChecklistPhase = 'pre_event' | 'day_of' | 'post_event';
 
@@ -197,6 +199,97 @@ export interface EventTeamAssignment {
 }
 
 /**
+ * Contact type enum
+ */
+export type ContactType = 'vendor' | 'lead' | 'organizer' | 'partner' | 'other';
+
+/**
+ * Contact record
+ */
+export interface Contact {
+  id: string;
+  organization_id: string;
+  first_name: string;
+  last_name: string;
+  company: string | null;
+  title: string | null;
+  email: string | null;
+  phone: string | null;
+  contact_type: ContactType;
+  notes: string | null;
+  last_contacted: string | null;
+  source: string | null;
+  created_by: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export type ContactInsert = Omit<Contact, 'id' | 'created_at' | 'updated_at'>;
+export type ContactUpdate = Partial<Omit<Contact, 'id' | 'created_at'>>;
+
+/**
+ * Event-Contact association (join table)
+ */
+export interface EventContact {
+  id: string;
+  event_id: string;
+  contact_id: string;
+  contact_role: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EventContactWithContact extends EventContact {
+  contact: Contact;
+}
+
+/**
+ * Document template - reusable structure for generating documents
+ */
+export interface DocumentTemplate {
+  id: string;
+  organization_id: string;
+  name: string;
+  description: string | null;
+  is_default: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export type DocumentTemplateInsert = Omit<DocumentTemplate, 'id' | 'created_at' | 'updated_at'>;
+export type DocumentTemplateUpdate = Partial<Omit<DocumentTemplate, 'id' | 'created_at'>>;
+
+/**
+ * Template section - ordered content block within a template
+ */
+export interface TemplateSection {
+  id: string;
+  template_id: string;
+  title: string;
+  content_type: SectionContentType;
+  ai_instructions: string | null;
+  default_content: string | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export type TemplateSectionInsert = Omit<TemplateSection, 'id' | 'created_at' | 'updated_at'>;
+export type TemplateSectionUpdate = Partial<Omit<TemplateSection, 'id' | 'created_at'>>;
+
+/**
+ * Template with its sections included
+ */
+export interface DocumentTemplateWithSections extends DocumentTemplate {
+  sections: TemplateSection[];
+}
+
+/**
  * Checklist template (reusable across events)
  */
 export interface ChecklistTemplate {
@@ -338,6 +431,7 @@ export interface Document {
   ai_summary: string | null;
   ai_tags: string[];
   chat_session_id: string | null;
+  template_id: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -1634,6 +1728,7 @@ export interface Database {
           ai_summary: string | null;
           ai_tags: string[];
           chat_session_id: string | null;
+          template_id: string | null;
           created_at: string | null;
           updated_at: string | null;
           deleted_at: string | null;
@@ -1652,6 +1747,7 @@ export interface Database {
           ai_summary?: string | null;
           ai_tags?: string[];
           chat_session_id?: string | null;
+          template_id?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
           deleted_at?: string | null;
@@ -1670,6 +1766,7 @@ export interface Database {
           ai_summary?: string | null;
           ai_tags?: string[];
           chat_session_id?: string | null;
+          template_id?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
           deleted_at?: string | null;
@@ -1691,6 +1788,12 @@ export interface Database {
             foreignKeyName: 'documents_chat_session_id_fkey';
             columns: ['chat_session_id'];
             referencedRelation: 'chat_sessions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'documents_template_id_fkey';
+            columns: ['template_id'];
+            referencedRelation: 'document_templates';
             referencedColumns: ['id'];
           }
         ];
@@ -1970,6 +2073,198 @@ export interface Database {
           }
         ];
       };
+      contacts: {
+        Row: {
+          id: string;
+          organization_id: string;
+          first_name: string;
+          last_name: string;
+          company: string | null;
+          title: string | null;
+          email: string | null;
+          phone: string | null;
+          contact_type: ContactType;
+          notes: string | null;
+          last_contacted: string | null;
+          source: string | null;
+          created_by: string | null;
+          metadata: Json;
+          created_at: string;
+          updated_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          first_name: string;
+          last_name: string;
+          company?: string | null;
+          title?: string | null;
+          email?: string | null;
+          phone?: string | null;
+          contact_type?: ContactType;
+          notes?: string | null;
+          last_contacted?: string | null;
+          source?: string | null;
+          created_by?: string | null;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          first_name?: string;
+          last_name?: string;
+          company?: string | null;
+          title?: string | null;
+          email?: string | null;
+          phone?: string | null;
+          contact_type?: ContactType;
+          notes?: string | null;
+          last_contacted?: string | null;
+          source?: string | null;
+          created_by?: string | null;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'contacts_organization_id_fkey';
+            columns: ['organization_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      event_contacts: {
+        Row: {
+          id: string;
+          event_id: string;
+          contact_id: string;
+          contact_role: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          contact_id: string;
+          contact_role?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          contact_id?: string;
+          contact_role?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'event_contacts_event_id_fkey';
+            columns: ['event_id'];
+            isOneToOne: false;
+            referencedRelation: 'events';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'event_contacts_contact_id_fkey';
+            columns: ['contact_id'];
+            isOneToOne: false;
+            referencedRelation: 'contacts';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      document_templates: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          description: string | null;
+          is_default: boolean;
+          created_by: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          description?: string | null;
+          is_default?: boolean;
+          created_by?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          name?: string;
+          description?: string | null;
+          is_default?: boolean;
+          created_by?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Relationships: [];
+      };
+      template_sections: {
+        Row: {
+          id: string;
+          template_id: string;
+          title: string;
+          content_type: SectionContentType;
+          ai_instructions: string | null;
+          default_content: string | null;
+          sort_order: number;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          template_id: string;
+          title: string;
+          content_type?: SectionContentType;
+          ai_instructions?: string | null;
+          default_content?: string | null;
+          sort_order?: number;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          template_id?: string;
+          title?: string;
+          content_type?: SectionContentType;
+          ai_instructions?: string | null;
+          default_content?: string | null;
+          sort_order?: number;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'template_sections_template_id_fkey';
+            columns: ['template_id'];
+            referencedRelation: 'document_templates';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -1986,6 +2281,8 @@ export interface Database {
       event_stage: EventStage;
       event_tier: EventTier;
       shipping_handler: ShippingHandler;
+      contact_type: ContactType;
+      section_content_type: SectionContentType;
     };
     CompositeTypes: {
       [_ in never]: never;
