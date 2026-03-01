@@ -613,7 +613,7 @@ export const agentTools: AgentTool[] = [
 /**
  * Convert agent tools to the OpenRouter function-calling format.
  */
-export function toolsToOpenRouterFormat(): Array<{
+export function toolsToOpenRouterFormat(extraTools?: AgentTool[]): Array<{
   type: 'function';
   function: {
     name: string;
@@ -621,7 +621,8 @@ export function toolsToOpenRouterFormat(): Array<{
     parameters: AgentTool['parameters'];
   };
 }> {
-  return agentTools.map((tool) => ({
+  const allTools = extraTools ? [...agentTools, ...extraTools] : agentTools;
+  return allTools.map((tool) => ({
     type: 'function' as const,
     function: {
       name: tool.name,
@@ -634,6 +635,9 @@ export function toolsToOpenRouterFormat(): Array<{
 /**
  * Find a tool by name.
  */
-export function findTool(name: string): AgentTool | undefined {
-  return agentTools.find((t) => t.name === name);
+export function findTool(name: string, extraTools?: AgentTool[]): AgentTool | undefined {
+  const found = agentTools.find((t) => t.name === name);
+  if (found) return found;
+  if (extraTools) return extraTools.find((t) => t.name === name);
+  return undefined;
 }

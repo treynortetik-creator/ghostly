@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
+import { routeNotificationToSlack } from '@/lib/integrations/slack/notifications';
 
 const VALID_TYPES = ['agent_message', 'budget_alert', 'task_reminder', 'custom_reminder'];
 
@@ -111,6 +112,9 @@ export const POST = withApiHandler(
       .single();
 
     if (error) throw error;
+
+    // Fire-and-forget: route to Slack if configured
+    routeNotificationToSlack(orgId, body.type, title, message, body.metadata).catch(() => {});
 
     return NextResponse.json({ notification }, { status: 201 });
   }

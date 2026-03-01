@@ -26,6 +26,7 @@ import {
   ScrollText,
   Bot,
   FileText,
+  Zap,
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/components/providers";
@@ -50,6 +51,7 @@ const navItems: NavItem[] = [
   { name: "Documents", href: "/documents", icon: FileText },
   { name: "ROI", href: "/roi", icon: TrendingUp },
   { name: "Webhooks", href: "/webhooks", icon: Webhook },
+  { name: "Integrations", href: "/integrations", icon: Zap },
   { name: "Settings", href: "/settings", icon: Settings },
   { name: "Agent", href: "/settings/agent", icon: Bot },
   { name: "Admin", href: "/admin", icon: Shield },

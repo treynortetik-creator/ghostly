@@ -47,7 +47,14 @@ function logAuditFromMiddleware(params: {
 const PUBLIC_ROUTES = ['/login'];
 
 // API routes that don't require authentication
-const PUBLIC_API_ROUTES = ['/api/auth/login', '/api/auth/logout', '/api/health'];
+const PUBLIC_API_ROUTES = [
+  '/api/auth/login',
+  '/api/auth/logout',
+  '/api/health',
+  '/api/integrations/slack/oauth/callback',
+  '/api/integrations/slack/events',
+  '/api/integrations/slack/commands',
+];
 
 /**
  * Check if a route is public (doesn't require auth)

@@ -93,6 +93,11 @@ export default function EventDetailPage({ params }: PageProps) {
   const [activeTab, setActiveTab] = useState<
     "details" | "documents" | "team" | "checklist" | "reminders" | "notes" | "shipments" | "post_event" | "roi"
   >("details");
+  const [slackConnected, setSlackConnected] = useState(false);
+  const [slackChannel, setSlackChannel] = useState<{ slack_channel_id: string; slack_channel_name: string } | null>(null);
+  const [slackChannels, setSlackChannels] = useState<Array<{ id: string; name: string; is_private: boolean }>>([]);
+  const [showChannelPicker, setShowChannelPicker] = useState(false);
+  const [channelSearch, setChannelSearch] = useState('');
   // Fetch event details
   const fetchEvent = async () => {
     setIsLoading(true);
@@ -120,6 +125,26 @@ export default function EventDetailPage({ params }: PageProps) {
 
   useEffect(() => {
     fetchEvent();
+  }, [id]);
+
+  // Check Slack integration status and event channel mapping
+  useEffect(() => {
+    fetch('/api/integrations')
+      .then(r => r.json())
+      .then(data => {
+        const slack = (data.connected || []).find((i: { type: string; status: string }) => i.type === 'slack' && i.status === 'active');
+        setSlackConnected(!!slack);
+      })
+      .catch(() => {});
+
+    fetch(`/api/integrations/event-channels?event_id=${id}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.event_channels?.length > 0) {
+          setSlackChannel(data.event_channels[0]);
+        }
+      })
+      .catch(() => {});
   }, [id]);
 
   // Handle update event
@@ -787,6 +812,93 @@ export default function EventDetailPage({ params }: PageProps) {
       {activeTab === "details" && (
         <div role="tabpanel" id="panel-details" aria-labelledby="tab-details">
           <EventDetailsTab event={event} expenses={expenses} />
+
+          {/* Slack Channel Link */}
+          {slackConnected && (
+            <div className="mt-6 pt-6 border-t border-border">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-spectral" />
+                  <span className="text-sm font-medium">Slack Channel</span>
+                </div>
+                {slackChannel ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">#{slackChannel.slack_channel_name}</span>
+                    <button
+                      onClick={async () => {
+                        await fetch('/api/integrations/event-channels', {
+                          method: 'DELETE',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ event_id: id }),
+                        });
+                        setSlackChannel(null);
+                      }}
+                      className="text-xs text-red-400 hover:text-red-300"
+                    >
+                      Unlink
+                    </button>
+                  </div>
+                ) : showChannelPicker ? (
+                  <div className="flex items-center gap-2 relative">
+                    <input
+                      type="text"
+                      placeholder="Search channels..."
+                      value={channelSearch}
+                      onChange={async (e) => {
+                        setChannelSearch(e.target.value);
+                        if (e.target.value.length >= 1) {
+                          const res = await fetch(`/api/integrations/slack/channels?query=${encodeURIComponent(e.target.value)}`);
+                          const data = await res.json();
+                          setSlackChannels(data.channels || []);
+                        }
+                      }}
+                      className="px-3 py-1.5 text-sm rounded-md bg-background border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-spectral/50 w-48"
+                    />
+                    {slackChannels.length > 0 && (
+                      <div className="absolute mt-40 z-50 bg-card border border-border rounded-md shadow-lg max-h-40 overflow-y-auto w-48">
+                        {slackChannels.map((ch) => (
+                          <button
+                            key={ch.id}
+                            onClick={async () => {
+                              await fetch('/api/integrations/event-channels', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  event_id: id,
+                                  slack_channel_id: ch.id,
+                                  slack_channel_name: ch.name,
+                                }),
+                              });
+                              setSlackChannel({ slack_channel_id: ch.id, slack_channel_name: ch.name });
+                              setShowChannelPicker(false);
+                              setSlackChannels([]);
+                              setChannelSearch('');
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
+                          >
+                            #{ch.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <button
+                      onClick={() => { setShowChannelPicker(false); setSlackChannels([]); setChannelSearch(''); }}
+                      className="text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowChannelPicker(true)}
+                    className="text-xs text-spectral hover:text-spectral-light"
+                  >
+                    Link Channel
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </AppShell>

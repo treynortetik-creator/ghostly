@@ -203,6 +203,10 @@ export interface EventTeamAssignment {
  */
 export type ContactType = 'vendor' | 'lead' | 'organizer' | 'partner' | 'other';
 
+export type IntegrationType = 'slack';
+export type IntegrationStatus = 'active' | 'disconnected';
+export type DigestType = 'daily' | 'weekly';
+
 /**
  * Contact record
  */
@@ -761,6 +765,54 @@ export interface AgentSettings {
   connected_integrations: Record<string, unknown> | null;
   created_at: string | null;
   updated_at: string | null;
+}
+
+// ─── Integration Types ──────────────────────────────────────────────────────
+
+export interface Integration {
+  id: string;
+  organization_id: string;
+  type: IntegrationType;
+  status: IntegrationStatus;
+  credentials: Record<string, unknown>;
+  settings: Record<string, unknown>;
+  installed_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface IntegrationNotificationRoute {
+  id: string;
+  organization_id: string;
+  integration_id: string;
+  notification_type: string;
+  destination: string;
+  is_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface IntegrationEventChannel {
+  id: string;
+  organization_id: string;
+  integration_id: string;
+  event_id: string;
+  slack_channel_id: string;
+  slack_channel_name: string;
+  created_at: string;
+}
+
+export interface IntegrationDigestConfig {
+  id: string;
+  organization_id: string;
+  integration_id: string;
+  digest_type: DigestType;
+  is_enabled: boolean;
+  send_time: string;
+  day_of_week: number;
+  recipient_type: string;
+  created_at: string;
+  updated_at: string;
 }
 
 // ============================================
@@ -2261,6 +2313,196 @@ export interface Database {
             foreignKeyName: 'template_sections_template_id_fkey';
             columns: ['template_id'];
             referencedRelation: 'document_templates';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      integrations: {
+        Row: {
+          id: string;
+          organization_id: string;
+          type: IntegrationType;
+          status: IntegrationStatus;
+          credentials: Record<string, unknown>;
+          settings: Record<string, unknown>;
+          installed_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          type: IntegrationType;
+          status?: IntegrationStatus;
+          credentials?: Record<string, unknown>;
+          settings?: Record<string, unknown>;
+          installed_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          type?: IntegrationType;
+          status?: IntegrationStatus;
+          credentials?: Record<string, unknown>;
+          settings?: Record<string, unknown>;
+          installed_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'integrations_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      integration_notification_routes: {
+        Row: {
+          id: string;
+          organization_id: string;
+          integration_id: string;
+          notification_type: string;
+          destination: string;
+          is_enabled: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          integration_id: string;
+          notification_type: string;
+          destination?: string;
+          is_enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          integration_id?: string;
+          notification_type?: string;
+          destination?: string;
+          is_enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'integration_notification_routes_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'integration_notification_routes_integration_id_fkey';
+            columns: ['integration_id'];
+            referencedRelation: 'integrations';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      integration_event_channels: {
+        Row: {
+          id: string;
+          organization_id: string;
+          integration_id: string;
+          event_id: string;
+          slack_channel_id: string;
+          slack_channel_name: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          integration_id: string;
+          event_id: string;
+          slack_channel_id: string;
+          slack_channel_name?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          integration_id?: string;
+          event_id?: string;
+          slack_channel_id?: string;
+          slack_channel_name?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'integration_event_channels_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'integration_event_channels_integration_id_fkey';
+            columns: ['integration_id'];
+            referencedRelation: 'integrations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'integration_event_channels_event_id_fkey';
+            columns: ['event_id'];
+            referencedRelation: 'events';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      integration_digest_config: {
+        Row: {
+          id: string;
+          organization_id: string;
+          integration_id: string;
+          digest_type: DigestType;
+          is_enabled: boolean;
+          send_time: string;
+          day_of_week: number;
+          recipient_type: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          integration_id: string;
+          digest_type: DigestType;
+          is_enabled?: boolean;
+          send_time?: string;
+          day_of_week?: number;
+          recipient_type?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          integration_id?: string;
+          digest_type?: DigestType;
+          is_enabled?: boolean;
+          send_time?: string;
+          day_of_week?: number;
+          recipient_type?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'integration_digest_config_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'integration_digest_config_integration_id_fkey';
+            columns: ['integration_id'];
+            referencedRelation: 'integrations';
             referencedColumns: ['id'];
           }
         ];

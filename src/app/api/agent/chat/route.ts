@@ -24,6 +24,7 @@ import { getOrgId } from '@/lib/api-helpers';
 import { agentTools, findTool, toolsToOpenRouterFormat } from '@/lib/agent/tools';
 import { buildSystemPrompt } from '@/lib/agent/system-prompt';
 import type { ToolExecutionContext } from '@/lib/agent/tools';
+import { getIntegrationTools, ensureIntegrationsRegistered } from '@/lib/integrations/registry';
 import { logError } from '@/lib/error-logger';
 import { extractTextFromFile, isImageType } from '@/lib/agent/file-processor';
 import { MAX_FILE_SIZE_BYTES } from '@/lib/constants';
@@ -311,6 +312,10 @@ export async function POST(request: NextRequest) {
     const agentName = settings?.agent_name || 'Ghostly';
     const agentFocus = settings?.agent_focus || null;
 
+    // ─── Load integration tools ─────────────────────────────────────────
+    await ensureIntegrationsRegistered();
+    const integrationTools = await getIntegrationTools(orgId);
+
     // ─── Load event context if provided ──────────────────────────────────
     let eventName: string | null = null;
     if (event_id) {
@@ -329,7 +334,7 @@ export async function POST(request: NextRequest) {
       agentFocus,
       eventId: event_id,
       eventName,
-      tools: agentTools,
+      tools: [...agentTools, ...integrationTools],
     });
 
     // ─── Build messages array ────────────────────────────────────────────
@@ -453,7 +458,7 @@ export async function POST(request: NextRequest) {
     let toolRounds = 0;
     let lastPromptTokens = 0;
 
-    const openRouterTools = toolsToOpenRouterFormat();
+    const openRouterTools = toolsToOpenRouterFormat(integrationTools);
 
     while (toolRounds < MAX_TOOL_ROUNDS) {
       toolRounds++;
@@ -521,7 +526,7 @@ export async function POST(request: NextRequest) {
 
         for (const tc of assistantMessage.tool_calls) {
           const toolName = tc.function.name;
-          const tool = findTool(toolName);
+          const tool = findTool(toolName, integrationTools);
 
           let resultContent: string;
           if (!tool) {
