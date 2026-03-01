@@ -69,6 +69,7 @@ export function SortableSection({
       {/* Header row */}
       <div className="flex items-center gap-2 px-3 py-2.5">
         <button
+          type="button"
           {...attributes}
           {...listeners}
           className="cursor-grab text-muted-foreground/40 hover:text-muted-foreground touch-none"
@@ -78,6 +79,7 @@ export function SortableSection({
         </button>
 
         <button
+          type="button"
           onClick={() => setExpanded(!expanded)}
           className="text-muted-foreground hover:text-foreground"
           aria-label={expanded ? "Collapse section" : "Expand section"}
