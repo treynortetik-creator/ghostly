@@ -419,6 +419,42 @@ export interface EventShipment {
 }
 
 /**
+ * Event travel/logistics entry - one travel plan per attendee for an event
+ */
+export interface EventTravelLogistics {
+  id: string;
+  event_id: string;
+  team_member_id: string | null;
+  traveler_name: string;
+  traveler_email: string | null;
+  traveler_role: string | null;
+  hotel_name: string | null;
+  hotel_address: string | null;
+  hotel_check_in: string | null;
+  hotel_check_out: string | null;
+  hotel_confirmation_number: string | null;
+  flight_airline: string | null;
+  flight_number: string | null;
+  flight_departure_airport: string | null;
+  flight_arrival_airport: string | null;
+  flight_departure_at: string | null;
+  flight_arrival_at: string | null;
+  flight_confirmation_number: string | null;
+  ground_transport_mode: string | null;
+  ground_transport_details: string | null;
+  lodging_budget: number | null;
+  airfare_budget: number | null;
+  ground_transport_budget: number | null;
+  meals_budget: number | null;
+  misc_travel_budget: number | null;
+  notes: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+/**
  * Document record - files attached to events or expenses
  */
 export interface Document {
@@ -494,6 +530,9 @@ export type EventReminderUpdate = Partial<Omit<EventReminder, 'id' | 'created_at
 
 export type EventShipmentInsert = Omit<EventShipment, 'id' | 'created_at' | 'updated_at'>;
 export type EventShipmentUpdate = Partial<Omit<EventShipment, 'id' | 'created_at'>>;
+
+export type EventTravelLogisticsInsert = Omit<EventTravelLogistics, 'id' | 'created_at' | 'updated_at'>;
+export type EventTravelLogisticsUpdate = Partial<Omit<EventTravelLogistics, 'id' | 'created_at'>>;
 
 export type DocumentInsert = Omit<Document, 'id' | 'created_at' | 'updated_at'>;
 export type DocumentUpdate = Partial<Omit<Document, 'id' | 'created_at'>>;
@@ -1437,6 +1476,118 @@ export interface Database {
             foreignKeyName: 'event_shipments_event_id_fkey';
             columns: ['event_id'];
             referencedRelation: 'events';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      event_travel_logistics: {
+        Row: {
+          id: string;
+          event_id: string;
+          team_member_id: string | null;
+          traveler_name: string;
+          traveler_email: string | null;
+          traveler_role: string | null;
+          hotel_name: string | null;
+          hotel_address: string | null;
+          hotel_check_in: string | null;
+          hotel_check_out: string | null;
+          hotel_confirmation_number: string | null;
+          flight_airline: string | null;
+          flight_number: string | null;
+          flight_departure_airport: string | null;
+          flight_arrival_airport: string | null;
+          flight_departure_at: string | null;
+          flight_arrival_at: string | null;
+          flight_confirmation_number: string | null;
+          ground_transport_mode: string | null;
+          ground_transport_details: string | null;
+          lodging_budget: number | null;
+          airfare_budget: number | null;
+          ground_transport_budget: number | null;
+          meals_budget: number | null;
+          misc_travel_budget: number | null;
+          notes: string | null;
+          created_by: string;
+          created_at: string | null;
+          updated_at: string | null;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          team_member_id?: string | null;
+          traveler_name: string;
+          traveler_email?: string | null;
+          traveler_role?: string | null;
+          hotel_name?: string | null;
+          hotel_address?: string | null;
+          hotel_check_in?: string | null;
+          hotel_check_out?: string | null;
+          hotel_confirmation_number?: string | null;
+          flight_airline?: string | null;
+          flight_number?: string | null;
+          flight_departure_airport?: string | null;
+          flight_arrival_airport?: string | null;
+          flight_departure_at?: string | null;
+          flight_arrival_at?: string | null;
+          flight_confirmation_number?: string | null;
+          ground_transport_mode?: string | null;
+          ground_transport_details?: string | null;
+          lodging_budget?: number | null;
+          airfare_budget?: number | null;
+          ground_transport_budget?: number | null;
+          meals_budget?: number | null;
+          misc_travel_budget?: number | null;
+          notes?: string | null;
+          created_by?: string;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          team_member_id?: string | null;
+          traveler_name?: string;
+          traveler_email?: string | null;
+          traveler_role?: string | null;
+          hotel_name?: string | null;
+          hotel_address?: string | null;
+          hotel_check_in?: string | null;
+          hotel_check_out?: string | null;
+          hotel_confirmation_number?: string | null;
+          flight_airline?: string | null;
+          flight_number?: string | null;
+          flight_departure_airport?: string | null;
+          flight_arrival_airport?: string | null;
+          flight_departure_at?: string | null;
+          flight_arrival_at?: string | null;
+          flight_confirmation_number?: string | null;
+          ground_transport_mode?: string | null;
+          ground_transport_details?: string | null;
+          lodging_budget?: number | null;
+          airfare_budget?: number | null;
+          ground_transport_budget?: number | null;
+          meals_budget?: number | null;
+          misc_travel_budget?: number | null;
+          notes?: string | null;
+          created_by?: string;
+          created_at?: string | null;
+          updated_at?: string | null;
+          deleted_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'event_travel_logistics_event_id_fkey';
+            columns: ['event_id'];
+            referencedRelation: 'events';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'event_travel_logistics_team_member_id_fkey';
+            columns: ['team_member_id'];
+            referencedRelation: 'team_members';
             referencedColumns: ['id'];
           }
         ];

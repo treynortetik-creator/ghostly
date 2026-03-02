@@ -1041,6 +1041,213 @@ export const agentTools: AgentTool[] = [
       );
     },
   },
+
+  // 23. get_travel_logistics
+  {
+    name: 'get_travel_logistics',
+    description:
+      'Get travel and logistics entries for an event, including hotel, flight, ground transport, and travel-budget totals.',
+    default_permission: 'always',
+    parameters: {
+      type: 'object',
+      properties: {
+        event_id: {
+          type: 'string',
+          description: 'Event UUID',
+        },
+        include_brief: {
+          type: 'boolean',
+          description: 'When true, also include a compiled travel brief summary',
+        },
+      },
+      required: ['event_id'],
+    },
+    execute: async (args, ctx) => {
+      const eventId = encodeURIComponent(String(args.event_id));
+      const result = await internalFetch(ctx, 'GET', `/api/events/${eventId}/travel-logistics`);
+      const data = result as Record<string, unknown>;
+
+      let brief: string | null = null;
+      if (args.include_brief) {
+        const briefResult = await internalFetch(ctx, 'GET', `/api/events/${eventId}/travel-logistics/brief`);
+        brief = ((briefResult as Record<string, unknown>).brief as string | undefined) ?? null;
+      }
+
+      return JSON.stringify(
+        {
+          entries: data.entries ?? [],
+          totals: data.totals ?? null,
+          team_members: data.team_members ?? [],
+          brief,
+        },
+        null,
+        2
+      );
+    },
+  },
+
+  // 24. create_travel_logistics_entry
+  {
+    name: 'create_travel_logistics_entry',
+    description:
+      'Create a travel/logistics entry for a specific event attendee, including hotel, flight, ground transport, and travel budget categories.',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        event_id: { type: 'string', description: 'Event UUID' },
+        team_member_id: { type: 'string', description: 'Optional team member UUID if linked to a roster member' },
+        traveler_name: { type: 'string', description: 'Traveler full name' },
+        traveler_email: { type: 'string', description: 'Optional traveler email' },
+        traveler_role: { type: 'string', description: 'Optional traveler role for this event' },
+        hotel_name: { type: 'string', description: 'Optional hotel name' },
+        hotel_address: { type: 'string', description: 'Optional hotel address' },
+        hotel_check_in: { type: 'string', description: 'Optional hotel check-in date (YYYY-MM-DD)' },
+        hotel_check_out: { type: 'string', description: 'Optional hotel check-out date (YYYY-MM-DD)' },
+        hotel_confirmation_number: { type: 'string', description: 'Optional hotel confirmation number' },
+        flight_airline: { type: 'string', description: 'Optional airline name' },
+        flight_number: { type: 'string', description: 'Optional flight number' },
+        flight_departure_airport: { type: 'string', description: 'Optional departure airport code/name' },
+        flight_arrival_airport: { type: 'string', description: 'Optional arrival airport code/name' },
+        flight_departure_at: { type: 'string', description: 'Optional departure datetime (ISO 8601)' },
+        flight_arrival_at: { type: 'string', description: 'Optional arrival datetime (ISO 8601)' },
+        flight_confirmation_number: { type: 'string', description: 'Optional flight confirmation number' },
+        ground_transport_mode: {
+          type: 'string',
+          description: 'Optional ground transport mode',
+          enum: ['rental_car', 'shuttle', 'rideshare', 'taxi', 'public_transit', 'other'],
+        },
+        ground_transport_details: { type: 'string', description: 'Optional ground transport notes/details' },
+        lodging_budget: { type: 'number', description: 'Optional lodging budget in dollars' },
+        airfare_budget: { type: 'number', description: 'Optional airfare budget in dollars' },
+        ground_transport_budget: { type: 'number', description: 'Optional ground transport budget in dollars' },
+        meals_budget: { type: 'number', description: 'Optional meals budget in dollars' },
+        misc_travel_budget: { type: 'number', description: 'Optional misc travel budget in dollars' },
+        notes: { type: 'string', description: 'Optional notes' },
+      },
+      required: ['event_id', 'traveler_name'],
+    },
+    execute: async (args, ctx) => {
+      const eventId = encodeURIComponent(String(args.event_id));
+      const payload = { ...args };
+      delete payload.event_id;
+      const result = await internalFetch(ctx, 'POST', `/api/events/${eventId}/travel-logistics`, payload);
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 25. update_travel_logistics_entry
+  {
+    name: 'update_travel_logistics_entry',
+    description:
+      'Update an existing travel/logistics entry for an event.',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        event_id: { type: 'string', description: 'Event UUID' },
+        entry_id: { type: 'string', description: 'Travel/logistics entry UUID' },
+        team_member_id: { type: 'string', description: 'Optional linked team member UUID' },
+        traveler_name: { type: 'string', description: 'Updated traveler name' },
+        traveler_email: { type: 'string', description: 'Updated traveler email' },
+        traveler_role: { type: 'string', description: 'Updated traveler role' },
+        hotel_name: { type: 'string', description: 'Updated hotel name' },
+        hotel_address: { type: 'string', description: 'Updated hotel address' },
+        hotel_check_in: { type: 'string', description: 'Updated check-in date (YYYY-MM-DD)' },
+        hotel_check_out: { type: 'string', description: 'Updated check-out date (YYYY-MM-DD)' },
+        hotel_confirmation_number: { type: 'string', description: 'Updated hotel confirmation number' },
+        flight_airline: { type: 'string', description: 'Updated airline name' },
+        flight_number: { type: 'string', description: 'Updated flight number' },
+        flight_departure_airport: { type: 'string', description: 'Updated departure airport' },
+        flight_arrival_airport: { type: 'string', description: 'Updated arrival airport' },
+        flight_departure_at: { type: 'string', description: 'Updated departure datetime (ISO 8601)' },
+        flight_arrival_at: { type: 'string', description: 'Updated arrival datetime (ISO 8601)' },
+        flight_confirmation_number: { type: 'string', description: 'Updated flight confirmation number' },
+        ground_transport_mode: {
+          type: 'string',
+          description: 'Updated ground transport mode',
+          enum: ['rental_car', 'shuttle', 'rideshare', 'taxi', 'public_transit', 'other'],
+        },
+        ground_transport_details: { type: 'string', description: 'Updated ground transport notes' },
+        lodging_budget: { type: 'number', description: 'Updated lodging budget in dollars' },
+        airfare_budget: { type: 'number', description: 'Updated airfare budget in dollars' },
+        ground_transport_budget: { type: 'number', description: 'Updated ground transport budget in dollars' },
+        meals_budget: { type: 'number', description: 'Updated meals budget in dollars' },
+        misc_travel_budget: { type: 'number', description: 'Updated misc travel budget in dollars' },
+        notes: { type: 'string', description: 'Updated notes' },
+      },
+      required: ['event_id', 'entry_id'],
+    },
+    execute: async (args, ctx) => {
+      const eventId = encodeURIComponent(String(args.event_id));
+      const entryId = encodeURIComponent(String(args.entry_id));
+      const payload = { ...args };
+      delete payload.event_id;
+      delete payload.entry_id;
+      const result = await internalFetch(ctx, 'PUT', `/api/events/${eventId}/travel-logistics/${entryId}`, payload);
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 26. delete_travel_logistics_entry
+  {
+    name: 'delete_travel_logistics_entry',
+    description:
+      'Delete a travel/logistics entry from an event.',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        event_id: { type: 'string', description: 'Event UUID' },
+        entry_id: { type: 'string', description: 'Travel/logistics entry UUID' },
+      },
+      required: ['event_id', 'entry_id'],
+    },
+    execute: async (args, ctx) => {
+      const eventId = encodeURIComponent(String(args.event_id));
+      const entryId = encodeURIComponent(String(args.entry_id));
+      const result = await internalFetch(ctx, 'DELETE', `/api/events/${eventId}/travel-logistics/${entryId}`);
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 27. generate_post_event_debrief
+  {
+    name: 'generate_post_event_debrief',
+    description:
+      'Generate and save structured post-event debrief sections for an event from transcript/survey text.',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        event_id: {
+          type: 'string',
+          description: 'Event UUID',
+        },
+        source_text: {
+          type: 'string',
+          description: 'Transcript/survey content to analyze',
+        },
+        source_label: {
+          type: 'string',
+          description: 'Optional source label (e.g., Post-event team call, Survey export)',
+        },
+        mode: {
+          type: 'string',
+          description: 'replace overwrites section notes, append adds to existing notes',
+          enum: ['replace', 'append'],
+        },
+      },
+      required: ['event_id', 'source_text'],
+    },
+    execute: async (args, ctx) => {
+      const eventId = encodeURIComponent(String(args.event_id));
+      const payload = { ...args };
+      delete payload.event_id;
+      const result = await internalFetch(ctx, 'POST', `/api/events/${eventId}/post-event/generate`, payload);
+      return JSON.stringify(result, null, 2);
+    },
+  },
 ];
 
 export function getToolDefaultPermission(tool: AgentTool): ToolPermissionMode {

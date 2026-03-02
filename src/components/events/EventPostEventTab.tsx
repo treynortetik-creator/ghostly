@@ -54,6 +54,10 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
     follow_up: '',
   });
   const [isSavingDebrief, setIsSavingDebrief] = useState(false);
+  const [sourceLabel, setSourceLabel] = useState('');
+  const [sourceText, setSourceText] = useState('');
+  const [isGeneratingDebrief, setIsGeneratingDebrief] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const fetchNotes = useCallback(async () => {
@@ -124,6 +128,43 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
     }
   };
 
+  const handleGenerateDebrief = async () => {
+    if (!sourceText.trim()) return;
+    setGenerationError(null);
+    setIsGeneratingDebrief(true);
+    try {
+      const res = await fetch(`/api/events/${eventId}/post-event/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          source_text: sourceText,
+          source_label: sourceLabel || undefined,
+          mode: 'replace',
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to generate debrief');
+      }
+
+      const data = await res.json();
+      if (data.debrief) {
+        setDebriefForm({
+          went_well: data.debrief.went_well || '',
+          could_improve: data.debrief.could_improve || '',
+          contacts_made: data.debrief.contacts_made || '',
+          follow_up: data.debrief.follow_up || '',
+        });
+      }
+      await fetchNotes();
+    } catch (err) {
+      setGenerationError(err instanceof Error ? err.message : 'Failed to generate debrief');
+    } finally {
+      setIsGeneratingDebrief(false);
+    }
+  };
+
   const handleAddNote = async () => {
     if (!newNote.content.trim()) return;
     setIsSubmitting(true);
@@ -188,6 +229,42 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="rounded-md border border-border p-3 space-y-3">
+            <p className="text-sm font-medium text-foreground">Auto-fill From Transcript or Survey</p>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Source Label (optional)</label>
+              <input
+                type="text"
+                value={sourceLabel}
+                onChange={(e) => setSourceLabel(e.target.value)}
+                placeholder="Post-event call transcript, survey export, etc."
+                className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 focus:border-spectral focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Source Content</label>
+              <textarea
+                value={sourceText}
+                onChange={(e) => setSourceText(e.target.value)}
+                placeholder="Paste transcript or survey text here and Ghostly will draft debrief sections."
+                rows={5}
+                className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 focus:border-spectral focus:outline-none resize-y"
+              />
+            </div>
+            {generationError && (
+              <p className="text-xs text-destructive">{generationError}</p>
+            )}
+            <div className="flex justify-end">
+              <Button
+                variant="outline"
+                onClick={handleGenerateDebrief}
+                disabled={isGeneratingDebrief || !sourceText.trim()}
+              >
+                {isGeneratingDebrief ? 'Generating...' : 'Generate Debrief Draft'}
+              </Button>
+            </div>
+          </div>
+
           {debriefSections.map((section) => (
             <div key={section.key}>
               <label className="text-sm font-medium text-foreground mb-1 block">

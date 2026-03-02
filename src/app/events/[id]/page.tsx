@@ -22,6 +22,7 @@ import {
   ClipboardCheck,
   Truck,
   Copy,
+  Plane,
 } from "lucide-react";
 import { AppShell } from "@/components/layout";
 import { Button } from "@/components/ui/Button";
@@ -36,6 +37,7 @@ import { EventChecklistTab } from "@/components/events/EventChecklistTab";
 import { EventRemindersTab } from "@/components/events/EventRemindersTab";
 import { EventNotesTab } from "@/components/events/EventNotesTab";
 import { EventShipmentsTab } from "@/components/events/EventShipmentsTab";
+import { EventTravelLogisticsTab } from "@/components/events/EventTravelLogisticsTab";
 import { EventPostEventTab } from "@/components/events/EventPostEventTab";
 import { EventDocumentsTab } from "@/components/documents/EventDocumentsTab";
 import { EventROITab } from "@/components/events/EventROITab";
@@ -91,7 +93,7 @@ export default function EventDetailPage({ params }: PageProps) {
   const [isCloning, setIsCloning] = useState(false);
   const { toasts, removeToast, toast } = useToast();
   const [activeTab, setActiveTab] = useState<
-    "details" | "documents" | "team" | "checklist" | "reminders" | "notes" | "shipments" | "post_event" | "roi"
+    "details" | "documents" | "team" | "checklist" | "reminders" | "notes" | "shipments" | "travel_logistics" | "post_event" | "roi"
   >("details");
   const [slackConnected, setSlackConnected] = useState(false);
   const [slackChannel, setSlackChannel] = useState<{ slack_channel_id: string; slack_channel_name: string } | null>(null);
@@ -732,6 +734,22 @@ export default function EventDetailPage({ params }: PageProps) {
           Post-Event
         </button>
         <button
+          onClick={() => setActiveTab("travel_logistics")}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === "travel_logistics"
+              ? "border-spectral text-spectral"
+              : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+          }`}
+          role="tab"
+          aria-selected={activeTab === "travel_logistics"}
+          aria-controls="panel-travel_logistics"
+          id="tab-travel_logistics"
+         
+        >
+          <Plane className="w-4 h-4 inline mr-1.5 -mt-0.5" />
+          Travel &amp; Logistics
+        </button>
+        <button
           onClick={() => setActiveTab("roi")}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
             activeTab === "roi"
@@ -798,6 +816,13 @@ export default function EventDetailPage({ params }: PageProps) {
       {activeTab === "post_event" && (
         <div role="tabpanel" id="panel-post_event" aria-labelledby="tab-post_event">
           <EventPostEventTab eventId={id} />
+        </div>
+      )}
+
+      {/* Travel & Logistics Tab */}
+      {activeTab === "travel_logistics" && (
+        <div role="tabpanel" id="panel-travel_logistics" aria-labelledby="tab-travel_logistics">
+          <EventTravelLogisticsTab eventId={id} />
         </div>
       )}
 
