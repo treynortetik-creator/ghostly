@@ -53,7 +53,9 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events' },
     if (expensesError) throw expensesError;
 
     const expenseList = expenses || [];
-    const actualSpent = expenseList.reduce((sum, e) => sum + e.amount, 0);
+    const actualSpent = expenseList
+      .filter((e) => e.budget_bucket !== 'travel')
+      .reduce((sum, e) => sum + e.amount, 0);
     const budgetAmount = event.budget_amount ?? 0;
 
     // Extract event_types and fiscal_years join results
@@ -73,7 +75,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events' },
       roi_notes: event.roi_notes ?? null,
       actual_spent: actualSpent,
       remaining: budgetAmount - actualSpent,
-      expense_count: expenseList.length,
+      expense_count: expenseList.filter((e) => e.budget_bucket !== 'travel').length,
     };
 
     return NextResponse.json({
@@ -234,7 +236,9 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'events' },
       .is('deleted_at', null);
 
     const expenseList = expenses || [];
-    const actualSpent = expenseList.reduce((sum, e) => sum + e.amount, 0);
+    const actualSpent = expenseList
+      .filter((e) => e.budget_bucket !== 'travel')
+      .reduce((sum, e) => sum + e.amount, 0);
     const budgetAmount = updatedEvent.budget_amount ?? 0;
 
     // Extract event_types join result and rename to event_type_record
@@ -254,7 +258,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'events' },
       roi_notes: updatedEvent.roi_notes ?? null,
       actual_spent: actualSpent,
       remaining: budgetAmount - actualSpent,
-      expense_count: expenseList.length,
+      expense_count: expenseList.filter((e) => e.budget_bucket !== 'travel').length,
     };
 
     // Audit log (non-blocking)

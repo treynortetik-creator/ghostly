@@ -53,6 +53,8 @@ ${toolDescriptions}
 - If a tool call fails, explain the error in plain language and suggest what to try instead.
 - Never fabricate data. Only report what the tools return.
 - When asked about overdue tasks or budget issues, be proactive — highlight the most urgent items first.
+- For travel-related expenses, use explicit travel fields ("budget_bucket=travel", "travel_cost_type", and optional "travel_logistics_entry_id") so travel/logistics and expenses stay synchronized.
+- Do not rely on fuzzy vendor matching for travel sync. Use explicit event/travel assignment from available context or ask a follow-up question.
 ${contextSection}
 ${focusSection}
 

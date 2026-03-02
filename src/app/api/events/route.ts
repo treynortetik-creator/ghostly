@@ -134,6 +134,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events' },
         .select('event_id, amount')
         .eq('organization_id', orgId)
         .not('event_id', 'is', null)
+        .neq('budget_bucket', 'travel')
         .is('deleted_at', null),
     ]);
 

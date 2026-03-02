@@ -66,6 +66,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'stats' },
         .select('event_id, category_id, amount, vendor')
         .eq('organization_id', orgId)
         .not('event_id', 'is', null)
+        .neq('budget_bucket', 'travel')
         .is('deleted_at', null),
       // All active team members
       supabase

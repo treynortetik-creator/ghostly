@@ -137,7 +137,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'dashboard/sum
       const eventsOfType = (activeEvents ?? []).filter(e => e.event_type_id === et.id);
       const eventIds = new Set(eventsOfType.map(e => e.id));
       const actual = scopedExpenses
-        .filter(e => e.event_id && eventIds.has(e.event_id))
+        .filter(e => e.event_id && e.budget_bucket !== 'travel' && eventIds.has(e.event_id))
         .reduce((sum, e) => sum + e.amount, 0);
       return {
         id: et.id,
@@ -155,7 +155,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'dashboard/sum
       const budget = eventsInQuarter.reduce((sum, e) => sum + (e.budget_amount ?? 0), 0);
       const eventIds = new Set(eventsInQuarter.map(e => e.id));
       const actual = scopedExpenses
-        .filter(e => e.event_id && eventIds.has(e.event_id))
+        .filter(e => e.event_id && e.budget_bucket !== 'travel' && eventIds.has(e.event_id))
         .reduce((sum, e) => sum + e.amount, 0);
       return { quarter, budget, actual };
     });

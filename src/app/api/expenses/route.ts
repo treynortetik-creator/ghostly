@@ -13,6 +13,43 @@ import { withIdempotency } from '@/lib/idempotency';
 import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 import { parsePagination, paginationMeta, paginationRange } from '@/lib/pagination';
 import { VALIDATION, VALID_EXPENSE_SOURCE_TYPES } from '@/lib/validation';
+import {
+  isExpenseBudgetBucket,
+  isTravelCostType,
+  resolveTravelEntryIdForExpense,
+  syncTravelBudgetsForPairs,
+} from '@/lib/travel-expense-sync';
+
+type NameRelation = { name: string } | { name: string }[] | null;
+
+function relationName(value: NameRelation): string | null {
+  if (!value) return null;
+  if (Array.isArray(value)) {
+    return value[0]?.name || null;
+  }
+  return value.name || null;
+}
+
+function toNameRelation(value: unknown): NameRelation {
+  if (!value) return null;
+  if (Array.isArray(value)) {
+    const first = value[0];
+    if (first && typeof first === 'object' && 'name' in first) {
+      const name = (first as { name?: unknown }).name;
+      if (typeof name === 'string') {
+        return [{ name }];
+      }
+    }
+    return null;
+  }
+  if (typeof value === 'object' && 'name' in value) {
+    const name = (value as { name?: unknown }).name;
+    if (typeof name === 'string') {
+      return { name };
+    }
+  }
+  return null;
+}
 
 // ============================================
 // GET /api/expenses
@@ -31,6 +68,9 @@ export const GET = withApiHandler({ permission: 'read', resource: 'expenses' },
     const dateEnd = searchParams.get('date_end');
     const vendor = searchParams.get('vendor');
     const sourceType = searchParams.get('source_type') as ExpenseSource | null;
+    const budgetBucket = searchParams.get('budget_bucket');
+    const travelLogisticsEntryId = searchParams.get('travel_logistics_entry_id');
+    const travelCostType = searchParams.get('travel_cost_type');
     const modifiedAfter = searchParams.get('modified_after');
     const idsParam = searchParams.get('ids');
     const sortBy = searchParams.get('sort_by') || 'date'; // date, amount, vendor
@@ -58,6 +98,9 @@ export const GET = withApiHandler({ permission: 'read', resource: 'expenses' },
       date_end?: string;
       vendor?: string;
       source_type?: ExpenseSource;
+      budget_bucket?: string;
+      travel_logistics_entry_id?: string;
+      travel_cost_type?: string;
       modified_after?: string;
       ids?: string[];
     } = {};
@@ -82,6 +125,15 @@ export const GET = withApiHandler({ permission: 'read', resource: 'expenses' },
     }
     if (sourceType && ['manual', 'brex', 'pdf'].includes(sourceType)) {
       filters.source_type = sourceType;
+    }
+    if (budgetBucket && isExpenseBudgetBucket(budgetBucket)) {
+      filters.budget_bucket = budgetBucket;
+    }
+    if (travelLogisticsEntryId) {
+      filters.travel_logistics_entry_id = travelLogisticsEntryId;
+    }
+    if (travelCostType && isTravelCostType(travelCostType)) {
+      filters.travel_cost_type = travelCostType;
     }
     if (modifiedAfter) {
       filters.modified_after = modifiedAfter;
@@ -155,6 +207,15 @@ export const GET = withApiHandler({ permission: 'read', resource: 'expenses' },
     if (filters.source_type) {
       query = query.eq('source_type', filters.source_type);
     }
+    if (filters.budget_bucket) {
+      query = query.eq('budget_bucket', filters.budget_bucket);
+    }
+    if (filters.travel_logistics_entry_id) {
+      query = query.eq('travel_logistics_entry_id', filters.travel_logistics_entry_id);
+    }
+    if (filters.travel_cost_type) {
+      query = query.eq('travel_cost_type', filters.travel_cost_type);
+    }
     if (filters.modified_after) {
       query = query.gt('updated_at', filters.modified_after);
     }
@@ -204,6 +265,9 @@ export const GET = withApiHandler({ permission: 'read', resource: 'expenses' },
       sumQuery = sumQuery.ilike('vendor', `%${escapedVendor}%`);
     }
     if (filters.source_type) sumQuery = sumQuery.eq('source_type', filters.source_type);
+    if (filters.budget_bucket) sumQuery = sumQuery.eq('budget_bucket', filters.budget_bucket);
+    if (filters.travel_logistics_entry_id) sumQuery = sumQuery.eq('travel_logistics_entry_id', filters.travel_logistics_entry_id);
+    if (filters.travel_cost_type) sumQuery = sumQuery.eq('travel_cost_type', filters.travel_cost_type);
     if (filters.modified_after) sumQuery = sumQuery.gt('updated_at', filters.modified_after);
     if (filters.ids) sumQuery = sumQuery.in('id', filters.ids);
 
@@ -212,13 +276,17 @@ export const GET = withApiHandler({ permission: 'read', resource: 'expenses' },
 
     // Map results to add relation fields
     const expenses = (rawExpenses || []).map(e => {
-      const { events: eventRel, budget_categories: catRel, ...rest } = e as any;
+      const row = e as unknown as Record<string, unknown>;
+      const { events: eventUnknown, budget_categories: catUnknown, ...rest } = row;
+      const eventRel = toNameRelation(eventUnknown);
+      const catRel = toNameRelation(catUnknown);
+      const hasEventTarget = typeof rest.event_id === 'string' && rest.event_id.length > 0;
       return {
         ...rest,
-        event_name: eventRel?.name || null,
-        category_name: catRel?.name || null,
-        target_type: rest.event_id ? 'event' as const : 'category' as const,
-        target_name: eventRel?.name || catRel?.name || 'Unknown',
+        event_name: relationName(eventRel),
+        category_name: relationName(catRel),
+        target_type: hasEventTarget ? 'event' as const : 'category' as const,
+        target_name: relationName(eventRel) || relationName(catRel) || 'Unknown',
       };
     });
 
@@ -272,8 +340,10 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
     }
 
     // Validate XOR constraint: must have either event_id OR category_id, but not both and not neither
-    const hasEventId = body.event_id && body.event_id !== '';
-    const hasCategoryId = body.category_id && body.category_id !== '';
+    const eventId = body.event_id ? String(body.event_id).trim() : '';
+    const categoryId = body.category_id ? String(body.category_id).trim() : '';
+    const hasEventId = eventId.length > 0;
+    const hasCategoryId = categoryId.length > 0;
 
     if (hasEventId && hasCategoryId) {
       return NextResponse.json(
@@ -285,6 +355,33 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
     if (!hasEventId && !hasCategoryId) {
       return NextResponse.json(
         { error: 'Expense must be assigned to either an event or a category.' },
+        { status: 400 }
+      );
+    }
+
+    // Validate and normalize budget bucket
+    const requestedBucket = body.budget_bucket;
+    if (requestedBucket !== undefined && !isExpenseBudgetBucket(requestedBucket)) {
+      return NextResponse.json(
+        { error: 'Invalid budget_bucket. Must be one of: event, travel, category' },
+        { status: 400 }
+      );
+    }
+
+    const budgetBucket = hasCategoryId
+      ? 'category'
+      : ((requestedBucket as string | undefined) ?? 'event');
+
+    if (hasCategoryId && requestedBucket !== undefined && requestedBucket !== 'category') {
+      return NextResponse.json(
+        { error: 'Category expenses must use budget_bucket="category"' },
+        { status: 400 }
+      );
+    }
+
+    if (budgetBucket === 'travel' && !hasEventId) {
+      return NextResponse.json(
+        { error: 'Travel expenses must be assigned to an event.' },
         { status: 400 }
       );
     }
@@ -320,11 +417,12 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
 
     // Validate event_id exists if provided
     let eventName: string | null = null;
+    let eventDate: string | null = null;
     if (hasEventId) {
       const { data: event, error: eventError } = await supabase
         .from('events')
-        .select('id, name')
-        .eq('id', body.event_id)
+        .select('id, name, date_start')
+        .eq('id', eventId)
         .eq('organization_id', orgId)
         .is('deleted_at', null)
         .single();
@@ -336,6 +434,7 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
         );
       }
       eventName = event.name;
+      eventDate = event.date_start;
     }
 
     // Validate category_id exists if provided
@@ -344,7 +443,7 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
       const { data: category, error: categoryError } = await supabase
         .from('budget_categories')
         .select('id, name')
-        .eq('id', body.category_id)
+        .eq('id', categoryId)
         .eq('organization_id', orgId)
         .is('deleted_at', null)
         .single();
@@ -358,19 +457,55 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
       categoryName = category.name;
     }
 
+    // Validate/resolve travel linkage
+    let travelLogisticsEntryId: string | null = null;
+    let travelCostType: string | null = null;
+    if (budgetBucket === 'travel') {
+      const requestedCostType = body.travel_cost_type ? String(body.travel_cost_type).trim() : 'misc';
+      if (!isTravelCostType(requestedCostType)) {
+        return NextResponse.json(
+          { error: 'Invalid travel_cost_type. Must be one of: lodging, airfare, ground_transport, meals, misc' },
+          { status: 400 }
+        );
+      }
+
+      travelCostType = requestedCostType;
+      try {
+        travelLogisticsEntryId = await resolveTravelEntryIdForExpense(
+          supabase,
+          orgId,
+          eventId,
+          body.travel_logistics_entry_id ? String(body.travel_logistics_entry_id) : null
+        );
+      } catch (error) {
+        return NextResponse.json(
+          { error: error instanceof Error ? error.message : 'Invalid travel logistics assignment' },
+          { status: 400 }
+        );
+      }
+    } else if (body.travel_logistics_entry_id !== undefined || body.travel_cost_type !== undefined) {
+      return NextResponse.json(
+        { error: 'travel_logistics_entry_id and travel_cost_type are only allowed when budget_bucket is "travel".' },
+        { status: 400 }
+      );
+    }
+
     // Insert expense into Supabase
     const { data: newExpense, error: insertError } = await supabase
       .from('expenses')
       .insert({
         organization_id: orgId,
-        event_id: hasEventId ? body.event_id : null,
-        category_id: hasCategoryId ? body.category_id : null,
+        event_id: hasEventId ? eventId : null,
+        category_id: hasCategoryId ? categoryId : null,
         amount: amount,
-        expense_date: body.expense_date,
+        expense_date: body.expense_date || eventDate || new Date().toISOString().slice(0, 10),
         vendor: body.vendor || null,
         memo: body.memo || null,
         source_type: sourceType as ExpenseSource,
         source_reference: body.source_reference || null,
+        budget_bucket: budgetBucket,
+        travel_logistics_entry_id: travelLogisticsEntryId,
+        travel_cost_type: travelCostType,
         is_duplicate: false,
       })
       .select()
@@ -378,6 +513,12 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
 
     if (insertError || !newExpense) {
       throw insertError || new Error('Failed to insert expense');
+    }
+
+    if (budgetBucket === 'travel' && travelLogisticsEntryId && travelCostType) {
+      await syncTravelBudgetsForPairs(supabase, [
+        { entryId: travelLogisticsEntryId, costType: travelCostType },
+      ]);
     }
 
     // Build the response with relation fields

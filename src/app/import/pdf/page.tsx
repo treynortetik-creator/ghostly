@@ -50,6 +50,14 @@ interface ParsedPDFResult {
     id: string | null;
     type: "event" | "category" | null;
     name: string | null;
+    budgetBucket?: "event" | "travel" | "category" | null;
+    travelCostType?:
+      | "lodging"
+      | "airfare"
+      | "ground_transport"
+      | "meals"
+      | "misc"
+      | null;
     confidence: number;
   } | null;
   aiPowered?: boolean;
@@ -232,13 +240,25 @@ export default function PDFImportPage() {
     setError(null);
 
     try {
-      const expenseData = {
+        const expenseData = {
         vendor: editableData.vendor.trim(),
         amount: editableData.amount,
         expense_date: editableData.date,
         memo: `Imported from PDF: ${pdfResult?.fileName}`,
         source_type: "pdf",
         source_reference: pdfResult?.fileName,
+        ...(selectedAssignment?.type === "event"
+          ? {
+              budget_bucket:
+                pdfResult?.suggestedAssignment?.budgetBucket === "travel"
+                  ? "travel"
+                  : "event",
+              travel_cost_type:
+                pdfResult?.suggestedAssignment?.budgetBucket === "travel"
+                  ? (pdfResult?.suggestedAssignment?.travelCostType ?? "misc")
+                  : undefined,
+            }
+          : {}),
         ...(selectedAssignment?.type === "event"
           ? { event_id: selectedAssignment.id }
           : { category_id: selectedAssignment?.id }),

@@ -29,6 +29,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/summar
         .from('expenses')
         .select('amount')
         .eq('event_id', id)
+        .neq('budget_bucket', 'travel')
         .is('deleted_at', null),
       supabase
         .from('event_checklist_items')

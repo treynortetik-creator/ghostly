@@ -422,6 +422,20 @@ export const agentTools: AgentTool[] = [
           type: 'string',
           description: 'Filter by vendor name',
         },
+        budget_bucket: {
+          type: 'string',
+          description: 'Optional budget bucket filter',
+          enum: ['event', 'travel', 'category'],
+        },
+        travel_logistics_entry_id: {
+          type: 'string',
+          description: 'Optional travel/logistics entry UUID filter',
+        },
+        travel_cost_type: {
+          type: 'string',
+          description: 'Optional travel cost type filter',
+          enum: ['lodging', 'airfare', 'ground_transport', 'meals', 'misc'],
+        },
         date_start: {
           type: 'string',
           description: 'Filter expenses on or after this date (YYYY-MM-DD)',
@@ -440,6 +454,9 @@ export const agentTools: AgentTool[] = [
       const params = new URLSearchParams();
       if (args.event_id) params.set('event_id', String(args.event_id));
       if (args.vendor) params.set('vendor', String(args.vendor));
+      if (args.budget_bucket) params.set('budget_bucket', String(args.budget_bucket));
+      if (args.travel_logistics_entry_id) params.set('travel_logistics_entry_id', String(args.travel_logistics_entry_id));
+      if (args.travel_cost_type) params.set('travel_cost_type', String(args.travel_cost_type));
       if (args.date_start) params.set('date_start', String(args.date_start));
       if (args.date_end) params.set('date_end', String(args.date_end));
       params.set('per_page', String(args.per_page ?? 20));
@@ -453,7 +470,7 @@ export const agentTools: AgentTool[] = [
   {
     name: 'create_expense',
     description:
-      'Create a new expense line item for an event or category. Amount is in dollars and expense_date must be YYYY-MM-DD.',
+      'Create a new expense line item for an event or category. Supports travel-linked expenses via budget_bucket="travel".',
     default_permission: 'ask',
     parameters: {
       type: 'object',
@@ -465,6 +482,20 @@ export const agentTools: AgentTool[] = [
         category_id: {
           type: 'string',
           description: 'Category UUID for this expense (use category_id OR event_id)',
+        },
+        budget_bucket: {
+          type: 'string',
+          description: 'Budget bucket for this expense',
+          enum: ['event', 'travel', 'category'],
+        },
+        travel_logistics_entry_id: {
+          type: 'string',
+          description: 'Optional travel/logistics entry UUID when budget_bucket is travel',
+        },
+        travel_cost_type: {
+          type: 'string',
+          description: 'Travel category when budget_bucket is travel',
+          enum: ['lodging', 'airfare', 'ground_transport', 'meals', 'misc'],
         },
         amount: {
           type: 'number',
@@ -489,6 +520,9 @@ export const agentTools: AgentTool[] = [
       const result = await internalFetch(ctx, 'POST', '/api/expenses', {
         event_id: args.event_id ?? null,
         category_id: args.category_id ?? null,
+        budget_bucket: args.budget_bucket ?? undefined,
+        travel_logistics_entry_id: args.travel_logistics_entry_id ?? undefined,
+        travel_cost_type: args.travel_cost_type ?? undefined,
         amount: args.amount,
         expense_date: args.expense_date,
         vendor: args.vendor ?? null,

@@ -121,6 +121,7 @@ async function handleBudgetCommand(orgId: string, eventName: string): Promise<Co
     .select('amount')
     .eq('event_id', event.id)
     .eq('organization_id', orgId)
+    .neq('budget_bucket', 'travel')
     .is('deleted_at', null);
 
   const totalSpent = (expenses || []).reduce((sum, e) => sum + Number(e.amount || 0), 0);

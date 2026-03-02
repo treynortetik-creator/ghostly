@@ -46,6 +46,8 @@ export interface CategorizationResult {
   transactionId: string;
   suggestedTargetId: string | null;
   suggestedTargetType: 'event' | 'category' | null;
+  suggestedBudgetBucket: 'event' | 'travel' | 'category' | null;
+  suggestedTravelCostType: 'lodging' | 'airfare' | 'ground_transport' | 'meals' | 'misc' | null;
   confidence: number;
   reasoning?: string;
 }
@@ -249,6 +251,8 @@ Respond with valid JSON only. No markdown, no explanation outside JSON.
       "transactionId": "string",
       "targetId": "string or null if no good match",
       "targetType": "event" | "category" | null,
+      "budgetBucket": "event" | "travel" | "category" | null,
+      "travelCostType": "lodging" | "airfare" | "ground_transport" | "meals" | "misc" | null,
       "confidence": number between 0 and 1,
       "reasoning": "brief explanation"
     }
@@ -293,6 +297,8 @@ RESPONSE FORMAT (JSON only, no markdown):
     "id": "string or null",
     "type": "event|category|null",
     "name": "string or null",
+    "budgetBucket": "event|travel|category|null",
+    "travelCostType": "lodging|airfare|ground_transport|meals|misc|null",
     "confidence": number
   },
   "reasoning": "brief explanation"
@@ -402,12 +408,16 @@ export async function categorizeTransactions(
       transactionId: string;
       targetId: string | null;
       targetType: 'event' | 'category' | null;
+      budgetBucket?: 'event' | 'travel' | 'category' | null;
+      travelCostType?: 'lodging' | 'airfare' | 'ground_transport' | 'meals' | 'misc' | null;
       confidence: number;
       reasoning?: string;
     }) => ({
       transactionId: cat.transactionId,
       suggestedTargetId: cat.targetId,
       suggestedTargetType: cat.targetType,
+      suggestedBudgetBucket: cat.budgetBucket || null,
+      suggestedTravelCostType: cat.travelCostType || null,
       confidence: Math.max(0, Math.min(1, cat.confidence || 0)),
       reasoning: cat.reasoning,
     }));
@@ -427,6 +437,8 @@ export async function categorizeTransactions(
         transactionId: t.id,
         suggestedTargetId: null,
         suggestedTargetType: null,
+        suggestedBudgetBucket: null,
+        suggestedTravelCostType: null,
         confidence: 0,
         reasoning: 'Failed to parse AI response',
       })),
@@ -449,6 +461,8 @@ export async function categorizeSingleTransaction(
     transactionId: transaction.id,
     suggestedTargetId: null,
     suggestedTargetType: null,
+    suggestedBudgetBucket: null,
+    suggestedTravelCostType: null,
     confidence: 0,
   };
 }

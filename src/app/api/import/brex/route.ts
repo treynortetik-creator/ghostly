@@ -50,6 +50,8 @@ interface TransactionWithSuggestion extends ParsedBrexTransaction {
     eventType?: string;
     quarter?: string;
   } | null;
+  suggestedBudgetBucket: 'event' | 'travel' | 'category' | null;
+  suggestedTravelCostType: 'lodging' | 'airfare' | 'ground_transport' | 'meals' | 'misc' | null;
   aiConfidence: number | null;
   isDuplicate: boolean;
   duplicateOf?: DuplicateInfo;
@@ -299,7 +301,13 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/brex
     }
 
     // Get AI suggestions if not skipped
-    const aiResults: Map<string, { targetId: string | null; targetType: 'event' | 'category' | null; confidence: number }> = new Map();
+    const aiResults: Map<string, {
+      targetId: string | null;
+      targetType: 'event' | 'category' | null;
+      budgetBucket: 'event' | 'travel' | 'category' | null;
+      travelCostType: 'lodging' | 'airfare' | 'ground_transport' | 'meals' | 'misc' | null;
+      confidence: number;
+    }> = new Map();
 
     if (!skipAI && process.env.OPENROUTER_API_KEY) {
       try {
@@ -317,6 +325,8 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/brex
           aiResults.set(result.transactionId, {
             targetId: result.suggestedTargetId,
             targetType: result.suggestedTargetType,
+            budgetBucket: result.suggestedBudgetBucket,
+            travelCostType: result.suggestedTravelCostType,
             confidence: result.confidence,
           });
         }
@@ -347,6 +357,8 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/brex
       return {
         ...txn,
         suggestedAssignment,
+        suggestedBudgetBucket: aiSuggestion?.budgetBucket ?? null,
+        suggestedTravelCostType: aiSuggestion?.travelCostType ?? null,
         aiConfidence: aiSuggestion?.confidence ?? null,
       };
     });

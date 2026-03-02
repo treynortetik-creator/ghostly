@@ -10,11 +10,37 @@ import { createClient } from '@/lib/supabase/server';
 import { withIdempotency } from '@/lib/idempotency';
 import { logAudit, getActor, computeChanges } from '@/lib/audit';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
+import {
+  isExpenseBudgetBucket,
+  isTravelCostType,
+  resolveTravelEntryIdForExpense,
+  syncTravelBudgetsForPairs,
+} from '@/lib/travel-expense-sync';
 
 const MAX_UPDATES_PER_REQUEST = 100;
 
-const UPDATABLE_FIELDS = ['amount', 'vendor', 'memo', 'event_id', 'category_id', 'expense_date'] as const;
-const AUDIT_FIELDS = ['amount', 'expense_date', 'vendor', 'memo', 'event_id', 'category_id'];
+const UPDATABLE_FIELDS = [
+  'amount',
+  'vendor',
+  'memo',
+  'event_id',
+  'category_id',
+  'expense_date',
+  'budget_bucket',
+  'travel_logistics_entry_id',
+  'travel_cost_type',
+] as const;
+const AUDIT_FIELDS = [
+  'amount',
+  'expense_date',
+  'vendor',
+  'memo',
+  'event_id',
+  'category_id',
+  'budget_bucket',
+  'travel_logistics_entry_id',
+  'travel_cost_type',
+];
 
 interface UpdateInput {
   id: unknown;
@@ -22,6 +48,9 @@ interface UpdateInput {
   expense_date?: unknown;
   event_id?: unknown;
   category_id?: unknown;
+  budget_bucket?: unknown;
+  travel_logistics_entry_id?: unknown;
+  travel_cost_type?: unknown;
   vendor?: unknown;
   memo?: unknown;
 }
@@ -72,6 +101,16 @@ function validateUpdateItem(item: UpdateInput): string[] {
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(String(item.expense_date))) {
       errors.push('Invalid expense_date format. Use YYYY-MM-DD');
+    }
+  }
+
+  if (item.budget_bucket !== undefined && !isExpenseBudgetBucket(item.budget_bucket)) {
+    errors.push('Invalid budget_bucket. Must be one of: event, travel, category');
+  }
+
+  if (item.travel_cost_type !== undefined && item.travel_cost_type !== null && item.travel_cost_type !== '') {
+    if (!isTravelCostType(String(item.travel_cost_type).trim())) {
+      errors.push('Invalid travel_cost_type. Must be one of: lodging, airfare, ground_transport, meals, misc');
     }
   }
 
@@ -185,9 +224,14 @@ export const PUT = withIdempotency(withApiHandler({ permission: 'write', resourc
       // Determine final event_id and category_id after update
       const newEventId = item.event_id !== undefined ? item.event_id : existing.event_id;
       const newCategoryId = item.category_id !== undefined ? item.category_id : existing.category_id;
+      const existingBucket = String(existing.budget_bucket || (existing.category_id ? 'category' : 'event'));
+      const requestedBucket = item.budget_bucket !== undefined
+        ? String(item.budget_bucket)
+        : existingBucket;
 
       const hasEventId = newEventId && newEventId !== '';
       const hasCategoryId = newCategoryId && newCategoryId !== '';
+      const budgetBucket = hasCategoryId ? 'category' : requestedBucket;
 
       const errors: string[] = [];
       if (hasEventId && hasCategoryId) {
@@ -195,6 +239,18 @@ export const PUT = withIdempotency(withApiHandler({ permission: 'write', resourc
       }
       if (!hasEventId && !hasCategoryId) {
         errors.push('Expense must be assigned to either an event or a category.');
+      }
+      if (!isExpenseBudgetBucket(requestedBucket)) {
+        errors.push('Invalid budget_bucket. Must be one of: event, travel, category');
+      }
+      if (hasCategoryId && requestedBucket !== 'category') {
+        errors.push('Category expenses must use budget_bucket="category"');
+      }
+      if (budgetBucket === 'travel' && !hasEventId) {
+        errors.push('Travel expenses must be assigned to an event.');
+      }
+      if (budgetBucket !== 'travel' && (item.travel_logistics_entry_id !== undefined || item.travel_cost_type !== undefined)) {
+        errors.push('travel_logistics_entry_id and travel_cost_type are only allowed when budget_bucket is "travel"');
       }
 
       if (errors.length > 0) {
@@ -278,25 +334,72 @@ export const PUT = withIdempotency(withApiHandler({ permission: 'write', resourc
     // Phase 5: Apply all updates (track per-item results)
     const updatedExpenses: Record<string, unknown>[] = [];
     const itemResults: Array<{ id: string; status: 'updated' | 'error'; error?: string }> = [];
+    const travelSyncPairs: Array<{ entryId?: string | null; costType?: string | null }> = [];
     const now = new Date().toISOString();
 
     for (const item of body.updates) {
       const existing = existingMap.get(item.id as string)!;
 
       try {
+        const resolvedEventId = item.event_id !== undefined
+          ? (item.event_id ? String(item.event_id).trim() : '')
+          : String(existing.event_id || '');
+        const resolvedCategoryId = item.category_id !== undefined
+          ? (item.category_id ? String(item.category_id).trim() : '')
+          : String(existing.category_id || '');
+        const hasEventId = resolvedEventId.length > 0;
+        const hasCategoryId = resolvedCategoryId.length > 0;
+        const existingBucket = String(existing.budget_bucket || (existing.category_id ? 'category' : 'event'));
+        const requestedBucket = item.budget_bucket !== undefined ? String(item.budget_bucket) : existingBucket;
+        const budgetBucket = hasCategoryId ? 'category' : requestedBucket;
+
+        let travelLogisticsEntryId: string | null = null;
+        let travelCostType: string | null = null;
+
+        if (budgetBucket === 'travel') {
+          const resolvedCostType = item.travel_cost_type !== undefined
+            ? String(item.travel_cost_type).trim()
+            : String(existing.travel_cost_type || 'misc');
+
+          if (!isTravelCostType(resolvedCostType)) {
+            throw new Error('Invalid travel_cost_type. Must be one of: lodging, airfare, ground_transport, meals, misc');
+          }
+
+          travelCostType = resolvedCostType;
+          const requestedEntryId = item.travel_logistics_entry_id !== undefined
+            ? (item.travel_logistics_entry_id ? String(item.travel_logistics_entry_id).trim() : null)
+            : (existing.travel_logistics_entry_id ? String(existing.travel_logistics_entry_id) : null);
+
+          travelLogisticsEntryId = await resolveTravelEntryIdForExpense(
+            supabase,
+            orgId,
+            resolvedEventId,
+            requestedEntryId
+          );
+        }
+
         const updateData: Record<string, unknown> = {
           updated_at: now,
         };
 
         // Resolve event_id / category_id with XOR clearing
         if (item.event_id !== undefined) {
-          updateData.event_id = item.event_id || null;
-          if (item.event_id) updateData.category_id = null;
+          updateData.event_id = resolvedEventId || null;
+          if (resolvedEventId) updateData.category_id = null;
         }
         if (item.category_id !== undefined) {
-          updateData.category_id = item.category_id || null;
-          if (item.category_id) updateData.event_id = null;
+          updateData.category_id = resolvedCategoryId || null;
+          if (resolvedCategoryId) updateData.event_id = null;
         }
+
+        if (item.event_id === undefined && item.category_id === undefined) {
+          updateData.event_id = hasEventId ? resolvedEventId : null;
+          updateData.category_id = hasCategoryId ? resolvedCategoryId : null;
+        }
+
+        updateData.budget_bucket = budgetBucket;
+        updateData.travel_logistics_entry_id = travelLogisticsEntryId;
+        updateData.travel_cost_type = travelCostType;
 
         if (item.amount !== undefined) updateData.amount = parseFloat(String(item.amount));
         if (item.expense_date !== undefined) updateData.expense_date = item.expense_date;
@@ -307,6 +410,7 @@ export const PUT = withIdempotency(withApiHandler({ permission: 'write', resourc
           .from('expenses')
           .update(updateData)
           .eq('id', item.id as string)
+          .eq('organization_id', orgId)
           .is('deleted_at', null)
           .select('*')
           .single();
@@ -315,6 +419,13 @@ export const PUT = withIdempotency(withApiHandler({ permission: 'write', resourc
 
         updatedExpenses.push(updated as Record<string, unknown>);
         itemResults.push({ id: item.id as string, status: 'updated' });
+        travelSyncPairs.push(
+          {
+            entryId: existing.budget_bucket === 'travel' ? String(existing.travel_logistics_entry_id || '') : null,
+            costType: existing.budget_bucket === 'travel' ? String(existing.travel_cost_type || '') : null,
+          },
+          { entryId: travelLogisticsEntryId, costType: travelCostType }
+        );
 
         // Audit log (non-blocking)
         try {
@@ -339,6 +450,8 @@ export const PUT = withIdempotency(withApiHandler({ permission: 'write', resourc
         });
       }
     }
+
+    await syncTravelBudgetsForPairs(supabase, travelSyncPairs);
 
     // Collect all event/category IDs from updated expenses for name resolution
     const allEventIds = new Set<string>();

@@ -39,6 +39,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/roi' }
       .from('expenses')
       .select('amount')
       .eq('event_id', id)
+      .neq('budget_bucket', 'travel')
       .is('deleted_at', null);
 
     if (expensesError) throw expensesError;

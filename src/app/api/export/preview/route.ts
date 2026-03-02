@@ -116,7 +116,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/previe
     const eventIds = (events || []).map(e => e.id);
     const eventExpenseTotals: Record<string, { total: number; count: number }> = {};
     for (const exp of expenses || []) {
-      if (exp.event_id && eventIds.includes(exp.event_id)) {
+      if (exp.event_id && exp.budget_bucket !== 'travel' && eventIds.includes(exp.event_id)) {
         if (!eventExpenseTotals[exp.event_id]) {
           eventExpenseTotals[exp.event_id] = { total: 0, count: 0 };
         }

@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
+import { upsertGeneratedTravelBudgetExpensesForEntry } from '@/lib/travel-expense-sync';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -159,7 +160,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/trav
     // Verify event belongs to org
     const { data: event } = await supabase
       .from('events')
-      .select('id')
+      .select('id, date_start')
       .eq('id', eventId)
       .eq('organization_id', orgId)
       .is('deleted_at', null)
@@ -215,6 +216,13 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/trav
       .single();
 
     if (error) throw error;
+
+    await upsertGeneratedTravelBudgetExpensesForEntry(supabase, {
+      orgId,
+      eventId,
+      entry,
+      expenseDate: event.date_start || new Date().toISOString().slice(0, 10),
+    });
 
     return NextResponse.json(entry, { status: 201 });
   }

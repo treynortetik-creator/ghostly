@@ -9,6 +9,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
+import {
+  softDeleteGeneratedTravelBudgetExpenses,
+  upsertGeneratedTravelBudgetExpensesForEntry,
+} from '@/lib/travel-expense-sync';
 
 type RouteContext = { params: Promise<{ id: string; entryId: string }> };
 
@@ -35,7 +39,7 @@ function trimOrNull(value: unknown): string | null {
 async function ensureEventInOrg(supabase: Awaited<ReturnType<typeof createClient>>, eventId: string, orgId: string): Promise<boolean> {
   const { data: event } = await supabase
     .from('events')
-    .select('id')
+    .select('id, date_start')
     .eq('id', eventId)
     .eq('organization_id', orgId)
     .is('deleted_at', null)
@@ -78,8 +82,15 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'events/trave
     const body = await request.json();
     const supabase = await createClient();
 
-    const eventExists = await ensureEventInOrg(supabase, eventId, orgId);
-    if (!eventExists) {
+    const { data: event } = await supabase
+      .from('events')
+      .select('id, date_start')
+      .eq('id', eventId)
+      .eq('organization_id', orgId)
+      .is('deleted_at', null)
+      .single();
+
+    if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
@@ -172,6 +183,13 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'events/trave
       return NextResponse.json({ error: 'Travel entry not found' }, { status: 404 });
     }
 
+    await upsertGeneratedTravelBudgetExpensesForEntry(supabase, {
+      orgId,
+      eventId,
+      entry,
+      expenseDate: event.date_start || new Date().toISOString().slice(0, 10),
+    });
+
     return NextResponse.json(entry);
   }
 );
@@ -199,6 +217,8 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'events/tr
     if (error || !entry) {
       return NextResponse.json({ error: 'Travel entry not found' }, { status: 404 });
     }
+
+    await softDeleteGeneratedTravelBudgetExpenses(supabase, orgId, eventId, entryId);
 
     return NextResponse.json({ message: 'Travel entry deleted', id: entryId });
   }

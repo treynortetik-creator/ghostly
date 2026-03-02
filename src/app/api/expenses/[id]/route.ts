@@ -12,8 +12,45 @@ import type { ExpenseSource } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
 import { computeChanges } from '@/lib/audit';
 import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
+import {
+  isExpenseBudgetBucket,
+  isTravelCostType,
+  resolveTravelEntryIdForExpense,
+  syncTravelBudgetsForPairs,
+} from '@/lib/travel-expense-sync';
 
 type RouteContext = { params: Promise<{ id: string }> };
+
+type NameRelation = { name: string } | { name: string }[] | null;
+
+function relationName(value: NameRelation): string | null {
+  if (!value) return null;
+  if (Array.isArray(value)) {
+    return value[0]?.name || null;
+  }
+  return value.name || null;
+}
+
+function toNameRelation(value: unknown): NameRelation {
+  if (!value) return null;
+  if (Array.isArray(value)) {
+    const first = value[0];
+    if (first && typeof first === 'object' && 'name' in first) {
+      const name = (first as { name?: unknown }).name;
+      if (typeof name === 'string') {
+        return [{ name }];
+      }
+    }
+    return null;
+  }
+  if (typeof value === 'object' && 'name' in value) {
+    const name = (value as { name?: unknown }).name;
+    if (typeof name === 'string') {
+      return { name };
+    }
+  }
+  return null;
+}
 
 // ============================================
 // GET /api/expenses/[id]
@@ -43,13 +80,17 @@ export const GET = withApiHandler({ permission: 'read', resource: 'expenses/[id]
     if (error) throw error;
 
     // Map joined relations to flat fields
-    const { events: eventRel, budget_categories: catRel, ...rest } = expense as any;
+    const expenseRecord = expense as unknown as Record<string, unknown>;
+    const { events: eventUnknown, budget_categories: catUnknown, ...rest } = expenseRecord;
+    const eventRel = toNameRelation(eventUnknown);
+    const catRel = toNameRelation(catUnknown);
+    const hasEventTarget = typeof rest.event_id === 'string' && rest.event_id.length > 0;
     const mapped = {
       ...rest,
-      event_name: eventRel?.name || null,
-      category_name: catRel?.name || null,
-      target_type: rest.event_id ? 'event' as const : 'category' as const,
-      target_name: eventRel?.name || catRel?.name || 'Unknown',
+      event_name: relationName(eventRel),
+      category_name: relationName(catRel),
+      target_type: hasEventTarget ? 'event' as const : 'category' as const,
+      target_name: relationName(eventRel) || relationName(catRel) || 'Unknown',
     };
 
     return NextResponse.json({ expense: mapped });
@@ -86,8 +127,12 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'expenses/[id
     if (findError) throw findError;
 
     // Determine new event_id and category_id values
-    const newEventId = body.event_id !== undefined ? body.event_id : existingExpense.event_id;
-    const newCategoryId = body.category_id !== undefined ? body.category_id : existingExpense.category_id;
+    const newEventId = body.event_id !== undefined
+      ? (body.event_id ? String(body.event_id).trim() : '')
+      : existingExpense.event_id;
+    const newCategoryId = body.category_id !== undefined
+      ? (body.category_id ? String(body.category_id).trim() : '')
+      : existingExpense.category_id;
 
     // Validate XOR constraint if either is being changed
     const hasEventId = newEventId && newEventId !== '';
@@ -103,6 +148,34 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'expenses/[id
     if (!hasEventId && !hasCategoryId) {
       return NextResponse.json(
         { error: 'Expense must be assigned to either an event or a category.' },
+        { status: 400 }
+      );
+    }
+
+    // Validate and normalize budget bucket
+    const requestedBudgetBucket = body.budget_bucket !== undefined
+      ? String(body.budget_bucket)
+      : (existingExpense.budget_bucket || (hasCategoryId ? 'category' : 'event'));
+
+    if (!isExpenseBudgetBucket(requestedBudgetBucket)) {
+      return NextResponse.json(
+        { error: 'Invalid budget_bucket. Must be one of: event, travel, category' },
+        { status: 400 }
+      );
+    }
+
+    const budgetBucket = hasCategoryId ? 'category' : requestedBudgetBucket;
+
+    if (hasCategoryId && requestedBudgetBucket !== 'category') {
+      return NextResponse.json(
+        { error: 'Category expenses must use budget_bucket="category"' },
+        { status: 400 }
+      );
+    }
+
+    if (budgetBucket === 'travel' && !hasEventId) {
+      return NextResponse.json(
+        { error: 'Travel expenses must be assigned to an event.' },
         { status: 400 }
       );
     }
@@ -143,6 +216,46 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'expenses/[id
       }
     }
 
+    // Validate/resolve travel linkage
+    let travelLogisticsEntryId: string | null = null;
+    let travelCostType: string | null = null;
+    if (budgetBucket === 'travel') {
+      const requestedCostType = body.travel_cost_type !== undefined
+        ? String(body.travel_cost_type).trim()
+        : (existingExpense.travel_cost_type || 'misc');
+
+      if (!isTravelCostType(requestedCostType)) {
+        return NextResponse.json(
+          { error: 'Invalid travel_cost_type. Must be one of: lodging, airfare, ground_transport, meals, misc' },
+          { status: 400 }
+        );
+      }
+
+      travelCostType = requestedCostType;
+      const requestedEntryId = body.travel_logistics_entry_id !== undefined
+        ? (body.travel_logistics_entry_id ? String(body.travel_logistics_entry_id).trim() : null)
+        : (existingExpense.travel_logistics_entry_id || null);
+
+      try {
+        travelLogisticsEntryId = await resolveTravelEntryIdForExpense(
+          supabase,
+          orgId,
+          String(newEventId),
+          requestedEntryId
+        );
+      } catch (error) {
+        return NextResponse.json(
+          { error: error instanceof Error ? error.message : 'Invalid travel logistics assignment' },
+          { status: 400 }
+        );
+      }
+    } else if (body.travel_logistics_entry_id !== undefined || body.travel_cost_type !== undefined) {
+      return NextResponse.json(
+        { error: 'travel_logistics_entry_id and travel_cost_type are only allowed when budget_bucket is "travel".' },
+        { status: 400 }
+      );
+    }
+
     // Validate amount if provided
     if (body.amount !== undefined) {
       const amount = parseFloat(body.amount);
@@ -181,6 +294,9 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'expenses/[id
       updated_at: new Date().toISOString(),
       event_id: hasEventId ? newEventId : null,
       category_id: hasCategoryId ? newCategoryId : null,
+      budget_bucket: budgetBucket,
+      travel_logistics_entry_id: travelLogisticsEntryId,
+      travel_cost_type: travelCostType,
     };
 
     if (body.amount !== undefined) updateData.amount = parseFloat(body.amount);
@@ -201,18 +317,42 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'expenses/[id
 
     if (updateError) throw updateError;
 
+    await syncTravelBudgetsForPairs(supabase, [
+      {
+        entryId: existingExpense.budget_bucket === 'travel' ? existingExpense.travel_logistics_entry_id : null,
+        costType: existingExpense.budget_bucket === 'travel' ? existingExpense.travel_cost_type : null,
+      },
+      { entryId: travelLogisticsEntryId, costType: travelCostType },
+    ]);
+
     // Map joined relations to flat fields
-    const { events: eventRel, budget_categories: catRel, ...rest } = updatedExpense as any;
+    const updatedExpenseRecord = updatedExpense as unknown as Record<string, unknown>;
+    const { events: eventUnknown, budget_categories: catUnknown, ...rest } = updatedExpenseRecord;
+    const eventRel = toNameRelation(eventUnknown);
+    const catRel = toNameRelation(catUnknown);
+    const hasEventTarget = typeof rest.event_id === 'string' && rest.event_id.length > 0;
     const mapped = {
       ...rest,
-      event_name: eventRel?.name || null,
-      category_name: catRel?.name || null,
-      target_type: rest.event_id ? 'event' as const : 'category' as const,
-      target_name: eventRel?.name || catRel?.name || 'Unknown',
+      event_name: relationName(eventRel),
+      category_name: relationName(catRel),
+      target_type: hasEventTarget ? 'event' as const : 'category' as const,
+      target_name: relationName(eventRel) || relationName(catRel) || 'Unknown',
     };
 
     // Audit log (non-blocking)
-    const auditFields = ['amount', 'expense_date', 'vendor', 'memo', 'event_id', 'category_id', 'source_type', 'source_reference'];
+    const auditFields = [
+      'amount',
+      'expense_date',
+      'vendor',
+      'memo',
+      'event_id',
+      'category_id',
+      'budget_bucket',
+      'travel_logistics_entry_id',
+      'travel_cost_type',
+      'source_type',
+      'source_reference',
+    ];
     const changes = computeChanges(existingExpense as Record<string, unknown>, updatedExpense as Record<string, unknown>, auditFields);
     await auditMutation(request, {
       entity_type: 'expense',
@@ -238,7 +378,7 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'expenses/
     // Check if expense exists
     const { data: existingExpense, error: findError } = await supabase
       .from('expenses')
-      .select('id')
+      .select('id, budget_bucket, travel_logistics_entry_id, travel_cost_type')
       .eq('id', id)
       .eq('organization_id', orgId)
       .is('deleted_at', null)
@@ -261,6 +401,13 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'expenses/
       .eq('organization_id', orgId);
 
     if (deleteError) throw deleteError;
+
+    await syncTravelBudgetsForPairs(supabase, [
+      {
+        entryId: existingExpense.budget_bucket === 'travel' ? existingExpense.travel_logistics_entry_id : null,
+        costType: existingExpense.budget_bucket === 'travel' ? existingExpense.travel_cost_type : null,
+      },
+    ]);
 
     // Audit log (non-blocking)
     await auditMutation(request, {

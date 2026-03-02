@@ -59,6 +59,17 @@ interface ImportResult {
   };
 }
 
+interface ParsedTransactionWithTravel extends ParsedTransaction {
+  suggestedBudgetBucket?: "event" | "travel" | "category" | null;
+  suggestedTravelCostType?:
+    | "lodging"
+    | "airfare"
+    | "ground_transport"
+    | "meals"
+    | "misc"
+    | null;
+}
+
 export default function BrexImportPage() {
   const router = useRouter();
   const [step, setStep] = useState<ImportStep>("upload");
@@ -66,7 +77,7 @@ export default function BrexImportPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Data state
-  const [transactions, setTransactions] = useState<ParsedTransaction[]>([]);
+  const [transactions, setTransactions] = useState<ParsedTransactionWithTravel[]>([]);
   const [assignmentOptions, setAssignmentOptions] = useState<
     AssignmentOption[]
   >([]);
@@ -95,7 +106,7 @@ export default function BrexImportPage() {
       const data = await response.json();
 
       // Transform API response to component format
-      const parsedTransactions: ParsedTransaction[] = data.transactions.map(
+      const parsedTransactions: ParsedTransactionWithTravel[] = data.transactions.map(
         (t: {
           id: string;
           date: string;
@@ -103,6 +114,14 @@ export default function BrexImportPage() {
           vendor: string;
           memo: string | null;
           suggestedAssignment: AssignmentOption | null;
+          suggestedBudgetBucket?: "event" | "travel" | "category" | null;
+          suggestedTravelCostType?:
+            | "lodging"
+            | "airfare"
+            | "ground_transport"
+            | "meals"
+            | "misc"
+            | null;
           aiConfidence: number | null;
           isDuplicate: boolean;
           duplicateOf?: {
@@ -118,6 +137,8 @@ export default function BrexImportPage() {
           vendor: t.vendor,
           memo: t.memo,
           suggestedAssignment: t.suggestedAssignment,
+          suggestedBudgetBucket: t.suggestedBudgetBucket ?? null,
+          suggestedTravelCostType: t.suggestedTravelCostType ?? null,
           aiConfidence: t.aiConfidence,
           isDuplicate: t.isDuplicate,
           duplicateOf: t.duplicateOf,
@@ -138,7 +159,7 @@ export default function BrexImportPage() {
 
   // Update a single transaction
   const handleUpdateTransaction = useCallback(
-    (id: string, updates: Partial<ParsedTransaction>) => {
+    (id: string, updates: Partial<ParsedTransactionWithTravel>) => {
       setTransactions((prev) =>
         prev.map((t) => (t.id === id ? { ...t, ...updates } : t)),
       );
@@ -194,6 +215,14 @@ export default function BrexImportPage() {
           memo: t.memo,
           assignmentId: t.suggestedAssignment!.id,
           assignmentType: t.suggestedAssignment!.type,
+          budgetBucket:
+            t.suggestedAssignment!.type === "event"
+              ? (t.suggestedBudgetBucket ?? "event")
+              : "category",
+          travelCostType:
+            t.suggestedAssignment!.type === "event" && (t.suggestedBudgetBucket ?? "event") === "travel"
+              ? (t.suggestedTravelCostType ?? "misc")
+              : undefined,
           status: t.status,
           replaceExpenseId:
             t.status === "replace" ? t.duplicateOf?.id : undefined,

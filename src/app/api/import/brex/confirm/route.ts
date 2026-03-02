@@ -6,10 +6,16 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import type { ExpenseSource } from '@/types/database';
+import type { Database, ExpenseSource } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import { logAudit, getActor } from '@/lib/audit';
+import {
+  isExpenseBudgetBucket,
+  isTravelCostType,
+  resolveTravelEntryIdForExpense,
+  syncTravelBudgetsForPairs,
+} from '@/lib/travel-expense-sync';
 
 // ============================================
 // TYPES
@@ -23,6 +29,9 @@ interface TransactionToImport {
   memo: string | null;
   assignmentId: string;
   assignmentType: 'event' | 'category';
+  budgetBucket?: 'event' | 'travel' | 'category';
+  travelLogisticsEntryId?: string;
+  travelCostType?: 'lodging' | 'airfare' | 'ground_transport' | 'meals' | 'misc';
   status: 'accepted' | 'replace';
   replaceExpenseId?: string;
 }
@@ -33,6 +42,20 @@ interface ImportResult {
   error?: string;
   transactionId: string;
   action: 'created' | 'replaced' | 'skipped' | 'error';
+}
+
+type ExpenseInsert = Database['public']['Tables']['expenses']['Insert'];
+type ExpenseInsertWithOrg = ExpenseInsert & { organization_id: string };
+
+type ImportedExpenseRow = Record<string, unknown> & {
+  events: { name: string } | { name: string }[] | null;
+  budget_categories: { name: string } | { name: string }[] | null;
+};
+
+function relationName(value: { name: string } | { name: string }[] | null): string | null {
+  if (!value) return null;
+  if (Array.isArray(value)) return value[0]?.name || null;
+  return value.name || null;
 }
 
 // ============================================
@@ -95,6 +118,31 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/brex
 
       if (txn.status === 'replace' && !txn.replaceExpenseId) {
         validationErrors.push(`Transaction ${txn.id}: Replace action requires replaceExpenseId`);
+      }
+
+      if (txn.budgetBucket !== undefined && !isExpenseBudgetBucket(txn.budgetBucket)) {
+        validationErrors.push(`Transaction ${txn.id}: Invalid budgetBucket`);
+      }
+
+      const budgetBucket = txn.assignmentType === 'category'
+        ? 'category'
+        : (txn.budgetBucket || 'event');
+
+      if (txn.assignmentType === 'event' && txn.budgetBucket === 'category') {
+        validationErrors.push(`Transaction ${txn.id}: Event assignments cannot use budgetBucket "category"`);
+      }
+
+      if (txn.assignmentType === 'category' && txn.budgetBucket && txn.budgetBucket !== 'category') {
+        validationErrors.push(`Transaction ${txn.id}: Category assignments must use budgetBucket "category"`);
+      }
+
+      if (budgetBucket === 'travel') {
+        const travelCostType = txn.travelCostType || 'misc';
+        if (!isTravelCostType(travelCostType)) {
+          validationErrors.push(`Transaction ${txn.id}: Invalid travelCostType`);
+        }
+      } else if (txn.travelLogisticsEntryId || txn.travelCostType) {
+        validationErrors.push(`Transaction ${txn.id}: travelLogisticsEntryId/travelCostType require budgetBucket "travel"`);
       }
     }
 
@@ -162,9 +210,37 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/brex
     }
 
     // Build all insert rows
-    const insertRows = transactions.map(txn => {
+    const insertRows: ExpenseInsertWithOrg[] = [];
+    const travelSyncPairs: Array<{ entryId?: string | null; costType?: string | null }> = [];
+
+    for (const txn of transactions) {
       const isEvent = txn.assignmentType === 'event';
-      return {
+      const budgetBucket = isEvent ? (txn.budgetBucket || 'event') : 'category';
+      let travelLogisticsEntryId: string | null = null;
+      let travelCostType: string | null = null;
+
+      if (budgetBucket === 'travel') {
+        travelCostType = txn.travelCostType || 'misc';
+        try {
+          travelLogisticsEntryId = await resolveTravelEntryIdForExpense(
+            supabase,
+            orgId,
+            txn.assignmentId,
+            txn.travelLogisticsEntryId || null
+          );
+        } catch (error) {
+          return NextResponse.json(
+            {
+              error: 'Validation failed',
+              details: [`Transaction ${txn.id}: ${error instanceof Error ? error.message : 'Invalid travel logistics assignment'}`],
+            },
+            { status: 400 }
+          );
+        }
+        travelSyncPairs.push({ entryId: travelLogisticsEntryId, costType: travelCostType });
+      }
+
+      insertRows.push({
         organization_id: orgId,
         event_id: isEvent ? txn.assignmentId : null,
         category_id: !isEvent ? txn.assignmentId : null,
@@ -174,14 +250,17 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/brex
         memo: txn.memo,
         source_type: 'brex' as ExpenseSource,
         source_reference: txn.id,
+        budget_bucket: budgetBucket,
+        travel_logistics_entry_id: travelLogisticsEntryId,
+        travel_cost_type: travelCostType,
         is_duplicate: false,
-      };
-    });
+      });
+    }
 
     // Batch insert all expenses
     const { data: newExpenses, error: insertError } = await supabase
       .from('expenses')
-      .insert(insertRows)
+      .insert(insertRows as unknown as ExpenseInsert[])
       .select('*, events(name), budget_categories(name)');
 
     if (insertError || !newExpenses) {
@@ -207,6 +286,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/brex
         });
       }
     } else {
+      await syncTravelBudgetsForPairs(supabase, travelSyncPairs);
       // Match results back to transactions by source_reference
       const expenseByRef = new Map<string, typeof newExpenses[number]>();
       for (const exp of newExpenses) {
@@ -218,14 +298,14 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/brex
       for (const txn of transactions) {
         const newExpense = expenseByRef.get(txn.id);
         if (newExpense) {
-          const { events: eventRel, budget_categories: catRel, ...rest } = newExpense as any;
+          const { events: eventRel, budget_categories: catRel, ...rest } = newExpense as unknown as ImportedExpenseRow;
           const isEvent = txn.assignmentType === 'event';
           createdExpenses.push({
             ...rest,
-            event_name: eventRel?.name || null,
-            category_name: catRel?.name || null,
+            event_name: relationName(eventRel),
+            category_name: relationName(catRel),
             target_type: isEvent ? 'event' : 'category',
-            target_name: eventRel?.name || catRel?.name || 'Unknown',
+            target_name: relationName(eventRel) || relationName(catRel) || 'Unknown',
           });
 
           results.push({

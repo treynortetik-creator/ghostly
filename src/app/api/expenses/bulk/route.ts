@@ -6,11 +6,17 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import type { ExpenseSource } from '@/types/database';
+import type { Database, ExpenseSource } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
 import { withIdempotency } from '@/lib/idempotency';
 import { logAudit, getActor } from '@/lib/audit';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
+import {
+  isExpenseBudgetBucket,
+  isTravelCostType,
+  resolveTravelEntryIdForExpense,
+  syncTravelBudgetsForPairs,
+} from '@/lib/travel-expense-sync';
 
 const MAX_EXPENSES_PER_REQUEST = 100;
 
@@ -19,6 +25,9 @@ interface ExpenseInput {
   expense_date: unknown;
   event_id?: unknown;
   category_id?: unknown;
+  budget_bucket?: unknown;
+  travel_logistics_entry_id?: unknown;
+  travel_cost_type?: unknown;
   vendor?: unknown;
   memo?: unknown;
   source_type?: unknown;
@@ -30,11 +39,14 @@ interface ItemError {
   errors: string[];
 }
 
+type ExpenseInsert = Database['public']['Tables']['expenses']['Insert'];
+type ExpenseInsertWithOrg = ExpenseInsert & { organization_id: string };
+
 /**
  * Validate a single expense item synchronously (field-level checks only).
  * Returns an array of error messages, empty if valid.
  */
-function validateExpenseItem(item: ExpenseInput, index: number): string[] {
+function validateExpenseItem(item: ExpenseInput): string[] {
   const errors: string[] = [];
 
   // Required fields
@@ -54,14 +66,40 @@ function validateExpenseItem(item: ExpenseInput, index: number): string[] {
   }
 
   // XOR constraint: must have either event_id OR category_id, but not both and not neither
-  const hasEventId = item.event_id && item.event_id !== '';
-  const hasCategoryId = item.category_id && item.category_id !== '';
+  const eventId = item.event_id ? String(item.event_id).trim() : '';
+  const categoryId = item.category_id ? String(item.category_id).trim() : '';
+  const hasEventId = eventId.length > 0;
+  const hasCategoryId = categoryId.length > 0;
 
   if (hasEventId && hasCategoryId) {
     errors.push('Expense must be assigned to either an event OR a category, not both.');
   }
   if (!hasEventId && !hasCategoryId) {
     errors.push('Expense must be assigned to either an event or a category.');
+  }
+
+  if (item.budget_bucket !== undefined && !isExpenseBudgetBucket(item.budget_bucket)) {
+    errors.push('Invalid budget_bucket. Must be one of: event, travel, category');
+  }
+
+  const requestedBucket = item.budget_bucket !== undefined ? String(item.budget_bucket) : undefined;
+  const budgetBucket = hasCategoryId ? 'category' : (requestedBucket || 'event');
+
+  if (hasCategoryId && requestedBucket !== undefined && requestedBucket !== 'category') {
+    errors.push('Category expenses must use budget_bucket="category"');
+  }
+
+  if (budgetBucket === 'travel') {
+    if (!hasEventId) {
+      errors.push('Travel expenses must be assigned to an event.');
+    }
+
+    const costType = item.travel_cost_type ? String(item.travel_cost_type).trim() : 'misc';
+    if (!isTravelCostType(costType)) {
+      errors.push('Invalid travel_cost_type. Must be one of: lodging, airfare, ground_transport, meals, misc');
+    }
+  } else if (item.travel_logistics_entry_id !== undefined || item.travel_cost_type !== undefined) {
+    errors.push('travel_logistics_entry_id and travel_cost_type are only allowed when budget_bucket is "travel".');
   }
 
   // Amount must be a positive number
@@ -124,7 +162,7 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
     // Phase 1: Validate all items synchronously (field-level)
     const itemErrors: ItemError[] = [];
     for (let i = 0; i < body.expenses.length; i++) {
-      const errors = validateExpenseItem(body.expenses[i], i);
+      const errors = validateExpenseItem(body.expenses[i]);
       if (errors.length > 0) {
         itemErrors.push({ index: i, errors });
       }
@@ -216,33 +254,80 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
     }
 
     // Phase 3: Build insert rows
-    const insertRows = body.expenses.map((item: ExpenseInput) => {
-      const hasEventId = item.event_id && item.event_id !== '';
-      const hasCategoryId = item.category_id && item.category_id !== '';
+    const insertRows: ExpenseInsertWithOrg[] = [];
+    const syncPairs: Array<{ entryId?: string | null; costType?: string | null }> = [];
 
-      return {
+    for (let i = 0; i < (body.expenses as ExpenseInput[]).length; i++) {
+      const item = (body.expenses as ExpenseInput[])[i];
+      const eventId = item.event_id ? String(item.event_id).trim() : '';
+      const categoryId = item.category_id ? String(item.category_id).trim() : '';
+      const hasEventId = eventId.length > 0;
+      const hasCategoryId = categoryId.length > 0;
+      const requestedBucket = item.budget_bucket !== undefined ? String(item.budget_bucket) : undefined;
+      const budgetBucket = hasCategoryId ? 'category' : (requestedBucket || 'event');
+
+      let travelLogisticsEntryId: string | null = null;
+      let travelCostType: string | null = null;
+
+      if (budgetBucket === 'travel') {
+        travelCostType = item.travel_cost_type ? String(item.travel_cost_type).trim() : 'misc';
+        try {
+          travelLogisticsEntryId = await resolveTravelEntryIdForExpense(
+            supabase,
+            orgId,
+            eventId,
+            item.travel_logistics_entry_id ? String(item.travel_logistics_entry_id) : null
+          );
+        } catch (error) {
+          return NextResponse.json(
+            {
+              error: 'Validation failed',
+              details: [{ index: i, errors: [error instanceof Error ? error.message : 'Invalid travel logistics assignment'] }],
+            },
+            { status: 400 }
+          );
+        }
+        syncPairs.push({ entryId: travelLogisticsEntryId, costType: travelCostType });
+      }
+
+      const vendor = item.vendor !== undefined && item.vendor !== null && String(item.vendor).trim() !== ''
+        ? String(item.vendor).trim()
+        : null;
+      const memo = item.memo !== undefined && item.memo !== null && String(item.memo).trim() !== ''
+        ? String(item.memo).trim()
+        : null;
+      const sourceReference = item.source_reference !== undefined && item.source_reference !== null && String(item.source_reference).trim() !== ''
+        ? String(item.source_reference).trim()
+        : null;
+
+      insertRows.push({
         organization_id: orgId,
-        event_id: hasEventId ? item.event_id : null,
-        category_id: hasCategoryId ? item.category_id : null,
+        event_id: hasEventId ? eventId : null,
+        category_id: hasCategoryId ? categoryId : null,
         amount: parseFloat(String(item.amount)),
-        expense_date: item.expense_date as string,
-        vendor: item.vendor || null,
-        memo: item.memo || null,
+        expense_date: String(item.expense_date),
+        vendor,
+        memo,
         source_type: (item.source_type || 'manual') as ExpenseSource,
-        source_reference: item.source_reference || null,
+        source_reference: sourceReference,
+        budget_bucket: budgetBucket,
+        travel_logistics_entry_id: travelLogisticsEntryId,
+        travel_cost_type: travelCostType,
         is_duplicate: false,
-      };
-    });
+      });
+    }
 
     // Bulk insert
     const { data: newExpenses, error: insertError } = await supabase
       .from('expenses')
-      .insert(insertRows)
+      .insert(insertRows as unknown as ExpenseInsert[])
       .select();
 
     if (insertError || !newExpenses) {
       throw insertError || new Error('Failed to insert expenses');
     }
+
+    await syncTravelBudgetsForPairs(supabase, syncPairs);
 
     // Audit log (non-blocking)
     try {

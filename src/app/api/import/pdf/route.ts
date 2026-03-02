@@ -71,6 +71,8 @@ interface AiExtractionResult {
     id: string | null;
     type: 'event' | 'category' | null;
     name: string | null;
+    budgetBucket?: 'event' | 'travel' | 'category' | null;
+    travelCostType?: 'lodging' | 'airfare' | 'ground_transport' | 'meals' | 'misc' | null;
     confidence: number;
   };
   reasoning: string;

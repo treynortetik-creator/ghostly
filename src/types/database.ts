@@ -163,6 +163,9 @@ export interface Expense {
   memo: string | null;
   source_type: ExpenseSource;
   source_reference: string | null;
+  budget_bucket: 'event' | 'travel' | 'category';
+  travel_logistics_entry_id: string | null;
+  travel_cost_type: 'lodging' | 'airfare' | 'ground_transport' | 'meals' | 'misc' | null;
   is_duplicate: boolean;
   created_at: string;
   updated_at: string;
@@ -555,6 +558,9 @@ export interface ExpenseWithJoins {
   memo: string | null;
   source_type: string;
   source_reference: string | null;
+  budget_bucket: 'event' | 'travel' | 'category';
+  travel_logistics_entry_id: string | null;
+  travel_cost_type: 'lodging' | 'airfare' | 'ground_transport' | 'meals' | 'misc' | null;
   is_duplicate: boolean | null;
   created_at: string;
   updated_at: string;
@@ -1081,6 +1087,9 @@ export interface Database {
           memo: string | null;
           source_type: ExpenseSource;
           source_reference: string | null;
+          budget_bucket: string;
+          travel_logistics_entry_id: string | null;
+          travel_cost_type: string | null;
           is_duplicate: boolean | null;
           created_at: string | null;
           updated_at: string | null;
@@ -1096,6 +1105,9 @@ export interface Database {
           memo?: string | null;
           source_type?: ExpenseSource;
           source_reference?: string | null;
+          budget_bucket?: string;
+          travel_logistics_entry_id?: string | null;
+          travel_cost_type?: string | null;
           is_duplicate?: boolean | null;
           created_at?: string | null;
           updated_at?: string | null;
@@ -1111,6 +1123,9 @@ export interface Database {
           memo?: string | null;
           source_type?: ExpenseSource;
           source_reference?: string | null;
+          budget_bucket?: string;
+          travel_logistics_entry_id?: string | null;
+          travel_cost_type?: string | null;
           is_duplicate?: boolean | null;
           created_at?: string | null;
           updated_at?: string | null;

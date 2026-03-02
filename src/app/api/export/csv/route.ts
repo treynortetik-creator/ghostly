@@ -3,6 +3,24 @@ import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import { getDateRangeForScope, formatCurrency, escapeCSVValue, type ExportScope } from '@/lib/export-helpers';
 
+type ExpenseExportRow = Record<string, unknown> & {
+  events: { name: string } | null;
+  budget_categories: { name: string } | null;
+  event_id: string | null;
+  category_id: string | null;
+  amount: number;
+  expense_date: string;
+  vendor: string | null;
+  source_type: string | null;
+  source_reference: string | null;
+  memo: string | null;
+  budget_bucket: string | null;
+};
+
+type EventExportRow = Record<string, unknown> & {
+  event_types: { name: string } | null;
+};
+
 /* ============================================
    CSV EXPORT API
    ============================================
@@ -45,7 +63,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/csv' }
     if (eventsErr || catsErr || expErr) throw eventsErr || catsErr || expErr;
 
     let allExpenses = (rawExpenses || []).map(e => {
-      const { events: eventRel, budget_categories: catRel, ...rest } = e as any;
+      const { events: eventRel, budget_categories: catRel, ...rest } = e as unknown as ExpenseExportRow;
       return {
         ...rest,
         target_type: rest.event_id ? 'event' : 'category',
@@ -57,7 +75,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/csv' }
     const expenseByEvent = new Map<string, { total: number; count: number }>();
     const expenseByCategory = new Map<string, { total: number; count: number }>();
     for (const exp of rawExpenses || []) {
-      if (exp.event_id) {
+      if (exp.event_id && exp.budget_bucket !== 'travel') {
         const prev = expenseByEvent.get(exp.event_id) || { total: 0, count: 0 };
         expenseByEvent.set(exp.event_id, { total: prev.total + exp.amount, count: prev.count + 1 });
       }
@@ -127,7 +145,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/csv' }
     lines.push('"=== EVENTS SUMMARY ==="');
     lines.push('"Event Name","Event Type","Quarter","Budget","Actual Spent","Remaining","Location"');
     for (const event of filteredEvents) {
-      const eventTypeName = (event as any).event_types?.name || 'Uncategorized';
+      const eventTypeName = (event as unknown as EventExportRow).event_types?.name || 'Uncategorized';
       lines.push([
         escapeCSVValue(event.name),
         escapeCSVValue(eventTypeName),
