@@ -21,7 +21,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/permissions';
 import { getOrgId } from '@/lib/api-helpers';
-import { agentTools, findTool, toolsToOpenRouterFormat } from '@/lib/agent/tools';
+import {
+  agentTools,
+  findTool,
+  getToolPermissionMode,
+  toolsToOpenRouterFormat,
+} from '@/lib/agent/tools';
 import { buildSystemPrompt } from '@/lib/agent/system-prompt';
 import type { ToolExecutionContext } from '@/lib/agent/tools';
 import { getIntegrationTools, ensureIntegrationsRegistered } from '@/lib/integrations/registry';
@@ -108,6 +113,36 @@ async function generateCompactionSummary(
   return data.choices?.[0]?.message?.content || '';
 }
 
+function findPendingToolCalls(
+  historyRows: Array<{ role: string; tool_calls: unknown; tool_results: unknown }>
+): ToolCall[] {
+  for (let i = historyRows.length - 1; i >= 0; i--) {
+    const row = historyRows[i];
+    if (row.role !== 'assistant' || !Array.isArray(row.tool_calls)) continue;
+
+    const toolCalls = row.tool_calls as ToolCall[];
+    if (toolCalls.length === 0) continue;
+
+    const unresolvedIds = new Set(toolCalls.map((tc) => tc.id));
+    for (let j = i + 1; j < historyRows.length; j++) {
+      const next = historyRows[j];
+      if (next.role !== 'tool' || !Array.isArray(next.tool_results)) continue;
+      const results = next.tool_results as Array<{ tool_call_id?: string }>;
+      for (const result of results) {
+        if (result.tool_call_id) {
+          unresolvedIds.delete(result.tool_call_id);
+        }
+      }
+    }
+
+    if (unresolvedIds.size > 0) {
+      return toolCalls.filter((tc) => unresolvedIds.has(tc.id));
+    }
+  }
+
+  return [];
+}
+
 export async function POST(request: NextRequest) {
   // Manual permission check (can't use withApiHandler because we return a streaming Response)
   const denied = requirePermission(request, 'write');
@@ -120,6 +155,8 @@ export async function POST(request: NextRequest) {
     let message = '';
     let event_id: string | undefined;
     let session_id: string | undefined;
+    let approvedToolCallIds: string[] = [];
+    let hasToolApprovalPayload = false;
     const uploadedFiles: Array<{
       document_id: string;
       filename: string;
@@ -205,13 +242,26 @@ export async function POST(request: NextRequest) {
       message = body.message || '';
       event_id = body.event_id;
       session_id = body.session_id;
+      if (Object.prototype.hasOwnProperty.call(body, 'approved_tool_call_ids')) {
+        hasToolApprovalPayload = true;
+        if (!Array.isArray(body.approved_tool_call_ids)) {
+          return NextResponse.json(
+            { error: 'approved_tool_call_ids must be an array of tool call IDs' },
+            { status: 400 }
+          );
+        }
+        approvedToolCallIds = body.approved_tool_call_ids.map((id: unknown) => String(id));
+      }
     }
 
     // Require either a message or files
     const hasMessage = typeof message === 'string' && message.trim().length > 0;
     const hasFiles = uploadedFiles.length > 0;
-    if (!hasMessage && !hasFiles) {
+    if (!hasMessage && !hasFiles && !hasToolApprovalPayload) {
       return NextResponse.json({ error: 'Message or files required' }, { status: 400 });
+    }
+    if (hasToolApprovalPayload && !session_id) {
+      return NextResponse.json({ error: 'session_id is required for tool approval responses' }, { status: 400 });
     }
 
     const apiKey = process.env.OPENROUTER_API_KEY;
@@ -305,12 +355,13 @@ export async function POST(request: NextRequest) {
     // ─── Load agent settings ─────────────────────────────────────────────
     const { data: settings } = await supabase
       .from('agent_settings')
-      .select('agent_name, agent_focus')
+      .select('agent_name, agent_focus, tool_permissions')
       .eq('organization_id', orgId)
       .single();
 
     const agentName = settings?.agent_name || 'Ghostly';
     const agentFocus = settings?.agent_focus || null;
+    const toolPermissions = (settings?.tool_permissions as Record<string, unknown> | null | undefined) ?? {};
 
     // ─── Load integration tools ─────────────────────────────────────────
     await ensureIntegrationsRegistered();
@@ -384,47 +435,49 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ─── Build user content with file context ──────────────────────────
-    let userContent = message.trim();
+    if (!hasToolApprovalPayload) {
+      // ─── Build user content with file context ──────────────────────────
+      let userContent = message.trim();
 
-    if (uploadedFiles.length > 0) {
-      const fileContextParts: string[] = [];
-      for (const uf of uploadedFiles) {
-        if (isImageType(uf.mime_type)) {
-          fileContextParts.push(`[Attached image: ${uf.filename}]`);
-        } else {
-          try {
-            const text = await extractTextFromFile(uf.storage_path, uf.mime_type);
-            fileContextParts.push(
-              `--- Attached file: ${uf.filename} ---\n${text}\n--- End of file ---`
-            );
-          } catch {
-            fileContextParts.push(`[Could not extract text from: ${uf.filename}]`);
+      if (uploadedFiles.length > 0) {
+        const fileContextParts: string[] = [];
+        for (const uf of uploadedFiles) {
+          if (isImageType(uf.mime_type)) {
+            fileContextParts.push(`[Attached image: ${uf.filename}]`);
+          } else {
+            try {
+              const text = await extractTextFromFile(uf.storage_path, uf.mime_type);
+              fileContextParts.push(
+                `--- Attached file: ${uf.filename} ---\n${text}\n--- End of file ---`
+              );
+            } catch {
+              fileContextParts.push(`[Could not extract text from: ${uf.filename}]`);
+            }
           }
         }
+        const fileContext = fileContextParts.join('\n\n');
+        userContent = userContent
+          ? `${userContent}\n\n${fileContext}`
+          : fileContext;
       }
-      const fileContext = fileContextParts.join('\n\n');
-      userContent = userContent
-        ? `${userContent}\n\n${fileContext}`
-        : fileContext;
+
+      // Add the new user message
+      messages.push({ role: 'user', content: userContent });
+
+      // ─── Save the user message to DB ───────────────────────────────────
+      const attachments = uploadedFiles.map((f) => ({
+        document_id: f.document_id,
+        filename: f.filename,
+        mime_type: f.mime_type,
+      }));
+
+      await supabase.from('chat_messages').insert({
+        session_id,
+        role: 'user',
+        content: message.trim() || (uploadedFiles.length > 0 ? `[${uploadedFiles.length} file(s) attached]` : ''),
+        attachments: attachments.length > 0 ? attachments : [],
+      });
     }
-
-    // Add the new user message
-    messages.push({ role: 'user', content: userContent });
-
-    // ─── Save the user message to DB ─────────────────────────────────────
-    const attachments = uploadedFiles.map((f) => ({
-      document_id: f.document_id,
-      filename: f.filename,
-      mime_type: f.mime_type,
-    }));
-
-    await supabase.from('chat_messages').insert({
-      session_id,
-      role: 'user',
-      content: message.trim() || (uploadedFiles.length > 0 ? `[${uploadedFiles.length} file(s) attached]` : ''),
-      attachments: attachments.length > 0 ? attachments : [],
-    });
 
     // ─── Build tool context ──────────────────────────────────────────────
     const protocol = request.headers.get('x-forwarded-proto') || 'http';
@@ -452,6 +505,24 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const approvedToolCallIdSet = new Set(approvedToolCallIds);
+    let pendingToolCalls = hasToolApprovalPayload
+      ? findPendingToolCalls(
+          (historyRows ?? []).map((row) => ({
+            role: row.role,
+            tool_calls: row.tool_calls,
+            tool_results: row.tool_results,
+          }))
+        )
+      : [];
+
+    if (hasToolApprovalPayload && pendingToolCalls.length === 0) {
+      return NextResponse.json(
+        { error: 'No pending tool approval request found for this session' },
+        { status: 409 }
+      );
+    }
+
     // ─── Tool-use loop ───────────────────────────────────────────────────
     const toolCallMessages: Array<{ role: string; content: string | null; tool_calls?: ToolCall[] }> = [];
     let finalContent = '';
@@ -463,60 +534,152 @@ export async function POST(request: NextRequest) {
     while (toolRounds < MAX_TOOL_ROUNDS) {
       toolRounds++;
 
-      const orResponse = await fetch(`${OPENROUTER_API_URL}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || baseUrl,
-          'X-Title': 'Ghostly Agent',
-        },
-        body: JSON.stringify({
-          model: AGENT_MODEL,
-          messages,
-          tools: openRouterTools,
-          tool_choice: 'auto',
-          temperature: 0.3,
-          max_tokens: 4000,
-        }),
-      });
+      let assistantMessage: { content?: string | null; tool_calls?: ToolCall[] } | null = null;
+      let replayingPendingToolCalls = false;
 
-      if (!orResponse.ok) {
-        const errorText = await orResponse.text();
-        console.error('OpenRouter API error:', orResponse.status, errorText);
-        finalContent = 'I encountered an error while processing your request. Please try again later.';
-        break;
+      if (pendingToolCalls.length > 0) {
+        assistantMessage = {
+          content: null,
+          tool_calls: pendingToolCalls,
+        };
+        pendingToolCalls = [];
+        replayingPendingToolCalls = true;
+      } else {
+        const orResponse = await fetch(`${OPENROUTER_API_URL}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || baseUrl,
+            'X-Title': 'Ghostly Agent',
+          },
+          body: JSON.stringify({
+            model: AGENT_MODEL,
+            messages,
+            tools: openRouterTools,
+            tool_choice: 'auto',
+            temperature: 0.3,
+            max_tokens: 4000,
+          }),
+        });
+
+        if (!orResponse.ok) {
+          const errorText = await orResponse.text();
+          console.error('OpenRouter API error:', orResponse.status, errorText);
+          finalContent = 'I encountered an error while processing your request. Please try again later.';
+          break;
+        }
+
+        const orData = await orResponse.json();
+
+        if (orData.usage?.prompt_tokens) {
+          lastPromptTokens = orData.usage.prompt_tokens;
+        }
+
+        const choice = orData.choices?.[0];
+        if (!choice) {
+          finalContent = 'I received an unexpected response. Please try again.';
+          break;
+        }
+
+        assistantMessage = choice.message;
       }
 
-      const orData = await orResponse.json();
-
-      if (orData.usage?.prompt_tokens) {
-        lastPromptTokens = orData.usage.prompt_tokens;
-      }
-
-      const choice = orData.choices?.[0];
-
-      if (!choice) {
+      if (!assistantMessage) {
         finalContent = 'I received an unexpected response. Please try again.';
         break;
       }
 
-      const assistantMessage = choice.message;
-
       // If there are tool calls, execute them
       if (assistantMessage.tool_calls && assistantMessage.tool_calls.length > 0) {
-        messages.push({
-          role: 'assistant',
-          content: assistantMessage.content || null,
-          tool_calls: assistantMessage.tool_calls,
-        });
+        const isApprovalReplay = replayingPendingToolCalls && hasToolApprovalPayload;
 
-        await supabase.from('chat_messages').insert({
-          session_id,
-          role: 'assistant',
-          content: assistantMessage.content || null,
-          tool_calls: assistantMessage.tool_calls,
-        });
+        if (!replayingPendingToolCalls) {
+          messages.push({
+            role: 'assistant',
+            content: assistantMessage.content || null,
+            tool_calls: assistantMessage.tool_calls,
+          });
+
+          await supabase.from('chat_messages').insert({
+            session_id,
+            role: 'assistant',
+            content: assistantMessage.content || null,
+            tool_calls: assistantMessage.tool_calls as unknown as Record<string, unknown>[],
+          });
+        }
+
+        const askToolCalls = assistantMessage.tool_calls.filter(
+          (tc) => getToolPermissionMode(tc.function.name, toolPermissions, integrationTools) === 'ask'
+        );
+
+        if (askToolCalls.length > 0 && !isApprovalReplay) {
+          if (lastPromptTokens > 0) {
+            await supabase
+              .from('chat_sessions')
+              .update({ context_tokens_used: lastPromptTokens })
+              .eq('id', session_id);
+          }
+
+          const approvalCalls = askToolCalls.map((tc) => {
+            const tool = findTool(tc.function.name, integrationTools);
+            return {
+              id: tc.id,
+              name: tc.function.name,
+              arguments: tc.function.arguments,
+              description: tool?.description ?? tc.function.name,
+            };
+          });
+
+          const encoder = new TextEncoder();
+          const approvalStream = new ReadableStream({
+            start(controller) {
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ type: 'session', session_id })}\n\n`)
+              );
+
+              const contextPercent = CONTEXT_LIMIT > 0
+                ? Math.round((lastPromptTokens / CONTEXT_LIMIT) * 100)
+                : 0;
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({
+                  type: 'context',
+                  used: lastPromptTokens,
+                  limit: CONTEXT_LIMIT,
+                  percent: contextPercent,
+                })}\n\n`)
+              );
+
+              if (didCompact) {
+                controller.enqueue(
+                  encoder.encode(`data: ${JSON.stringify({ type: 'compacted' })}\n\n`)
+                );
+              }
+
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({
+                  type: 'approval_required',
+                  session_id,
+                  message: assistantMessage?.content || null,
+                  tool_calls: approvalCalls,
+                })}\n\n`)
+              );
+
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ type: 'done', session_id })}\n\n`)
+              );
+              controller.close();
+            },
+          });
+
+          return new Response(approvalStream, {
+            headers: {
+              'Content-Type': 'text/event-stream',
+              'Cache-Control': 'no-cache',
+              'Connection': 'keep-alive',
+            },
+          });
+        }
 
         const toolResults: Array<{
           tool_call_id: string;
@@ -527,9 +690,14 @@ export async function POST(request: NextRequest) {
         for (const tc of assistantMessage.tool_calls) {
           const toolName = tc.function.name;
           const tool = findTool(toolName, integrationTools);
+          const mode = getToolPermissionMode(toolName, toolPermissions, integrationTools);
 
           let resultContent: string;
-          if (!tool) {
+          if (mode === 'never') {
+            resultContent = JSON.stringify({ error: `Tool "${toolName}" is disabled by policy.` });
+          } else if (mode === 'ask' && (!isApprovalReplay || !approvedToolCallIdSet.has(tc.id))) {
+            resultContent = JSON.stringify({ error: `Permission denied for tool "${toolName}".` });
+          } else if (!tool) {
             resultContent = JSON.stringify({ error: `Unknown tool: ${toolName}` });
           } else {
             try {

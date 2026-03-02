@@ -1994,6 +1994,7 @@ export interface Database {
           heartbeat_interval: number;
           heartbeat_prompt: string;
           notification_channel: string | null;
+          tool_permissions: Record<string, unknown>;
           connected_integrations: Record<string, unknown> | null;
           created_at: string | null;
           updated_at: string | null;
@@ -2006,6 +2007,7 @@ export interface Database {
           heartbeat_interval?: number;
           heartbeat_prompt?: string;
           notification_channel?: string | null;
+          tool_permissions?: Record<string, unknown>;
           connected_integrations?: Record<string, unknown> | null;
           created_at?: string | null;
           updated_at?: string | null;
@@ -2018,6 +2020,7 @@ export interface Database {
           heartbeat_interval?: number;
           heartbeat_prompt?: string;
           notification_channel?: string | null;
+          tool_permissions?: Record<string, unknown>;
           connected_integrations?: Record<string, unknown> | null;
           created_at?: string | null;
           updated_at?: string | null;

@@ -3,12 +3,11 @@
  *
  * Each tool has a name, description, JSON-schema parameters, and an execute
  * function that calls the internal Ghostly API routes with org context.
- *
- * Ported from the MCP server tool definitions at mcp-server/src/index.ts
- * and expanded for the full agent feature set.
  */
 
 // ─── Types ───────────────────────────────────────────────────────────────────
+
+export type ToolPermissionMode = 'never' | 'ask' | 'always';
 
 export interface ToolParameter {
   type: string;
@@ -20,6 +19,7 @@ export interface ToolParameter {
 export interface AgentTool {
   name: string;
   description: string;
+  default_permission?: ToolPermissionMode;
   parameters: {
     type: 'object';
     properties: Record<string, ToolParameter>;
@@ -82,6 +82,23 @@ async function internalFetch(
   return data;
 }
 
+function splitHumanName(value: string): { first_name: string; last_name: string } {
+  const cleaned = value.trim();
+  if (!cleaned) {
+    return { first_name: 'Vendor', last_name: 'Contact' };
+  }
+
+  const parts = cleaned.split(/\s+/);
+  if (parts.length === 1) {
+    return { first_name: parts[0], last_name: 'Contact' };
+  }
+
+  return {
+    first_name: parts[0],
+    last_name: parts.slice(1).join(' '),
+  };
+}
+
 // ─── Tool Definitions ────────────────────────────────────────────────────────
 
 export const agentTools: AgentTool[] = [
@@ -90,6 +107,7 @@ export const agentTools: AgentTool[] = [
     name: 'get_events',
     description:
       'List events with optional filters. Returns event name, quarter, budget, actual spend, and remaining budget for each event.',
+    default_permission: 'always',
     parameters: {
       type: 'object',
       properties: {
@@ -129,9 +147,18 @@ export const agentTools: AgentTool[] = [
           date_start: ev.date_start,
           date_end: ev.date_end,
           location: ev.location,
+          stage: ev.stage,
         };
       });
-      return JSON.stringify({ events, total: (data.pagination as Record<string, unknown>)?.total ?? events.length }, null, 2);
+
+      return JSON.stringify(
+        {
+          events,
+          total: (data.pagination as Record<string, unknown>)?.total ?? events.length,
+        },
+        null,
+        2
+      );
     },
   },
 
@@ -140,6 +167,7 @@ export const agentTools: AgentTool[] = [
     name: 'get_event_detail',
     description:
       'Get full details of a specific event including budget, expenses, ROI metrics, checklist progress, and team assignments.',
+    default_permission: 'always',
     parameters: {
       type: 'object',
       properties: {
@@ -156,11 +184,97 @@ export const agentTools: AgentTool[] = [
     },
   },
 
-  // 3. update_event
+  // 3. create_event
+  {
+    name: 'create_event',
+    description:
+      'Create a new event with its required planning fields such as name, event type, quarter, and budget.',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Event name',
+        },
+        event_type_id: {
+          type: 'string',
+          description: 'Event type UUID',
+        },
+        quarter: {
+          type: 'string',
+          description: 'Quarter for this event',
+          enum: ['Q1', 'Q2', 'Q3', 'Q4', 'TBD'],
+        },
+        budget_amount: {
+          type: 'number',
+          description: 'Budget amount in dollars',
+        },
+        fiscal_year_id: {
+          type: 'string',
+          description: 'Optional fiscal year UUID',
+        },
+        date_start: {
+          type: 'string',
+          description: 'Optional start date (YYYY-MM-DD)',
+        },
+        date_end: {
+          type: 'string',
+          description: 'Optional end date (YYYY-MM-DD)',
+        },
+        location: {
+          type: 'string',
+          description: 'Optional event location',
+        },
+        expansion_goal: {
+          type: 'number',
+          description: 'Optional expansion goal count',
+        },
+        net_new_goal: {
+          type: 'number',
+          description: 'Optional net-new goal count',
+        },
+        approach_notes: {
+          type: 'string',
+          description: 'Optional strategic notes',
+        },
+        marketing_notes: {
+          type: 'string',
+          description: 'Optional marketing notes',
+        },
+        sales_notes: {
+          type: 'string',
+          description: 'Optional sales notes',
+        },
+      },
+      required: ['name', 'event_type_id', 'quarter', 'budget_amount'],
+    },
+    execute: async (args, ctx) => {
+      const result = await internalFetch(ctx, 'POST', '/api/events', {
+        name: args.name,
+        event_type_id: args.event_type_id,
+        quarter: args.quarter,
+        budget_amount: args.budget_amount,
+        fiscal_year_id: args.fiscal_year_id ?? null,
+        date_start: args.date_start ?? null,
+        date_end: args.date_end ?? null,
+        location: args.location ?? null,
+        expansion_goal: args.expansion_goal ?? 0,
+        net_new_goal: args.net_new_goal ?? 0,
+        approach_notes: args.approach_notes ?? null,
+        marketing_notes: args.marketing_notes ?? null,
+        sales_notes: args.sales_notes ?? null,
+      });
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 4. update_event
   {
     name: 'update_event',
     description:
-      'Update an event\'s fields. Only send the fields you want to change. Common fields: name, quarter, budget_amount, location, date_start, date_end, approach_notes, marketing_notes, sales_notes.',
+      'Update event fields. Only include fields you want to change, including schedule, stage, budget, and ROI metrics.',
+    default_permission: 'ask',
     parameters: {
       type: 'object',
       properties: {
@@ -193,9 +307,14 @@ export const agentTools: AgentTool[] = [
           type: 'string',
           description: 'New end date (YYYY-MM-DD)',
         },
+        stage: {
+          type: 'string',
+          description: 'Event stage',
+          enum: ['confirmed', 'in_progress', 'ready', 'active', 'debrief', 'archived'],
+        },
         approach_notes: {
           type: 'string',
-          description: 'Event approach/strategy notes',
+          description: 'Event approach or strategy notes',
         },
         marketing_notes: {
           type: 'string',
@@ -204,6 +323,30 @@ export const agentTools: AgentTool[] = [
         sales_notes: {
           type: 'string',
           description: 'Sales notes',
+        },
+        pipeline_generated: {
+          type: 'number',
+          description: 'ROI pipeline generated amount in dollars',
+        },
+        revenue_closed: {
+          type: 'number',
+          description: 'ROI revenue closed amount in dollars',
+        },
+        leads_generated: {
+          type: 'number',
+          description: 'ROI leads generated count',
+        },
+        meetings_booked: {
+          type: 'number',
+          description: 'ROI meetings booked count',
+        },
+        opportunities_created: {
+          type: 'number',
+          description: 'ROI opportunities created count',
+        },
+        roi_notes: {
+          type: 'string',
+          description: 'ROI context notes',
         },
       },
       required: ['event_id'],
@@ -215,11 +358,59 @@ export const agentTools: AgentTool[] = [
     },
   },
 
-  // 4. get_expenses
+  // 5. update_event_roi
+  {
+    name: 'update_event_roi',
+    description:
+      'Set event ROI numbers directly (pipeline, revenue, leads, meetings, opportunities, and ROI notes).',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        event_id: {
+          type: 'string',
+          description: 'Event UUID to update',
+        },
+        pipeline_generated: {
+          type: 'number',
+          description: 'Pipeline generated amount in dollars',
+        },
+        revenue_closed: {
+          type: 'number',
+          description: 'Revenue closed amount in dollars',
+        },
+        leads_generated: {
+          type: 'number',
+          description: 'Leads generated count',
+        },
+        meetings_booked: {
+          type: 'number',
+          description: 'Meetings booked count',
+        },
+        opportunities_created: {
+          type: 'number',
+          description: 'Opportunities created count',
+        },
+        roi_notes: {
+          type: 'string',
+          description: 'ROI context notes',
+        },
+      },
+      required: ['event_id'],
+    },
+    execute: async (args, ctx) => {
+      const { event_id, ...updates } = args;
+      const result = await internalFetch(ctx, 'PUT', `/api/events/${event_id}`, updates);
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 6. get_expenses
   {
     name: 'get_expenses',
     description:
       'List expenses with optional filters. Can filter by event, vendor, date range, or source type.',
+    default_permission: 'always',
     parameters: {
       type: 'object',
       properties: {
@@ -258,17 +449,22 @@ export const agentTools: AgentTool[] = [
     },
   },
 
-  // 5. create_expense
+  // 7. create_expense
   {
     name: 'create_expense',
     description:
-      'Create a new expense (budget line item) for an event. Amount is in dollars. expense_date must be YYYY-MM-DD.',
+      'Create a new expense line item for an event or category. Amount is in dollars and expense_date must be YYYY-MM-DD.',
+    default_permission: 'ask',
     parameters: {
       type: 'object',
       properties: {
         event_id: {
           type: 'string',
-          description: 'Event UUID to attach this expense to',
+          description: 'Event UUID for this expense (use event_id OR category_id)',
+        },
+        category_id: {
+          type: 'string',
+          description: 'Category UUID for this expense (use category_id OR event_id)',
         },
         amount: {
           type: 'number',
@@ -287,11 +483,12 @@ export const agentTools: AgentTool[] = [
           description: 'Description or memo for this expense',
         },
       },
-      required: ['event_id', 'amount', 'expense_date'],
+      required: ['amount', 'expense_date'],
     },
     execute: async (args, ctx) => {
       const result = await internalFetch(ctx, 'POST', '/api/expenses', {
-        event_id: args.event_id,
+        event_id: args.event_id ?? null,
+        category_id: args.category_id ?? null,
         amount: args.amount,
         expense_date: args.expense_date,
         vendor: args.vendor ?? null,
@@ -302,11 +499,12 @@ export const agentTools: AgentTool[] = [
     },
   },
 
-  // 6. get_overdue_tasks
+  // 8. get_overdue_tasks
   {
     name: 'get_overdue_tasks',
     description:
-      'Find checklist items that are past their due date and not yet completed. Returns the task title, event name, due date, and assignee.',
+      'Find checklist items that are past their due date and not yet completed. Returns task title, event name, due date, and assignee.',
+    default_permission: 'always',
     parameters: {
       type: 'object',
       properties: {
@@ -317,7 +515,6 @@ export const agentTools: AgentTool[] = [
       },
     },
     execute: async (args, ctx) => {
-      // This tool queries the DB directly via a custom endpoint
       const params = new URLSearchParams();
       if (args.event_id) params.set('event_id', String(args.event_id));
       const result = await internalFetch(ctx, 'GET', `/api/agent/tools/overdue-tasks?${params.toString()}`);
@@ -325,11 +522,12 @@ export const agentTools: AgentTool[] = [
     },
   },
 
-  // 7. get_over_budget_events
+  // 9. get_over_budget_events
   {
     name: 'get_over_budget_events',
     description:
-      'Find events where actual spending exceeds the budget. Returns event name, budget, actual spent, and how much over budget.',
+      'Find events where actual spending exceeds budget. Returns event name, budget, actual spent, and amount over budget.',
+    default_permission: 'always',
     parameters: {
       type: 'object',
       properties: {},
@@ -340,11 +538,12 @@ export const agentTools: AgentTool[] = [
     },
   },
 
-  // 8. create_checklist_item
+  // 10. create_checklist_item
   {
     name: 'create_checklist_item',
     description:
-      'Add a checklist item to an event. Specify the event, title, phase (pre_event/day_of/post_event), and optional due date.',
+      'Add a checklist item to an event with optional phase, due date, and description.',
+    default_permission: 'ask',
     parameters: {
       type: 'object',
       properties: {
@@ -367,7 +566,7 @@ export const agentTools: AgentTool[] = [
         },
         description: {
           type: 'string',
-          description: 'Optional description or details',
+          description: 'Optional item details',
         },
       },
       required: ['event_id', 'title'],
@@ -384,11 +583,12 @@ export const agentTools: AgentTool[] = [
     },
   },
 
-  // 9. get_team_members
+  // 11. get_team_members
   {
     name: 'get_team_members',
     description:
-      'List all active team members. Returns name, email, role, and which events they are assigned to.',
+      'List all active team members with name, email, role, and metadata needed for assignment decisions.',
+    default_permission: 'always',
     parameters: {
       type: 'object',
       properties: {},
@@ -399,11 +599,95 @@ export const agentTools: AgentTool[] = [
     },
   },
 
-  // 10. get_session_history
+  // 12. create_team_member
+  {
+    name: 'create_team_member',
+    description:
+      'Create a new team member record that can be assigned to events and tasks.',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Team member full name',
+        },
+        email: {
+          type: 'string',
+          description: 'Optional email address',
+        },
+        phone: {
+          type: 'string',
+          description: 'Optional phone number',
+        },
+        default_role: {
+          type: 'string',
+          description: 'Optional default role/title',
+        },
+        notes: {
+          type: 'string',
+          description: 'Optional notes',
+        },
+      },
+      required: ['name'],
+    },
+    execute: async (args, ctx) => {
+      const result = await internalFetch(ctx, 'POST', '/api/team', {
+        name: args.name,
+        email: args.email ?? null,
+        phone: args.phone ?? null,
+        default_role: args.default_role ?? null,
+        notes: args.notes ?? null,
+      });
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 13. assign_team_member_to_event
+  {
+    name: 'assign_team_member_to_event',
+    description:
+      'Assign an existing team member to an event with an optional event-specific role and notes.',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        event_id: {
+          type: 'string',
+          description: 'Event UUID',
+        },
+        team_member_id: {
+          type: 'string',
+          description: 'Team member UUID',
+        },
+        event_role: {
+          type: 'string',
+          description: 'Optional event-specific role',
+        },
+        notes: {
+          type: 'string',
+          description: 'Optional assignment notes',
+        },
+      },
+      required: ['event_id', 'team_member_id'],
+    },
+    execute: async (args, ctx) => {
+      const eventId = String(args.event_id);
+      const result = await internalFetch(ctx, 'POST', `/api/events/${eventId}/team`, {
+        team_member_id: args.team_member_id,
+        event_role: args.event_role ?? null,
+        notes: args.notes ?? null,
+      });
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 14. get_session_history
   {
     name: 'get_session_history',
     description:
-      'Search chat message history across sessions. Can filter by session ID and keyword. Returns matching messages with session titles. Useful for recalling previous conversations or finding information discussed earlier.',
+      'Search chat message history across sessions with optional session and keyword filters.',
+    default_permission: 'always',
     parameters: {
       type: 'object',
       properties: {
@@ -413,7 +697,7 @@ export const agentTools: AgentTool[] = [
         },
         search: {
           type: 'string',
-          description: 'Optional: keyword to search for in message content',
+          description: 'Optional keyword to search in message content',
         },
         limit: {
           type: 'number',
@@ -432,11 +716,12 @@ export const agentTools: AgentTool[] = [
     },
   },
 
-  // 11. get_event_documents
+  // 15. get_event_documents
   {
     name: 'get_event_documents',
     description:
-      'List documents attached to an event. Returns filenames, AI summaries, and tags — not full content. Use read_document for full content.',
+      'List documents attached to an event with summaries and tags. Use read_document for full text.',
+    default_permission: 'always',
     parameters: {
       type: 'object',
       properties: {
@@ -448,16 +733,21 @@ export const agentTools: AgentTool[] = [
       required: ['event_id'],
     },
     execute: async (args, ctx) => {
-      const result = await internalFetch(ctx, 'GET', `/api/agent/tools/event-documents?event_id=${encodeURIComponent(String(args.event_id))}`);
+      const result = await internalFetch(
+        ctx,
+        'GET',
+        `/api/agent/tools/event-documents?event_id=${encodeURIComponent(String(args.event_id))}`
+      );
       return JSON.stringify(result, null, 2);
     },
   },
 
-  // 12. read_document
+  // 16. read_document
   {
     name: 'read_document',
     description:
-      'Get the full extracted text of a specific document. Use get_event_documents first to find the document ID.',
+      'Read full extracted text for a document by document ID.',
+    default_permission: 'always',
     parameters: {
       type: 'object',
       properties: {
@@ -469,16 +759,21 @@ export const agentTools: AgentTool[] = [
       required: ['document_id'],
     },
     execute: async (args, ctx) => {
-      const result = await internalFetch(ctx, 'GET', `/api/agent/tools/read-document?document_id=${encodeURIComponent(String(args.document_id))}`);
+      const result = await internalFetch(
+        ctx,
+        'GET',
+        `/api/agent/tools/read-document?document_id=${encodeURIComponent(String(args.document_id))}`
+      );
       return JSON.stringify(result, null, 2);
     },
   },
 
-  // 13. attach_document
+  // 17. attach_document
   {
     name: 'attach_document',
     description:
-      'Link a document to an event. IMPORTANT: Always ask the user to confirm the event before calling this.',
+      'Attach an existing document record to an event.',
+    default_permission: 'ask',
     parameters: {
       type: 'object',
       properties: {
@@ -502,11 +797,12 @@ export const agentTools: AgentTool[] = [
     },
   },
 
-  // 14. search
+  // 18. search
   {
     name: 'search',
     description:
-      'Full-text search across events and expenses. Returns matching events and expenses with their details.',
+      'Search across events and expenses and return matching records from both datasets.',
+    default_permission: 'always',
     parameters: {
       type: 'object',
       properties: {
@@ -519,7 +815,6 @@ export const agentTools: AgentTool[] = [
     },
     execute: async (args, ctx) => {
       const query = String(args.query);
-      // Search events and expenses in parallel
       const [eventsResult, expensesResult] = await Promise.all([
         internalFetch(ctx, 'GET', `/api/events?search=${encodeURIComponent(query)}&per_page=10`),
         internalFetch(ctx, 'GET', `/api/expenses?vendor=${encodeURIComponent(query)}&per_page=10`),
@@ -528,54 +823,189 @@ export const agentTools: AgentTool[] = [
       const events = ((eventsResult as Record<string, unknown>).events as unknown[]) ?? [];
       const expenses = ((expensesResult as Record<string, unknown>).expenses as unknown[]) ?? [];
 
-      return JSON.stringify({
-        events: events.map((e: unknown) => {
-          const ev = e as Record<string, unknown>;
-          return {
-            id: ev.id,
-            name: ev.name,
-            quarter: ev.quarter,
-            budget_amount: ev.budget_amount,
-            actual_spent: ev.actual_spent,
-          };
-        }),
-        expenses: expenses.map((e: unknown) => {
-          const ex = e as Record<string, unknown>;
-          return {
-            id: ex.id,
-            vendor: ex.vendor,
-            amount: ex.amount,
-            expense_date: ex.expense_date,
-            memo: ex.memo,
-            event_id: ex.event_id,
-          };
-        }),
-        total_results: events.length + expenses.length,
-      }, null, 2);
+      return JSON.stringify(
+        {
+          events: events.map((e: unknown) => {
+            const ev = e as Record<string, unknown>;
+            return {
+              id: ev.id,
+              name: ev.name,
+              quarter: ev.quarter,
+              budget_amount: ev.budget_amount,
+              actual_spent: ev.actual_spent,
+            };
+          }),
+          expenses: expenses.map((e: unknown) => {
+            const ex = e as Record<string, unknown>;
+            return {
+              id: ex.id,
+              vendor: ex.vendor,
+              amount: ex.amount,
+              expense_date: ex.expense_date,
+              memo: ex.memo,
+              event_id: ex.event_id,
+            };
+          }),
+          total_results: events.length + expenses.length,
+        },
+        null,
+        2
+      );
     },
   },
 
-  // 15. generate_document
+  // 19. create_vendor
+  {
+    name: 'create_vendor',
+    description:
+      'Create a vendor contact record (master data) that can be reused across expenses and event planning.',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        vendor_name: {
+          type: 'string',
+          description: 'Vendor name or primary contact name',
+        },
+        company: {
+          type: 'string',
+          description: 'Optional company/legal entity name',
+        },
+        title: {
+          type: 'string',
+          description: 'Optional title/role',
+        },
+        email: {
+          type: 'string',
+          description: 'Optional vendor email',
+        },
+        phone: {
+          type: 'string',
+          description: 'Optional vendor phone',
+        },
+        notes: {
+          type: 'string',
+          description: 'Optional notes about this vendor',
+        },
+      },
+      required: ['vendor_name'],
+    },
+    execute: async (args, ctx) => {
+      const parsed = splitHumanName(String(args.vendor_name ?? ''));
+      const result = await internalFetch(ctx, 'POST', '/api/contacts', {
+        first_name: parsed.first_name,
+        last_name: parsed.last_name,
+        company: args.company ?? String(args.vendor_name),
+        title: args.title ?? null,
+        email: args.email ?? null,
+        phone: args.phone ?? null,
+        contact_type: 'vendor',
+        notes: args.notes ?? null,
+        source: 'agent',
+      });
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 20. create_category
+  {
+    name: 'create_category',
+    description:
+      'Create a budget category (master data) with an optional fiscal year and starting budget.',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Category name',
+        },
+        budget_amount: {
+          type: 'number',
+          description: 'Category budget amount in dollars',
+        },
+        fiscal_year_id: {
+          type: 'string',
+          description: 'Optional fiscal year UUID',
+        },
+        description: {
+          type: 'string',
+          description: 'Optional category description',
+        },
+      },
+      required: ['name', 'budget_amount'],
+    },
+    execute: async (args, ctx) => {
+      const result = await internalFetch(ctx, 'POST', '/api/categories', {
+        name: args.name,
+        budget_amount: args.budget_amount,
+        fiscal_year_id: args.fiscal_year_id ?? null,
+        description: args.description ?? null,
+      });
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 21. create_event_type
+  {
+    name: 'create_event_type',
+    description:
+      'Create an event type (master data) for a fiscal year, including optional default budget and description.',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Event type name',
+        },
+        fiscal_year_id: {
+          type: 'string',
+          description: 'Fiscal year UUID this event type belongs to',
+        },
+        budget_amount: {
+          type: 'number',
+          description: 'Optional default budget amount in dollars',
+        },
+        description: {
+          type: 'string',
+          description: 'Optional event type description',
+        },
+      },
+      required: ['name', 'fiscal_year_id'],
+    },
+    execute: async (args, ctx) => {
+      const result = await internalFetch(ctx, 'POST', '/api/event-types', {
+        name: args.name,
+        fiscal_year_id: args.fiscal_year_id,
+        budget_amount: args.budget_amount ?? 0,
+        description: args.description ?? null,
+      });
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 22. generate_document
   {
     name: 'generate_document',
     description:
-      'Generate a document from a template for a specific event. The AI fills each template section with event data (team, contacts, checklist, etc) and saves it as a markdown file. Use get_events to find the event_id first. Available templates: "Run of Show" (operational playbook) and "Event Guide" (attendee reference). Users may also have custom templates.',
+      'Generate a document from a template for a specific event and save it to the event documents.',
+    default_permission: 'ask',
     parameters: {
       type: 'object',
       properties: {
         template_name: {
           type: 'string',
-          description: 'Name of the template to use (e.g., "Run of Show", "Event Guide")',
+          description: 'Template name to use (e.g., Run of Show)',
         },
         event_id: {
           type: 'string',
-          description: 'Event UUID to generate the document for',
+          description: 'Event UUID for generation',
         },
       },
       required: ['template_name', 'event_id'],
     },
     execute: async (args, ctx) => {
-      // First, look up template by name
       const templatesResult = await internalFetch(ctx, 'GET', '/api/templates');
       const templates = ((templatesResult as Record<string, unknown>).templates as Record<string, unknown>[]) ?? [];
       const template = templates.find(
@@ -585,11 +1015,10 @@ export const agentTools: AgentTool[] = [
       if (!template) {
         const available = templates.map((t) => t.name).join(', ');
         return JSON.stringify({
-          error: `Template "${args.template_name}" not found. Available templates: ${available || 'none — ask the user to create one first'}`,
+          error: `Template "${args.template_name}" not found. Available templates: ${available || 'none'}`,
         });
       }
 
-      // Generate the document
       const result = await internalFetch(ctx, 'POST', '/api/documents/generate', {
         template_id: template.id,
         event_id: args.event_id,
@@ -598,17 +1027,44 @@ export const agentTools: AgentTool[] = [
       const data = result as Record<string, unknown>;
       const doc = data.document as Record<string, unknown>;
 
-      return JSON.stringify({
-        success: true,
-        document_id: doc?.id,
-        filename: doc?.filename,
-        template_name: data.template_name,
-        event_name: data.event_name,
-        message: `Generated "${data.template_name}" for ${data.event_name}. Document saved and attached to the event.`,
-      }, null, 2);
+      return JSON.stringify(
+        {
+          success: true,
+          document_id: doc?.id,
+          filename: doc?.filename,
+          template_name: data.template_name,
+          event_name: data.event_name,
+          message: `Generated "${data.template_name}" for ${data.event_name}.`,
+        },
+        null,
+        2
+      );
     },
   },
 ];
+
+export function getToolDefaultPermission(tool: AgentTool): ToolPermissionMode {
+  return tool.default_permission ?? 'always';
+}
+
+export function getAllTools(extraTools?: AgentTool[]): AgentTool[] {
+  return extraTools ? [...agentTools, ...extraTools] : agentTools;
+}
+
+export function getToolPermissionMode(
+  toolName: string,
+  permissionMap: Record<string, unknown> | null | undefined,
+  extraTools?: AgentTool[]
+): ToolPermissionMode {
+  const explicit = permissionMap?.[toolName];
+  if (explicit === 'never' || explicit === 'ask' || explicit === 'always') {
+    return explicit;
+  }
+
+  const tool = findTool(toolName, extraTools);
+  if (!tool) return 'always';
+  return getToolDefaultPermission(tool);
+}
 
 /**
  * Convert agent tools to the OpenRouter function-calling format.
@@ -621,8 +1077,7 @@ export function toolsToOpenRouterFormat(extraTools?: AgentTool[]): Array<{
     parameters: AgentTool['parameters'];
   };
 }> {
-  const allTools = extraTools ? [...agentTools, ...extraTools] : agentTools;
-  return allTools.map((tool) => ({
+  return getAllTools(extraTools).map((tool) => ({
     type: 'function' as const,
     function: {
       name: tool.name,

@@ -81,7 +81,7 @@ function DraggableEventItem({ event }: { event: UnscheduledEvent }) {
   );
 }
 
-// ─── Pipeline Client ────────────────────────────────────────────────────────
+// ─── Calendar Client ────────────────────────────────────────────────────────
 
 export function PipelineClient() {
   const [view, setView] = useState<ViewMode>('calendar');
@@ -278,7 +278,7 @@ export function PipelineClient() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <h1 className="text-2xl font-semibold text-foreground tracking-tight">
-            The Pipeline
+            Calendar
           </h1>
 
           <div className="flex items-center gap-4">

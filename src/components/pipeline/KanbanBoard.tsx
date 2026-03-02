@@ -75,18 +75,37 @@ export function KanbanBoard({ stages, onStageChange }: KanbanBoardProps) {
       if (!over) return;
 
       const eventId = active.id as string;
-      const newStage = over.id as string;
 
       // Find the current stage of the dragged event
       const draggedEvent = active.data.current?.event as BoardEvent | undefined;
       if (!draggedEvent) return;
 
-      const currentStage = draggedEvent.stage;
+      const currentStage = draggedEvent.stage as BoardStageKey | null;
+      if (!currentStage || !STAGE_ORDER.includes(currentStage)) return;
+
+      // Dropping over a card can return that card id; resolve to the card's stage.
+      let newStage = over.id as string;
+      if (!STAGE_ORDER.includes(newStage as BoardStageKey)) {
+        const overCardId = String(over.id);
+        const overCardStage = STAGE_ORDER.find((stageKey) =>
+          (stages[stageKey] || []).some((stageEvent) => stageEvent.id === overCardId)
+        );
+        if (overCardStage) {
+          newStage = overCardStage;
+        } else {
+          const overDataStage = over.data.current?.stageKey;
+          if (typeof overDataStage === 'string') {
+            newStage = overDataStage;
+          }
+        }
+      }
+
+      if (!STAGE_ORDER.includes(newStage as BoardStageKey)) return;
       if (currentStage === newStage) return;
 
       await onStageChange(eventId, newStage);
     },
-    [onStageChange]
+    [onStageChange, stages]
   );
 
   const handleDragCancel = useCallback(() => {

@@ -52,7 +52,7 @@ const navGroups: NavGroup[] = [
     items: [
       { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
       { name: "Events", href: "/events", icon: Calendar },
-      { name: "Pipeline", href: "/pipeline", icon: Workflow },
+      { name: "Calendar", href: "/calendar", icon: Workflow },
     ],
   },
   {

@@ -13,6 +13,10 @@ interface KanbanColumnProps {
 export function KanbanColumn({ stageKey, stageLabel, events }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: stageKey,
+    data: {
+      stageKey,
+      type: 'column',
+    },
   });
 
   return (

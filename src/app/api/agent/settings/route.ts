@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
+import type { ToolPermissionMode } from '@/lib/agent/tools';
 
 // ============================================
 // GET /api/agent/settings
@@ -108,6 +109,34 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'agent-settin
         );
       }
       updates.notification_channel = body.notification_channel;
+    }
+
+    if (body.tool_permissions !== undefined) {
+      if (
+        !body.tool_permissions ||
+        typeof body.tool_permissions !== 'object' ||
+        Array.isArray(body.tool_permissions)
+      ) {
+        return NextResponse.json(
+          { error: 'tool_permissions must be an object keyed by tool name' },
+          { status: 400 }
+        );
+      }
+
+      const validModes: ToolPermissionMode[] = ['never', 'ask', 'always'];
+      const cleaned: Record<string, ToolPermissionMode> = {};
+
+      for (const [toolName, mode] of Object.entries(body.tool_permissions as Record<string, unknown>)) {
+        if (typeof mode !== 'string' || !validModes.includes(mode as ToolPermissionMode)) {
+          return NextResponse.json(
+            { error: `Invalid permission mode for ${toolName}. Must be one of: ${validModes.join(', ')}` },
+            { status: 400 }
+          );
+        }
+        cleaned[toolName] = mode as ToolPermissionMode;
+      }
+
+      updates.tool_permissions = cleaned;
     }
 
     if (Object.keys(updates).length === 0) {

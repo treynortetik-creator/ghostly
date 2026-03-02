@@ -23,6 +23,7 @@ import {
   Pencil,
   Trash2,
   X,
+  Wrench,
 } from "lucide-react";
 import { AppShell } from "@/components/layout";
 import { Button } from "@/components/ui/Button";
@@ -46,6 +47,17 @@ interface AgentSettingsData {
   heartbeat_interval: number;
   heartbeat_prompt: string;
   notification_channel: string;
+  tool_permissions: Record<string, ToolPermissionMode>;
+}
+
+type ToolPermissionMode = "never" | "ask" | "always";
+
+interface ToolPermissionInfo {
+  name: string;
+  description: string;
+  source: "core" | "integration";
+  default_permission: ToolPermissionMode;
+  permission_mode: ToolPermissionMode;
 }
 
 interface ScheduledTask {
@@ -59,7 +71,7 @@ interface ScheduledTask {
   created_at: string;
 }
 
-type SectionKey = "identity" | "heartbeat" | "notifications" | "scheduled";
+type SectionKey = "identity" | "heartbeat" | "notifications" | "scheduled" | "tools";
 
 const defaultSettings: AgentSettingsData = {
   agent_name: "Ghostly",
@@ -68,6 +80,7 @@ const defaultSettings: AgentSettingsData = {
   heartbeat_interval: 60,
   heartbeat_prompt: "Check for any upcoming deadlines, overdue tasks, or budget alerts. Summarize anything that needs attention.",
   notification_channel: "in_app",
+  tool_permissions: {},
 };
 
 const HEARTBEAT_INTERVALS: { value: number; label: string }[] = [
@@ -97,6 +110,12 @@ const SCHEDULE_PRESETS: { value: string; label: string; cron: string }[] = [
 
 function getPresetLabel(preset: string): string {
   return SCHEDULE_PRESETS.find((p) => p.value === preset)?.label || preset;
+}
+
+function normalizePermissionMap(map: Record<string, ToolPermissionMode>): Record<string, ToolPermissionMode> {
+  return Object.fromEntries(
+    Object.entries(map).sort(([a], [b]) => a.localeCompare(b))
+  ) as Record<string, ToolPermissionMode>;
 }
 
 /* ============================================
@@ -280,6 +299,7 @@ export default function AgentSettingsPage() {
     heartbeat: false,
     notifications: false,
     scheduled: false,
+    tools: false,
   });
 
   const toggleSection = (key: SectionKey) =>
@@ -293,6 +313,9 @@ export default function AgentSettingsPage() {
   const [editingTask, setEditingTask] = useState<ScheduledTask | null>(null);
   const [taskSaving, setTaskSaving] = useState(false);
   const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
+  const [tools, setTools] = useState<ToolPermissionInfo[]>([]);
+  const [toolsLoading, setToolsLoading] = useState(true);
+  const [toolsError, setToolsError] = useState<string | null>(null);
 
   const hasChanges =
     originalSettings &&
@@ -301,7 +324,9 @@ export default function AgentSettingsPage() {
       settings.heartbeat_enabled !== originalSettings.heartbeat_enabled ||
       settings.heartbeat_interval !== originalSettings.heartbeat_interval ||
       settings.heartbeat_prompt !== originalSettings.heartbeat_prompt ||
-      settings.notification_channel !== originalSettings.notification_channel);
+      settings.notification_channel !== originalSettings.notification_channel ||
+      JSON.stringify(normalizePermissionMap(settings.tool_permissions)) !==
+        JSON.stringify(normalizePermissionMap(originalSettings.tool_permissions)));
 
   /* ---------- Fetch agent settings ---------- */
   const fetchSettings = useCallback(async () => {
@@ -318,6 +343,7 @@ export default function AgentSettingsPage() {
         heartbeat_interval: data.settings.heartbeat_interval ?? 60,
         heartbeat_prompt: data.settings.heartbeat_prompt || defaultSettings.heartbeat_prompt,
         notification_channel: data.settings.notification_channel || "in_app",
+        tool_permissions: (data.settings.tool_permissions || {}) as Record<string, ToolPermissionMode>,
       };
       setSettings(s);
       setOriginalSettings(s);
@@ -344,10 +370,27 @@ export default function AgentSettingsPage() {
     }
   }, []);
 
+  /* ---------- Fetch tool permissions metadata ---------- */
+  const fetchTools = useCallback(async () => {
+    setToolsLoading(true);
+    setToolsError(null);
+    try {
+      const res = await fetch("/api/agent/tools");
+      if (!res.ok) throw new Error("Failed to fetch tools");
+      const data = await res.json();
+      setTools(data.tools || []);
+    } catch (err) {
+      setToolsError(err instanceof Error ? err.message : "Failed to load tool permissions");
+    } finally {
+      setToolsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchSettings();
     fetchTasks();
-  }, [fetchSettings, fetchTasks]);
+    fetchTools();
+  }, [fetchSettings, fetchTasks, fetchTools]);
 
   /* ---------- Save agent settings ---------- */
   const handleSave = async () => {
@@ -372,6 +415,7 @@ export default function AgentSettingsPage() {
         heartbeat_interval: data.settings.heartbeat_interval ?? 60,
         heartbeat_prompt: data.settings.heartbeat_prompt || defaultSettings.heartbeat_prompt,
         notification_channel: data.settings.notification_channel || "in_app",
+        tool_permissions: (data.settings.tool_permissions || {}) as Record<string, ToolPermissionMode>,
       };
       setSettings(updated);
       setOriginalSettings(updated);
@@ -469,6 +513,20 @@ export default function AgentSettingsPage() {
     }
   };
 
+  const getToolMode = (tool: ToolPermissionInfo): ToolPermissionMode => {
+    return settings.tool_permissions[tool.name] ?? tool.permission_mode ?? tool.default_permission;
+  };
+
+  const setToolMode = (toolName: string, mode: ToolPermissionMode) => {
+    setSettings((prev) => ({
+      ...prev,
+      tool_permissions: {
+        ...prev.tool_permissions,
+        [toolName]: mode,
+      },
+    }));
+  };
+
   /* ---------- Render ---------- */
   const today = new Date();
   const formattedDate = today.toLocaleDateString("en-US", {
@@ -495,7 +553,7 @@ export default function AgentSettingsPage() {
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => { fetchSettings(); fetchTasks(); }}
+            onClick={() => { fetchSettings(); fetchTasks(); fetchTools(); }}
             disabled={isLoading || isSaving}
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
@@ -854,6 +912,88 @@ export default function AgentSettingsPage() {
                     Slack and email integrations require additional configuration.
                   </p>
                 </div>
+              </CardContent>
+            )}
+          </Card>
+
+          {/* ========== Tool Permissions ========== */}
+          <Card>
+            <SectionHeader
+              icon={<Wrench className="w-5 h-5" />}
+              title="Tool Permissions"
+              description="Control whether each agent tool is blocked, requires confirmation, or runs automatically"
+              collapsed={collapsed.tools}
+              onToggle={() => toggleSection("tools")}
+            />
+            {!collapsed.tools && (
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  `Never` blocks a tool, `Ask` requires approval in chat, and `Always` runs without prompting.
+                </p>
+
+                {toolsLoading ? (
+                  <div className="flex items-center gap-2 py-2 text-muted-foreground">
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span className="text-sm">Loading tools...</span>
+                  </div>
+                ) : toolsError ? (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-red-400/10 border border-destructive/30 text-sm text-destructive">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>{toolsError}</span>
+                  </div>
+                ) : tools.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No tools found.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {tools.map((tool) => {
+                      const mode = getToolMode(tool);
+                      return (
+                        <div
+                          key={tool.name}
+                          className="p-3 rounded-lg border border-border bg-background/50"
+                        >
+                          <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-medium text-foreground truncate">
+                                  {tool.name}
+                                </p>
+                                <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-spectral/10 text-spectral">
+                                  {tool.source}
+                                </span>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {tool.description}
+                              </p>
+                            </div>
+
+                            <div className="inline-flex rounded-md border border-border overflow-hidden shrink-0">
+                              {(["never", "ask", "always"] as const).map((option) => (
+                                <button
+                                  key={option}
+                                  type="button"
+                                  onClick={() => setToolMode(tool.name, option)}
+                                  disabled={isSaving}
+                                  className={`px-3 py-1.5 text-xs font-medium transition-colors border-l first:border-l-0 border-border ${
+                                    mode === option
+                                      ? "bg-spectral/20 text-spectral"
+                                      : "text-muted-foreground hover:bg-spectral/10 hover:text-foreground"
+                                  }`}
+                                >
+                                  {option === "never"
+                                    ? "Never"
+                                    : option === "ask"
+                                      ? "Ask"
+                                      : "Always"}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             )}
           </Card>

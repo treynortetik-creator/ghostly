@@ -19,6 +19,7 @@ import {
   Trash2,
   MessageSquare,
   Paperclip,
+  Minus,
 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -58,7 +59,7 @@ interface ChatSession {
 }
 
 interface SSEEvent {
-  type: "session" | "tool_call" | "text" | "done" | "context" | "compacted";
+  type: "session" | "tool_call" | "text" | "done" | "context" | "compacted" | "approval_required";
   session_id?: string;
   content?: string;
   name?: string;
@@ -66,12 +67,31 @@ interface SSEEvent {
   used?: number;
   limit?: number;
   percent?: number;
+  message?: string | null;
+  tool_calls?: Array<{
+    id: string;
+    name: string;
+    arguments: string;
+    description?: string;
+  }>;
 }
 
 interface ChatPanelProps {
   isOpen: boolean;
   onClose: () => void;
+  onMinimize?: () => void;
   eventId?: string | null;
+}
+
+interface PendingToolApproval {
+  session_id: string;
+  message: string | null;
+  tool_calls: Array<{
+    id: string;
+    name: string;
+    arguments: string;
+    description?: string;
+  }>;
 }
 
 // ─── Safe Markdown Helpers ───────────────────────────────────────────────────
@@ -148,10 +168,15 @@ function renderMarkdown(text: string): ReactNode {
 const MAX_FILES = 5;
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 const FILE_ACCEPT = ".pdf,.docx,.xlsx,.csv,.txt,.md,.json,.png,.jpg,.jpeg,.gif,.webp,.eml";
+const CHAT_ACTIVE_SESSION_KEY = "ghostly-chat-active-session-v1";
+const CHAT_PANEL_WIDTH_KEY = "ghostly-chat-panel-width-v1";
+const CHAT_WIDTH_MIN = 360;
+const CHAT_WIDTH_MAX = 900;
+const CHAT_WIDTH_DEFAULT = 460;
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
+export function ChatPanel({ isOpen, onClose, onMinimize, eventId }: ChatPanelProps) {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -167,10 +192,40 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
   const [showCompactedDivider, setShowCompactedDivider] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [pendingApproval, setPendingApproval] = useState<PendingToolApproval | null>(null);
+  const [panelWidth, setPanelWidth] = useState(CHAT_WIDTH_DEFAULT);
+  const [isResizing, setIsResizing] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const hasRestoredSessionRef = useRef(false);
+
+  const loadSessions = useCallback(async () => {
+    try {
+      const res = await fetch("/api/agent/sessions");
+      if (res.ok) {
+        const data = await res.json();
+        setSessions(data.sessions ?? []);
+      }
+    } catch {
+      // Silently fail
+    }
+  }, []);
+
+  const loadSession = useCallback(async (sessionId: string) => {
+    try {
+      const res = await fetch(`/api/agent/sessions/${sessionId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentSessionId(sessionId);
+        setMessages(data.messages ?? []);
+        setShowSessions(false);
+      }
+    } catch {
+      // Silently fail
+    }
+  }, []);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -195,7 +250,7 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
   useEffect(() => {
     if (!isOpen) return;
     loadSessions();
-  }, [isOpen]);
+  }, [isOpen, loadSessions]);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -203,37 +258,71 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
     }
   }, [isOpen]);
 
-  const loadSessions = async () => {
+  useEffect(() => {
     try {
-      const res = await fetch("/api/agent/sessions");
-      if (res.ok) {
-        const data = await res.json();
-        setSessions(data.sessions ?? []);
+      const raw = localStorage.getItem(CHAT_PANEL_WIDTH_KEY);
+      if (!raw) return;
+      const parsed = Number(raw);
+      if (Number.isFinite(parsed)) {
+        setPanelWidth(Math.max(CHAT_WIDTH_MIN, Math.min(CHAT_WIDTH_MAX, parsed)));
       }
     } catch {
-      // Silently fail
+      // Ignore malformed width state
     }
-  };
+  }, []);
 
-  const loadSession = async (sessionId: string) => {
-    try {
-      const res = await fetch(`/api/agent/sessions/${sessionId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setCurrentSessionId(sessionId);
-        setMessages(data.messages ?? []);
-        setShowSessions(false);
-      }
-    } catch {
-      // Silently fail
+  useEffect(() => {
+    localStorage.setItem(CHAT_PANEL_WIDTH_KEY, String(panelWidth));
+  }, [panelWidth]);
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMove = (e: MouseEvent) => {
+      const nextWidth = window.innerWidth - e.clientX;
+      const clamped = Math.max(
+        CHAT_WIDTH_MIN,
+        Math.min(CHAT_WIDTH_MAX, Math.min(nextWidth, window.innerWidth - 32))
+      );
+      setPanelWidth(clamped);
+    };
+
+    const stopResize = () => setIsResizing(false);
+
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", stopResize);
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", stopResize);
+    };
+  }, [isResizing]);
+
+  useEffect(() => {
+    if (!isOpen || hasRestoredSessionRef.current) return;
+    const persisted = localStorage.getItem(CHAT_ACTIVE_SESSION_KEY);
+    if (!persisted) {
+      hasRestoredSessionRef.current = true;
+      return;
     }
-  };
+
+    hasRestoredSessionRef.current = true;
+    loadSession(persisted);
+  }, [isOpen, loadSession]);
+
+  useEffect(() => {
+    if (!currentSessionId) {
+      localStorage.removeItem(CHAT_ACTIVE_SESSION_KEY);
+      return;
+    }
+    localStorage.setItem(CHAT_ACTIVE_SESSION_KEY, currentSessionId);
+  }, [currentSessionId]);
 
   const startNewChat = () => {
     setCurrentSessionId(null);
     setMessages([]);
     setStreamingContent("");
     setStreamingToolCalls([]);
+    setPendingApproval(null);
     setShowSessions(false);
     setInput("");
     setContextPercent(0);
@@ -307,6 +396,135 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
     setPendingFiles((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
+  const processStreamResponse = useCallback(async (res: Response) => {
+    const reader = res.body?.getReader();
+    if (!reader) throw new Error("No response body");
+
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let fullContent = "";
+    const toolCalls: Array<{ name: string; arguments: string }> = [];
+
+    let reading = true;
+    while (reading) {
+      const { done, value } = await reader.read();
+      if (done) {
+        reading = false;
+        break;
+      }
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const jsonStr = line.slice(6).trim();
+        if (!jsonStr) continue;
+
+        try {
+          const event: SSEEvent = JSON.parse(jsonStr);
+
+          if (event.type === "session") {
+            if (event.session_id) {
+              setCurrentSessionId((prev) => prev || event.session_id || null);
+            }
+          } else if (event.type === "tool_call") {
+            if (event.name) {
+              toolCalls.push({
+                name: event.name,
+                arguments: event.arguments || "",
+              });
+              setStreamingToolCalls([...toolCalls]);
+            }
+          } else if (event.type === "text") {
+            if (event.content) {
+              fullContent += event.content;
+              setStreamingContent(fullContent);
+            }
+          } else if (event.type === "context") {
+            if (typeof event.percent === "number") {
+              setContextPercent(event.percent);
+            }
+          } else if (event.type === "compacted") {
+            setShowCompactedDivider(true);
+          } else if (event.type === "approval_required") {
+            const sessionIdForApproval =
+              event.session_id || currentSessionId || null;
+            if (sessionIdForApproval) {
+              setPendingApproval({
+                session_id: sessionIdForApproval,
+                message: event.message ?? null,
+                tool_calls: event.tool_calls || [],
+              });
+            }
+            setStreamingContent("");
+            setStreamingToolCalls([]);
+          } else if (event.type === "done") {
+            if (fullContent) {
+              const assistantMsg: ChatMessage = {
+                id: `msg-${Date.now()}`,
+                role: "assistant",
+                content: fullContent,
+                created_at: new Date().toISOString(),
+              };
+              setMessages((prev) => [...prev, assistantMsg]);
+            }
+            setStreamingContent("");
+            setStreamingToolCalls([]);
+            loadSessions();
+          }
+        } catch {
+          // Skip malformed JSON
+        }
+      }
+    }
+  }, [currentSessionId, loadSessions]);
+
+  const resolvePendingApproval = useCallback(async (approve: boolean) => {
+    if (!pendingApproval || isStreaming) return;
+
+    const approvedIds = approve
+      ? pendingApproval.tool_calls.map((toolCall) => toolCall.id)
+      : [];
+
+    setPendingApproval(null);
+    setIsStreaming(true);
+    setStreamingContent("");
+    setStreamingToolCalls([]);
+
+    try {
+      const res = await fetch("/api/agent/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: pendingApproval.session_id,
+          approved_tool_call_ids: approvedIds,
+          event_id: eventId,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Request failed" }));
+        throw new Error(err.error || "Request failed");
+      }
+
+      await processStreamResponse(res);
+    } catch (err) {
+      const errorMsg: ChatMessage = {
+        id: `err-${Date.now()}`,
+        role: "assistant",
+        content: `Sorry, I encountered an error: ${err instanceof Error ? err.message : "Unknown error"}. Please try again.`,
+        created_at: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
+      setIsStreaming(false);
+      setStreamingContent("");
+      setStreamingToolCalls([]);
+    }
+  }, [eventId, isStreaming, pendingApproval, processStreamResponse]);
+
   // ─── Send message ──────────────────────────────────────────────────
   const sendMessage = async () => {
     const trimmed = input.trim();
@@ -327,6 +545,7 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
       created_at: new Date().toISOString(),
     };
     setMessages((prev) => [...prev, userMsg]);
+    setPendingApproval(null);
 
     const filesToSend = [...pendingFiles];
     setInput("");
@@ -367,76 +586,7 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
         throw new Error(err.error || "Request failed");
       }
 
-      const reader = res.body?.getReader();
-      if (!reader) throw new Error("No response body");
-
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let fullContent = "";
-      const toolCalls: Array<{ name: string; arguments: string }> = [];
-
-      let reading = true;
-      while (reading) {
-        const { done, value } = await reader.read();
-        if (done) {
-          reading = false;
-          break;
-        }
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          const jsonStr = line.slice(6).trim();
-          if (!jsonStr) continue;
-
-          try {
-            const event: SSEEvent = JSON.parse(jsonStr);
-
-            if (event.type === "session") {
-              if (event.session_id && !currentSessionId) {
-                setCurrentSessionId(event.session_id);
-              }
-            } else if (event.type === "tool_call") {
-              if (event.name) {
-                toolCalls.push({
-                  name: event.name,
-                  arguments: event.arguments || "",
-                });
-                setStreamingToolCalls([...toolCalls]);
-              }
-            } else if (event.type === "text") {
-              if (event.content) {
-                fullContent += event.content;
-                setStreamingContent(fullContent);
-              }
-            } else if (event.type === "context") {
-              if (typeof event.percent === "number") {
-                setContextPercent(event.percent);
-              }
-            } else if (event.type === "compacted") {
-              setShowCompactedDivider(true);
-            } else if (event.type === "done") {
-              if (fullContent) {
-                const assistantMsg: ChatMessage = {
-                  id: `msg-${Date.now()}`,
-                  role: "assistant",
-                  content: fullContent,
-                  created_at: new Date().toISOString(),
-                };
-                setMessages((prev) => [...prev, assistantMsg]);
-              }
-              setStreamingContent("");
-              setStreamingToolCalls([]);
-              loadSessions();
-            }
-          } catch {
-            // Skip malformed JSON
-          }
-        }
-      }
+      await processStreamResponse(res);
     } catch (err) {
       const errorMsg: ChatMessage = {
         id: `err-${Date.now()}`,
@@ -514,7 +664,7 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
       <div
         className={`
           fixed top-0 right-0 h-screen z-50
-          w-full sm:w-[420px] md:w-[460px]
+          w-full md:w-[var(--chat-panel-width)]
           bg-background/95 backdrop-blur-xl
           border-l border-border
           shadow-2xl
@@ -522,10 +672,19 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
           flex flex-col
           ${isOpen ? "translate-x-0" : "translate-x-full"}
         `}
+        style={{ ["--chat-panel-width" as string]: `${panelWidth}px` }}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
+        <div
+          className="hidden md:block absolute left-0 top-0 h-full w-1.5 cursor-ew-resize bg-transparent hover:bg-spectral/20 transition-colors"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            setIsResizing(true);
+          }}
+          title="Resize chat panel"
+        />
         {/* Drag overlay */}
         {isDragOver && (
           <div className="absolute inset-0 z-50 bg-spectral/10 backdrop-blur-sm border-2 border-dashed border-spectral rounded-lg flex flex-col items-center justify-center pointer-events-none">
@@ -533,6 +692,54 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
             <p className="text-sm font-medium text-spectral">Drop files here</p>
           </div>
         )}
+
+        {pendingApproval && (
+          <div className="absolute inset-0 z-50 bg-black/45 backdrop-blur-[1px] flex items-center justify-center p-4">
+            <div className="w-full max-w-lg rounded-xl border border-border bg-background shadow-2xl">
+              <div className="px-4 py-3 border-b border-border">
+                <h3 className="text-sm font-semibold text-foreground">
+                  Tool Permission Required
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Review what the agent wants to do before allowing these tool calls.
+                </p>
+              </div>
+              <div className="p-4 space-y-3 max-h-[52vh] overflow-y-auto">
+                {pendingApproval.message && (
+                  <div className="text-xs rounded-md border border-border bg-card/40 p-2 text-muted-foreground whitespace-pre-wrap">
+                    {pendingApproval.message}
+                  </div>
+                )}
+                {pendingApproval.tool_calls.map((toolCall) => (
+                  <div key={toolCall.id} className="rounded-md border border-border bg-card/50 p-3">
+                    <p className="text-sm font-medium text-foreground">{toolCall.name}</p>
+                    {toolCall.description && (
+                      <p className="text-xs text-muted-foreground mt-1">{toolCall.description}</p>
+                    )}
+                    <pre className="mt-2 text-[11px] text-muted-foreground overflow-x-auto whitespace-pre-wrap break-all">
+                      {toolCall.arguments || "{}"}
+                    </pre>
+                  </div>
+                ))}
+              </div>
+              <div className="px-4 py-3 border-t border-border flex justify-end gap-2">
+                <button
+                  onClick={() => resolvePendingApproval(false)}
+                  className="px-3 py-1.5 text-sm rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-card transition-colors"
+                >
+                  Decline
+                </button>
+                <button
+                  onClick={() => resolvePendingApproval(true)}
+                  className="px-3 py-1.5 text-sm rounded-md bg-spectral text-white hover:bg-spectral-light transition-colors"
+                >
+                  Approve
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card/80 backdrop-blur-sm shrink-0">
           <div className="flex items-center gap-3 min-w-0">
@@ -563,6 +770,15 @@ export function ChatPanel({ isOpen, onClose, eventId }: ChatPanelProps) {
             >
               <Plus className="w-4 h-4" />
             </button>
+            {onMinimize && (
+              <button
+                onClick={onMinimize}
+                className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-spectral/10 transition-colors"
+                title="Minimize"
+              >
+                <Minus className="w-4 h-4" />
+              </button>
+            )}
             <button
               onClick={onClose}
               className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-spectral/10 transition-colors"

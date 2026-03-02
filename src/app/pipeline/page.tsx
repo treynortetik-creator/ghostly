@@ -1,5 +1,5 @@
-import { PipelineClient } from '@/components/pipeline/PipelineClient';
+import { redirect } from 'next/navigation';
 
 export default function PipelinePage() {
-  return <PipelineClient />;
+  redirect('/calendar');
 }
