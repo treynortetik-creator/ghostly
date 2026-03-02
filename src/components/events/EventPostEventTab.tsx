@@ -54,6 +54,8 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
     follow_up: '',
   });
   const [isSavingDebrief, setIsSavingDebrief] = useState(false);
+  const [isEditingDebrief, setIsEditingDebrief] = useState(false);
+  const [hasInitializedDebriefMode, setHasInitializedDebriefMode] = useState(false);
   const [sourceLabel, setSourceLabel] = useState('');
   const [sourceText, setSourceText] = useState('');
   const [isGeneratingDebrief, setIsGeneratingDebrief] = useState(false);
@@ -76,11 +78,22 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
           existingDebrief[section.key] = existingNote?.content || '';
         });
         setDebriefForm(existingDebrief);
+
+        // Default behavior:
+        // - If saved debrief content exists, start in preview mode.
+        // - If no content exists, start in edit mode.
+        if (!hasInitializedDebriefMode) {
+          const hasExistingContent = debriefSections.some(
+            (section) => !!existingDebrief[section.key]?.trim()
+          );
+          setIsEditingDebrief(!hasExistingContent);
+          setHasInitializedDebriefMode(true);
+        }
       }
     } finally {
       setIsLoading(false);
     }
-  }, [eventId]);
+  }, [eventId, hasInitializedDebriefMode]);
 
   useEffect(() => {
     fetchNotes();
@@ -122,7 +135,8 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
       });
 
       await Promise.all(savePromises);
-      fetchNotes();
+      await fetchNotes();
+      setIsEditingDebrief(false);
     } finally {
       setIsSavingDebrief(false);
     }
@@ -157,6 +171,7 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
           follow_up: data.debrief.follow_up || '',
         });
       }
+      setIsEditingDebrief(true);
       await fetchNotes();
     } catch (err) {
       setGenerationError(err instanceof Error ? err.message : 'Failed to generate debrief');
@@ -201,6 +216,10 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
     !debriefSections.some(section => section.title === note.title)
   );
 
+  const hasDebriefContent = debriefSections.some((section) =>
+    !!debriefForm[section.key]?.trim()
+  );
+
   if (isLoading) {
     return (
       <Card>
@@ -222,72 +241,108 @@ export function EventPostEventTab({ eventId }: EventPostEventTabProps) {
       />
       {/* Structured Debrief Form */}
       <Card className="border-spectral">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <ClipboardCheck className="w-5 h-5 text-spectral" />
             Post-Event Debrief
           </CardTitle>
+          {hasDebriefContent && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditingDebrief((prev) => !prev)}
+            >
+              {isEditingDebrief ? 'Preview Debrief' : 'Edit Debrief'}
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="rounded-md border border-border p-3 space-y-3">
-            <p className="text-sm font-medium text-foreground">Auto-fill From Transcript or Survey</p>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Source Label (optional)</label>
-              <input
-                type="text"
-                value={sourceLabel}
-                onChange={(e) => setSourceLabel(e.target.value)}
-                placeholder="Post-event call transcript, survey export, etc."
-                className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 focus:border-spectral focus:outline-none"
-              />
+          {isEditingDebrief ? (
+            <>
+              <div className="rounded-md border border-border p-3 space-y-3">
+                <p className="text-sm font-medium text-foreground">Auto-fill From Transcript or Survey</p>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Source Label (optional)</label>
+                  <input
+                    type="text"
+                    value={sourceLabel}
+                    onChange={(e) => setSourceLabel(e.target.value)}
+                    placeholder="Post-event call transcript, survey export, etc."
+                    className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 focus:border-spectral focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Source Content</label>
+                  <textarea
+                    value={sourceText}
+                    onChange={(e) => setSourceText(e.target.value)}
+                    placeholder="Paste transcript or survey text here and Ghostly will draft debrief sections."
+                    rows={5}
+                    className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 focus:border-spectral focus:outline-none resize-y"
+                  />
+                </div>
+                {generationError && (
+                  <p className="text-xs text-destructive">{generationError}</p>
+                )}
+                <div className="flex justify-end">
+                  <Button
+                    variant="outline"
+                    onClick={handleGenerateDebrief}
+                    disabled={isGeneratingDebrief || !sourceText.trim()}
+                  >
+                    {isGeneratingDebrief ? 'Generating...' : 'Generate Debrief Draft'}
+                  </Button>
+                </div>
+              </div>
+
+              {debriefSections.map((section) => (
+                <div key={section.key}>
+                  <label className="text-sm font-medium text-foreground mb-1 block">
+                    {section.title}
+                  </label>
+                  <textarea
+                    value={debriefForm[section.key] || ''}
+                    onChange={(e) => setDebriefForm({ ...debriefForm, [section.key]: e.target.value })}
+                    placeholder={section.placeholder}
+                    rows={4}
+                    className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 focus:border-spectral focus:outline-none resize-y"
+                  />
+                </div>
+              ))}
+              <div className="flex justify-end">
+                <Button 
+                  onClick={handleSaveDebrief}
+                  disabled={isSavingDebrief}
+                  className="w-full sm:w-auto"
+                >
+                  {isSavingDebrief ? 'Saving Debrief...' : 'Save Debrief'}
+                </Button>
+              </div>
+            </>
+          ) : hasDebriefContent ? (
+            <div className="space-y-3">
+              {debriefSections.map((section) => {
+                const content = (debriefForm[section.key] || '').trim();
+                return (
+                  <div key={section.key} className="rounded-md border border-border p-3">
+                    <h4 className="text-sm font-semibold text-foreground mb-2">{section.title}</h4>
+                    {content ? (
+                      <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{content}</p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic">No notes added for this section.</p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Source Content</label>
-              <textarea
-                value={sourceText}
-                onChange={(e) => setSourceText(e.target.value)}
-                placeholder="Paste transcript or survey text here and Ghostly will draft debrief sections."
-                rows={5}
-                className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 focus:border-spectral focus:outline-none resize-y"
-              />
-            </div>
-            {generationError && (
-              <p className="text-xs text-destructive">{generationError}</p>
-            )}
-            <div className="flex justify-end">
-              <Button
-                variant="outline"
-                onClick={handleGenerateDebrief}
-                disabled={isGeneratingDebrief || !sourceText.trim()}
-              >
-                {isGeneratingDebrief ? 'Generating...' : 'Generate Debrief Draft'}
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-sm text-muted-foreground mb-3">No debrief has been saved yet.</p>
+              <Button size="sm" onClick={() => setIsEditingDebrief(true)}>
+                Start Debrief
               </Button>
             </div>
-          </div>
-
-          {debriefSections.map((section) => (
-            <div key={section.key}>
-              <label className="text-sm font-medium text-foreground mb-1 block">
-                {section.title}
-              </label>
-              <textarea
-                value={debriefForm[section.key] || ''}
-                onChange={(e) => setDebriefForm({ ...debriefForm, [section.key]: e.target.value })}
-                placeholder={section.placeholder}
-                rows={4}
-                className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 focus:border-spectral focus:outline-none resize-y"
-              />
-            </div>
-          ))}
-          <div className="flex justify-end">
-            <Button 
-              onClick={handleSaveDebrief}
-              disabled={isSavingDebrief}
-              className="w-full sm:w-auto"
-            >
-              {isSavingDebrief ? 'Saving Debrief...' : 'Save Debrief'}
-            </Button>
-          </div>
+          )}
         </CardContent>
       </Card>
 
