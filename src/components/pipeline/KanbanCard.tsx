@@ -74,11 +74,9 @@ export function KanbanCard({ event, overlay = false }: KanbanCardProps) {
     ? Math.round((event.task_counts.completed / event.task_counts.total) * 100)
     : 0;
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = () => {
     // Don't navigate if we're dragging
     if (isDragging) return;
-    // Don't navigate if clicking the grip handle
-    if ((e.target as HTMLElement).closest('[data-drag-handle]')) return;
     router.push(`/events/${event.id}`);
   };
 
@@ -86,9 +84,10 @@ export function KanbanCard({ event, overlay = false }: KanbanCardProps) {
     <div
       ref={overlay ? undefined : setNodeRef}
       style={style}
+      {...(overlay ? {} : { ...listeners, ...attributes })}
       className={`
         group bg-background rounded-lg border border-border shadow-sm
-        cursor-pointer hover:shadow-md hover:border-spectral transition-all duration-150
+        cursor-grab active:cursor-grabbing hover:shadow-md hover:border-spectral transition-all duration-150
         ${isDragging ? 'opacity-30' : ''}
         ${overlay ? 'shadow-lg border-spectral rotate-1 scale-105' : ''}
       `}
@@ -97,14 +96,12 @@ export function KanbanCard({ event, overlay = false }: KanbanCardProps) {
       <div className="p-3 space-y-2">
         {/* Header: grip + name + countdown */}
         <div className="flex items-start gap-1.5">
-          <button
-            {...(overlay ? {} : { ...listeners, ...attributes })}
-            data-drag-handle
-            className="mt-0.5 p-0.5 rounded text-muted-foreground/60 hover:text-muted-foreground/60 cursor-grab active:cursor-grabbing flex-shrink-0"
-            onClick={(e) => e.stopPropagation()}
+          <span
+            className="mt-0.5 p-0.5 rounded text-muted-foreground/60 flex-shrink-0"
+            aria-hidden
           >
             <GripVertical className="w-3.5 h-3.5" />
-          </button>
+          </span>
           <div className="flex-1 min-w-0">
             <h4 className="text-sm font-semibold text-foreground leading-tight truncate">
               {event.name}
