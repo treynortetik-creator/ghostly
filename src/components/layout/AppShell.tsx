@@ -20,6 +20,7 @@ import {
   Sun,
   Moon,
   Monitor,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Webhook,
@@ -108,6 +109,7 @@ function isItemActive(item: NavItem, pathname: string): boolean {
 }
 
 const SIDEBAR_KEY = "sidebar-collapsed";
+const SECTIONS_KEY = "sidebar-sections-collapsed";
 
 const themeOrder: Theme[] = ["light", "dark", "system"];
 const themeIcons: Record<Theme, React.ComponentType<{ className?: string }>> = {
@@ -128,23 +130,68 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
   // Extract event_id from URL if on an event detail page (e.g. /events/[uuid])
   const eventIdMatch = pathname.match(/^\/events\/([0-9a-f-]{36})/);
   const currentEventId = eventIdMatch ? eventIdMatch[1] : null;
 
-  // Read collapse state from localStorage on mount
+  // Read collapse + section state from localStorage on mount
   useEffect(() => {
     const stored = localStorage.getItem(SIDEBAR_KEY);
     if (stored === "true") {
       setCollapsed(true);
     }
+    const storedSections = localStorage.getItem(SECTIONS_KEY);
+    if (storedSections) {
+      try {
+        setCollapsedSections(new Set(JSON.parse(storedSections)));
+      } catch { /* ignore */ }
+    }
     setMounted(true);
   }, []);
+
+  // Auto-expand section when navigating to a route within it
+  useEffect(() => {
+    setCollapsedSections((prev) => {
+      let changed = false;
+      const next = new Set(prev);
+      for (const group of navGroups) {
+        if (!group.label || !next.has(group.label)) continue;
+        const hasActiveItem = group.items.some(
+          (item) =>
+            isItemActive(item, pathname) ||
+            item.children?.some((child) => isItemActive(child, pathname))
+        );
+        if (hasActiveItem) {
+          next.delete(group.label);
+          changed = true;
+        }
+      }
+      if (changed) {
+        localStorage.setItem(SECTIONS_KEY, JSON.stringify([...next]));
+        return next;
+      }
+      return prev;
+    });
+  }, [pathname]);
 
   const toggleCollapsed = useCallback(() => {
     setCollapsed((prev) => {
       const next = !prev;
       localStorage.setItem(SIDEBAR_KEY, String(next));
+      return next;
+    });
+  }, []);
+
+  const toggleSection = useCallback((label: string) => {
+    setCollapsedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(label)) {
+        next.delete(label);
+      } else {
+        next.add(label);
+      }
+      localStorage.setItem(SECTIONS_KEY, JSON.stringify([...next]));
       return next;
     });
   }, []);
@@ -220,13 +267,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     <div className="h-px bg-gradient-to-r from-transparent via-spectral/15 to-transparent" />
                   </div>
                 ) : (
-                  <div className="px-3 mb-1.5">
+                  <button
+                    onClick={() => toggleSection(group.label!)}
+                    className="w-full flex items-center justify-between px-3 mb-1 hover:opacity-80 transition-opacity"
+                  >
                     <span className="text-[10px] font-medium text-sidebar-foreground/40 tracking-widest uppercase">
                       {group.label}
                     </span>
-                  </div>
+                    <ChevronDown
+                      className={`w-3 h-3 text-sidebar-foreground/30 transition-transform duration-200 ${
+                        collapsedSections.has(group.label) ? "-rotate-90" : ""
+                      }`}
+                    />
+                  </button>
                 )
               )}
+              <div
+                className={`grid transition-all duration-200 ${
+                  group.label && !isCollapsed && collapsedSections.has(group.label)
+                    ? "grid-rows-[0fr] opacity-0"
+                    : "grid-rows-[1fr] opacity-100"
+                }`}
+              >
+              <div className="overflow-hidden">
               <div className="space-y-0.5">
                 {group.items.map((item) => {
                   const isActive = isItemActive(item, pathname);
@@ -300,6 +363,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </div>
                   );
                 })}
+              </div>
+              </div>
               </div>
             </div>
           ))}
@@ -456,12 +521,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {navGroups.map((group, gi) => (
                 <div key={group.label ?? "primary"} className={gi > 0 ? "mt-4" : ""}>
                   {group.label && (
-                    <div className="px-3 mb-1.5">
+                    <button
+                      onClick={() => toggleSection(group.label!)}
+                      className="w-full flex items-center justify-between px-3 mb-1 hover:opacity-80 transition-opacity"
+                    >
                       <span className="text-[10px] font-medium text-sidebar-foreground/40 tracking-widest uppercase">
                         {group.label}
                       </span>
-                    </div>
+                      <ChevronDown
+                        className={`w-3 h-3 text-sidebar-foreground/30 transition-transform duration-200 ${
+                          collapsedSections.has(group.label) ? "-rotate-90" : ""
+                        }`}
+                      />
+                    </button>
                   )}
+                  <div
+                    className={`grid transition-all duration-200 ${
+                      group.label && collapsedSections.has(group.label)
+                        ? "grid-rows-[0fr] opacity-0"
+                        : "grid-rows-[1fr] opacity-100"
+                    }`}
+                  >
+                  <div className="overflow-hidden">
                   <div className="space-y-0.5">
                     {group.items.map((item) => {
                       const isActive = isItemActive(item, pathname);
@@ -510,6 +591,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         </div>
                       );
                     })}
+                  </div>
+                  </div>
                   </div>
                 </div>
               ))}
