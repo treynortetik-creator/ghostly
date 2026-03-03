@@ -111,6 +111,49 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'agent-settin
       updates.notification_channel = body.notification_channel;
     }
 
+    if (body.system_prompt_template !== undefined) {
+      const template = body.system_prompt_template ? String(body.system_prompt_template) : '';
+      if (template.length > 12000) {
+        return NextResponse.json(
+          { error: 'system_prompt_template must be 12000 characters or fewer' },
+          { status: 400 }
+        );
+      }
+      updates.system_prompt_template = template.trim() ? template : null;
+    }
+
+    if (body.autonomy_mode !== undefined) {
+      const mode = String(body.autonomy_mode);
+      if (!['safe', 'full'].includes(mode)) {
+        return NextResponse.json(
+          { error: 'autonomy_mode must be one of: safe, full' },
+          { status: 400 }
+        );
+      }
+      updates.autonomy_mode = mode;
+    }
+
+    if (body.default_model !== undefined) {
+      const model = body.default_model ? String(body.default_model).trim() : '';
+      if (model.length > 200) {
+        return NextResponse.json(
+          { error: 'default_model must be 200 characters or fewer' },
+          { status: 400 }
+        );
+      }
+      updates.default_model = model || null;
+    }
+
+    if (body.model_routing !== undefined) {
+      if (!body.model_routing || typeof body.model_routing !== 'object' || Array.isArray(body.model_routing)) {
+        return NextResponse.json(
+          { error: 'model_routing must be an object' },
+          { status: 400 }
+        );
+      }
+      updates.model_routing = body.model_routing as Record<string, unknown>;
+    }
+
     if (body.tool_permissions !== undefined) {
       if (
         !body.tool_permissions ||

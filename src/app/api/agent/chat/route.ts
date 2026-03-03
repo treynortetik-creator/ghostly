@@ -33,6 +33,12 @@ import { getIntegrationTools, ensureIntegrationsRegistered } from '@/lib/integra
 import { logError } from '@/lib/error-logger';
 import { extractTextFromFile, isImageType } from '@/lib/agent/file-processor';
 import { MAX_FILE_SIZE_BYTES } from '@/lib/constants';
+import {
+  recallAgentMemories,
+  recallLearnings,
+  rememberAgentMemory,
+  rememberLearning,
+} from '@/lib/agent/memory';
 import path from 'path';
 import fs from 'fs/promises';
 import { randomUUID } from 'crypto';
@@ -65,6 +71,29 @@ const MAX_TOOL_ROUNDS = 8;
 // Context window management
 const CONTEXT_LIMIT = 196000;
 const COMPACTION_THRESHOLD = 0.80;
+
+function selectChatModel(
+  settings: Record<string, unknown> | null | undefined,
+  userMessage: string
+): string {
+  const routing = settings?.model_routing && typeof settings.model_routing === 'object'
+    ? settings.model_routing as Record<string, unknown>
+    : {};
+
+  const defaultModel = typeof settings?.default_model === 'string' && settings.default_model.trim()
+    ? settings.default_model.trim()
+    : AGENT_MODEL;
+
+  const simpleModel = typeof routing.simple_model === 'string' ? routing.simple_model.trim() : '';
+  const complexModel = typeof routing.complex_model === 'string' ? routing.complex_model.trim() : '';
+  const simpleMaxChars = Number(routing.simple_max_chars || 350);
+  const trimmedLen = userMessage.trim().length;
+  const useSimple = trimmedLen > 0 && trimmedLen <= simpleMaxChars;
+
+  if (useSimple && simpleModel) return simpleModel;
+  if (!useSimple && complexModel) return complexModel;
+  return defaultModel;
+}
 
 /**
  * Generate a compaction summary of the conversation so far.
@@ -355,13 +384,17 @@ export async function POST(request: NextRequest) {
     // ─── Load agent settings ─────────────────────────────────────────────
     const { data: settings } = await supabase
       .from('agent_settings')
-      .select('agent_name, agent_focus, tool_permissions')
+      .select('*')
       .eq('organization_id', orgId)
       .single();
 
     const agentName = settings?.agent_name || 'Ghostly';
     const agentFocus = settings?.agent_focus || null;
     const toolPermissions = (settings?.tool_permissions as Record<string, unknown> | null | undefined) ?? {};
+    const chatModel = selectChatModel(settings as Record<string, unknown> | null | undefined, message);
+    const customTemplate = typeof (settings as Record<string, unknown> | null)?.system_prompt_template === 'string'
+      ? String((settings as Record<string, unknown>).system_prompt_template)
+      : null;
 
     // ─── Load integration tools ─────────────────────────────────────────
     await ensureIntegrationsRegistered();
@@ -386,12 +419,41 @@ export async function POST(request: NextRequest) {
       eventId: event_id,
       eventName,
       tools: [...agentTools, ...integrationTools],
+      customTemplate,
     });
 
     // ─── Build messages array ────────────────────────────────────────────
     const messages: ChatMessage[] = [
       { role: 'system', content: systemPrompt },
     ];
+
+    // ─── Recall semantic memory and prior learnings ─────────────────────
+    if (!hasToolApprovalPayload && hasMessage) {
+      const [memories, learnings] = await Promise.all([
+        recallAgentMemories(orgId, message.trim(), 5),
+        recallLearnings(orgId, message.trim(), 3),
+      ]);
+
+      if (learnings.length > 0) {
+        const learningBlock = learnings
+          .map((learning) => `- ${learning.correction}`)
+          .join('\n');
+        messages.push({
+          role: 'system',
+          content: `[User corrections to respect]\n${learningBlock}`,
+        });
+      }
+
+      if (memories.length > 0) {
+        const memoryBlock = memories
+          .map((memory) => `- (${memory.source_type}) ${memory.content}`)
+          .join('\n');
+        messages.push({
+          role: 'system',
+          content: `[Relevant long-term memory]\n${memoryBlock}`,
+        });
+      }
+    }
 
     // If we have a context summary, inject it and only use recent history
     if (contextSummary) {
@@ -477,6 +539,27 @@ export async function POST(request: NextRequest) {
         content: message.trim() || (uploadedFiles.length > 0 ? `[${uploadedFiles.length} file(s) attached]` : ''),
         attachments: attachments.length > 0 ? attachments : [],
       });
+
+      rememberAgentMemory({
+        orgId,
+        sourceType: 'chat_user',
+        sourceId: session_id,
+        content: userContent,
+        metadata: {
+          event_id: event_id || null,
+        },
+        ttlDays: 180,
+      }).catch(() => {});
+
+      const normalizedMessage = message.trim();
+      if (/^(remember|note|correction)[:\\-\\s]/i.test(normalizedMessage) || /please remember/i.test(normalizedMessage)) {
+        rememberLearning({
+          orgId,
+          topic: eventName || null,
+          correction: normalizedMessage,
+          metadata: { session_id },
+        }).catch(() => {});
+      }
     }
 
     // ─── Build tool context ──────────────────────────────────────────────
@@ -554,7 +637,7 @@ export async function POST(request: NextRequest) {
             'X-Title': 'Ghostly Agent',
           },
           body: JSON.stringify({
-            model: AGENT_MODEL,
+            model: chatModel,
             messages,
             tools: openRouterTools,
             tool_choice: 'auto',
@@ -760,6 +843,18 @@ export async function POST(request: NextRequest) {
       role: 'assistant',
       content: finalContent,
     });
+
+    rememberAgentMemory({
+      orgId,
+      sourceType: 'chat_assistant',
+      sourceId: session_id,
+      content: finalContent,
+      metadata: {
+        tool_rounds: toolRounds,
+        event_id: event_id || null,
+      },
+      ttlDays: 180,
+    }).catch(() => {});
 
     if (lastPromptTokens > 0) {
       await supabase

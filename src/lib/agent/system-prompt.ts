@@ -18,6 +18,8 @@ interface SystemPromptContext {
   eventName?: string | null;
   /** Available tools the agent can use */
   tools: AgentTool[];
+  /** Optional custom system prompt template from settings */
+  customTemplate?: string | null;
 }
 
 /**
@@ -35,6 +37,23 @@ export function buildSystemPrompt(ctx: SystemPromptContext): string {
   const focusSection = ctx.agentFocus
     ? `\n## Custom Instructions\n${ctx.agentFocus}`
     : '';
+
+  if (ctx.customTemplate && ctx.customTemplate.trim()) {
+    const template = ctx.customTemplate.trim();
+    const rendered = template
+      .replaceAll('{{agent_name}}', ctx.agentName)
+      .replaceAll('{{agent_focus}}', ctx.agentFocus || '')
+      .replaceAll('{{tool_list}}', toolDescriptions)
+      .replaceAll('{{event_context}}', contextSection || 'No specific event context.')
+      .replaceAll('{{default_guidelines}}', [
+        'Be concise and actionable.',
+        'Never fabricate data.',
+        'Summarize all modifications clearly.',
+        'Use explicit travel fields (budget_bucket=travel, travel_cost_type, travel_logistics_entry_id) when handling travel costs.',
+      ].join('\\n- '));
+
+    return rendered;
+  }
 
   return `You are ${ctx.agentName}, an AI assistant built into Ghostly — a corporate event management and budget tracking platform.
 

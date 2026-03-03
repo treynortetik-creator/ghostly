@@ -1,12 +1,13 @@
 /**
  * Slack Digest Generator
  *
- * Generates daily/weekly summary digests using the agent
+ * Generates daily/weekly summary digests using the shared agent runtime
  * and delivers them via Slack DM.
  */
 
 import { createClient } from '@/lib/supabase/server';
 import { postMessage, openDM } from './client';
+import { runAgentTask } from '@/lib/agent/runtime';
 
 /**
  * Generate and send a digest for a specific org.
@@ -39,48 +40,21 @@ export async function generateAndSendDigest(
     : 'Generate a weekly summary. Include: events this week, budget overview across all active events (spent vs budget), checklist completion rates, key milestones coming up this week, and any items needing attention. Format for Slack with emoji and bold text.';
 
   try {
-    // Call the agent to generate the digest
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-
-    const agentResponse = await fetch(`${baseUrl}/api/agent/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-organization-id': orgId,
-        'x-auth-type': 'api_key',
-        'x-auth-agent-name': 'slack-digest',
-        'x-auth-permissions': 'read,write',
-      },
-      body: JSON.stringify({ message: prompt }),
+    const result = await runAgentTask({
+      orgId,
+      source: 'cron',
+      prompt,
+      sessionTitle: `Digest :: ${digestType} :: ${new Date().toISOString()}`,
+      allowAskTools: false,
+      allowWriteTools: false,
     });
 
-    if (!agentResponse.ok) {
-      throw new Error(`Agent chat failed: ${agentResponse.status}`);
-    }
-
-    // Parse SSE response
-    const responseText = await agentResponse.text();
-    const lines = responseText.split('\n');
-    let content = '';
-
-    for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        try {
-          const data = JSON.parse(line.slice(6));
-          if (data.type === 'text' && data.content) content += data.content;
-          else if (data.type === 'done' && data.content) content = data.content;
-        } catch {
-          // Skip
-        }
-      }
-    }
-
-    if (!content) return;
+    if (!result.content) return;
 
     // Send as DM to the installing user
     const dmChannel = await openDM(creds.bot_token, creds.installed_by);
     const header = digestType === 'daily' ? ':sunrise: *Daily Briefing*' : ':calendar: *Weekly Summary*';
-    await postMessage(creds.bot_token, dmChannel, `${header}\n\n${content}`);
+    await postMessage(creds.bot_token, dmChannel, `${header}\n\n${result.content}`);
   } catch (err) {
     console.error(`Digest generation failed for org ${orgId}:`, err);
   }

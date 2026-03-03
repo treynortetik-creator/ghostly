@@ -17,6 +17,7 @@ import {
   resolveTravelEntryIdForExpense,
   syncTravelBudgetsForPairs,
 } from '@/lib/travel-expense-sync';
+import { processBudgetTriggerForEvent } from '@/lib/agent/worker';
 
 const MAX_EXPENSES_PER_REQUEST = 100;
 
@@ -328,6 +329,15 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
     }
 
     await syncTravelBudgetsForPairs(supabase, syncPairs);
+
+    const eventIdsToCheck = new Set(
+      (newExpenses || [])
+        .map((expense) => expense.event_id)
+        .filter((eventId): eventId is string => typeof eventId === 'string' && eventId.length > 0)
+    );
+    for (const eventId of eventIdsToCheck) {
+      processBudgetTriggerForEvent(orgId, eventId).catch(() => {});
+    }
 
     // Audit log (non-blocking)
     try {

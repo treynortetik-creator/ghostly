@@ -16,6 +16,7 @@ import {
   resolveTravelEntryIdForExpense,
   syncTravelBudgetsForPairs,
 } from '@/lib/travel-expense-sync';
+import { processBudgetTriggerForEvent } from '@/lib/agent/worker';
 
 // ============================================
 // TYPES
@@ -322,6 +323,15 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/brex
             action: 'error',
           });
         }
+      }
+
+      const eventIds = new Set(
+        (newExpenses || [])
+          .map((expense) => expense.event_id)
+          .filter((eventId): eventId is string => typeof eventId === 'string' && eventId.length > 0)
+      );
+      for (const eventId of eventIds) {
+        processBudgetTriggerForEvent(orgId, eventId).catch(() => {});
       }
     }
 

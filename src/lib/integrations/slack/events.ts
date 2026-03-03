@@ -2,11 +2,12 @@
  * Slack Event Handlers
  *
  * Processes incoming Slack events (app_mention, message.im).
- * Routes messages through the agent chat pipeline.
+ * Routes messages through the shared agent runtime.
  */
 
 import { createClient } from '@/lib/supabase/server';
 import { postMessage } from './client';
+import { runAgentTask } from '@/lib/agent/runtime';
 
 interface SlackEvent {
   type: string;
@@ -60,35 +61,32 @@ export async function handleSlackEvent(payload: SlackEventPayload): Promise<void
 
   if (!messageText) return;
 
-  try {
-    // Call the agent chat API internally
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const threadRoot = payload.event.thread_ts || payload.event.ts;
+  const sessionKey = `Slack :: ${payload.team_id}:${payload.event.channel}:${threadRoot}`;
 
-    const agentResponse = await fetch(`${baseUrl}/api/agent/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-organization-id': orgId,
-        'x-auth-type': 'api_key',
-        'x-auth-agent-name': 'slack-bot',
-        'x-auth-permissions': 'read,write',
-      },
-      body: JSON.stringify({
-        message: messageText,
-      }),
+  try {
+    const { data: existingSession } = await supabase
+      .from('chat_sessions')
+      .select('id')
+      .eq('organization_id', orgId)
+      .eq('title', sessionKey)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const result = await runAgentTask({
+      orgId,
+      source: 'slack',
+      prompt: messageText,
+      sessionId: existingSession?.id,
+      sessionTitle: sessionKey,
+      allowAskTools: false,
+      allowWriteTools: false,
     });
 
-    if (!agentResponse.ok) {
-      throw new Error(`Agent chat failed: ${agentResponse.status}`);
-    }
-
-    // Parse the SSE response to extract the final text
-    const responseText = await agentResponse.text();
-    const finalContent = extractFinalContent(responseText);
-
-    if (finalContent) {
-      await postMessage(creds.bot_token, payload.event.channel, finalContent, {
-        thread_ts: payload.event.thread_ts || payload.event.ts,
+    if (result.content) {
+      await postMessage(creds.bot_token, payload.event.channel, result.content, {
+        thread_ts: threadRoot,
       });
     }
   } catch (err) {
@@ -98,36 +96,11 @@ export async function handleSlackEvent(payload: SlackEventPayload): Promise<void
       await postMessage(
         creds.bot_token,
         payload.event.channel,
-        "Sorry, I ran into an error processing your request. Please try again.",
-        { thread_ts: payload.event.thread_ts || payload.event.ts }
+        'Sorry, I ran into an error processing your request. Please try again.',
+        { thread_ts: threadRoot }
       );
     } catch {
       // Swallow error notification failures
     }
   }
-}
-
-/**
- * Extract the final text content from an SSE response stream.
- */
-function extractFinalContent(sseText: string): string {
-  const lines = sseText.split('\n');
-  let content = '';
-
-  for (const line of lines) {
-    if (line.startsWith('data: ')) {
-      try {
-        const data = JSON.parse(line.slice(6));
-        if (data.type === 'text' && data.content) {
-          content += data.content;
-        } else if (data.type === 'done' && data.content) {
-          content = data.content;
-        }
-      } catch {
-        // Skip non-JSON lines
-      }
-    }
-  }
-
-  return content;
 }

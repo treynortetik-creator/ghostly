@@ -19,6 +19,7 @@ import {
   resolveTravelEntryIdForExpense,
   syncTravelBudgetsForPairs,
 } from '@/lib/travel-expense-sync';
+import { processBudgetTriggerForEvent } from '@/lib/agent/worker';
 
 type NameRelation = { name: string } | { name: string }[] | null;
 
@@ -537,6 +538,10 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
       action: 'create',
       changes: null,
     });
+
+    if (hasEventId) {
+      processBudgetTriggerForEvent(orgId, eventId).catch(() => {});
+    }
 
     return NextResponse.json(response, { status: 201 });
   }

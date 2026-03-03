@@ -6,6 +6,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { runAgentTask } from '@/lib/agent/runtime';
 
 interface SlackCommand {
   command: string;
@@ -55,6 +56,8 @@ export async function handleSlackCommand(cmd: SlackCommand): Promise<CommandResp
       return handleOverdueCommand(orgId);
     case 'contacts':
       return handleContactsCommand(orgId, argText);
+    case 'ask':
+      return handleAskCommand(orgId, argText);
     case 'help':
     case '':
     case undefined:
@@ -195,6 +198,34 @@ async function handleContactsCommand(orgId: string, query: string): Promise<Comm
   };
 }
 
+async function handleAskCommand(orgId: string, prompt: string): Promise<CommandResponse> {
+  const trimmed = prompt.trim();
+  if (!trimmed) {
+    return { response_type: 'ephemeral', text: 'Usage: `/ghostly ask <question>`' };
+  }
+
+  try {
+    const result = await runAgentTask({
+      orgId,
+      source: 'slack',
+      prompt: trimmed,
+      sessionTitle: `Slack Command :: ${new Date().toISOString()}`,
+      allowAskTools: false,
+      allowWriteTools: false,
+    });
+
+    return {
+      response_type: 'ephemeral',
+      text: result.content || 'No response generated.',
+    };
+  } catch (error) {
+    return {
+      response_type: 'ephemeral',
+      text: `Agent request failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+    };
+  }
+}
+
 function handleHelpCommand(): CommandResponse {
   return {
     response_type: 'ephemeral',
@@ -203,6 +234,7 @@ function handleHelpCommand(): CommandResponse {
 • \`/ghostly budget <event name>\` — Budget summary for an event
 • \`/ghostly overdue\` — Overdue checklist items
 • \`/ghostly contacts <search>\` — Search contacts
+• \`/ghostly ask <question>\` — Ask the Ghostly agent in Slack
 • \`/ghostly help\` — Show this help message`,
   };
 }

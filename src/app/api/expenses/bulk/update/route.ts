@@ -16,6 +16,7 @@ import {
   resolveTravelEntryIdForExpense,
   syncTravelBudgetsForPairs,
 } from '@/lib/travel-expense-sync';
+import { processBudgetTriggerForEvent } from '@/lib/agent/worker';
 
 const MAX_UPDATES_PER_REQUEST = 100;
 
@@ -459,6 +460,10 @@ export const PUT = withIdempotency(withApiHandler({ permission: 'write', resourc
     for (const expense of updatedExpenses) {
       if (expense.event_id) allEventIds.add(expense.event_id as string);
       if (expense.category_id) allCategoryIds.add(expense.category_id as string);
+    }
+
+    for (const eventId of allEventIds) {
+      processBudgetTriggerForEvent(orgId, eventId).catch(() => {});
     }
 
     // Fetch any event/category names we don't already have

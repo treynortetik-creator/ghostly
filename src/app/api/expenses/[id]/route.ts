@@ -18,6 +18,7 @@ import {
   resolveTravelEntryIdForExpense,
   syncTravelBudgetsForPairs,
 } from '@/lib/travel-expense-sync';
+import { processBudgetTriggerForEvent } from '@/lib/agent/worker';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -361,6 +362,13 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'expenses/[id
       changes,
     });
 
+    if (existingExpense.event_id) {
+      processBudgetTriggerForEvent(orgId, existingExpense.event_id).catch(() => {});
+    }
+    if (hasEventId && String(newEventId) !== String(existingExpense.event_id || '')) {
+      processBudgetTriggerForEvent(orgId, String(newEventId)).catch(() => {});
+    }
+
     return NextResponse.json({ expense: mapped });
   }
 );
@@ -378,7 +386,7 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'expenses/
     // Check if expense exists
     const { data: existingExpense, error: findError } = await supabase
       .from('expenses')
-      .select('id, budget_bucket, travel_logistics_entry_id, travel_cost_type')
+      .select('id, event_id, budget_bucket, travel_logistics_entry_id, travel_cost_type')
       .eq('id', id)
       .eq('organization_id', orgId)
       .is('deleted_at', null)
@@ -416,6 +424,10 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'expenses/
       action: 'delete',
       changes: null,
     });
+
+    if (existingExpense.event_id) {
+      processBudgetTriggerForEvent(orgId, existingExpense.event_id).catch(() => {});
+    }
 
     return NextResponse.json({
       message: 'Expense deleted successfully',

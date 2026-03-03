@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
+import { computeNextRunAt } from '@/lib/agent/scheduler';
 
 const VALID_PRESETS = [
   'every_hour',
@@ -32,6 +33,18 @@ export const PUT = withApiHandler(
     const orgId = getOrgId(request);
     const body = await request.json();
     const supabase = await createClient();
+    const now = new Date();
+
+    const { data: existingTask, error: existingError } = await supabase
+      .from('agent_cron_jobs')
+      .select('id, cron_expression, enabled, next_run_at')
+      .eq('id', id)
+      .eq('organization_id', orgId)
+      .single();
+
+    if (existingError || !existingTask) {
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+    }
 
     const updates: Record<string, unknown> = {};
 
@@ -68,6 +81,14 @@ export const PUT = withApiHandler(
         );
       }
       updates.cron_expression = cronExpr;
+      try {
+        updates.next_run_at = computeNextRunAt(cronExpr, now).toISOString();
+      } catch {
+        return NextResponse.json(
+          { error: 'Unable to compute next run time for the provided cron expression' },
+          { status: 400 }
+        );
+      }
     }
 
     // Validate prompt (if provided)
@@ -85,6 +106,16 @@ export const PUT = withApiHandler(
     // Toggle enabled
     if (body.enabled !== undefined) {
       updates.enabled = !!body.enabled;
+      if (updates.enabled === true && updates.next_run_at === undefined) {
+        try {
+          updates.next_run_at = computeNextRunAt(existingTask.cron_expression, now).toISOString();
+        } catch {
+          return NextResponse.json(
+            { error: 'Unable to compute next run time for this cron job' },
+            { status: 400 }
+          );
+        }
+      }
     }
 
     if (Object.keys(updates).length === 0) {

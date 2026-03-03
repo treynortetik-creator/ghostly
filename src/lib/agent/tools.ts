@@ -38,6 +38,8 @@ export interface ToolExecutionContext {
   baseUrl: string;
   /** Auth cookie string to forward to internal API calls */
   cookieHeader: string;
+  /** Optional internal worker secret for server-to-server execution */
+  internalSecret?: string;
 }
 
 // ─── Internal Fetch Helper ───────────────────────────────────────────────────
@@ -56,6 +58,12 @@ async function internalFetch(
       'Cookie': ctx.cookieHeader,
       'x-organization-id': ctx.orgId,
       'x-auth-type': 'cookie',
+      ...(ctx.internalSecret
+        ? {
+            'x-internal-cron-secret': ctx.internalSecret,
+            'x-internal-org-id': ctx.orgId,
+          }
+        : {}),
     },
   };
 
@@ -1279,6 +1287,193 @@ export const agentTools: AgentTool[] = [
       const payload = { ...args };
       delete payload.event_id;
       const result = await internalFetch(ctx, 'POST', `/api/events/${eventId}/post-event/generate`, payload);
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 28. run_background_task
+  {
+    name: 'run_background_task',
+    description:
+      'Queue a background task for the agent to run asynchronously. Use this for long analyses or reports that should finish later.',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Short name for the background task',
+        },
+        prompt: {
+          type: 'string',
+          description: 'The exact task prompt the background worker should run',
+        },
+        run_after: {
+          type: 'string',
+          description: 'Optional ISO timestamp for delayed execution',
+        },
+      },
+      required: ['name', 'prompt'],
+    },
+    execute: async (args, ctx) => {
+      const result = await internalFetch(ctx, 'POST', '/api/agent/background-tasks', {
+        name: args.name,
+        prompt: args.prompt,
+        run_after: args.run_after ?? null,
+      });
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 29. save_learning
+  {
+    name: 'save_learning',
+    description:
+      'Persist a user correction or long-term preference so the agent can apply it in future conversations.',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        correction: {
+          type: 'string',
+          description: 'The correction/preference to remember',
+        },
+        topic: {
+          type: 'string',
+          description: 'Optional topic label',
+        },
+      },
+      required: ['correction'],
+    },
+    execute: async (args, ctx) => {
+      const result = await internalFetch(ctx, 'POST', '/api/agent/learnings', {
+        correction: args.correction,
+        topic: args.topic ?? null,
+      });
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 30. get_learnings
+  {
+    name: 'get_learnings',
+    description:
+      'Retrieve the most recent stored learnings/corrections for this organization.',
+    default_permission: 'always',
+    parameters: {
+      type: 'object',
+      properties: {
+        limit: {
+          type: 'number',
+          description: 'Maximum number of learnings to return (default 20, max 200)',
+        },
+      },
+    },
+    execute: async (args, ctx) => {
+      const params = new URLSearchParams();
+      params.set('limit', String(args.limit ?? 20));
+      const result = await internalFetch(ctx, 'GET', `/api/agent/learnings?${params.toString()}`);
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 31. recall_memory
+  {
+    name: 'recall_memory',
+    description:
+      'Run semantic recall against the agent long-term memory store.',
+    default_permission: 'always',
+    parameters: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Semantic query to recall from memory',
+        },
+        limit: {
+          type: 'number',
+          description: 'Max results (default 5, max 20)',
+        },
+      },
+      required: ['query'],
+    },
+    execute: async (args, ctx) => {
+      const params = new URLSearchParams();
+      params.set('query', String(args.query));
+      params.set('limit', String(args.limit ?? 5));
+      const result = await internalFetch(ctx, 'GET', `/api/agent/memories?${params.toString()}`);
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 32. save_memory
+  {
+    name: 'save_memory',
+    description:
+      'Store an explicit long-term memory entry with optional TTL.',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        content: {
+          type: 'string',
+          description: 'Memory content to store',
+        },
+        source_type: {
+          type: 'string',
+          description: 'Optional source label',
+        },
+        source_id: {
+          type: 'string',
+          description: 'Optional source identifier',
+        },
+        ttl_days: {
+          type: 'number',
+          description: 'Optional retention period in days',
+        },
+      },
+      required: ['content'],
+    },
+    execute: async (args, ctx) => {
+      const result = await internalFetch(ctx, 'POST', '/api/agent/memories', {
+        content: args.content,
+        source_type: args.source_type ?? 'manual',
+        source_id: args.source_id ?? null,
+        ttl_days: args.ttl_days ?? 180,
+      });
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 33. get_agent_runs
+  {
+    name: 'get_agent_runs',
+    description:
+      'List recent agent executions (heartbeat/cron/slack/background) for observability and debugging.',
+    default_permission: 'always',
+    parameters: {
+      type: 'object',
+      properties: {
+        source: {
+          type: 'string',
+          description: 'Optional run source filter (chat, heartbeat, cron, trigger, slack, background)',
+        },
+        status: {
+          type: 'string',
+          description: 'Optional run status filter',
+        },
+        limit: {
+          type: 'number',
+          description: 'Max records (default 20, max 200)',
+        },
+      },
+    },
+    execute: async (args, ctx) => {
+      const params = new URLSearchParams();
+      if (args.source) params.set('source', String(args.source));
+      if (args.status) params.set('status', String(args.status));
+      params.set('limit', String(args.limit ?? 20));
+      const result = await internalFetch(ctx, 'GET', `/api/agent/runs?${params.toString()}`);
       return JSON.stringify(result, null, 2);
     },
   },

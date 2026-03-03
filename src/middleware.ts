@@ -54,6 +54,7 @@ const PUBLIC_API_ROUTES = [
   '/api/integrations/slack/oauth/callback',
   '/api/integrations/slack/events',
   '/api/integrations/slack/commands',
+  '/api/agent/heartbeat',
   '/api/waitlist',
 ];
 
@@ -229,6 +230,24 @@ export async function middleware(request: NextRequest) {
 
   // For API routes, check x-api-key header first
   if (pathname.startsWith('/api/')) {
+    // Internal worker auth for trusted server-to-server calls.
+    // This enables scheduled agent jobs to call internal APIs/tools without user cookies.
+    const internalSecret = request.headers.get('x-internal-cron-secret');
+    const cronSecret = process.env.CRON_SECRET;
+    if (cronSecret && internalSecret === cronSecret) {
+      const internalOrgId = request.headers.get('x-internal-org-id');
+      requestHeaders.set('x-auth-type', 'api_key');
+      requestHeaders.set('x-auth-agent-name', 'internal-worker');
+      requestHeaders.set('x-auth-permissions', JSON.stringify(['read', 'write', 'admin', 'webhooks']));
+      requestHeaders.set('x-auth-api-key-id', 'internal-worker');
+      requestHeaders.set('x-organization-id', internalOrgId || DEFAULT_ORG_ID);
+
+      return withRequestId(
+        NextResponse.next({ request: { headers: requestHeaders } }),
+        requestId
+      );
+    }
+
     const apiKeyHeader = request.headers.get('x-api-key');
 
     if (apiKeyHeader) {

@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
+import { computeNextRunAt } from '@/lib/agent/scheduler';
 
 const VALID_PRESETS = [
   'every_hour',
@@ -90,6 +91,16 @@ export const POST = withApiHandler(
       );
     }
 
+    let nextRunAt: string;
+    try {
+      nextRunAt = computeNextRunAt(cronExpr, new Date()).toISOString();
+    } catch {
+      return NextResponse.json(
+        { error: 'Unable to compute next run time for the provided cron expression' },
+        { status: 400 }
+      );
+    }
+
     const { data: task, error } = await supabase
       .from('agent_cron_jobs')
       .insert({
@@ -98,6 +109,7 @@ export const POST = withApiHandler(
         schedule_preset: preset,
         cron_expression: cronExpr,
         agent_prompt: prompt,
+        next_run_at: nextRunAt,
       })
       .select()
       .single();
