@@ -11,38 +11,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 import { VALID_WEBHOOK_EVENT_TYPES } from '@/lib/validation';
+import { getUnsafeWebhookUrlReason } from '@/lib/webhooks/url-validation';
 
 const VALID_EVENT_TYPES: readonly string[] = VALID_WEBHOOK_EVENT_TYPES;
-
-/**
- * SSRF protection: block webhook URLs pointing at internal/private networks.
- */
-function isUnsafeWebhookUrl(raw: string): string | null {
-  let parsed: URL;
-  try {
-    parsed = new URL(raw);
-  } catch {
-    return 'url must be a valid URL';
-  }
-  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-    return 'Webhook URL must use http or https';
-  }
-  const hostname = parsed.hostname.toLowerCase();
-  if (['localhost', '127.0.0.1', '[::1]', '::1', '0.0.0.0'].includes(hostname)) {
-    return 'Webhook URL must not point to localhost';
-  }
-  const ipv4Match = hostname.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
-  if (ipv4Match) {
-    const [, a, b] = ipv4Match.map(Number);
-    if (a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 169 && b === 254) || a === 0) {
-      return 'Webhook URL must not point to a private/reserved IP';
-    }
-  }
-  if (hostname === '169.254.169.254' || hostname === 'metadata.google.internal') {
-    return 'Webhook URL must not point to cloud metadata services';
-  }
-  return null;
-}
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -110,7 +81,7 @@ export const PUT = withApiHandler({ permission: 'admin', resource: 'webhooks/[id
       if (!body.url?.trim()) {
         return NextResponse.json({ error: 'url cannot be empty' }, { status: 400 });
       }
-      const urlError = isUnsafeWebhookUrl(body.url.trim());
+      const urlError = getUnsafeWebhookUrlReason(body.url.trim());
       if (urlError) {
         return NextResponse.json({ error: urlError }, { status: 400 });
       }

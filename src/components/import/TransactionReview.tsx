@@ -139,7 +139,7 @@ export function TransactionReview({
     onUpdateTransaction(id, { status });
   };
 
-  const SortIcon = ({ column }: { column: "date" | "amount" | "vendor" }) => {
+  const renderSortIcon = (column: "date" | "amount" | "vendor") => {
     if (sortBy !== column) return null;
     return sortOrder === "asc" ? (
       <ChevronUp className="w-3 h-3" />
@@ -284,7 +284,7 @@ export function TransactionReview({
                  
                 >
                   <span className="flex items-center gap-1">
-                    Date <SortIcon column="date" />
+                    Date {renderSortIcon("date")}
                   </span>
                 </th>
                 <th
@@ -293,7 +293,7 @@ export function TransactionReview({
                  
                 >
                   <span className="flex items-center gap-1">
-                    Vendor <SortIcon column="vendor" />
+                    Vendor {renderSortIcon("vendor")}
                   </span>
                 </th>
                 <th
@@ -305,7 +305,7 @@ export function TransactionReview({
                     className="flex items-center justify-end gap-1"
                    
                   >
-                    Amount <SortIcon column="amount" />
+                    Amount {renderSortIcon("amount")}
                   </span>
                 </th>
                 <th

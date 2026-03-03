@@ -7,7 +7,19 @@ import { Button } from "@/components/ui/Button";
 interface DocumentUploadProps {
   eventId?: string;
   expenseId?: string;
-  onUploadComplete: (doc: any) => void;
+  onUploadComplete: (doc: UploadedDocument) => void;
+}
+
+export interface UploadedDocument {
+  id: string;
+  filename: string;
+  original_filename: string;
+  mime_type: string;
+  file_size_bytes: number;
+  source: string;
+  uploaded_by: string;
+  created_at: string;
+  [key: string]: unknown;
 }
 
 const ALLOWED_TYPES = [
@@ -98,7 +110,7 @@ export function DocumentUpload({
         throw new Error(data.error || "Upload failed");
       }
 
-      const doc = await response.json();
+      const doc = (await response.json()) as UploadedDocument;
       onUploadComplete(doc);
       setUploadProgress(null);
     } catch (err) {

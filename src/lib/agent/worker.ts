@@ -133,6 +133,8 @@ async function runHeartbeatForOrg(orgId: string): Promise<number> {
 
 async function runCronJobsForOrg(orgId: string): Promise<number> {
   const supabase = await createClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabaseAny = supabase as any;
 
   const [{ data: settings }, { data: jobs, error: jobsError }] = await Promise.all([
     supabase
@@ -164,6 +166,34 @@ async function runCronJobsForOrg(orgId: string): Promise<number> {
 
     if (!dueByNextRun && !dueByCron) continue;
 
+    const nextRunAt = computeNextRunAt(job.cron_expression, now).toISOString();
+    let claimQuery = supabaseAny
+      .from('agent_cron_jobs')
+      .update({
+        last_run_at: nowIso,
+        next_run_at: nextRunAt,
+      })
+      .eq('id', job.id)
+      .eq('organization_id', orgId)
+      .eq('enabled', true)
+      .select('id')
+      .maybeSingle();
+
+    if (job.next_run_at) {
+      claimQuery = claimQuery.eq('next_run_at', job.next_run_at);
+    } else {
+      claimQuery = claimQuery.is('next_run_at', null);
+    }
+
+    if (job.last_run_at) {
+      claimQuery = claimQuery.eq('last_run_at', job.last_run_at);
+    } else {
+      claimQuery = claimQuery.is('last_run_at', null);
+    }
+
+    const { data: claimedJob, error: claimError } = await claimQuery;
+    if (claimError || !claimedJob) continue;
+
     const result = await runAgentTask({
       orgId,
       source: 'cron',
@@ -172,17 +202,6 @@ async function runCronJobsForOrg(orgId: string): Promise<number> {
       allowAskTools: false,
       allowWriteTools: autonomyMode === 'full',
     });
-
-    const nextRunAt = computeNextRunAt(job.cron_expression, now).toISOString();
-
-    await supabase
-      .from('agent_cron_jobs')
-      .update({
-        last_run_at: nowIso,
-        next_run_at: nextRunAt,
-      })
-      .eq('id', job.id)
-      .eq('organization_id', orgId);
 
     await createNotification(
       orgId,
@@ -227,22 +246,97 @@ async function hasRecentTriggerNotification(
   return !!data && data.length > 0;
 }
 
+async function claimTriggerNotification(params: {
+  orgId: string;
+  triggerKey: string;
+  fallbackType: NotificationType;
+  fallbackTrigger: string;
+  fallbackEntityId: string;
+  fallbackSinceHours: number;
+}): Promise<boolean> {
+  const supabase = await createClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabaseAny = supabase as any;
+
+  try {
+    const { data, error } = await supabaseAny
+      .from('agent_trigger_notifications')
+      .insert({
+        organization_id: params.orgId,
+        trigger_key: params.triggerKey,
+      })
+      .select('id')
+      .maybeSingle();
+
+    if (!error) {
+      return !!data;
+    }
+
+    // Unique violation means another worker already claimed this trigger key.
+    if (error.code === '23505') {
+      return false;
+    }
+
+    // Older deployments may not have this table yet. Fall back to legacy dedupe.
+    if (error.code === '42P01') {
+      const alreadySent = await hasRecentTriggerNotification(
+        params.orgId,
+        params.fallbackType,
+        params.fallbackTrigger,
+        params.fallbackEntityId,
+        params.fallbackSinceHours
+      );
+      return !alreadySent;
+    }
+
+    throw error;
+  } catch {
+    // Last-resort fallback keeps behavior stable if claim table is unavailable.
+    const alreadySent = await hasRecentTriggerNotification(
+      params.orgId,
+      params.fallbackType,
+      params.fallbackTrigger,
+      params.fallbackEntityId,
+      params.fallbackSinceHours
+    );
+    return !alreadySent;
+  }
+}
+
 async function processBudgetTriggers(orgId: string, eventFilter?: Set<string>): Promise<number> {
   const supabase = await createClient();
+  const filteredEventIds = eventFilter ? [...eventFilter] : [];
 
   const [{ data: events, error: eventsError }, { data: expenses, error: expensesError }] = await Promise.all([
-    supabase
-      .from('events')
-      .select('id, name, budget_amount')
-      .eq('organization_id', orgId)
-      .is('deleted_at', null),
-    supabase
-      .from('expenses')
-      .select('event_id, amount')
-      .eq('organization_id', orgId)
-      .is('deleted_at', null)
-      .neq('budget_bucket', 'travel')
-      .not('event_id', 'is', null),
+    (() => {
+      let query = supabase
+        .from('events')
+        .select('id, name, budget_amount')
+        .eq('organization_id', orgId)
+        .is('deleted_at', null)
+        .gt('budget_amount', 0);
+
+      if (filteredEventIds.length > 0) {
+        query = query.in('id', filteredEventIds);
+      }
+
+      return query;
+    })(),
+    (() => {
+      let query = supabase
+        .from('expenses')
+        .select('event_id, amount')
+        .eq('organization_id', orgId)
+        .is('deleted_at', null)
+        .neq('budget_bucket', 'travel')
+        .not('event_id', 'is', null);
+
+      if (filteredEventIds.length > 0) {
+        query = query.in('event_id', filteredEventIds);
+      }
+
+      return query;
+    })(),
   ]);
 
   if (eventsError) throw eventsError;
@@ -266,8 +360,16 @@ async function processBudgetTriggers(orgId: string, eventFilter?: Set<string>): 
     if (spent <= budget) continue;
 
     const dedupeId = event.id;
-    const alreadySent = await hasRecentTriggerNotification(orgId, 'budget_alert', 'over_budget', dedupeId, 24);
-    if (alreadySent) continue;
+    const dayKey = new Date().toISOString().slice(0, 10);
+    const shouldSend = await claimTriggerNotification({
+      orgId,
+      triggerKey: `over_budget:${dedupeId}:${dayKey}`,
+      fallbackType: 'budget_alert',
+      fallbackTrigger: 'over_budget',
+      fallbackEntityId: dedupeId,
+      fallbackSinceHours: 24,
+    });
+    if (!shouldSend) continue;
 
     await createNotification(
       orgId,
@@ -301,9 +403,9 @@ async function processOverdueChecklistTriggers(orgId: string): Promise<number> {
   const { data: overdue, error } = await supabase
     .from('event_checklist_items')
     .select('id, title, due_date, event_id, events!inner(name, organization_id)')
+    .eq('events.organization_id', orgId)
     .is('completed_at', null)
-    .lt('due_date', today)
-    .limit(100);
+    .lt('due_date', today);
 
   if (error) throw error;
 
@@ -311,7 +413,7 @@ async function processOverdueChecklistTriggers(orgId: string): Promise<number> {
 
   for (const item of overdue || []) {
     const eventRel = item.events as unknown as { name?: string; organization_id?: string };
-    if (!item.event_id || eventRel?.organization_id !== orgId) continue;
+    if (!item.event_id) continue;
 
     const existing = byEvent.get(item.event_id);
     if (!existing) {
@@ -333,8 +435,15 @@ async function processOverdueChecklistTriggers(orgId: string): Promise<number> {
 
   for (const [eventId, info] of byEvent.entries()) {
     const dedupeId = `${eventId}:${today}`;
-    const alreadySent = await hasRecentTriggerNotification(orgId, 'task_reminder', 'overdue_checklist', dedupeId, 24);
-    if (alreadySent) continue;
+    const shouldSend = await claimTriggerNotification({
+      orgId,
+      triggerKey: `overdue_checklist:${dedupeId}`,
+      fallbackType: 'task_reminder',
+      fallbackTrigger: 'overdue_checklist',
+      fallbackEntityId: dedupeId,
+      fallbackSinceHours: 24,
+    });
+    if (!shouldSend) continue;
 
     await createNotification(
       orgId,
@@ -393,14 +502,16 @@ async function processBackgroundTasksForOrg(orgId: string): Promise<number> {
   let runs = 0;
 
   for (const task of tasks) {
-    const { error: claimError } = await supabaseAny
+    const { data: claimedTask, error: claimError } = await supabaseAny
       .from('agent_background_tasks')
       .update({ status: 'running', started_at: nowIso })
       .eq('id', task.id)
       .eq('organization_id', orgId)
-      .eq('status', 'pending');
+      .eq('status', 'pending')
+      .select('id')
+      .maybeSingle();
 
-    if (claimError) continue;
+    if (claimError || !claimedTask) continue;
 
     try {
       const result = await runAgentTask({

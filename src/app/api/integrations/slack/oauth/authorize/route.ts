@@ -12,7 +12,8 @@ import { createOAuthState, buildAuthorizeUrl } from '@/lib/integrations/slack/oa
 
 export async function GET(request: NextRequest) {
   try {
-    requirePermission(request, 'admin');
+    const denied = requirePermission(request, 'admin');
+    if (denied) return denied;
     const orgId = getOrgId(request);
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${request.headers.get('x-forwarded-proto') || 'http'}://${request.headers.get('host')}`;

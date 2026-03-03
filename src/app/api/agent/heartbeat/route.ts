@@ -14,7 +14,10 @@ import { runAgentWorker } from '@/lib/agent/worker';
 
 function isAuthorized(request: NextRequest): boolean {
   const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret) return true;
+  if (!cronSecret) {
+    console.error('CRON_SECRET is not configured; blocking /api/agent/heartbeat');
+    return false;
+  }
 
   const authHeader = request.headers.get('authorization');
   return authHeader === `Bearer ${cronSecret}`;

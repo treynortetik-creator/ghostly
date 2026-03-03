@@ -3,6 +3,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { buildOrIlikeClause, sanitizePostgrestFilterTerm } from '@/lib/postgrest';
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1';
 const EMBEDDING_MODEL = 'openai/text-embedding-3-small';
@@ -142,7 +143,7 @@ export async function recallAgentMemories(
 
   // Fallback: lexical recall (most recent matching snippets)
   try {
-    const safe = trimmed.replace(/[%_\\]/g, '').slice(0, 200);
+    const safe = sanitizePostgrestFilterTerm(trimmed);
     let queryBuilder = supabaseAny
       .from('agent_memories')
       .select('id, source_type, source_id, content, metadata, created_at, expires_at')
@@ -229,7 +230,7 @@ export async function recallLearnings(
   }
 
   try {
-    const safe = trimmed.replace(/[%_\\]/g, '').slice(0, 200);
+    const safe = sanitizePostgrestFilterTerm(trimmed);
     let queryBuilder = supabaseAny
       .from('agent_learnings')
       .select('id, topic, correction, metadata, created_at')
@@ -238,7 +239,10 @@ export async function recallLearnings(
       .limit(Math.max(1, Math.min(limit * 3, 60)));
 
     if (safe) {
-      queryBuilder = queryBuilder.or(`correction.ilike.%${safe}%,topic.ilike.%${safe}%`);
+      const clause = buildOrIlikeClause(['correction', 'topic'], safe);
+      if (clause) {
+        queryBuilder = queryBuilder.or(clause);
+      }
     }
 
     const { data } = await queryBuilder;

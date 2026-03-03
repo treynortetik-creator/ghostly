@@ -56,7 +56,8 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/board'
         .is('deleted_at', null),
       supabase
         .from('event_checklist_items')
-        .select('event_id, completed_at'),
+        .select('event_id, completed_at, events!inner(id, organization_id)')
+        .eq('events.organization_id', orgId),
     ]);
 
     if (eventsResult.error) throw eventsResult.error;

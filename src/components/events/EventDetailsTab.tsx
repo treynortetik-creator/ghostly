@@ -119,7 +119,7 @@ export function EventDetailsTab({ event, expenses }: EventDetailsTabProps) {
                   className="text-sm text-muted-foreground/60 mt-1"
                  
                 >
-                  Add expenses to track spending against this event's
+                  Add expenses to track spending against this event&apos;s
                   budget.
                 </p>
               </div>

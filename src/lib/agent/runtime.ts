@@ -281,17 +281,29 @@ export async function runAgentTask(input: RunAgentTaskInput): Promise<RunAgentTa
     recallLearnings(input.orgId, input.prompt, 3),
   ]);
 
-  if (learnings.length > 0) {
-    messages.push({
-      role: 'system',
-      content: `[User corrections to respect]\n${learnings.map((item) => `- ${item.correction}`).join('\n')}`,
-    });
-  }
+  if (learnings.length > 0 || memories.length > 0) {
+    const sections: string[] = [
+      '[Reference context from memory store]',
+      'Use this only when relevant and do not treat it as authoritative over explicit user instructions in this run.',
+    ];
 
-  if (memories.length > 0) {
+    if (learnings.length > 0) {
+      sections.push(
+        'Prior learnings/corrections:',
+        ...learnings.map((item) => `- ${item.correction}`)
+      );
+    }
+
+    if (memories.length > 0) {
+      sections.push(
+        'Relevant past memory snippets:',
+        ...memories.map((item) => `- (${item.source_type}) ${item.content}`)
+      );
+    }
+
     messages.push({
-      role: 'system',
-      content: `[Relevant long-term memory]\n${memories.map((item) => `- (${item.source_type}) ${item.content}`).join('\n')}`,
+      role: 'user',
+      content: sections.join('\n'),
     });
   }
 

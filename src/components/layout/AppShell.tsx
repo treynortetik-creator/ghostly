@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react-hooks/set-state-in-effect */
 
 import Link from "next/link";
 import Image from "next/image";
@@ -128,25 +129,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(SIDEBAR_KEY) === "true";
+  });
   const [mounted, setMounted] = useState(false);
-  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    const stored = localStorage.getItem(SECTIONS_KEY);
+    if (!stored) return new Set();
+    try {
+      return new Set(JSON.parse(stored));
+    } catch {
+      return new Set();
+    }
+  });
   // Extract event_id from URL if on an event detail page (e.g. /events/[uuid])
   const eventIdMatch = pathname.match(/^\/events\/([0-9a-f-]{36})/);
   const currentEventId = eventIdMatch ? eventIdMatch[1] : null;
 
-  // Read collapse + section state from localStorage on mount
+  // Mark mounted to prevent hydration flicker in the sidebar layout.
   useEffect(() => {
-    const stored = localStorage.getItem(SIDEBAR_KEY);
-    if (stored === "true") {
-      setCollapsed(true);
-    }
-    const storedSections = localStorage.getItem(SECTIONS_KEY);
-    if (storedSections) {
-      try {
-        setCollapsedSections(new Set(JSON.parse(storedSections)));
-      } catch { /* ignore */ }
-    }
     setMounted(true);
   }, []);
 

@@ -7,9 +7,19 @@ const MAX_ATTEMPTS = 5;
 const WINDOW_MS = 60 * 1000; // 1 minute
 
 function getClientIp(request: NextRequest): string {
+  const realIp = request.headers.get('x-real-ip');
+  if (realIp) {
+    return realIp;
+  }
+
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  if (forwardedFor) {
+    const candidate = forwardedFor.split(',')[0]?.trim();
+    if (candidate) return candidate;
+  }
+
   return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
+    request.headers.get('cf-connecting-ip') ||
     'unknown'
   );
 }
@@ -18,7 +28,9 @@ export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request);
 
-    const rateCheck = await checkRateLimit(`login:${ip}`, MAX_ATTEMPTS, WINDOW_MS);
+    const rateCheck = await checkRateLimit(`login:${ip}`, MAX_ATTEMPTS, WINDOW_MS, {
+      failOpenOnError: false,
+    });
 
     if (!rateCheck.allowed) {
       // Audit: rate-limited login attempt (fire-and-forget)

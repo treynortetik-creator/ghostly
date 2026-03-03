@@ -3,6 +3,7 @@ import { jwtVerify } from 'jose';
 
 // Cookie name must match the one in auth.ts
 const AUTH_COOKIE_NAME = 'ghostly-token';
+const ACTIVE_ORG_COOKIE_NAME = 'ghostly-active-org';
 
 /** Sentinel UUID for auth-related audit entries (matches AUTH_ENTITY_ID in audit.ts) */
 const AUTH_ENTITY_ID = '00000000-0000-0000-0000-000000000000';
@@ -54,7 +55,6 @@ const PUBLIC_API_ROUTES = [
   '/api/integrations/slack/oauth/callback',
   '/api/integrations/slack/events',
   '/api/integrations/slack/commands',
-  '/api/agent/heartbeat',
   '/api/waitlist',
 ];
 
@@ -84,22 +84,25 @@ function isPublicRoute(pathname: string): boolean {
 /**
  * Verify the JWT token from cookie
  */
-async function verifyTokenFromCookie(token: string): Promise<boolean> {
+async function verifyTokenFromCookie(token: string): Promise<{ username: string } | null> {
   try {
     const secret = process.env.JWT_SECRET;
     if (!secret) {
       console.error('JWT_SECRET not set in middleware');
-      return false;
+      return null;
     }
 
     const secretKey = new TextEncoder().encode(secret);
-    await jwtVerify(token, secretKey, {
+    const { payload } = await jwtVerify(token, secretKey, {
       issuer: 'ghostly',
       audience: 'ghostly',
     });
-    return true;
+
+    const username = typeof payload.username === 'string' ? payload.username : '';
+    if (!username) return null;
+    return { username };
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -183,6 +186,66 @@ async function validateApiKeyInMiddleware(rawKey: string): Promise<{
   };
 }
 
+async function getOrgIdsForLegacyUser(username: string): Promise<string[]> {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceKey || !username) {
+    return [];
+  }
+
+  const encodedUser = encodeURIComponent(username);
+  const candidatePaths = [
+    `org_members?legacy_username=eq.${encodedUser}&select=organization_id`,
+    `organization_members?legacy_username=eq.${encodedUser}&select=organization_id`,
+  ];
+
+  for (const path of candidatePaths) {
+    try {
+      const response = await fetch(`${supabaseUrl}/rest/v1/${path}`, {
+        headers: {
+          'apikey': supabaseServiceKey,
+          'Authorization': `Bearer ${supabaseServiceKey}`,
+        },
+      });
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const rows = await response.json();
+      if (!Array.isArray(rows)) {
+        return [];
+      }
+
+      return rows
+        .map((row) => (typeof row?.organization_id === 'string' ? row.organization_id : null))
+        .filter((value): value is string => !!value);
+    } catch {
+      continue;
+    }
+  }
+
+  return [];
+}
+
+async function resolveCookieOrgId(params: {
+  username: string;
+  requestedOrgId: string | null;
+  fallbackOrgId: string;
+}): Promise<string> {
+  const memberships = await getOrgIdsForLegacyUser(params.username);
+  if (memberships.length === 0) {
+    return params.fallbackOrgId;
+  }
+
+  if (params.requestedOrgId && memberships.includes(params.requestedOrgId)) {
+    return params.requestedOrgId;
+  }
+
+  return memberships[0];
+}
+
 /**
  * Set X-Request-ID on a response for client correlation.
  */
@@ -216,8 +279,8 @@ export async function middleware(request: NextRequest) {
     if (pathname === '/login' || pathname === '/') {
       const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
       if (token) {
-        const isValid = await verifyTokenFromCookie(token);
-        if (isValid) {
+        const authContext = await verifyTokenFromCookie(token);
+        if (authContext) {
           return withRequestId(NextResponse.redirect(new URL('/dashboard', request.url)), requestId);
         }
       }
@@ -230,10 +293,30 @@ export async function middleware(request: NextRequest) {
 
   // For API routes, check x-api-key header first
   if (pathname.startsWith('/api/')) {
+    const cronSecret = process.env.CRON_SECRET;
+
+    // Dedicated auth path for heartbeat endpoint cron calls.
+    const bearerAuth = request.headers.get('authorization');
+    if (
+      pathname === '/api/agent/heartbeat' &&
+      cronSecret &&
+      bearerAuth === `Bearer ${cronSecret}`
+    ) {
+      requestHeaders.set('x-auth-type', 'api_key');
+      requestHeaders.set('x-auth-agent-name', 'internal-worker');
+      requestHeaders.set('x-auth-permissions', JSON.stringify(['read', 'write', 'admin', 'webhooks']));
+      requestHeaders.set('x-auth-api-key-id', 'internal-worker');
+      requestHeaders.set('x-organization-id', DEFAULT_ORG_ID);
+
+      return withRequestId(
+        NextResponse.next({ request: { headers: requestHeaders } }),
+        requestId
+      );
+    }
+
     // Internal worker auth for trusted server-to-server calls.
     // This enables scheduled agent jobs to call internal APIs/tools without user cookies.
     const internalSecret = request.headers.get('x-internal-cron-secret');
-    const cronSecret = process.env.CRON_SECRET;
     if (cronSecret && internalSecret === cronSecret) {
       const internalOrgId = request.headers.get('x-internal-org-id');
       requestHeaders.set('x-auth-type', 'api_key');
@@ -312,9 +395,9 @@ export async function middleware(request: NextRequest) {
   }
 
   // Verify the token
-  const isValid = await verifyTokenFromCookie(token);
+  const authContext = await verifyTokenFromCookie(token);
 
-  if (!isValid) {
+  if (!authContext) {
     if (pathname.startsWith('/api/')) {
       return withRequestId(
         NextResponse.json(
@@ -331,13 +414,32 @@ export async function middleware(request: NextRequest) {
   }
 
   // Cookie auth valid — pass auth context via headers
-  requestHeaders.set('x-auth-type', 'cookie');
-  requestHeaders.set('x-organization-id', DEFAULT_ORG_ID);
+  const requestedOrgId =
+    request.headers.get('x-org-id') ||
+    request.headers.get('x-active-org-id') ||
+    request.cookies.get(ACTIVE_ORG_COOKIE_NAME)?.value ||
+    null;
+  const resolvedOrgId = await resolveCookieOrgId({
+    username: authContext.username,
+    requestedOrgId,
+    fallbackOrgId: DEFAULT_ORG_ID,
+  });
 
-  return withRequestId(
-    NextResponse.next({ request: { headers: requestHeaders } }),
-    requestId
-  );
+  requestHeaders.set('x-auth-type', 'cookie');
+  requestHeaders.set('x-organization-id', resolvedOrgId);
+
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  if (request.cookies.get(ACTIVE_ORG_COOKIE_NAME)?.value !== resolvedOrgId) {
+    response.cookies.set(ACTIVE_ORG_COOKIE_NAME, resolvedOrgId, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 30,
+    });
+  }
+
+  return withRequestId(response, requestId);
 }
 
 // Configure which paths the middleware runs on

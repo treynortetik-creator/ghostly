@@ -7,6 +7,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { runAgentTask } from '@/lib/agent/runtime';
+import { buildOrIlikeClause } from '@/lib/postgrest';
 
 interface SlackCommand {
   command: string;
@@ -145,13 +146,12 @@ async function handleOverdueCommand(orgId: string): Promise<CommandResponse> {
   const { data: items } = await supabase
     .from('event_checklist_items')
     .select('title, due_date, events!inner(name, organization_id)')
+    .eq('events.organization_id', orgId)
     .is('completed_at', null)
     .lt('due_date', today)
     .limit(10);
 
-  const filtered = (items || []).filter(
-    (item) => (item.events as unknown as { organization_id: string })?.organization_id === orgId
-  );
+  const filtered = items || [];
 
   if (filtered.length === 0) {
     return { response_type: 'ephemeral', text: 'No overdue checklist items. Nice work!' };
@@ -175,11 +175,16 @@ async function handleContactsCommand(orgId: string, query: string): Promise<Comm
     return { response_type: 'ephemeral', text: 'Usage: `/ghostly contacts <search term>`' };
   }
 
+  const searchClause = buildOrIlikeClause(['first_name', 'last_name', 'company'], query);
+  if (!searchClause) {
+    return { response_type: 'ephemeral', text: `No contacts found matching "${query}"` };
+  }
+
   const { data: contacts } = await supabase
     .from('contacts')
     .select('first_name, last_name, company, title, email')
     .eq('organization_id', orgId)
-    .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,company.ilike.%${query}%`)
+    .or(searchClause)
     .limit(5);
 
   if (!contacts || contacts.length === 0) {

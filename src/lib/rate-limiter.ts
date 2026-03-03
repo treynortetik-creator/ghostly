@@ -14,6 +14,14 @@ export interface RateLimitResult {
   resetAt: Date;
 }
 
+interface RateLimitOptions {
+  /**
+   * When true, allow traffic if the limiter backend is unavailable.
+   * For security-sensitive endpoints (login), set this to false.
+   */
+  failOpenOnError?: boolean;
+}
+
 /**
  * Check and increment the rate limit counter for a given key.
  *
@@ -26,89 +34,76 @@ export interface RateLimitResult {
 export async function checkRateLimit(
   key: string,
   limit: number,
-  windowMs: number
+  windowMs: number,
+  options: RateLimitOptions = {}
 ): Promise<RateLimitResult> {
+  const failOpenOnError = options.failOpenOnError ?? true;
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseServiceKey) {
-    // If DB is unavailable, fail open — allow the request but log a warning
-    console.warn('Rate limiter: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set, failing open');
-    return { allowed: true, remaining: limit, resetAt: new Date(Date.now() + windowMs) };
+    const resetAt = new Date(Date.now() + windowMs);
+    if (failOpenOnError) {
+      console.warn('Rate limiter: backend env vars missing, failing open');
+      return { allowed: true, remaining: limit, resetAt };
+    }
+    console.error('Rate limiter: backend env vars missing, failing closed');
+    return { allowed: false, remaining: 0, resetAt };
   }
 
-  const now = new Date();
-  const windowStart = new Date(now.getTime() - windowMs);
+  const now = Date.now();
+  const resetAt = new Date(now + windowMs);
+  const windowSeconds = Math.max(1, Math.ceil(windowMs / 1000));
 
   const headers = {
     'apikey': supabaseServiceKey,
     'Authorization': `Bearer ${supabaseServiceKey}`,
     'Content-Type': 'application/json',
-    'Prefer': 'return=representation',
   };
 
   try {
-    // Step 1: Count existing requests in the current window
-    const countUrl = `${supabaseUrl}/rest/v1/rate_limit_entries?key=eq.${encodeURIComponent(key)}&window_start=gte.${encodeURIComponent(windowStart.toISOString())}&select=id,count`;
-    const countRes = await fetch(countUrl, { headers });
+    const res = await fetch(`${supabaseUrl}/rest/v1/rpc/consume_rate_limit`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        p_key: key,
+        p_limit: limit,
+        p_window_seconds: windowSeconds,
+      }),
+    });
 
-    if (!countRes.ok) {
-      console.error('Rate limiter: failed to query rate_limit_entries', await countRes.text());
-      return { allowed: true, remaining: limit, resetAt: new Date(now.getTime() + windowMs) };
-    }
-
-    const entries: { id: string; count: number }[] = await countRes.json();
-
-    // Sum up all counts in the current window
-    const totalCount = entries.reduce((sum, entry) => sum + (entry.count || 1), 0);
-
-    const resetAt = new Date(now.getTime() + windowMs);
-
-    if (totalCount >= limit) {
-      // Rate limited — don't insert a new entry
+    if (!res.ok) {
+      const body = await res.text();
+      console.error('Rate limiter RPC failed:', body);
+      if (failOpenOnError) {
+        return { allowed: true, remaining: limit, resetAt };
+      }
       return { allowed: false, remaining: 0, resetAt };
     }
 
-    // Step 2: Try to upsert — increment if a row for the current window-second exists,
-    // otherwise insert a new row. We use the truncated-to-second timestamp as the window
-    // start to batch requests in the same second.
-    const windowSecond = new Date(Math.floor(now.getTime() / 1000) * 1000);
-
-    // Try to find and increment an existing entry for this second
-    const existingUrl = `${supabaseUrl}/rest/v1/rate_limit_entries?key=eq.${encodeURIComponent(key)}&window_start=eq.${encodeURIComponent(windowSecond.toISOString())}&select=id,count`;
-    const existingRes = await fetch(existingUrl, { headers });
-
-    if (existingRes.ok) {
-      const existing: { id: string; count: number }[] = await existingRes.json();
-
-      if (existing.length > 0) {
-        // Increment existing entry
-        const entry = existing[0];
-        await fetch(`${supabaseUrl}/rest/v1/rate_limit_entries?id=eq.${entry.id}`, {
-          method: 'PATCH',
-          headers: { ...headers, 'Prefer': 'return=minimal' },
-          body: JSON.stringify({ count: entry.count + 1 }),
-        });
-      } else {
-        // Insert new entry
-        await fetch(`${supabaseUrl}/rest/v1/rate_limit_entries`, {
-          method: 'POST',
-          headers: { ...headers, 'Prefer': 'return=minimal' },
-          body: JSON.stringify({
-            key,
-            window_start: windowSecond.toISOString(),
-            count: 1,
-          }),
-        });
+    const data = await res.json();
+    if (!data || typeof data !== 'object') {
+      if (failOpenOnError) {
+        return { allowed: true, remaining: limit, resetAt };
       }
+      return { allowed: false, remaining: 0, resetAt };
     }
 
-    const remaining = Math.max(0, limit - totalCount - 1);
-    return { allowed: true, remaining, resetAt };
+    const rpcResetAt = typeof data.reset_at === 'string'
+      ? new Date(data.reset_at)
+      : resetAt;
+
+    return {
+      allowed: data.allowed === true,
+      remaining: Number.isFinite(Number(data.remaining)) ? Number(data.remaining) : 0,
+      resetAt: Number.isNaN(rpcResetAt.getTime()) ? resetAt : rpcResetAt,
+    };
   } catch (err) {
-    // On any error, fail open to avoid blocking legitimate requests
     console.error('Rate limiter error:', err);
-    return { allowed: true, remaining: limit, resetAt: new Date(now.getTime() + windowMs) };
+    if (failOpenOnError) {
+      return { allowed: true, remaining: limit, resetAt };
+    }
+    return { allowed: false, remaining: 0, resetAt };
   }
 }
 

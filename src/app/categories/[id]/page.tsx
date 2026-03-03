@@ -425,7 +425,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
                     No expenses recorded yet.
                   </p>
                   <p className="text-sm text-muted-foreground/60 mt-1">
-                    Add expenses to track spending against this category's
+                    Add expenses to track spending against this category&apos;s
                     budget.
                   </p>
                 </div>

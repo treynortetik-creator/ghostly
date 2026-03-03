@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 import { withIdempotency } from '@/lib/idempotency';
+import { buildOrIlikeClause } from '@/lib/postgrest';
 import type { ContactType } from '@/types/database';
 
 const VALID_CONTACT_TYPES = ['vendor', 'lead', 'organizer', 'partner', 'other'];
@@ -60,9 +61,20 @@ export const GET = withApiHandler({ permission: 'read', resource: 'contacts' },
     }
     if (search) {
       filters.search = search;
-      query = query.or(
-        `first_name.ilike.%${search}%,last_name.ilike.%${search}%,company.ilike.%${search}%,email.ilike.%${search}%`
+      const searchClause = buildOrIlikeClause(
+        ['first_name', 'last_name', 'company', 'email'],
+        search
       );
+      if (!searchClause) {
+        return NextResponse.json({
+          contacts: [],
+          meta: {
+            total: 0,
+            filters_applied: filters,
+          },
+        });
+      }
+      query = query.or(searchClause);
     }
 
     const { data, error } = await query.order('last_name', { ascending: true });

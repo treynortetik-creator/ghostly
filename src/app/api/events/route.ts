@@ -126,25 +126,33 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events' },
     if (filters.ids) query = query.in('id', filters.ids);
     if (search) query = query.ilike('name', `%${search}%`);
 
-    // Fetch paginated events and all event expense totals in parallel (avoids N+1)
-    const [eventsResult, expenseTotalsResult] = await Promise.all([
-      query.order('date_start', { ascending: true, nullsFirst: false }).range(from, to),
-      supabase
-        .from('expenses')
-        .select('event_id, amount')
-        .eq('organization_id', orgId)
-        .not('event_id', 'is', null)
-        .neq('budget_bucket', 'travel')
-        .is('deleted_at', null),
-    ]);
+    // Fetch paginated events first, then fetch expense totals only for those events.
+    const eventsResult = await query
+      .order('date_start', { ascending: true, nullsFirst: false })
+      .range(from, to);
 
     if (eventsResult.error) throw eventsResult.error;
 
     const total = eventsResult.count ?? 0;
+    const pageEventIds = (eventsResult.data || []).map(event => event.id);
+    let expenseRows: Array<{ event_id: string | null; amount: number }> = [];
+
+    if (pageEventIds.length > 0) {
+      const expenseTotalsResult = await supabase
+        .from('expenses')
+        .select('event_id, amount')
+        .eq('organization_id', orgId)
+        .in('event_id', pageEventIds)
+        .neq('budget_bucket', 'travel')
+        .is('deleted_at', null);
+
+      if (expenseTotalsResult.error) throw expenseTotalsResult.error;
+      expenseRows = expenseTotalsResult.data || [];
+    }
 
     // Build expense totals map from single query
     const expenseByEvent = new Map<string, { total: number; count: number }>();
-    for (const exp of expenseTotalsResult.data || []) {
+    for (const exp of expenseRows) {
       if (exp.event_id) {
         const prev = expenseByEvent.get(exp.event_id) || { total: 0, count: 0 };
         expenseByEvent.set(exp.event_id, { total: prev.total + exp.amount, count: prev.count + 1 });

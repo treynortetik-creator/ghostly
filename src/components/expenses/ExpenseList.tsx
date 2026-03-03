@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react-hooks/set-state-in-effect */
 
 import { useState, useMemo, useEffect } from "react";
 import {
@@ -176,11 +177,6 @@ export function ExpenseList({
     sortedExpenses.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, sortedExpenses.length);
 
-  // Reset to page 1 when filters or sorting changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filters, sortField, sortOrder, pageSize]);
-
   // Selection handlers
   const handleSelectAll = () => {
     if (selectedIds.size === paginatedExpenses.length) {
@@ -219,16 +215,19 @@ export function ExpenseList({
 
   // Handle filter changes
   const handleFiltersChange = (newFilters: ExpenseFiltersState) => {
+    setCurrentPage(1);
     setFilters(newFilters);
     onFiltersSync?.(newFilters);
   };
 
   const handleClearFilters = () => {
+    setCurrentPage(1);
     setFilters(initialFilters);
     onFiltersSync?.(initialFilters);
   };
 
   const handleRemoveFilter = (field: keyof ExpenseFiltersState) => {
+    setCurrentPage(1);
     const updated = {
       ...filters,
       [field]: field === "source_type" ? "all" : "",
@@ -239,6 +238,7 @@ export function ExpenseList({
 
   // Handle sort
   const handleSort = (field: SortField) => {
+    setCurrentPage(1);
     if (sortField === field) {
       // Toggle order
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
@@ -260,7 +260,7 @@ export function ExpenseList({
   }, [sortedExpenses]);
 
   // Sort indicator
-  const SortIcon = ({ field }: { field: SortField }) => {
+  const renderSortIcon = (field: SortField) => {
     if (sortField !== field) {
       return (
         <ArrowUpDown className="w-4 h-4 text-muted-foreground/60" />
@@ -456,7 +456,7 @@ export function ExpenseList({
            
           >
             Date
-            <SortIcon field="date" />
+            {renderSortIcon("date")}
           </button>
           <button
             onClick={() => handleSort("amount")}
@@ -468,7 +468,7 @@ export function ExpenseList({
            
           >
             Amount
-            <SortIcon field="amount" />
+            {renderSortIcon("amount")}
           </button>
           <button
             onClick={() => handleSort("vendor")}
@@ -480,7 +480,7 @@ export function ExpenseList({
            
           >
             Vendor
-            <SortIcon field="vendor" />
+            {renderSortIcon("vendor")}
           </button>
         </div>
       </div>

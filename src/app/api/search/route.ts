@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
+import { buildOrIlikeClause, sanitizePostgrestFilterTerm } from '@/lib/postgrest';
 
 interface SearchResult {
   id: string;
@@ -64,10 +65,11 @@ export const GET = withApiHandler({ permission: 'read', resource: 'search' },
     const orgId = getOrgId(request);
     const { searchParams } = new URL(request.url);
 
-    const query = searchParams.get('q')?.trim() || '';
+    const rawQuery = searchParams.get('q')?.trim() || '';
     const typesParam = searchParams.get('types') || 'events,expenses';
     const types = typesParam.split(',').map(t => t.trim());
     const limit = Math.min(parseInt(searchParams.get('limit') || '20', 10), 50);
+    const query = sanitizePostgrestFilterTerm(rawQuery);
 
     if (!query || query.length < 2) {
       return NextResponse.json({
@@ -77,11 +79,13 @@ export const GET = withApiHandler({ permission: 'read', resource: 'search' },
     }
 
     const supabase = await createClient();
-    const pattern = `%${query}%`;
     const response: SearchResponse = {
       results: { events: [], expenses: [] },
-      meta: { query, total: 0 },
+      meta: { query: rawQuery, total: 0 },
     };
+
+    const eventOrClause = buildOrIlikeClause(EVENT_SEARCH_FIELDS, query);
+    const expenseOrClause = buildOrIlikeClause(EXPENSE_SEARCH_FIELDS, query);
 
     // Search events
     if (types.includes('events')) {
@@ -90,9 +94,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'search' },
         .select('id, name, location, quarter, date_start, approach_notes, marketing_notes, sales_notes')
         .eq('organization_id', orgId)
         .is('deleted_at', null)
-        .or(
-          EVENT_SEARCH_FIELDS.map(f => `${f}.ilike.${pattern}`).join(',')
-        )
+        .or(eventOrClause || 'id.is.null')
         .limit(limit);
 
       if (events) {
@@ -130,9 +132,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'search' },
         .select('id, vendor, memo, amount, expense_date, event_id, category_id')
         .eq('organization_id', orgId)
         .is('deleted_at', null)
-        .or(
-          EXPENSE_SEARCH_FIELDS.map(f => `${f}.ilike.${pattern}`).join(',')
-        )
+        .or(expenseOrClause || 'id.is.null')
         .limit(limit);
 
       if (expenses) {
