@@ -30,7 +30,7 @@ WITH grouped AS (
     key,
     window_start,
     SUM(count)::INTEGER AS total_count,
-    MIN(id) AS keep_id
+    MIN(id::TEXT)::UUID AS keep_id
   FROM rate_limit_entries
   GROUP BY key, window_start
 )
@@ -43,7 +43,7 @@ WITH grouped AS (
   SELECT
     key,
     window_start,
-    MIN(id) AS keep_id
+    MIN(id::TEXT)::UUID AS keep_id
   FROM rate_limit_entries
   GROUP BY key, window_start
 )
