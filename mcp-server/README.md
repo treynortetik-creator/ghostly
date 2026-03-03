@@ -1,49 +1,14 @@
 # Ghostly MCP Server
 
-Connects Claude Desktop, Cursor, and any MCP-compatible AI client to your [Ghostly](https://github.com/treynortetik-creator/ghostly) event management platform via the **Model Context Protocol**.
+Ghostly MCP exposes your Ghostly API as Model Context Protocol tools so Claude Desktop, Cursor, and other MCP clients can read and mutate event operations directly.
 
-> **What this means:** Instead of building an internal AI agent layer (rejected approach), Ghostly exposes its core functionality as MCP tools. Users bring their own Claude/GPT account, point it at this MCP server, and their AI can create events, track budgets, assign vendors, and pull event summaries — all through natural language.
+## Requirements
 
----
+- Node.js 18+
+- A running Ghostly instance
+- A Ghostly API key with `read` and `write` scopes
 
-## Architecture
-
-```
-Claude Desktop / Cursor / Any MCP Client
-           │
-           │  stdio (MCP protocol)
-           ▼
-   ghostly-mcp server (this package)
-           │
-           │  HTTP + x-api-key
-           ▼
-   Ghostly REST API
-           │
-           ▼
-      Supabase Database
-```
-
----
-
-## Prerequisites
-
-- Node.js 18 or higher
-- A running Ghostly instance (self-hosted or Railway)
-- A Ghostly API key (see Setup below)
-
----
-
-## Setup
-
-### 1. Get a Ghostly API Key
-
-1. Log into your Ghostly instance
-2. Go to **Settings → API Keys**
-3. Click **Create API Key**
-4. Set `agent_name` to `ghostly-mcp` and permissions to `["read", "write"]`
-5. Copy the generated key (shown once)
-
-### 2. Build the MCP Server
+## Install and Build
 
 ```bash
 cd mcp-server
@@ -51,14 +16,18 @@ npm install
 npm run build
 ```
 
-This compiles TypeScript to `dist/index.js`.
+## Environment Variables
 
-### 3. Configure Claude Desktop
+- `GHOSTLY_URL` (required): Ghostly base URL, example `https://ghostly-production.up.railway.app`
+- `GHOSTLY_API_KEY` (required): API key from Ghostly Settings -> API Keys
+- `GHOSTLY_DEFAULT_FISCAL_YEAR_ID` (optional): fallback fiscal year for `list_event_types`
 
-Add to your `claude_desktop_config.json`:
+## Claude Desktop Setup
 
-**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+Update `claude_desktop_config.json`:
+
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
@@ -75,67 +44,84 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
-Restart Claude Desktop. You'll see "ghostly" appear in the tools list.
+Restart Claude Desktop after saving.
 
----
+## Cursor Setup
 
-## Available Tools
+Add the same server definition in Cursor MCP settings (command + args + env).
 
-| Tool | Description |
-|------|-------------|
-| `list_event_types` | List available event types (Executive, National, State, etc.) with their UUIDs |
-| `list_events` | List events with optional filters (search, quarter). Returns budget and spend. |
-| `create_event` | Create a new event with name, type, quarter, and budget |
-| `get_event_summary` | Get full budget vs actual, ROI metrics, checklist progress, team count |
-| `add_budget_line` | Record an actual expense against an event budget |
-| `assign_vendor` | Create a budget placeholder for a vendor (for planning before invoice) |
+## Tool Coverage
 
----
+`v0.2.0` ships full parity with the embedded Ghostly agent core tools, plus compatibility aliases.
 
-## Example Prompts
+### Events, ROI, and Planning
 
-Once connected, you can ask Claude:
+- `get_events`
+- `get_event_detail`
+- `create_event`
+- `update_event`
+- `update_event_roi`
+- `get_over_budget_events`
+- `get_overdue_tasks`
+- `create_checklist_item`
+- `generate_post_event_debrief`
 
-- *"Create a new National event called 'SafelyYou Summit 2026' in Q3 with a $15,000 budget in Nashville"*
-- *"What's the current budget vs actual for all Q2 events?"*
-- *"Add a $3,200 AV expense from SoundPro for the Chicago Regional event — invoice date was February 20th"*
-- *"Assign Marriott as the venue vendor for the NYC Executive event, estimated cost $8,000"*
-- *"Give me a full summary of the NIC Spring event — budget health, ROI metrics, checklist"*
-- *"List all events in Q1 that are over budget"*
+### Expenses, Vendors, and Categories
 
----
+- `get_expenses`
+- `create_expense`
+- `create_vendor`
+- `create_category`
+- `create_event_type`
+- `search`
 
-## Environment Variables
+### Team and Documents
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `GHOSTLY_URL` | Yes | Base URL of your Ghostly instance (no trailing slash) |
-| `GHOSTLY_API_KEY` | Yes | API key from Ghostly Settings → API Keys |
+- `get_team_members`
+- `create_team_member`
+- `assign_team_member_to_event`
+- `get_event_documents`
+- `read_document`
+- `attach_document`
+- `generate_document`
 
----
+### Travel and Logistics
 
-## Development
+- `get_travel_logistics`
+- `create_travel_logistics_entry`
+- `update_travel_logistics_entry`
+- `delete_travel_logistics_entry`
+
+### Agent Runtime, Memory, and Observability
+
+- `run_background_task`
+- `get_background_tasks`
+- `save_learning`
+- `get_learnings`
+- `save_memory`
+- `recall_memory`
+- `get_agent_runs`
+- `get_session_history`
+
+### Compatibility Aliases
+
+- `list_fiscal_years`
+- `list_event_types`
+- `list_events`
+- `get_event_summary`
+- `add_budget_line`
+- `assign_vendor`
+
+## Quick Smoke Test
 
 ```bash
-# Run in development mode (TypeScript, no compile step)
-npm run dev
-
-# Rebuild after changes
+cd mcp-server
 npm run build
 
-# Test the server manually (MCP uses stdio)
-echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | GHOSTLY_URL=http://localhost:3000 GHOSTLY_API_KEY=test node dist/index.js
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' \
+  | GHOSTLY_URL=https://your-ghostly-instance.railway.app \
+    GHOSTLY_API_KEY=gh_live_xxx \
+    node dist/index.js
 ```
 
----
-
-## Tier Model (Ghostly Business)
-
-- **Tier 1 (self-serve):** User subscribes to Ghostly platform + sets up their own Claude account and this MCP server themselves.
-- **Tier 2 (white glove):** Treynor creates the API key, builds the MCP config, and links it to their Claude Desktop instance. One-time setup fee, high margin.
-
----
-
-## Version History
-
-- `0.1.0` — Initial release: 6 core tools (list_event_types, list_events, create_event, get_event_summary, add_budget_line, assign_vendor)
+If setup is correct, you will get a JSON-RPC response listing all Ghostly MCP tools.

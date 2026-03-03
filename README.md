@@ -33,14 +33,9 @@ Powered by an MCP-first AI layer. Use it via Claude Desktop or the web UI.
 
 The Ghostly MCP server exposes your events data to any MCP-compatible AI client (Claude Desktop, GPT, etc.).
 
-Tools available:
-- `list_events` — all events with budget status
-- `get_event_details` — full detail for a specific event
-- `get_budget_summary` — budget vs. actual with line items
-- `get_team_assignments` — who's going to which event
-- `get_pending_tasks` — open pre-show tasks by event
-- `get_expense_report` — expense breakdown with vendor details
-- `get_pipeline_summary` — upcoming events and spend forecast
+Current coverage:
+- Full parity with Ghostly's embedded agent core tools (events, expenses, travel/logistics, post-event debriefs, team, documents, memory/learnings, background tasks, observability)
+- Backward-compatible aliases for the original MCP names (`list_events`, `list_event_types`, `get_event_summary`, `add_budget_line`, `assign_vendor`)
 
 See [mcp-server/README.md](./mcp-server/README.md) for Claude Desktop setup.
 
