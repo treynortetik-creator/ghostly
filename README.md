@@ -36,6 +36,7 @@ The Ghostly MCP server exposes your events data to any MCP-compatible AI client 
 Current coverage:
 - Full parity with Ghostly's embedded agent core tools (events, expenses, travel/logistics, post-event debriefs, team, documents, memory/learnings, background tasks, observability)
 - Backward-compatible aliases for the original MCP names (`list_events`, `list_event_types`, `get_event_summary`, `add_budget_line`, `assign_vendor`)
+- Supports both hosted Streamable HTTP mode (Railway) and local stdio mode
 
 See [mcp-server/README.md](./mcp-server/README.md) for Claude Desktop setup.
 

@@ -1,12 +1,16 @@
 # Ghostly MCP Server
 
-Ghostly MCP exposes your Ghostly API as Model Context Protocol tools so Claude Desktop, Cursor, and other MCP clients can read and mutate event operations directly.
+Ghostly MCP exposes Ghostly API operations as MCP tools.
+
+It now supports two transport modes:
+
+- `http` (recommended for Railway / production)
+- `stdio` (local process mode for desktop clients)
 
 ## Requirements
 
 - Node.js 18+
-- A running Ghostly instance
-- A Ghostly API key with `read` and `write` scopes
+- A running Ghostly app/API
 
 ## Install and Build
 
@@ -18,37 +22,53 @@ npm run build
 
 ## Environment Variables
 
-- `GHOSTLY_URL` (required): Ghostly base URL, example `https://ghostly-production.up.railway.app`
-- `GHOSTLY_API_KEY` (required): API key from Ghostly Settings -> API Keys
+- `GHOSTLY_URL` (required): Ghostly app base URL (for API calls)
+- `MCP_TRANSPORT` (optional): `http` or `stdio`
+  - default is `http` when `PORT` is set
+  - otherwise default is `stdio`
+- `GHOSTLY_API_KEY` (optional): service-level fallback API key
+  - required for `stdio`
+  - optional for `http` (recommended to use per-user bearer keys)
 - `GHOSTLY_DEFAULT_FISCAL_YEAR_ID` (optional): fallback fiscal year for `list_event_types`
+- `PORT` / `MCP_PORT` (optional): HTTP port in `http` mode (default `3000`)
+- `MCP_HOST` (optional): bind host in `http` mode (default `0.0.0.0`)
 
-## Claude Desktop Setup
+## Railway Deployment (Recommended)
 
-Update `claude_desktop_config.json`:
+Run MCP as a **separate Railway service** in the same repo:
 
-- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+1. Add new service from this repo.
+2. Set **Root Directory** to `mcp-server`.
+3. Build command: `npm install && npm run build`
+4. Start command: `npm run start:http`
+5. Set env vars:
+   - `MCP_TRANSPORT=http`
+   - `GHOSTLY_URL=https://<your-main-ghostly-domain>`
+6. Deploy.
 
-```json
-{
-  "mcpServers": {
-    "ghostly": {
-      "command": "node",
-      "args": ["/absolute/path/to/ghostly/mcp-server/dist/index.js"],
-      "env": {
-        "GHOSTLY_URL": "https://your-ghostly-instance.railway.app",
-        "GHOSTLY_API_KEY": "gh_live_xxxxxxxxxxxxxxxxxxxx"
-      }
-    }
-  }
-}
+Hosted MCP endpoints:
+
+- `POST /mcp` (MCP tool calls)
+- `GET /healthz` (health)
+
+### Multi-Org Auth Model
+
+For hosted mode, each user/client should send:
+
+- `Authorization: Bearer <ghostly_api_key>`
+
+The MCP service forwards that key to Ghostly API as `x-api-key`, and Ghostly middleware resolves org + permissions from that key.
+
+This enables account-level isolation without a global shared key.
+
+## Local Stdio Mode
+
+Use for local desktop MCP process mode:
+
+```bash
+cd mcp-server
+MCP_TRANSPORT=stdio GHOSTLY_URL=https://your-ghostly-instance.railway.app GHOSTLY_API_KEY=gh_live_xxx node dist/index.js
 ```
-
-Restart Claude Desktop after saving.
-
-## Cursor Setup
-
-Add the same server definition in Cursor MCP settings (command + args + env).
 
 ## Tool Coverage
 
@@ -111,17 +131,3 @@ Add the same server definition in Cursor MCP settings (command + args + env).
 - `get_event_summary`
 - `add_budget_line`
 - `assign_vendor`
-
-## Quick Smoke Test
-
-```bash
-cd mcp-server
-npm run build
-
-echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' \
-  | GHOSTLY_URL=https://your-ghostly-instance.railway.app \
-    GHOSTLY_API_KEY=gh_live_xxx \
-    node dist/index.js
-```
-
-If setup is correct, you will get a JSON-RPC response listing all Ghostly MCP tools.

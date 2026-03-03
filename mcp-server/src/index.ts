@@ -11,12 +11,18 @@
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { createMcpExpressApp } from "@modelcontextprotocol/sdk/server/express.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { AsyncLocalStorage } from "node:async_hooks";
 import { z } from "zod";
 
 const GHOSTLY_URL = process.env.GHOSTLY_URL?.replace(/\/$/, "");
 const GHOSTLY_API_KEY = process.env.GHOSTLY_API_KEY;
 const GHOSTLY_DEFAULT_FISCAL_YEAR_ID = process.env.GHOSTLY_DEFAULT_FISCAL_YEAR_ID;
+const MCP_TRANSPORT = (process.env.MCP_TRANSPORT || (process.env.PORT ? "http" : "stdio")).toLowerCase();
+const MCP_PORT = Number(process.env.PORT || process.env.MCP_PORT || 3000);
+const MCP_HOST = process.env.MCP_HOST || "0.0.0.0";
 
 if (!GHOSTLY_URL) {
   console.error(
@@ -27,21 +33,31 @@ if (!GHOSTLY_URL) {
   process.exit(1);
 }
 
-if (!GHOSTLY_API_KEY) {
-  console.error(
-    "Error: GHOSTLY_API_KEY environment variable is required.\n" +
-      "Create one in Ghostly: Settings -> API Keys.\n" +
-      "Example: GHOSTLY_API_KEY=gh_live_xxxxxxxxxxxx"
-  );
+if (MCP_TRANSPORT !== "stdio" && MCP_TRANSPORT !== "http") {
+  console.error("Error: MCP_TRANSPORT must be either 'stdio' or 'http'.");
   process.exit(1);
 }
 
+const apiKeyContext = new AsyncLocalStorage<string | undefined>();
+
+function resolveRequestApiKey(extra?: { authInfo?: { token?: string } }): string | undefined {
+  return extra?.authInfo?.token || GHOSTLY_API_KEY;
+}
+
 async function ghostlyRequest(method: string, path: string, body?: unknown): Promise<unknown> {
+  const requestApiKey = apiKeyContext.getStore() || GHOSTLY_API_KEY;
+  if (!requestApiKey) {
+    throw new Error(
+      "Missing Ghostly API key for request. Provide Authorization: Bearer <ghostly_api_key> " +
+      "or configure GHOSTLY_API_KEY fallback."
+    );
+  }
+
   const url = `${GHOSTLY_URL}${path}`;
   const options: RequestInit = {
     method,
     headers: {
-      "x-api-key": GHOSTLY_API_KEY!,
+      "x-api-key": requestApiKey,
       "Content-Type": "application/json",
     },
   };
@@ -134,10 +150,19 @@ function registerTool(
   name: string,
   description: string,
   schema: ToolShape,
-  handler: (input: any) => Promise<unknown>
+  handler: (input: any, extra?: { authInfo?: { token?: string } }) => Promise<unknown>
 ): void {
-  server.tool(name, description, schema, async (input: Record<string, unknown>) =>
-    runTool(() => handler(input))
+  server.tool(
+    name,
+    description,
+    schema,
+    async (
+      input: Record<string, unknown>,
+      extra: { authInfo?: { token?: string } } | undefined
+    ) =>
+      apiKeyContext.run(resolveRequestApiKey(extra), () =>
+        runTool(() => handler(input, extra))
+      )
   );
 }
 
@@ -1099,9 +1124,126 @@ registerTool(
 );
 
 async function main() {
-  const transport = new StdioServerTransport();
+  if (MCP_TRANSPORT === "stdio") {
+    if (!GHOSTLY_API_KEY) {
+      console.error(
+        "Error: GHOSTLY_API_KEY environment variable is required in stdio mode.\n" +
+          "Create one in Ghostly: Settings -> API Keys.\n" +
+          "Example: GHOSTLY_API_KEY=gh_live_xxxxxxxxxxxx"
+      );
+      process.exit(1);
+    }
+
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    console.error("Ghostly MCP Server running on stdio");
+    return;
+  }
+
+  const app = createMcpExpressApp({ host: MCP_HOST });
+  const transport = new StreamableHTTPServerTransport({
+    // Stateless mode is best for horizontally-scaled hosted deployments.
+    sessionIdGenerator: undefined,
+  });
+
   await server.connect(transport);
-  console.error("Ghostly MCP Server running on stdio");
+
+  function extractApiKeyFromRequest(req: any): string | undefined {
+    const authHeader = req.headers?.authorization;
+    if (typeof authHeader === "string" && authHeader.toLowerCase().startsWith("bearer ")) {
+      const token = authHeader.slice(7).trim();
+      if (token) return token;
+    }
+
+    const keyHeader = req.headers?.["x-api-key"];
+    if (typeof keyHeader === "string" && keyHeader.trim()) {
+      return keyHeader.trim();
+    }
+    if (Array.isArray(keyHeader) && keyHeader.length > 0) {
+      return String(keyHeader[0] || "").trim() || undefined;
+    }
+
+    return undefined;
+  }
+
+  function authMiddleware(req: any, res: any, next: any) {
+    const apiKey = extractApiKeyFromRequest(req) || GHOSTLY_API_KEY;
+    if (!apiKey) {
+      res.status(401).json({
+        error: "Missing Ghostly API key. Send Authorization: Bearer <ghostly_api_key>.",
+      });
+      return;
+    }
+
+    req.auth = {
+      token: apiKey,
+      clientId: "ghostly-mcp-client",
+      scopes: [],
+    };
+    next();
+  }
+
+  app.get("/healthz", (_req: any, res: any) => {
+    res.status(200).json({
+      ok: true,
+      name: "ghostly-mcp",
+      transport: "http",
+      mode: "stateless",
+    });
+  });
+
+  app.get("/", (_req: any, res: any) => {
+    res.status(200).json({
+      name: "ghostly-mcp",
+      endpoint: "/mcp",
+      health: "/healthz",
+    });
+  });
+
+  app.post("/mcp", authMiddleware, async (req: any, res: any) => {
+    try {
+      await transport.handleRequest(req, res, req.body);
+    } catch (err) {
+      console.error("Error handling MCP POST request:", err);
+      if (!res.headersSent) {
+        res.status(500).json({
+          jsonrpc: "2.0",
+          error: { code: -32603, message: "Internal server error" },
+          id: null,
+        });
+      }
+    }
+  });
+
+  app.get("/mcp", authMiddleware, (_req: any, res: any) => {
+    res.status(405).json({
+      jsonrpc: "2.0",
+      error: { code: -32000, message: "Method not allowed for stateless server" },
+      id: null,
+    });
+  });
+
+  app.delete("/mcp", authMiddleware, (_req: any, res: any) => {
+    res.status(405).json({
+      jsonrpc: "2.0",
+      error: { code: -32000, message: "Method not allowed for stateless server" },
+      id: null,
+    });
+  });
+
+  const httpServer = app.listen(MCP_PORT, MCP_HOST, () => {
+    console.error(`Ghostly MCP Server running on http://${MCP_HOST}:${MCP_PORT}/mcp`);
+  });
+
+  const shutdown = async () => {
+    console.error("Shutting down Ghostly MCP server...");
+    await transport.close().catch(() => {});
+    await server.close().catch(() => {});
+    httpServer.close(() => process.exit(0));
+  };
+
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
 }
 
 main().catch((err) => {
