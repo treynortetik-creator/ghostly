@@ -11,6 +11,8 @@ import { runAgentTask } from '@/lib/agent/runtime';
 import { computeNextRunAt, isDueByCron, minutesSince } from '@/lib/agent/scheduler';
 import { routeNotificationToSlack } from '@/lib/integrations/slack/notifications';
 
+type SupabaseClient = ReturnType<typeof createClient>;
+
 const HEARTBEAT_TITLE_PREFIX = 'Heartbeat :: ';
 const CRON_TITLE_PREFIX = 'Cron :: ';
 const BACKGROUND_TITLE_PREFIX = 'Background :: ';
@@ -35,14 +37,13 @@ export interface WorkerSummary {
 }
 
 async function createNotification(
+  supabase: SupabaseClient,
   orgId: string,
   type: NotificationType,
   title: string,
   message: string,
   metadata: Record<string, unknown> = {}
 ): Promise<void> {
-  const supabase = await createClient();
-
   const { error } = await supabase
     .from('notifications')
     .insert({
@@ -60,10 +61,9 @@ async function createNotification(
   routeNotificationToSlack(orgId, type, title, message, metadata).catch(() => {});
 }
 
-async function getOrgIds(orgId?: string): Promise<string[]> {
+async function getOrgIds(supabase: SupabaseClient, orgId?: string): Promise<string[]> {
   if (orgId) return [orgId];
 
-  const supabase = await createClient();
   const { data: rows, error } = await supabase
     .from('agent_settings')
     .select('organization_id');
@@ -72,9 +72,7 @@ async function getOrgIds(orgId?: string): Promise<string[]> {
   return [...new Set((rows || []).map((row) => row.organization_id))];
 }
 
-async function runHeartbeatForOrg(orgId: string): Promise<number> {
-  const supabase = await createClient();
-
+async function runHeartbeatForOrg(supabase: SupabaseClient, orgId: string): Promise<number> {
   const { data: settings } = await supabase
     .from('agent_settings')
     .select('*')
@@ -115,6 +113,7 @@ async function runHeartbeatForOrg(orgId: string): Promise<number> {
   });
 
   await createNotification(
+    supabase,
     orgId,
     'agent_message',
     'Heartbeat update',
@@ -130,9 +129,7 @@ async function runHeartbeatForOrg(orgId: string): Promise<number> {
   return 1;
 }
 
-async function runCronJobsForOrg(orgId: string): Promise<number> {
-  const supabase = await createClient();
-
+async function runCronJobsForOrg(supabase: SupabaseClient, orgId: string): Promise<number> {
   const [{ data: settings }, { data: jobs, error: jobsError }] = await Promise.all([
     supabase
       .from('agent_settings')
@@ -197,6 +194,7 @@ async function runCronJobsForOrg(orgId: string): Promise<number> {
     });
 
     await createNotification(
+      supabase,
       orgId,
       'agent_message',
       `Scheduled task: ${job.name}`,
@@ -217,13 +215,13 @@ async function runCronJobsForOrg(orgId: string): Promise<number> {
 }
 
 async function hasRecentTriggerNotification(
+  supabase: SupabaseClient,
   orgId: string,
   type: NotificationType,
   trigger: string,
   entityId: string,
   sinceHours: number
 ): Promise<boolean> {
-  const supabase = await createClient();
   const since = new Date(Date.now() - sinceHours * 60 * 60 * 1000).toISOString();
 
   const { data } = await supabase
@@ -239,7 +237,7 @@ async function hasRecentTriggerNotification(
   return !!data && data.length > 0;
 }
 
-async function claimTriggerNotification(params: {
+async function claimTriggerNotification(supabase: SupabaseClient, params: {
   orgId: string;
   triggerKey: string;
   fallbackType: NotificationType;
@@ -247,8 +245,6 @@ async function claimTriggerNotification(params: {
   fallbackEntityId: string;
   fallbackSinceHours: number;
 }): Promise<boolean> {
-  const supabase = await createClient();
-
   try {
     const { data, error } = await supabase
       .from('agent_trigger_notifications')
@@ -271,6 +267,7 @@ async function claimTriggerNotification(params: {
     // Older deployments may not have this table yet. Fall back to legacy dedupe.
     if (error.code === '42P01') {
       const alreadySent = await hasRecentTriggerNotification(
+        supabase,
         params.orgId,
         params.fallbackType,
         params.fallbackTrigger,
@@ -284,6 +281,7 @@ async function claimTriggerNotification(params: {
   } catch {
     // Last-resort fallback keeps behavior stable if claim table is unavailable.
     const alreadySent = await hasRecentTriggerNotification(
+      supabase,
       params.orgId,
       params.fallbackType,
       params.fallbackTrigger,
@@ -294,8 +292,7 @@ async function claimTriggerNotification(params: {
   }
 }
 
-async function processBudgetTriggers(orgId: string, eventFilter?: Set<string>): Promise<number> {
-  const supabase = await createClient();
+async function processBudgetTriggers(supabase: SupabaseClient, orgId: string, eventFilter?: Set<string>): Promise<number> {
   const filteredEventIds = eventFilter ? [...eventFilter] : [];
 
   const [{ data: events, error: eventsError }, { data: expenses, error: expensesError }] = await Promise.all([
@@ -352,7 +349,7 @@ async function processBudgetTriggers(orgId: string, eventFilter?: Set<string>): 
 
     const dedupeId = event.id;
     const dayKey = new Date().toISOString().slice(0, 10);
-    const shouldSend = await claimTriggerNotification({
+    const shouldSend = await claimTriggerNotification(supabase, {
       orgId,
       triggerKey: `over_budget:${dedupeId}:${dayKey}`,
       fallbackType: 'budget_alert',
@@ -363,6 +360,7 @@ async function processBudgetTriggers(orgId: string, eventFilter?: Set<string>): 
     if (!shouldSend) continue;
 
     await createNotification(
+      supabase,
       orgId,
       'budget_alert',
       `Event over budget: ${event.name}`,
@@ -384,11 +382,11 @@ async function processBudgetTriggers(orgId: string, eventFilter?: Set<string>): 
 
 export async function processBudgetTriggerForEvent(orgId: string, eventId: string): Promise<number> {
   if (!eventId) return 0;
-  return processBudgetTriggers(orgId, new Set([eventId]));
+  const supabase = createClient();
+  return processBudgetTriggers(supabase, orgId, new Set([eventId]));
 }
 
-async function processOverdueChecklistTriggers(orgId: string): Promise<number> {
-  const supabase = await createClient();
+async function processOverdueChecklistTriggers(supabase: SupabaseClient, orgId: string): Promise<number> {
   const today = new Date().toISOString().split('T')[0];
 
   const { data: overdue, error } = await supabase
@@ -426,7 +424,7 @@ async function processOverdueChecklistTriggers(orgId: string): Promise<number> {
 
   for (const [eventId, info] of byEvent.entries()) {
     const dedupeId = `${eventId}:${today}`;
-    const shouldSend = await claimTriggerNotification({
+    const shouldSend = await claimTriggerNotification(supabase, {
       orgId,
       triggerKey: `overdue_checklist:${dedupeId}`,
       fallbackType: 'task_reminder',
@@ -437,6 +435,7 @@ async function processOverdueChecklistTriggers(orgId: string): Promise<number> {
     if (!shouldSend) continue;
 
     await createNotification(
+      supabase,
       orgId,
       'task_reminder',
       `Overdue checklist items: ${info.eventName}`,
@@ -456,17 +455,16 @@ async function processOverdueChecklistTriggers(orgId: string): Promise<number> {
   return notifications;
 }
 
-async function processTriggerChecksForOrg(orgId: string): Promise<number> {
+async function processTriggerChecksForOrg(supabase: SupabaseClient, orgId: string): Promise<number> {
   const [budgetNotifications, checklistNotifications] = await Promise.all([
-    processBudgetTriggers(orgId),
-    processOverdueChecklistTriggers(orgId),
+    processBudgetTriggers(supabase, orgId),
+    processOverdueChecklistTriggers(supabase, orgId),
   ]);
 
   return budgetNotifications + checklistNotifications;
 }
 
-async function processBackgroundTasksForOrg(orgId: string): Promise<number> {
-  const supabase = await createClient();
+async function processBackgroundTasksForOrg(supabase: SupabaseClient, orgId: string): Promise<number> {
   const nowIso = new Date().toISOString();
 
   const { data: tasks, error } = await supabase
@@ -528,6 +526,7 @@ async function processBackgroundTasksForOrg(orgId: string): Promise<number> {
         .eq('organization_id', orgId);
 
       await createNotification(
+        supabase,
         orgId,
         'agent_message',
         `Background task complete: ${task.name}`,
@@ -557,7 +556,8 @@ async function processBackgroundTasksForOrg(orgId: string): Promise<number> {
 }
 
 export async function runAgentWorker(options: WorkerOptions = {}): Promise<WorkerSummary> {
-  const orgIds = await getOrgIds(options.orgId);
+  const supabase = createClient();
+  const orgIds = await getOrgIds(supabase, options.orgId);
 
   const summary: WorkerSummary = {
     organizations: orgIds.length,
@@ -571,7 +571,7 @@ export async function runAgentWorker(options: WorkerOptions = {}): Promise<Worke
   for (const orgId of orgIds) {
     try {
       if (options.runHeartbeat !== false) {
-        summary.heartbeatRuns += await runHeartbeatForOrg(orgId);
+        summary.heartbeatRuns += await runHeartbeatForOrg(supabase, orgId);
       }
     } catch (error) {
       summary.errors.push({
@@ -583,7 +583,7 @@ export async function runAgentWorker(options: WorkerOptions = {}): Promise<Worke
 
     try {
       if (options.runCron !== false) {
-        summary.cronRuns += await runCronJobsForOrg(orgId);
+        summary.cronRuns += await runCronJobsForOrg(supabase, orgId);
       }
     } catch (error) {
       summary.errors.push({
@@ -595,7 +595,7 @@ export async function runAgentWorker(options: WorkerOptions = {}): Promise<Worke
 
     try {
       if (options.runTriggers !== false) {
-        summary.triggerNotifications += await processTriggerChecksForOrg(orgId);
+        summary.triggerNotifications += await processTriggerChecksForOrg(supabase, orgId);
       }
     } catch (error) {
       summary.errors.push({
@@ -607,7 +607,7 @@ export async function runAgentWorker(options: WorkerOptions = {}): Promise<Worke
 
     try {
       if (options.runBackground !== false) {
-        summary.backgroundRuns += await processBackgroundTasksForOrg(orgId);
+        summary.backgroundRuns += await processBackgroundTasksForOrg(supabase, orgId);
       }
     } catch (error) {
       summary.errors.push({
