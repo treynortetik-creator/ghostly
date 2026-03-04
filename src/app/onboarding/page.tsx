@@ -2,7 +2,7 @@
 
 import { useState, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Building2, Link as LinkIcon } from 'lucide-react';
+import { Building2, Link as LinkIcon, Copy, Check, Key, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 
@@ -18,13 +18,194 @@ function slugify(name: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
+// ---------------------------------------------------------------------------
+// Copy-to-clipboard button
+// ---------------------------------------------------------------------------
+function CopyButton({ text, label }: { text: string; label?: string }) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback for older browsers
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
+                 bg-spectral/10 hover:bg-spectral/20 border border-spectral/30
+                 text-spectral-light rounded-md transition-all duration-200"
+    >
+      {copied ? (
+        <>
+          <Check className="w-3.5 h-3.5" />
+          Copied
+        </>
+      ) : (
+        <>
+          <Copy className="w-3.5 h-3.5" />
+          {label || 'Copy'}
+        </>
+      )}
+    </button>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Success state — API key + MCP config
+// ---------------------------------------------------------------------------
+function OnboardingSuccess({
+  organization,
+  apiKey,
+}: {
+  organization: { id: string; name: string; slug: string };
+  apiKey: string;
+}) {
+  const router = useRouter();
+
+  const mcpConfig = JSON.stringify(
+    {
+      mcpServers: {
+        ghostly: {
+          command: 'npx',
+          args: ['-y', 'ghostly-mcp'],
+          env: {
+            GHOSTLY_URL: typeof window !== 'undefined' ? window.location.origin : 'https://your-ghostly-url.com',
+            GHOSTLY_API_KEY: apiKey,
+          },
+        },
+      },
+    },
+    null,
+    2
+  );
+
+  return (
+    <div className="w-full max-w-lg">
+      {/* Header */}
+      <div className="text-center mb-8 animate-fade-in">
+        <div className="inline-flex items-center justify-center w-24 h-24 mb-4">
+          <Image src="/images/ghostly-logo.jpg" alt="Ghostly" width={96} height={96} className="rounded-2xl" />
+        </div>
+
+        <h1 className="text-4xl font-bold text-foreground tracking-wide">
+          You&apos;re In
+        </h1>
+
+        <div className="mt-3 ghost-divider">
+          <span className="text-xs tracking-widest text-mist uppercase">organization created</span>
+        </div>
+
+        <p className="mt-4 text-mist text-sm">
+          <span className="text-foreground font-medium">{organization.name}</span> is ready to go.
+          Save your API key below — you won&apos;t see it again.
+        </p>
+      </div>
+
+      {/* API Key Card */}
+      <div
+        className="glass rounded-xl overflow-hidden glass-shadow animate-fade-in mb-6"
+        style={{ animationDelay: '100ms' }}
+      >
+        <div className="bg-gradient-to-b from-spectral/20 to-transparent px-6 py-4 border-b border-border">
+          <h2 className="text-lg text-foreground text-center tracking-wide flex items-center justify-center gap-2">
+            <Key className="w-5 h-5 text-spectral-light" />
+            Your API Key
+          </h2>
+        </div>
+
+        <div className="p-6 space-y-4">
+          {/* Warning */}
+          <div className="bg-amber-500/10 border border-amber-500/30 text-amber-300 px-4 py-3 rounded-md text-sm">
+            <span className="font-semibold">Save this key now.</span> It is only displayed once and cannot be retrieved later.
+          </div>
+
+          {/* API Key display */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-foreground">API Key</label>
+              <CopyButton text={apiKey} label="Copy Key" />
+            </div>
+            <div className="w-full px-4 py-3 bg-card border border-border rounded-lg
+                          text-foreground font-mono text-sm break-all glass-inset select-all">
+              {apiKey}
+            </div>
+          </div>
+
+          {/* MCP Config */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-foreground">MCP Configuration</label>
+              <CopyButton text={mcpConfig} label="Copy Config" />
+            </div>
+            <p className="text-xs text-mist">
+              Add this to your Claude Desktop or MCP client config:
+            </p>
+            <pre className="w-full px-4 py-3 bg-card border border-border rounded-lg
+                          text-foreground font-mono text-xs overflow-x-auto glass-inset whitespace-pre">
+              {mcpConfig}
+            </pre>
+          </div>
+        </div>
+      </div>
+
+      {/* Go to Dashboard */}
+      <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
+        <Button
+          type="button"
+          variant="primary"
+          size="lg"
+          className="w-full"
+          rightIcon={<ArrowRight className="w-5 h-5" />}
+          onClick={() => {
+            router.push('/dashboard');
+            router.refresh();
+          }}
+        >
+          Go to Dashboard
+        </Button>
+      </div>
+
+      {/* Footer */}
+      <div className="mt-6 text-center animate-fade-in" style={{ animationDelay: '300ms' }}>
+        <div className="inline-flex items-center gap-2 text-mist/60 text-xs">
+          <span className="w-4 h-px bg-spectral/20" />
+          <span>Welcome to Ghostly, {organization.name}</span>
+          <span className="w-4 h-px bg-spectral/20" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main Onboarding Page
+// ---------------------------------------------------------------------------
 export default function OnboardingPage() {
   const [orgName, setOrgName] = useState('');
   const [slug, setSlug] = useState('');
   const [slugTouched, setSlugTouched] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+
+  // Success state
+  const [success, setSuccess] = useState(false);
+  const [createdOrg, setCreatedOrg] = useState<{ id: string; name: string; slug: string } | null>(null);
+  const [createdApiKey, setCreatedApiKey] = useState('');
 
   // Auto-generate slug from org name (unless user manually edited it)
   useEffect(() => {
@@ -44,17 +225,18 @@ export default function OnboardingPage() {
     setError('');
 
     const trimmedName = orgName.trim();
-    const trimmedSlug = slug.trim();
 
     if (!trimmedName) {
       setError('Organization name is required.');
       return;
     }
-    if (!trimmedSlug || trimmedSlug.length < 3) {
+
+    const currentSlug = slugTouched ? slug.trim() : slugify(trimmedName);
+    if (!currentSlug || currentSlug.length < 3) {
       setError('Slug must be at least 3 characters.');
       return;
     }
-    if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(trimmedSlug) && trimmedSlug.length >= 3) {
+    if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(currentSlug) && currentSlug.length >= 3) {
       setError('Slug must start and end with a letter or number.');
       return;
     }
@@ -62,10 +244,10 @@ export default function OnboardingPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/organizations', {
+      const response = await fetch('/api/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: trimmedName, slug: trimmedSlug }),
+        body: JSON.stringify({ orgName: trimmedName }),
       });
 
       const data = await response.json();
@@ -75,9 +257,10 @@ export default function OnboardingPage() {
         return;
       }
 
-      // Org created — redirect to dashboard
-      router.push('/');
-      router.refresh();
+      // Transition to success state
+      setCreatedOrg(data.organization);
+      setCreatedApiKey(data.apiKey);
+      setSuccess(true);
     } catch {
       setError('An error occurred. Please try again.');
     } finally {
@@ -85,6 +268,25 @@ export default function OnboardingPage() {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Render success state
+  // ---------------------------------------------------------------------------
+  if (success && createdOrg && createdApiKey) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="fixed inset-0 -z-10">
+          <div className="absolute inset-0 bg-gradient-to-br from-ghost-dark via-background to-ghost-medium" />
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-spectral/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-ether/5 rounded-full blur-3xl" />
+        </div>
+        <OnboardingSuccess organization={createdOrg} apiKey={createdApiKey} />
+      </div>
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Render form state
+  // ---------------------------------------------------------------------------
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       {/* Background decoration - dark ethereal (same as login) */}
