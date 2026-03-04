@@ -260,10 +260,9 @@ const travelCostTypeEnum = z.enum(["lodging", "airfare", "ground_transport", "me
 const budgetBucketEnum = z.enum(["event", "travel", "category"]);
 const debriefModeEnum = z.enum(["replace", "append"]);
 
-const server = new McpServer({
-  name: "ghostly-mcp",
-  version: "0.2.0",
-});
+// In stateless HTTP mode, the SDK requires a fresh server+transport per request.
+// registerAllTools() configures an McpServer instance with every Ghostly tool.
+function registerAllTools(server: McpServer): void {
 
 // 1. get_events
 registerTool(
@@ -1122,6 +1121,48 @@ registerTool(
     });
   }
 );
+}
+
+function createConfiguredServer(): McpServer {
+  const server = new McpServer({ name: "ghostly-mcp", version: "0.2.0" });
+  registerAllTools(server);
+  return server;
+}
+
+function extractApiKeyFromRequest(req: any): string | undefined {
+  const authHeader = req.headers?.authorization;
+  if (typeof authHeader === "string" && authHeader.toLowerCase().startsWith("bearer ")) {
+    const token = authHeader.slice(7).trim();
+    if (token) return token;
+  }
+
+  const keyHeader = req.headers?.["x-api-key"];
+  if (typeof keyHeader === "string" && keyHeader.trim()) {
+    return keyHeader.trim();
+  }
+  if (Array.isArray(keyHeader) && keyHeader.length > 0) {
+    return String(keyHeader[0] || "").trim() || undefined;
+  }
+
+  return undefined;
+}
+
+function authMiddleware(req: any, res: any, next: any) {
+  const apiKey = extractApiKeyFromRequest(req) || GHOSTLY_API_KEY;
+  if (!apiKey) {
+    res.status(401).json({
+      error: "Missing Ghostly API key. Send Authorization: Bearer <ghostly_api_key>.",
+    });
+    return;
+  }
+
+  req.auth = {
+    token: apiKey,
+    clientId: "ghostly-mcp-client",
+    scopes: [],
+  };
+  next();
+}
 
 async function main() {
   if (MCP_TRANSPORT === "stdio") {
@@ -1134,6 +1175,7 @@ async function main() {
       process.exit(1);
     }
 
+    const server = createConfiguredServer();
     const transport = new StdioServerTransport();
     await server.connect(transport);
     console.error("Ghostly MCP Server running on stdio");
@@ -1141,47 +1183,6 @@ async function main() {
   }
 
   const app = createMcpExpressApp({ host: MCP_HOST });
-  const transport = new StreamableHTTPServerTransport({
-    // Stateless mode is best for horizontally-scaled hosted deployments.
-    sessionIdGenerator: undefined,
-  });
-
-  await server.connect(transport);
-
-  function extractApiKeyFromRequest(req: any): string | undefined {
-    const authHeader = req.headers?.authorization;
-    if (typeof authHeader === "string" && authHeader.toLowerCase().startsWith("bearer ")) {
-      const token = authHeader.slice(7).trim();
-      if (token) return token;
-    }
-
-    const keyHeader = req.headers?.["x-api-key"];
-    if (typeof keyHeader === "string" && keyHeader.trim()) {
-      return keyHeader.trim();
-    }
-    if (Array.isArray(keyHeader) && keyHeader.length > 0) {
-      return String(keyHeader[0] || "").trim() || undefined;
-    }
-
-    return undefined;
-  }
-
-  function authMiddleware(req: any, res: any, next: any) {
-    const apiKey = extractApiKeyFromRequest(req) || GHOSTLY_API_KEY;
-    if (!apiKey) {
-      res.status(401).json({
-        error: "Missing Ghostly API key. Send Authorization: Bearer <ghostly_api_key>.",
-      });
-      return;
-    }
-
-    req.auth = {
-      token: apiKey,
-      clientId: "ghostly-mcp-client",
-      scopes: [],
-    };
-    next();
-  }
 
   app.get("/healthz", (_req: any, res: any) => {
     res.status(200).json({
@@ -1189,6 +1190,7 @@ async function main() {
       name: "ghostly-mcp",
       transport: "http",
       mode: "stateless",
+      node: process.version,
     });
   });
 
@@ -1200,22 +1202,29 @@ async function main() {
     });
   });
 
+  // Stateless mode: create a fresh server+transport per request (SDK requirement).
   app.post("/mcp", authMiddleware, async (req: any, res: any) => {
     try {
+      const server = createConfiguredServer();
+      const transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: undefined,
+        enableJsonResponse: true,
+      });
+      await server.connect(transport);
       await transport.handleRequest(req, res, req.body);
-    } catch (err) {
-      console.error("Error handling MCP POST request:", err);
+    } catch (err: any) {
+      console.error("[MCP POST] Error:", err?.message, err?.stack);
       if (!res.headersSent) {
         res.status(500).json({
           jsonrpc: "2.0",
-          error: { code: -32603, message: "Internal server error" },
+          error: { code: -32603, message: String(err?.message || "Internal server error") },
           id: null,
         });
       }
     }
   });
 
-  app.get("/mcp", authMiddleware, (_req: any, res: any) => {
+  app.get("/mcp", (_req: any, res: any) => {
     res.status(405).json({
       jsonrpc: "2.0",
       error: { code: -32000, message: "Method not allowed for stateless server" },
@@ -1223,7 +1232,7 @@ async function main() {
     });
   });
 
-  app.delete("/mcp", authMiddleware, (_req: any, res: any) => {
+  app.delete("/mcp", (_req: any, res: any) => {
     res.status(405).json({
       jsonrpc: "2.0",
       error: { code: -32000, message: "Method not allowed for stateless server" },
@@ -1237,8 +1246,6 @@ async function main() {
 
   const shutdown = async () => {
     console.error("Shutting down Ghostly MCP server...");
-    await transport.close().catch(() => {});
-    await server.close().catch(() => {});
     httpServer.close(() => process.exit(0));
   };
 

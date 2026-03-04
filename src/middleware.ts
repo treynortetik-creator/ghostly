@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
+import { jwtVerify, SignJWT } from 'jose';
+import { createMiddlewareSupabaseClient } from '@/lib/supabase/middleware';
 
 // Cookie name must match the one in auth.ts
 const AUTH_COOKIE_NAME = 'ghostly-token';
@@ -45,7 +46,7 @@ function logAuditFromMiddleware(params: {
 }
 
 // Routes that don't require authentication
-const PUBLIC_ROUTES = ['/login', '/'];
+const PUBLIC_ROUTES = ['/login', '/', '/auth/callback'];
 
 // API routes that don't require authentication
 const PUBLIC_API_ROUTES = [
@@ -79,6 +80,49 @@ function isPublicRoute(pathname: string): boolean {
   }
 
   return false;
+}
+
+/**
+ * Whether Supabase Auth is configured (anon key present).
+ */
+const isSupabaseAuthConfigured =
+  !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
+  !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+/**
+ * Mint a ghostly-token JWT (Edge-compatible, uses jose)
+ */
+async function mintGhostlyToken(username: string): Promise<string | null> {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) return null;
+  const secretKey = new TextEncoder().encode(secret);
+  return new SignJWT({ username })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setIssuer('ghostly')
+    .setAudience('ghostly')
+    .setExpirationTime('24h')
+    .sign(secretKey);
+}
+
+/**
+ * Try to authenticate via Supabase session cookies.
+ * If valid, returns the user's email/id; otherwise null.
+ */
+async function trySupabaseSession(request: NextRequest): Promise<{
+  username: string;
+  response: NextResponse;
+} | null> {
+  if (!isSupabaseAuthConfigured) return null;
+
+  try {
+    const { supabase, response } = createMiddlewareSupabaseClient(request);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+    return { username: user.email || user.id, response };
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -377,8 +421,54 @@ export async function middleware(request: NextRequest) {
 
   // Check for auth cookie on protected routes
   const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
+  let authContext = token ? await verifyTokenFromCookie(token) : null;
 
-  if (!token) {
+  // Fallback: if no valid ghostly-token, check for a Supabase session
+  // and auto-mint a ghostly-token to bridge the two auth systems.
+  if (!authContext) {
+    const sbSession = await trySupabaseSession(request);
+    if (sbSession) {
+      const newToken = await mintGhostlyToken(sbSession.username);
+      if (newToken) {
+        authContext = { username: sbSession.username };
+        // We'll set the minted token on the response below
+        const requestedOrgId =
+          request.headers.get('x-org-id') ||
+          request.headers.get('x-active-org-id') ||
+          request.cookies.get(ACTIVE_ORG_COOKIE_NAME)?.value ||
+          null;
+        const resolvedOrgId = await resolveCookieOrgId({
+          username: sbSession.username,
+          requestedOrgId,
+          fallbackOrgId: DEFAULT_ORG_ID,
+        });
+
+        requestHeaders.set('x-auth-type', 'cookie');
+        requestHeaders.set('x-organization-id', resolvedOrgId);
+
+        const response = NextResponse.next({ request: { headers: requestHeaders } });
+        // Bridge: set ghostly-token so subsequent requests skip Supabase check
+        response.cookies.set(AUTH_COOKIE_NAME, newToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+          maxAge: 60 * 60 * 24,
+        });
+        if (request.cookies.get(ACTIVE_ORG_COOKIE_NAME)?.value !== resolvedOrgId) {
+          response.cookies.set(ACTIVE_ORG_COOKIE_NAME, resolvedOrgId, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 60 * 60 * 24 * 30,
+          });
+        }
+        return withRequestId(response, requestId);
+      }
+    }
+
+    // No valid auth at all — reject
     if (pathname.startsWith('/api/')) {
       return withRequestId(
         NextResponse.json(
@@ -388,29 +478,9 @@ export async function middleware(request: NextRequest) {
         requestId
       );
     }
-    return withRequestId(
-      NextResponse.redirect(new URL('/login', request.url)),
-      requestId
-    );
-  }
-
-  // Verify the token
-  const authContext = await verifyTokenFromCookie(token);
-
-  if (!authContext) {
-    if (pathname.startsWith('/api/')) {
-      return withRequestId(
-        NextResponse.json(
-          { error: 'Invalid or expired token', code: 'AUTH_INVALID_TOKEN' },
-          { status: 401 }
-        ),
-        requestId
-      );
-    }
-
-    const response = NextResponse.redirect(new URL('/login', request.url));
-    response.cookies.delete(AUTH_COOKIE_NAME);
-    return withRequestId(response, requestId);
+    const loginResponse = NextResponse.redirect(new URL('/login', request.url));
+    if (token) loginResponse.cookies.delete(AUTH_COOKIE_NAME);
+    return withRequestId(loginResponse, requestId);
   }
 
   // Cookie auth valid — pass auth context via headers

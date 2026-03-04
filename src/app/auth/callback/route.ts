@@ -1,12 +1,14 @@
 /**
  * Ghostly - Auth Callback Route Handler
  * Exchanges the OAuth/magic-link code for a Supabase session,
- * then redirects the user to the dashboard (or onboarding if new).
+ * then bridges it to a ghostly-token JWT so the middleware recognizes
+ * the user on all subsequent requests.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { createToken } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -35,23 +37,33 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('Auth callback error:', error.message)
-      // Redirect to login with error indicator
       return NextResponse.redirect(new URL('/login?error=auth_callback', request.url))
     }
 
-    // Check if user has an org membership — if not, send to onboarding
+    // Get the authenticated user from Supabase
     const { data: { user } } = await supabase.auth.getUser()
 
     if (user) {
-      // Query org_members for this user via the Supabase REST API (service role)
-      // to determine whether they need onboarding.
+      // Bridge: mint a ghostly-token JWT so middleware recognizes this session.
+      // Use email as the username identifier.
+      const username = user.email || user.id
+      const token = await createToken(username)
+      cookieStore.set('ghostly-token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24, // 24 hours
+      })
+
+      // Check if user has an org membership — if not, send to onboarding
       const supabaseUrl = process.env.SUPABASE_URL
       const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
       if (supabaseUrl && supabaseServiceKey) {
         try {
           const membersRes = await fetch(
-            `${supabaseUrl}/rest/v1/org_members?user_id=eq.${user.id}&select=id&limit=1`,
+            `${supabaseUrl}/rest/v1/organization_members?user_id=eq.${user.id}&select=id&limit=1`,
             {
               headers: {
                 apikey: supabaseServiceKey,
@@ -63,13 +75,10 @@ export async function GET(request: NextRequest) {
           if (membersRes.ok) {
             const members = await membersRes.json()
             if (!Array.isArray(members) || members.length === 0) {
-              // New user with no org — send to onboarding
               return NextResponse.redirect(new URL('/onboarding', request.url))
             }
           }
         } catch (err) {
-          // If the membership check fails, just continue to dashboard.
-          // They can be redirected to onboarding later if needed.
           console.error('Org membership check failed:', err)
         }
       }
