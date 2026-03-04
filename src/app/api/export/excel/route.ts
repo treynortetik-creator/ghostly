@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import { getDateRangeForScope, type ExportScope } from '@/lib/export-helpers';
@@ -51,15 +51,16 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/excel'
       { data: rawCategories, error: catsErr },
       { data: rawExpenses, error: expErr },
     ] = await Promise.all([
-      supabase.from('events').select('*, event_types(*)').eq('organization_id', orgId).is('deleted_at', null),
-      supabase.from('budget_categories').select('*').eq('organization_id', orgId).is('deleted_at', null),
+      supabase.from('events').select('*, event_types(*)').eq('organization_id', orgId).is('deleted_at', null).limit(10000),
+      supabase.from('budget_categories').select('*').eq('organization_id', orgId).is('deleted_at', null).limit(10000),
       supabase
         .from('expenses')
         .select('*, events(name), budget_categories(name)')
         .eq('organization_id', orgId)
         .is('deleted_at', null)
         .gte('expense_date', dateRange.start)
-        .lte('expense_date', dateRange.end),
+        .lte('expense_date', dateRange.end)
+        .limit(10000),
     ]);
 
     if (eventsErr || catsErr || expErr) throw eventsErr || catsErr || expErr;
@@ -133,12 +134,35 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/excel'
     }
 
     // Create a new workbook
-    const workbook = XLSX.utils.book_new();
+    const workbook = new ExcelJS.Workbook();
 
     // ============================================
     // SUMMARY WORKSHEET
     // ============================================
-    const summaryData = [
+    const summarySheet = workbook.addWorksheet('Summary');
+    summarySheet.columns = [
+      { width: 25 },
+      { width: 15 },
+      { width: 15 },
+      { width: 15 },
+    ];
+
+    // Events totals
+    const eventsTotalBudget = filteredEvents.reduce((sum, e) => sum + e.budget_amount, 0);
+    const eventsTotalActual = filteredEvents.reduce((sum, e) => sum + e.actual_spent, 0);
+    const eventsTotalRemaining = filteredEvents.reduce((sum, e) => sum + e.remaining, 0);
+
+    // Categories totals
+    const categoriesTotalBudget = allCategories.reduce((sum, c) => sum + c.budget_amount, 0);
+    const categoriesTotalActual = allCategories.reduce((sum, c) => sum + c.actual_spent, 0);
+    const categoriesTotalRemaining = allCategories.reduce((sum, c) => sum + c.remaining, 0);
+
+    // Grand totals
+    const grandTotalBudget = eventsTotalBudget + categoriesTotalBudget;
+    const grandTotalActual = eventsTotalActual + categoriesTotalActual;
+    const grandTotalRemaining = grandTotalBudget - grandTotalActual;
+
+    const summaryRows: (string | number)[][] = [
       ['Ghostly - Export Report'],
       [''],
       ['Fiscal Year', fiscalYear],
@@ -148,60 +172,46 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/excel'
       ['=== GRAND TOTALS ==='],
       [''],
       ['Category', 'Budget', 'Actual Spent', 'Remaining'],
+      ['Events', eventsTotalBudget, eventsTotalActual, eventsTotalRemaining],
+      ['Categories', categoriesTotalBudget, categoriesTotalActual, categoriesTotalRemaining],
+      [''],
+      ['GRAND TOTAL', grandTotalBudget, grandTotalActual, grandTotalRemaining],
+      [''],
+      [''],
+      ['=== EXPENSE BREAKDOWN ==='],
+      [''],
+      ['Total Expenses', allExpenses.length],
+      ['Total Amount', allExpenses.reduce((sum, e) => sum + e.amount, 0)],
+      [''],
+      ['By Source:'],
+      ['Manual Entries', allExpenses.filter(e => e.source_type === 'manual').length],
+      ['Brex Imports', allExpenses.filter(e => e.source_type === 'brex').length],
+      ['PDF Uploads', allExpenses.filter(e => e.source_type === 'pdf').length],
     ];
-
-    // Events totals
-    const eventsTotalBudget = filteredEvents.reduce((sum, e) => sum + e.budget_amount, 0);
-    const eventsTotalActual = filteredEvents.reduce((sum, e) => sum + e.actual_spent, 0);
-    const eventsTotalRemaining = filteredEvents.reduce((sum, e) => sum + e.remaining, 0);
-    summaryData.push(['Events', eventsTotalBudget, eventsTotalActual, eventsTotalRemaining]);
-
-    // Categories totals
-    const categoriesTotalBudget = allCategories.reduce((sum, c) => sum + c.budget_amount, 0);
-    const categoriesTotalActual = allCategories.reduce((sum, c) => sum + c.actual_spent, 0);
-    const categoriesTotalRemaining = allCategories.reduce((sum, c) => sum + c.remaining, 0);
-    summaryData.push(['Categories', categoriesTotalBudget, categoriesTotalActual, categoriesTotalRemaining]);
-
-    // Grand totals
-    const grandTotalBudget = eventsTotalBudget + categoriesTotalBudget;
-    const grandTotalActual = eventsTotalActual + categoriesTotalActual;
-    const grandTotalRemaining = grandTotalBudget - grandTotalActual;
-    summaryData.push(['']);
-    summaryData.push(['GRAND TOTAL', grandTotalBudget, grandTotalActual, grandTotalRemaining]);
-    summaryData.push(['']);
-    summaryData.push(['']);
-    summaryData.push(['=== EXPENSE BREAKDOWN ===']);
-    summaryData.push(['']);
-    summaryData.push(['Total Expenses', allExpenses.length]);
-    summaryData.push(['Total Amount', allExpenses.reduce((sum, e) => sum + e.amount, 0)]);
-    summaryData.push(['']);
-    summaryData.push(['By Source:']);
-    summaryData.push(['Manual Entries', allExpenses.filter(e => e.source_type === 'manual').length]);
-    summaryData.push(['Brex Imports', allExpenses.filter(e => e.source_type === 'brex').length]);
-    summaryData.push(['PDF Uploads', allExpenses.filter(e => e.source_type === 'pdf').length]);
-
-    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
-
-    // Set column widths for summary
-    summarySheet['!cols'] = [
-      { wch: 25 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 15 },
-    ];
-
-    XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+    for (const row of summaryRows) {
+      summarySheet.addRow(row);
+    }
 
     // ============================================
     // EVENTS WORKSHEET
     // ============================================
-    const eventsData: (string | number)[][] = [
-      ['Event Name', 'Event Type', 'Quarter', 'Start Date', 'End Date', 'Location', 'Budget', 'Actual Spent', 'Remaining', 'Expense Count'],
+    const eventsSheet = workbook.addWorksheet('Events');
+    eventsSheet.columns = [
+      { header: 'Event Name', width: 35 },
+      { header: 'Event Type', width: 12 },
+      { header: 'Quarter', width: 8 },
+      { header: 'Start Date', width: 12 },
+      { header: 'End Date', width: 12 },
+      { header: 'Location', width: 20 },
+      { header: 'Budget', width: 12 },
+      { header: 'Actual Spent', width: 12 },
+      { header: 'Remaining', width: 12 },
+      { header: 'Expense Count', width: 12 },
     ];
 
     for (const event of filteredEvents) {
       const eventTypeName = (event as unknown as EventExportRow).event_types?.name || 'Uncategorized';
-      eventsData.push([
+      eventsSheet.addRow([
         event.name,
         eventTypeName,
         event.quarter || '',
@@ -216,8 +226,8 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/excel'
     }
 
     // Add totals row
-    eventsData.push([]);
-    eventsData.push([
+    eventsSheet.addRow([]);
+    eventsSheet.addRow([
       'TOTAL',
       '',
       '',
@@ -230,33 +240,21 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/excel'
       filteredEvents.reduce((sum, e) => sum + e.expense_count, 0),
     ]);
 
-    const eventsSheet = XLSX.utils.aoa_to_sheet(eventsData);
-
-    // Set column widths for events
-    eventsSheet['!cols'] = [
-      { wch: 35 }, // Event Name
-      { wch: 12 }, // Event Type
-      { wch: 8 },  // Quarter
-      { wch: 12 }, // Start Date
-      { wch: 12 }, // End Date
-      { wch: 20 }, // Location
-      { wch: 12 }, // Budget
-      { wch: 12 }, // Actual Spent
-      { wch: 12 }, // Remaining
-      { wch: 12 }, // Expense Count
-    ];
-
-    XLSX.utils.book_append_sheet(workbook, eventsSheet, 'Events');
-
     // ============================================
     // CATEGORIES WORKSHEET
     // ============================================
-    const categoriesData: (string | number)[][] = [
-      ['Category Name', 'Description', 'Budget', 'Actual Spent', 'Remaining', 'Expense Count'],
+    const categoriesSheet = workbook.addWorksheet('Categories');
+    categoriesSheet.columns = [
+      { header: 'Category Name', width: 25 },
+      { header: 'Description', width: 45 },
+      { header: 'Budget', width: 12 },
+      { header: 'Actual Spent', width: 12 },
+      { header: 'Remaining', width: 12 },
+      { header: 'Expense Count', width: 12 },
     ];
 
     for (const category of allCategories) {
-      categoriesData.push([
+      categoriesSheet.addRow([
         category.name,
         category.description || '',
         category.budget_amount,
@@ -267,8 +265,8 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/excel'
     }
 
     // Add totals row
-    categoriesData.push([]);
-    categoriesData.push([
+    categoriesSheet.addRow([]);
+    categoriesSheet.addRow([
       'TOTAL',
       '',
       categoriesTotalBudget,
@@ -277,29 +275,23 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/excel'
       allCategories.reduce((sum, c) => sum + c.expense_count, 0),
     ]);
 
-    const categoriesSheet = XLSX.utils.aoa_to_sheet(categoriesData);
-
-    // Set column widths for categories
-    categoriesSheet['!cols'] = [
-      { wch: 25 }, // Category Name
-      { wch: 45 }, // Description
-      { wch: 12 }, // Budget
-      { wch: 12 }, // Actual Spent
-      { wch: 12 }, // Remaining
-      { wch: 12 }, // Expense Count
-    ];
-
-    XLSX.utils.book_append_sheet(workbook, categoriesSheet, 'Categories');
-
     // ============================================
     // EXPENSES WORKSHEET
     // ============================================
-    const expensesData: (string | number)[][] = [
-      ['Date', 'Vendor', 'Amount', 'Target Name', 'Target Type', 'Source', 'Memo', 'Source Reference'],
+    const expensesSheet = workbook.addWorksheet('Expenses');
+    expensesSheet.columns = [
+      { header: 'Date', width: 12 },
+      { header: 'Vendor', width: 30 },
+      { header: 'Amount', width: 12 },
+      { header: 'Target Name', width: 35 },
+      { header: 'Target Type', width: 10 },
+      { header: 'Source', width: 10 },
+      { header: 'Memo', width: 40 },
+      { header: 'Source Reference', width: 20 },
     ];
 
     for (const expense of allExpenses) {
-      expensesData.push([
+      expensesSheet.addRow([
         expense.expense_date,
         expense.vendor || '',
         expense.amount,
@@ -312,8 +304,8 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/excel'
     }
 
     // Add totals row
-    expensesData.push([]);
-    expensesData.push([
+    expensesSheet.addRow([]);
+    expensesSheet.addRow([
       'TOTAL',
       '',
       allExpenses.reduce((sum, e) => sum + e.amount, 0),
@@ -324,24 +316,8 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/excel'
       '',
     ]);
 
-    const expensesSheet = XLSX.utils.aoa_to_sheet(expensesData);
-
-    // Set column widths for expenses
-    expensesSheet['!cols'] = [
-      { wch: 12 }, // Date
-      { wch: 30 }, // Vendor
-      { wch: 12 }, // Amount
-      { wch: 35 }, // Target Name
-      { wch: 10 }, // Target Type
-      { wch: 10 }, // Source
-      { wch: 40 }, // Memo
-      { wch: 20 }, // Source Reference
-    ];
-
-    XLSX.utils.book_append_sheet(workbook, expensesSheet, 'Expenses');
-
     // Generate the Excel file buffer
-    const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+    const excelBuffer = await workbook.xlsx.writeBuffer();
 
     // Generate filename
     let scopeLabel = 'full-year';
