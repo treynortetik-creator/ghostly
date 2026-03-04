@@ -1477,6 +1477,282 @@ export const agentTools: AgentTool[] = [
       return JSON.stringify(result, null, 2);
     },
   },
+
+  // 34. get_contacts
+  {
+    name: 'get_contacts',
+    description:
+      'List or search contacts for the organization. Returns contact name, company, email, phone, and type.',
+    default_permission: 'always',
+    parameters: {
+      type: 'object',
+      properties: {
+        search: {
+          type: 'string',
+          description: 'Optional search term to filter by name, company, or email',
+        },
+        limit: {
+          type: 'number',
+          description: 'Number of contacts to return (default 50)',
+        },
+      },
+    },
+    execute: async (args, ctx) => {
+      const params = new URLSearchParams();
+      if (args.search) params.set('search', String(args.search));
+      const result = await internalFetch(ctx, 'GET', `/api/contacts?${params.toString()}`);
+      const data = result as { contacts?: unknown[]; meta?: unknown };
+      const contacts = (data.contacts ?? []).slice(0, Number(args.limit ?? 50));
+      return JSON.stringify({ contacts, total: contacts.length }, null, 2);
+    },
+  },
+
+  // 35. update_expense
+  {
+    name: 'update_expense',
+    description:
+      'Update an existing expense record. Only include fields you want to change.',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        expense_id: {
+          type: 'string',
+          description: 'Expense UUID to update',
+        },
+        amount: {
+          type: 'number',
+          description: 'New expense amount in dollars',
+        },
+        vendor: {
+          type: 'string',
+          description: 'New vendor name',
+        },
+        memo: {
+          type: 'string',
+          description: 'New description or memo',
+        },
+        expense_date: {
+          type: 'string',
+          description: 'New expense date (YYYY-MM-DD)',
+        },
+        category_id: {
+          type: 'string',
+          description: 'New category UUID',
+        },
+      },
+      required: ['expense_id'],
+    },
+    execute: async (args, ctx) => {
+      const { expense_id, ...updates } = args;
+      const result = await internalFetch(ctx, 'PUT', `/api/expenses/${expense_id}`, updates);
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 36. delete_expense
+  {
+    name: 'delete_expense',
+    description:
+      'Soft-delete an expense record by marking it as deleted.',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        expense_id: {
+          type: 'string',
+          description: 'Expense UUID to delete',
+        },
+      },
+      required: ['expense_id'],
+    },
+    execute: async (args, ctx) => {
+      const result = await internalFetch(ctx, 'DELETE', `/api/expenses/${args.expense_id}`);
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 37. get_checklist_items
+  {
+    name: 'get_checklist_items',
+    description:
+      'List all checklist items for an event, grouped by phase with completion status.',
+    default_permission: 'always',
+    parameters: {
+      type: 'object',
+      properties: {
+        event_id: {
+          type: 'string',
+          description: 'Event UUID to list checklist items for',
+        },
+      },
+      required: ['event_id'],
+    },
+    execute: async (args, ctx) => {
+      const eventId = encodeURIComponent(String(args.event_id));
+      const result = await internalFetch(ctx, 'GET', `/api/events/${eventId}/checklist`);
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 38. update_checklist_item
+  {
+    name: 'update_checklist_item',
+    description:
+      'Update a checklist item such as marking it complete, changing its due date, title, or assignee.',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        event_id: {
+          type: 'string',
+          description: 'Event UUID the checklist item belongs to',
+        },
+        item_id: {
+          type: 'string',
+          description: 'Checklist item UUID to update',
+        },
+        completed: {
+          type: 'boolean',
+          description: 'Set to true to mark complete, false to mark incomplete',
+        },
+        due_date: {
+          type: 'string',
+          description: 'New due date (YYYY-MM-DD)',
+        },
+        title: {
+          type: 'string',
+          description: 'New item title',
+        },
+        assignee_id: {
+          type: 'string',
+          description: 'Team member UUID to assign this item to',
+        },
+      },
+      required: ['event_id', 'item_id'],
+    },
+    execute: async (args, ctx) => {
+      const eventId = encodeURIComponent(String(args.event_id));
+      const itemId = encodeURIComponent(String(args.item_id));
+      const { event_id: _eid, item_id: _iid, ...updates } = args;
+      const result = await internalFetch(ctx, 'PUT', `/api/events/${eventId}/checklist/${itemId}`, updates);
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 39. delete_checklist_item
+  {
+    name: 'delete_checklist_item',
+    description:
+      'Delete a checklist item from an event.',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        event_id: {
+          type: 'string',
+          description: 'Event UUID the checklist item belongs to',
+        },
+        item_id: {
+          type: 'string',
+          description: 'Checklist item UUID to delete',
+        },
+      },
+      required: ['event_id', 'item_id'],
+    },
+    execute: async (args, ctx) => {
+      const eventId = encodeURIComponent(String(args.event_id));
+      const itemId = encodeURIComponent(String(args.item_id));
+      const result = await internalFetch(ctx, 'DELETE', `/api/events/${eventId}/checklist/${itemId}`);
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 40. update_team_member
+  {
+    name: 'update_team_member',
+    description:
+      'Update a team member\'s information such as name, role, email, or phone.',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        member_id: {
+          type: 'string',
+          description: 'Team member UUID to update',
+        },
+        name: {
+          type: 'string',
+          description: 'New team member name',
+        },
+        default_role: {
+          type: 'string',
+          description: 'New default role/title',
+        },
+        email: {
+          type: 'string',
+          description: 'New email address',
+        },
+        phone: {
+          type: 'string',
+          description: 'New phone number',
+        },
+      },
+      required: ['member_id'],
+    },
+    execute: async (args, ctx) => {
+      const { member_id, ...updates } = args;
+      const result = await internalFetch(ctx, 'PUT', `/api/team/${member_id}`, updates);
+      return JSON.stringify(result, null, 2);
+    },
+  },
+
+  // 41. update_contact
+  {
+    name: 'update_contact',
+    description:
+      'Update contact details such as name, email, phone, company, or notes.',
+    default_permission: 'ask',
+    parameters: {
+      type: 'object',
+      properties: {
+        contact_id: {
+          type: 'string',
+          description: 'Contact UUID to update',
+        },
+        first_name: {
+          type: 'string',
+          description: 'New first name',
+        },
+        last_name: {
+          type: 'string',
+          description: 'New last name',
+        },
+        email: {
+          type: 'string',
+          description: 'New email address',
+        },
+        phone: {
+          type: 'string',
+          description: 'New phone number',
+        },
+        company: {
+          type: 'string',
+          description: 'New company name',
+        },
+        notes: {
+          type: 'string',
+          description: 'New notes',
+        },
+      },
+      required: ['contact_id'],
+    },
+    execute: async (args, ctx) => {
+      const { contact_id, ...updates } = args;
+      const result = await internalFetch(ctx, 'PUT', `/api/contacts/${contact_id}`, updates);
+      return JSON.stringify(result, null, 2);
+    },
+  },
 ];
 
 export function getToolDefaultPermission(tool: AgentTool): ToolPermissionMode {
