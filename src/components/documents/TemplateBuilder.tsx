@@ -35,7 +35,7 @@ interface TemplateBuilderProps {
 }
 
 const inputClass =
-  "w-full px-3 py-2 bg-card border border-border rounded-md text-foreground placeholder-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-spectral focus:border-transparent";
+  "w-full px-3 py-2 bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral focus:ring-offset-1 focus:ring-offset-background";
 
 function createEmptySection(): SectionData {
   return {

@@ -130,7 +130,7 @@ export function CategoryList({
               className="
                 pl-10 pr-4 py-2 rounded-md w-full lg:w-64
                 bg-background border border-border
-                text-foreground placeholder-muted-foreground/50
+                text-foreground placeholder:text-muted-foreground/50
                 focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral
                 transition-colors duration-200
               "

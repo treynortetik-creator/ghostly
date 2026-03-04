@@ -387,7 +387,7 @@ export default function WebhooksPage() {
                     setFormData((prev) => ({ ...prev, url: e.target.value }))
                   }
                   placeholder="https://example.com/webhooks"
-                  className="w-full px-3 py-2 rounded-md bg-background border border-border text-foreground placeholder-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral transition-colors duration-200"
+                  className="w-full px-3 py-2 rounded-md bg-background border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral transition-colors duration-200"
                 />
               </div>
 
@@ -410,7 +410,7 @@ export default function WebhooksPage() {
                     }))
                   }
                   placeholder="What is this webhook for?"
-                  className="w-full px-3 py-2 rounded-md bg-background border border-border text-foreground placeholder-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral transition-colors duration-200"
+                  className="w-full px-3 py-2 rounded-md bg-background border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral transition-colors duration-200"
                 />
               </div>
 
@@ -462,7 +462,7 @@ export default function WebhooksPage() {
                     }))
                   }
                   placeholder="Optional HMAC signing secret"
-                  className="w-full px-3 py-2 rounded-md bg-background border border-border text-foreground placeholder-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral transition-colors duration-200 font-mono text-sm"
+                  className="w-full px-3 py-2 rounded-md bg-background border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral transition-colors duration-200 font-mono text-sm"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   If set, payloads will be signed with HMAC-SHA256 in the

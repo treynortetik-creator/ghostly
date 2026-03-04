@@ -61,7 +61,7 @@ export function ExpenseFilters({
   const inputClasses = `
     px-3 py-2 rounded-md
     bg-background border border-border
-    text-foreground text-sm placeholder-muted-foreground/50
+    text-foreground text-sm placeholder:text-muted-foreground/50
     focus:outline-none focus:ring-2 focus:ring-spectral/50 focus:border-spectral
     transition-colors duration-200
   `;
