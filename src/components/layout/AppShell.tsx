@@ -27,6 +27,7 @@ import {
   Webhook,
   ScrollText,
   Bot,
+  Building2,
   FileText,
   Zap,
 } from "lucide-react";
@@ -77,7 +78,10 @@ const navGroups: NavGroup[] = [
         name: "Settings",
         href: "/settings",
         icon: Settings,
-        children: [{ name: "Agent", href: "/settings/agent", icon: Bot }],
+        children: [
+          { name: "Organization", href: "/settings/organization", icon: Building2 },
+          { name: "Agent", href: "/settings/agent", icon: Bot },
+        ],
       },
       {
         name: "Admin",

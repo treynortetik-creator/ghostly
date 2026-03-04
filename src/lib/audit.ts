@@ -10,7 +10,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getSession } from '@/lib/auth';
 import type { Json } from '@/types/database';
 
-export type AuditEntityType = 'expense' | 'event' | 'category' | 'team_member' | 'contact' | 'document' | 'template' | 'api_key' | 'webhook' | 'reminder' | 'auth';
+export type AuditEntityType = 'expense' | 'event' | 'category' | 'team_member' | 'contact' | 'document' | 'template' | 'api_key' | 'webhook' | 'reminder' | 'auth' | 'organization';
 export type AuditAction = 'create' | 'update' | 'delete' | 'download' | 'check' | 'send' | 'login_success' | 'login_failure' | 'login_rate_limited' | 'api_key_auth';
 export type AuditActorType = 'user' | 'agent' | 'system';
 
