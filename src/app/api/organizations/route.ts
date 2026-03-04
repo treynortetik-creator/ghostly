@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
       memberPayload.accepted_at = new Date().toISOString()
     }
 
-    const memberRes = await supabaseRest('org_members', {
+    const memberRes = await supabaseRest('organization_members', {
       method: 'POST',
       body: memberPayload,
       prefer: 'return=representation',
@@ -228,12 +228,12 @@ export async function GET(request: NextRequest) {
     if (supabaseUser) {
       // Supabase auth user — query by user_id
       membershipsRes = await supabaseRest(
-        `org_members?user_id=eq.${supabaseUser.id}&select=organization_id,role,organizations(id,name,slug,plan_tier,created_at)`
+        `organization_members?user_id=eq.${supabaseUser.id}&select=organization_id,role,organizations(id,name,slug,plan_tier,created_at)`
       )
     } else {
       // Legacy auth — query by legacy_username
       membershipsRes = await supabaseRest(
-        `org_members?legacy_username=eq.admin&select=organization_id,role,organizations(id,name,slug,plan_tier,created_at)`
+        `organization_members?legacy_username=eq.admin&select=organization_id,role,organizations(id,name,slug,plan_tier,created_at)`
       )
     }
 

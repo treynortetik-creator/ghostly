@@ -14,6 +14,12 @@ import {
   Bot,
   ListChecks,
   MessageSquare,
+  Key,
+  Plus,
+  Copy,
+  Check,
+  Trash2,
+  Server,
 } from "lucide-react";
 import { AppShell } from "@/components/layout";
 import { Button } from "@/components/ui/Button";
@@ -72,6 +78,390 @@ interface BudgetSummary {
   categoriesBudget: number;
   categoriesCount: number;
   totalBudget: number;
+}
+
+interface ApiKeyItem {
+  id: string;
+  agent_name: string;
+  label: string | null;
+  permissions: string[];
+  is_active: boolean;
+  last_used_at: string | null;
+  expires_at: string | null;
+  created_at: string;
+  revoked_at: string | null;
+}
+
+// ---------------------------------------------------------------------------
+// Copy-to-clipboard helper
+// ---------------------------------------------------------------------------
+function CopyButton({ text, label }: { text: string; label?: string }) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium
+                 bg-spectral/10 hover:bg-spectral/20 border border-spectral/30
+                 text-spectral rounded transition-all duration-200"
+    >
+      {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+      {label || (copied ? "Copied" : "Copy")}
+    </button>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// API Keys Management Section
+// ---------------------------------------------------------------------------
+function ApiKeysSection() {
+  const [keys, setKeys] = useState<ApiKeyItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newKeyName, setNewKeyName] = useState("");
+  const [newKeyLabel, setNewKeyLabel] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [revealedKey, setRevealedKey] = useState<string | null>(null);
+  const [sectionError, setSectionError] = useState<string | null>(null);
+
+  const mcpConfig = JSON.stringify(
+    {
+      mcpServers: {
+        ghostly: {
+          url: typeof window !== "undefined"
+            ? `${window.location.origin}/mcp`
+            : "https://your-ghostly-url.com/mcp",
+          authorization_token: "<your-api-key>",
+        },
+      },
+    },
+    null,
+    2
+  );
+
+  const fetchKeys = useCallback(async () => {
+    try {
+      const res = await fetch("/api/api-keys");
+      if (!res.ok) throw new Error("Failed to fetch API keys");
+      const data = await res.json();
+      setKeys(data.api_keys || []);
+    } catch {
+      setSectionError("Failed to load API keys");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchKeys();
+  }, [fetchKeys]);
+
+  async function handleCreate() {
+    if (!newKeyName.trim()) return;
+    setCreating(true);
+    setSectionError(null);
+    try {
+      const res = await fetch("/api/api-keys", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          agent_name: newKeyName.trim(),
+          label: newKeyLabel.trim() || null,
+          permissions: ["read", "write", "admin"],
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to create API key");
+      }
+      const data = await res.json();
+      setRevealedKey(data.api_key.key);
+      setNewKeyName("");
+      setNewKeyLabel("");
+      setShowForm(false);
+      await fetchKeys();
+    } catch (err) {
+      setSectionError(err instanceof Error ? err.message : "Failed to create key");
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  async function handleRevoke(id: string) {
+    setSectionError(null);
+    try {
+      const res = await fetch(`/api/api-keys/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "revoke" }),
+      });
+      if (!res.ok) throw new Error("Failed to revoke key");
+      await fetchKeys();
+    } catch (err) {
+      setSectionError(err instanceof Error ? err.message : "Failed to revoke key");
+    }
+  }
+
+  const activeKeys = keys.filter((k) => k.is_active && !k.revoked_at);
+  const revokedKeys = keys.filter((k) => k.revoked_at);
+
+  return (
+    <div className="space-y-6">
+      {/* Section Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-md bg-spectral/10 text-spectral">
+            <Key className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-foreground">API Keys</h2>
+            <p className="text-sm text-muted-foreground">
+              Manage keys for MCP connections and API access
+            </p>
+          </div>
+        </div>
+        <Button
+          variant="primary"
+          size="sm"
+          leftIcon={<Plus className="w-4 h-4" />}
+          onClick={() => setShowForm(!showForm)}
+        >
+          New Key
+        </Button>
+      </div>
+
+      {sectionError && (
+        <div className="flex items-center gap-3 p-4 bg-red-400/10 border border-destructive/30 rounded-lg">
+          <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
+          <p className="text-destructive text-sm">{sectionError}</p>
+        </div>
+      )}
+
+      {/* Revealed key (shown once after creation) */}
+      {revealedKey && (
+        <Card>
+          <CardContent className="py-4 space-y-3">
+            <div className="bg-amber-500/10 border border-amber-500/30 text-amber-300 px-4 py-3 rounded-md text-sm">
+              <span className="font-semibold">Save this key now.</span> It will
+              not be shown again.
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <code className="flex-1 px-3 py-2 bg-card border border-border rounded text-sm font-mono break-all select-all">
+                {revealedKey}
+              </code>
+              <CopyButton text={revealedKey} label="Copy" />
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setRevealedKey(null)}
+            >
+              Dismiss
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Create form */}
+      {showForm && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Generate New API Key</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">
+                  Agent Name *
+                </label>
+                <input
+                  type="text"
+                  value={newKeyName}
+                  onChange={(e) => setNewKeyName(e.target.value)}
+                  placeholder="e.g. claude, my-agent"
+                  className="w-full px-3 py-2 bg-card border border-border rounded-lg
+                           text-foreground placeholder:text-mist/60
+                           focus:ring-2 focus:ring-spectral/20 focus:border-spectral
+                           transition-all duration-200"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">
+                  Label (optional)
+                </label>
+                <input
+                  type="text"
+                  value={newKeyLabel}
+                  onChange={(e) => setNewKeyLabel(e.target.value)}
+                  placeholder="e.g. Production key"
+                  className="w-full px-3 py-2 bg-card border border-border rounded-lg
+                           text-foreground placeholder:text-mist/60
+                           focus:ring-2 focus:ring-spectral/20 focus:border-spectral
+                           transition-all duration-200"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleCreate}
+                isLoading={creating}
+                disabled={!newKeyName.trim()}
+              >
+                Generate Key
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setShowForm(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Active keys list */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">
+            Active Keys ({activeKeys.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex items-center gap-2 py-4">
+              <RefreshCw className="w-4 h-4 animate-spin text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Loading...</span>
+            </div>
+          ) : activeKeys.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">
+              No active API keys. Create one to connect via MCP.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {activeKeys.map((k) => (
+                <div
+                  key={k.id}
+                  className="flex items-center justify-between gap-4 p-3 rounded-lg border border-border bg-background"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm text-foreground">
+                        {k.agent_name}
+                      </span>
+                      {k.label && (
+                        <span className="text-xs text-muted-foreground">
+                          ({k.label})
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                      <span>
+                        Created{" "}
+                        {new Date(k.created_at).toLocaleDateString()}
+                      </span>
+                      {k.last_used_at && (
+                        <span>
+                          Last used{" "}
+                          {new Date(k.last_used_at).toLocaleDateString()}
+                        </span>
+                      )}
+                      <span className="text-spectral/70">
+                        {k.permissions.join(", ")}
+                      </span>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRevoke(k.id)}
+                    className="text-destructive hover:bg-destructive/10 shrink-0"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Revoked keys (collapsed) */}
+      {revokedKeys.length > 0 && (
+        <details className="group">
+          <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">
+            {revokedKeys.length} revoked key{revokedKeys.length !== 1 ? "s" : ""}
+          </summary>
+          <div className="mt-2 space-y-2">
+            {revokedKeys.map((k) => (
+              <div
+                key={k.id}
+                className="flex items-center gap-3 p-2 rounded border border-border/50 opacity-50"
+              >
+                <span className="text-sm text-foreground line-through">
+                  {k.agent_name}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  Revoked{" "}
+                  {k.revoked_at
+                    ? new Date(k.revoked_at).toLocaleDateString()
+                    : ""}
+                </span>
+              </div>
+            ))}
+          </div>
+        </details>
+      )}
+
+      {/* MCP Configuration */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-md bg-spectral/10 text-spectral">
+              <Server className="w-5 h-5" />
+            </div>
+            <div>
+              <CardTitle>MCP Configuration</CardTitle>
+              <CardDescription>
+                Add this to your Claude Desktop or MCP client config
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-end">
+            <CopyButton text={mcpConfig} label="Copy Config" />
+          </div>
+          <pre className="px-4 py-3 bg-card border border-border rounded-lg text-foreground font-mono text-xs overflow-x-auto whitespace-pre">
+            {mcpConfig}
+          </pre>
+          <p className="text-xs text-muted-foreground">
+            Replace <code className="text-spectral">&lt;your-api-key&gt;</code>{" "}
+            with an active API key from above.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
 
 export default function SettingsPage() {
@@ -471,6 +861,9 @@ export default function SettingsPage() {
               disabled={isSaving}
             />
           </div>
+
+          {/* API Keys Management */}
+          <ApiKeysSection />
 
           {/* Budget Overview */}
           {budgetSummary &&

@@ -35,6 +35,7 @@ import { useTheme } from "@/components/providers";
 import type { Theme } from "@/components/providers";
 import { SearchCommand } from "@/components/search/SearchCommand";
 import FloatingDock from "@/components/layout/FloatingDock";
+import { OrgSwitcher } from "@/components/OrgSwitcher";
 
 interface NavItem {
   name: string;
@@ -253,6 +254,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </span>
           </div>
         </div>
+
+        {/* Org Switcher */}
+        <OrgSwitcher isCollapsed={isCollapsed} />
 
         {/* Decorative divider */}
         <div className="px-3 shrink-0">
@@ -513,6 +517,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <X className="w-5 h-5" />
               </button>
             </div>
+
+            {/* Org Switcher */}
+            <OrgSwitcher />
 
             {/* Decorative divider */}
             <div className="px-3 shrink-0">
