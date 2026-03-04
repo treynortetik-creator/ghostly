@@ -19,15 +19,16 @@ interface WebhookPayload {
  * Queue a webhook delivery for all matching webhooks.
  * Non-blocking - failures are logged but don't break the caller.
  */
-export async function queueWebhookEvent(eventType: string, data: Record<string, unknown>): Promise<void> {
+export async function queueWebhookEvent(eventType: string, data: Record<string, unknown>, organizationId: string): Promise<void> {
   try {
     const supabase = await createClient();
 
-    // Find all active webhooks that subscribe to this event type
+    // Find all active webhooks that subscribe to this event type, scoped to the org
     const { data: webhooks } = await supabase
       .from('webhooks')
       .select('id, url, secret, event_types')
-      .eq('is_active', true);
+      .eq('is_active', true)
+      .eq('organization_id', organizationId);
 
     if (!webhooks || webhooks.length === 0) return;
 

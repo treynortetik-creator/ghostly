@@ -47,6 +47,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events' },
       .from('expenses')
       .select('*')
       .eq('event_id', id)
+      .eq('organization_id', orgId)
       .is('deleted_at', null)
       .order('expense_date', { ascending: false });
 

@@ -377,8 +377,18 @@ export async function middleware(request: NextRequest) {
 
     // Internal worker auth for trusted server-to-server calls.
     // This enables scheduled agent jobs to call internal APIs/tools without user cookies.
+    // Scoped to specific agent paths to prevent privilege escalation on arbitrary routes.
     const internalSecret = request.headers.get('x-internal-cron-secret');
     if (cronSecret && internalSecret === cronSecret) {
+      const allowedInternalPaths = ['/api/agent/heartbeat', '/api/agent/worker'];
+      const isAllowedPath = allowedInternalPaths.some(p => pathname.startsWith(p));
+      if (!isAllowedPath) {
+        return withRequestId(
+          NextResponse.json({ error: 'Internal auth not allowed on this route' }, { status: 403 }),
+          requestId
+        );
+      }
+
       const internalOrgId = request.headers.get('x-internal-org-id');
       requestHeaders.set('x-auth-type', 'api_key');
       requestHeaders.set('x-auth-agent-name', 'internal-worker');
