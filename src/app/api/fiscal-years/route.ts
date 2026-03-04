@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { withApiHandler, auditMutation } from '@/lib/api-helpers';
+import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 
 // ============================================
 // GET /api/fiscal-years
@@ -16,6 +16,7 @@ import { withApiHandler, auditMutation } from '@/lib/api-helpers';
 
 export const GET = withApiHandler({ permission: 'read', resource: 'fiscal-years' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const { searchParams } = new URL(request.url);
     const modifiedAfter = searchParams.get('modified_after');
 
@@ -36,7 +37,8 @@ export const GET = withApiHandler({ permission: 'read', resource: 'fiscal-years'
 
     let query = supabase
       .from('fiscal_years')
-      .select('*');
+      .select('*')
+      .eq('organization_id', orgId);
 
     if (filters.modified_after) query = query.gt('updated_at', filters.modified_after);
 
@@ -63,6 +65,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'fiscal-years'
 
 export const POST = withApiHandler({ permission: 'write', resource: 'fiscal-years' },
   async (request: NextRequest) => {
+    const orgId = getOrgId(request);
     const body = await request.json();
     const supabase = await createClient();
 
@@ -83,10 +86,11 @@ export const POST = withApiHandler({ permission: 'write', resource: 'fiscal-year
       );
     }
 
-    // Check if fiscal year already exists
+    // Check if fiscal year already exists for this org
     const { data: existing } = await supabase
       .from('fiscal_years')
       .select('id')
+      .eq('organization_id', orgId)
       .eq('year', year)
       .single();
 
@@ -100,7 +104,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'fiscal-year
     // Insert new fiscal year
     const { data: newFiscalYear, error: insertError } = await supabase
       .from('fiscal_years')
-      .insert({ year })
+      .insert({ organization_id: orgId, year })
       .select()
       .single();
 
