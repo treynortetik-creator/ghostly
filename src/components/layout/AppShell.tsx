@@ -273,6 +273,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 ) : (
                   <button
                     onClick={() => toggleSection(group.label!)}
+                    aria-expanded={!collapsedSections.has(group.label!)}
                     className="w-full flex items-center justify-between px-3 mb-1 hover:opacity-80 transition-opacity"
                   >
                     <span className="text-[10px] font-medium text-sidebar-foreground/40 tracking-widest uppercase">
@@ -408,6 +409,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {/* Collapse toggle */}
           <button
             onClick={toggleCollapsed}
+            aria-expanded={!isCollapsed}
             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             className="group relative w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md
               text-sidebar-foreground/50 hover:bg-spectral/5 hover:text-sidebar-foreground
@@ -530,6 +532,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   {group.label && (
                     <button
                       onClick={() => toggleSection(group.label!)}
+                      aria-expanded={!collapsedSections.has(group.label!)}
                       className="w-full flex items-center justify-between px-3 mb-1 hover:opacity-80 transition-opacity"
                     >
                       <span className="text-[10px] font-medium text-sidebar-foreground/40 tracking-widest uppercase">

@@ -818,12 +818,13 @@ export function ChatPanel({ isOpen, onClose, onMinimize, eventId }: ChatPanelPro
                 </p>
               ) : (
                 sessions.map((session) => (
-                  <div
+                  <button
+                    type="button"
                     key={session.id}
                     onClick={() => loadSession(session.id)}
                     className={`
                       flex items-center justify-between p-2 rounded-md cursor-pointer
-                      text-sm transition-colors group
+                      text-sm transition-colors group text-left w-full
                       ${
                         session.id === currentSessionId
                           ? "bg-spectral/10 text-spectral"
@@ -853,7 +854,7 @@ export function ChatPanel({ isOpen, onClose, onMinimize, eventId }: ChatPanelPro
                         <Trash2 className="w-3 h-3" />
                       </button>
                     </div>
-                  </div>
+                  </button>
                 ))
               )}
             </div>
