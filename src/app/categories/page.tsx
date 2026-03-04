@@ -116,7 +116,7 @@ export default function CategoriesPage() {
             The Category Ledger
           </h1>
           <p className="mt-1 text-muted-foreground">
-            FY 2026 Budget Categories &middot; As of {formattedDate}
+            FY {new Date().getFullYear()} Budget Categories &middot; As of {formattedDate}
           </p>
         </div>
 

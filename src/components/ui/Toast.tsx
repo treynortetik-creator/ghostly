@@ -43,7 +43,7 @@ export function ToastContainer({
   removeToast: (id: number) => void;
 }) {
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2" role="alert" aria-live="polite">
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2" aria-live="polite">
       {toasts.map((t) => (
         <ToastItem key={t.id} toast={t} onDismiss={() => removeToast(t.id)} />
       ))}
@@ -73,7 +73,7 @@ function ToastItem({
     );
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 shadow-lg glass-shadow animate-slide-in-right">
+    <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 shadow-lg glass-shadow animate-slide-in-right" role={toast.type === "error" ? "alert" : "status"}>
       {icon}
       <span className="text-sm text-foreground flex-1">{toast.message}</span>
       <button

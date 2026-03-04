@@ -65,7 +65,7 @@ export function BudgetOverviewCard({
                 Annual Budget
               </h2>
               <p className="text-sm text-muted-foreground">
-                FY 2026 Overview
+                FY {new Date().getFullYear()} Overview
               </p>
             </div>
           </div>

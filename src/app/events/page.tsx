@@ -128,7 +128,7 @@ function EventsPageContent() {
             The Event Ledger
           </h1>
           <p className="mt-1 text-muted-foreground">
-            FY 2026 Events &middot; As of {formattedDate}
+            FY {new Date().getFullYear()} Events &middot; As of {formattedDate}
           </p>
         </div>
 

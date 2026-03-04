@@ -350,7 +350,7 @@ function ExpensesPageContent() {
             The Expense Register
           </h1>
           <p className="mt-1 text-muted-foreground">
-            FY 2026 Expenses &middot; {formatCurrency(totalAmount)} total
+            FY {new Date().getFullYear()} Expenses &middot; {formatCurrency(totalAmount)} total
             &middot; As of {formattedDate}
           </p>
         </div>

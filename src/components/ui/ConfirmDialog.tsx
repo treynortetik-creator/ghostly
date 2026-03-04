@@ -37,8 +37,6 @@ export function ConfirmDialog({
     }
   }, [open]);
 
-  if (!open) return null;
-
   const icon =
     variant === "danger" ? (
       <Trash2 className="w-6 h-6 text-red-400" />

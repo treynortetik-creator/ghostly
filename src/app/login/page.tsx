@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Mail } from 'lucide-react';
+import { User, Mail, Lock } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import {
@@ -242,7 +242,7 @@ function LegacyAuthForm({ isSecondary }: { isSecondary: boolean }) {
           htmlFor="password"
           className="flex items-center gap-2 text-sm font-medium text-foreground"
         >
-          <User className="w-4 h-4 text-mist" />
+          <Lock className="w-4 h-4 text-mist" />
           Password
         </label>
         <input

@@ -205,7 +205,7 @@ export function QuarterSummary({ data, className }: QuarterSummaryProps) {
             <div>
               <CardTitle>Budget by Quarter</CardTitle>
               <CardDescription>
-                FY 2026 spending timeline
+                FY {new Date().getFullYear()} spending timeline
               </CardDescription>
             </div>
           </div>

@@ -27,6 +27,7 @@ import {
 import { AppShell } from "@/components/layout";
 import { Button } from "@/components/ui/Button";
 import { useToast, ToastContainer } from "@/components/ui/Toast";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import {
   Card,
   CardContent,
@@ -456,54 +457,15 @@ export default function EventDetailPage({ params }: PageProps) {
       </div>
 
       {/* Delete Confirmation */}
-      {showDeleteConfirm && (
-        <Card
-          className="mb-6 bg-red-400/10 border-destructive/30"
-         
-        >
-          <CardContent className="py-4">
-            <div
-              className="flex items-center justify-between"
-             
-            >
-              <div className="flex items-center gap-3">
-                <AlertTriangle
-                  className="w-5 h-5 text-destructive"
-                 
-                />
-                <div>
-                  <p className="font-medium text-foreground">
-                    Are you sure you want to delete this event?
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    This action can be undone by an administrator.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setShowDeleteConfirm(false)}
-                  disabled={isDeleting}
-                 
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleDeleteEvent}
-                  isLoading={isDeleting}
-                 
-                >
-                  Delete Event
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete Event"
+        message="Are you sure you want to delete this event? This action can be undone by an administrator."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={handleDeleteEvent}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
 
       {/* Clone Dialog */}
       {showCloneDialog && (
