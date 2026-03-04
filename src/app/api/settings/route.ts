@@ -80,8 +80,7 @@ export const GET = withApiHandler({ permission: 'admin', resource: 'settings' },
       .single();
 
     if (settingsError) {
-      console.error('Settings fetch error:', settingsError);
-      // Return default settings if not found
+      // Return default settings if not found (no app_config row yet)
       if (settingsError.code === 'PGRST116') {
         return NextResponse.json({
           settings: {
