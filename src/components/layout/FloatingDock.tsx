@@ -365,9 +365,12 @@ export default function FloatingDock({ eventId }: FloatingDockProps) {
       )}
 
       {/* Translucent indicator — visible when dock is hidden */}
-      <div
+      <button
+        type="button"
+        aria-label="Show dock"
         className={`
           fixed bottom-3 right-6 z-30 flex flex-col items-center
+          bg-transparent border-none p-0
           transition-all duration-500 ease-in-out cursor-pointer
           ${dockVisible
             ? "opacity-0 pointer-events-none"
@@ -379,7 +382,7 @@ export default function FloatingDock({ eventId }: FloatingDockProps) {
       >
         <ChevronUp className="w-5 h-5 text-spectral/30 animate-bounce" />
         <div className="w-8 h-1 rounded-full bg-spectral/15 mt-0.5" />
-      </div>
+      </button>
 
       {/* Notification panel */}
       <NotificationPanel

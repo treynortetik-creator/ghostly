@@ -235,6 +235,7 @@ interface ButtonGroupProps {
 function ButtonGroup({ children, className }: ButtonGroupProps) {
   return (
     <div
+      role="group"
       className={cn(
         "inline-flex rounded-md shadow-sm",
         "[&>button]:rounded-none",
@@ -243,7 +244,6 @@ function ButtonGroup({ children, className }: ButtonGroupProps) {
         "[&>button:not(:first-child)]:-ml-px",
         className,
       )}
-     
     >
       {children}
     </div>

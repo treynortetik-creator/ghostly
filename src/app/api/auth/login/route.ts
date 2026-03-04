@@ -2,27 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyCredentials, createToken, setAuthCookie } from '@/lib/auth';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { logAudit, AUTH_ENTITY_ID } from '@/lib/audit';
+import { getClientIp } from '@/lib/utils';
 
 const MAX_ATTEMPTS = 5;
 const WINDOW_MS = 60 * 1000; // 1 minute
-
-function getClientIp(request: NextRequest): string {
-  const realIp = request.headers.get('x-real-ip');
-  if (realIp) {
-    return realIp;
-  }
-
-  const forwardedFor = request.headers.get('x-forwarded-for');
-  if (forwardedFor) {
-    const candidate = forwardedFor.split(',')[0]?.trim();
-    if (candidate) return candidate;
-  }
-
-  return (
-    request.headers.get('cf-connecting-ip') ||
-    'unknown'
-  );
-}
 
 export async function POST(request: NextRequest) {
   try {

@@ -23,6 +23,7 @@ import {
   rememberAgentMemory,
   rememberLearning,
 } from '@/lib/agent/memory';
+import { getErrorMessage } from '@/lib/utils';
 
 const MAX_TOOL_ROUNDS = 8;
 
@@ -447,7 +448,7 @@ export async function runAgentTask(input: RunAgentTaskInput): Promise<RunAgentTa
             resultContent = await tool.execute(parsedArgs, toolContext);
           } catch (error) {
             resultContent = JSON.stringify({
-              error: error instanceof Error ? error.message : String(error),
+              error: getErrorMessage(error),
             });
           }
         }
@@ -547,7 +548,7 @@ export async function runAgentTask(input: RunAgentTaskInput): Promise<RunAgentTa
           .update({
             status: 'failed',
             finished_at: new Date().toISOString(),
-            error: error instanceof Error ? error.message : String(error),
+            error: getErrorMessage(error),
           })
           .eq('id', runLogId)
           .eq('organization_id', input.orgId);

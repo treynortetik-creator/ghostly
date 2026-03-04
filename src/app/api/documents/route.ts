@@ -13,6 +13,7 @@ import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import { parsePagination, paginationMeta, paginationRange } from '@/lib/pagination';
 import { MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_LABEL } from '@/lib/constants';
 import { uploadDocument, deleteDocument } from '@/lib/storage';
+import { getClientIp } from '@/lib/utils';
 import path from 'path';
 import { randomUUID } from 'crypto';
 
@@ -177,7 +178,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'documents' 
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
     // Rate limit uploads
-    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const clientIp = getClientIp(request);
     if (isUploadRateLimited(clientIp)) {
       return NextResponse.json(
         { error: 'Too many uploads. Please try again later.' },

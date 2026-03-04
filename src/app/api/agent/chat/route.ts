@@ -42,6 +42,7 @@ import {
   rememberAgentMemory,
   rememberLearning,
 } from '@/lib/agent/memory';
+import { getErrorMessage, getClientIp } from '@/lib/utils';
 import path from 'path';
 import fs from 'fs/promises';
 import { randomUUID } from 'crypto';
@@ -72,20 +73,6 @@ const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 
 // Message size limit: 16KB
 const MAX_MESSAGE_LENGTH = 16_384;
-
-function getClientIp(request: NextRequest): string {
-  const forwardedFor = request.headers.get('x-forwarded-for');
-  if (forwardedFor) {
-    const candidate = forwardedFor.split(',')[0]?.trim();
-    if (candidate) return candidate;
-  }
-
-  return (
-    request.headers.get('x-real-ip') ||
-    request.headers.get('cf-connecting-ip') ||
-    'unknown'
-  );
-}
 
 // Context window management
 const CONTEXT_LIMIT = 196000;
@@ -841,7 +828,7 @@ export async function POST(request: NextRequest) {
               resultContent = await tool.execute(parsedArgs, toolContext);
             } catch (err) {
               resultContent = JSON.stringify({
-                error: err instanceof Error ? err.message : String(err),
+                error: getErrorMessage(err),
               });
             }
           }

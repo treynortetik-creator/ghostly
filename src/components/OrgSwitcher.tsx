@@ -65,6 +65,17 @@ export function OrgSwitcher({ isCollapsed = false }: OrgSwitcherProps) {
     }
   }, [open]);
 
+  // Close dropdown on Escape key
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    if (open) {
+      document.addEventListener("keydown", handler);
+      return () => document.removeEventListener("keydown", handler);
+    }
+  }, [open]);
+
   const handleSwitch = async (org: Organization) => {
     if (org.id === activeOrg?.id || switching) return;
     setSwitching(true);
@@ -101,6 +112,7 @@ export function OrgSwitcher({ isCollapsed = false }: OrgSwitcherProps) {
       <div className="relative px-3 py-2" ref={dropdownRef}>
         <button
           onClick={() => hasMultipleOrgs && setOpen(!open)}
+          aria-expanded={open}
           className={`
             group relative flex items-center justify-center w-full py-1.5 rounded-md
             text-sidebar-foreground/60 transition-all duration-200
@@ -148,6 +160,7 @@ export function OrgSwitcher({ isCollapsed = false }: OrgSwitcherProps) {
       <button
         onClick={() => hasMultipleOrgs && setOpen(!open)}
         disabled={switching}
+        aria-expanded={open}
         className={`
           flex items-center gap-2.5 w-full px-3 py-2 rounded-md text-sm
           text-sidebar-foreground/70 transition-all duration-200

@@ -10,6 +10,7 @@ import type { Json } from '@/types/database';
 import { runAgentTask } from '@/lib/agent/runtime';
 import { computeNextRunAt, isDueByCron, minutesSince } from '@/lib/agent/scheduler';
 import { routeNotificationToSlack } from '@/lib/integrations/slack/notifications';
+import { getErrorMessage } from '@/lib/utils';
 
 type SupabaseClient = ReturnType<typeof createClient>;
 
@@ -545,7 +546,7 @@ async function processBackgroundTasksForOrg(supabase: SupabaseClient, orgId: str
         .update({
           status: 'failed',
           completed_at: new Date().toISOString(),
-          error: runError instanceof Error ? runError.message : String(runError),
+          error: getErrorMessage(runError),
         })
         .eq('id', task.id)
         .eq('organization_id', orgId);
@@ -577,7 +578,7 @@ export async function runAgentWorker(options: WorkerOptions = {}): Promise<Worke
       summary.errors.push({
         orgId,
         scope: 'heartbeat',
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
     }
 
@@ -589,7 +590,7 @@ export async function runAgentWorker(options: WorkerOptions = {}): Promise<Worke
       summary.errors.push({
         orgId,
         scope: 'cron',
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
     }
 
@@ -601,7 +602,7 @@ export async function runAgentWorker(options: WorkerOptions = {}): Promise<Worke
       summary.errors.push({
         orgId,
         scope: 'triggers',
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
     }
 
@@ -613,7 +614,7 @@ export async function runAgentWorker(options: WorkerOptions = {}): Promise<Worke
       summary.errors.push({
         orgId,
         scope: 'background',
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
     }
   }

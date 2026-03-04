@@ -8,6 +8,7 @@
 import type { AgentTool } from '@/lib/agent/tools';
 import { listChannels, postMessage, uploadFile, getSlackBotToken } from './client';
 import { createClient } from '@/lib/supabase/server';
+import { getErrorMessage } from '@/lib/utils';
 
 /**
  * Build the Slack agent tools for a specific org/integration.
@@ -44,7 +45,7 @@ export function buildSlackTools(orgId: string, integrationId: string): AgentTool
             })),
           });
         } catch (err) {
-          return JSON.stringify({ error: err instanceof Error ? err.message : String(err) });
+          return JSON.stringify({ error: getErrorMessage(err) });
         }
       },
     },
@@ -103,7 +104,7 @@ export function buildSlackTools(orgId: string, integrationId: string): AgentTool
           });
           return JSON.stringify({ success: true, channel: result.channel, ts: result.ts });
         } catch (err) {
-          return JSON.stringify({ error: err instanceof Error ? err.message : String(err) });
+          return JSON.stringify({ error: getErrorMessage(err) });
         }
       },
     },
@@ -179,7 +180,7 @@ export function buildSlackTools(orgId: string, integrationId: string): AgentTool
 
           return JSON.stringify({ success: true, filename: doc.original_filename || doc.filename });
         } catch (err) {
-          return JSON.stringify({ error: err instanceof Error ? err.message : String(err) });
+          return JSON.stringify({ error: getErrorMessage(err) });
         }
       },
     },

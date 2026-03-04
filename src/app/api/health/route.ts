@@ -9,23 +9,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { getClientIp } from '@/lib/utils';
 
 const startedAt = Date.now();
 
 // Rate limit settings for the health endpoint
 const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 10;  // max 10 per minute per IP
-
-function getClientIp(request: NextRequest): string {
-  // Prefer X-Forwarded-For (set by reverse proxies / load balancers)
-  const forwarded = request.headers.get('x-forwarded-for');
-  if (forwarded) {
-    // Take the first (leftmost) IP — the original client
-    return forwarded.split(',')[0].trim();
-  }
-  // Fallback — unlikely in production behind a proxy
-  return request.headers.get('x-real-ip') || 'unknown';
-}
 
 export async function GET(request: NextRequest) {
   // Rate limit check (database-backed)

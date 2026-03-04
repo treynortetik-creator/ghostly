@@ -11,6 +11,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { runAgentWorker } from '@/lib/agent/worker';
+import { getErrorMessage } from '@/lib/utils';
 
 function isAuthorized(request: NextRequest): boolean {
   const cronSecret = process.env.CRON_SECRET;
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Agent worker execution failed',
-        details: error instanceof Error ? error.message : String(error),
+        details: getErrorMessage(error),
       },
       { status: 500 }
     );
