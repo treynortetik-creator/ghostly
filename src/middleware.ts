@@ -92,11 +92,13 @@ const isSupabaseAuthConfigured =
 /**
  * Mint a ghostly-token JWT (Edge-compatible, uses jose)
  */
-async function mintGhostlyToken(username: string): Promise<string | null> {
+async function mintGhostlyToken(username: string, userId?: string): Promise<string | null> {
   const secret = process.env.JWT_SECRET;
   if (!secret) return null;
   const secretKey = new TextEncoder().encode(secret);
-  return new SignJWT({ username })
+  const claims: Record<string, string> = { username };
+  if (userId) claims.sub = userId;
+  return new SignJWT(claims)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setIssuer('ghostly')
@@ -111,6 +113,7 @@ async function mintGhostlyToken(username: string): Promise<string | null> {
  */
 async function trySupabaseSession(request: NextRequest): Promise<{
   username: string;
+  userId: string;
   response: NextResponse;
 } | null> {
   if (!isSupabaseAuthConfigured) return null;
@@ -119,7 +122,7 @@ async function trySupabaseSession(request: NextRequest): Promise<{
     const { supabase, response } = createMiddlewareSupabaseClient(request);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
-    return { username: user.email || user.id, response };
+    return { username: user.email || user.id, userId: user.id, response };
   } catch {
     return null;
   }
@@ -128,7 +131,7 @@ async function trySupabaseSession(request: NextRequest): Promise<{
 /**
  * Verify the JWT token from cookie
  */
-async function verifyTokenFromCookie(token: string): Promise<{ username: string } | null> {
+async function verifyTokenFromCookie(token: string): Promise<{ username: string; userId?: string } | null> {
   try {
     const secret = process.env.JWT_SECRET;
     if (!secret) {
@@ -144,7 +147,8 @@ async function verifyTokenFromCookie(token: string): Promise<{ username: string 
 
     const username = typeof payload.username === 'string' ? payload.username : '';
     if (!username) return null;
-    return { username };
+    const userId = typeof payload.sub === 'string' ? payload.sub : undefined;
+    return { username, userId };
   } catch {
     return null;
   }
@@ -230,21 +234,32 @@ async function validateApiKeyInMiddleware(rawKey: string): Promise<{
   };
 }
 
-async function getOrgIdsForLegacyUser(username: string): Promise<string[]> {
+/**
+ * Look up organization memberships for a user by user_id, email, or legacy_username.
+ * Queries in priority order and returns on the first match.
+ */
+async function getOrgIdsForUser(params: {
+  userId?: string;
+  email?: string;
+  legacyUsername?: string;
+}): Promise<string[]> {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!supabaseUrl || !supabaseServiceKey || !username) {
-    return [];
+  if (!supabaseUrl || !supabaseServiceKey) return [];
+
+  const queries: string[] = [];
+  if (params.userId) {
+    queries.push(`organization_members?user_id=eq.${encodeURIComponent(params.userId)}&select=organization_id`);
+  }
+  if (params.email) {
+    queries.push(`organization_members?email=eq.${encodeURIComponent(params.email)}&select=organization_id`);
+  }
+  if (params.legacyUsername) {
+    queries.push(`organization_members?legacy_username=eq.${encodeURIComponent(params.legacyUsername)}&select=organization_id`);
   }
 
-  const encodedUser = encodeURIComponent(username);
-  const candidatePaths = [
-    `org_members?legacy_username=eq.${encodedUser}&select=organization_id`,
-    `organization_members?legacy_username=eq.${encodedUser}&select=organization_id`,
-  ];
-
-  for (const path of candidatePaths) {
+  for (const path of queries) {
     try {
       const response = await fetch(`${supabaseUrl}/rest/v1/${path}`, {
         headers: {
@@ -253,14 +268,10 @@ async function getOrgIdsForLegacyUser(username: string): Promise<string[]> {
         },
       });
 
-      if (!response.ok) {
-        continue;
-      }
+      if (!response.ok) continue;
 
       const rows = await response.json();
-      if (!Array.isArray(rows)) {
-        return [];
-      }
+      if (!Array.isArray(rows) || rows.length === 0) continue;
 
       return rows
         .map((row) => (typeof row?.organization_id === 'string' ? row.organization_id : null))
@@ -274,11 +285,17 @@ async function getOrgIdsForLegacyUser(username: string): Promise<string[]> {
 }
 
 async function resolveCookieOrgId(params: {
-  username: string;
+  userId?: string;
+  email?: string;
+  legacyUsername?: string;
   requestedOrgId: string | null;
   fallbackOrgId: string;
 }): Promise<string> {
-  const memberships = await getOrgIdsForLegacyUser(params.username);
+  const memberships = await getOrgIdsForUser({
+    userId: params.userId,
+    email: params.email,
+    legacyUsername: params.legacyUsername,
+  });
   if (memberships.length === 0) {
     return params.fallbackOrgId;
   }
@@ -428,9 +445,9 @@ export async function middleware(request: NextRequest) {
   if (!authContext) {
     const sbSession = await trySupabaseSession(request);
     if (sbSession) {
-      const newToken = await mintGhostlyToken(sbSession.username);
+      const newToken = await mintGhostlyToken(sbSession.username, sbSession.userId);
       if (newToken) {
-        authContext = { username: sbSession.username };
+        authContext = { username: sbSession.username, userId: sbSession.userId };
         // We'll set the minted token on the response below
         const requestedOrgId =
           request.headers.get('x-org-id') ||
@@ -438,7 +455,8 @@ export async function middleware(request: NextRequest) {
           request.cookies.get(ACTIVE_ORG_COOKIE_NAME)?.value ||
           null;
         const resolvedOrgId = await resolveCookieOrgId({
-          username: sbSession.username,
+          userId: sbSession.userId,
+          email: sbSession.username,
           requestedOrgId,
           fallbackOrgId: DEFAULT_ORG_ID,
         });
@@ -490,7 +508,9 @@ export async function middleware(request: NextRequest) {
     request.cookies.get(ACTIVE_ORG_COOKIE_NAME)?.value ||
     null;
   const resolvedOrgId = await resolveCookieOrgId({
-    username: authContext.username,
+    userId: authContext.userId,
+    email: authContext.username,
+    legacyUsername: authContext.username,
     requestedOrgId,
     fallbackOrgId: DEFAULT_ORG_ID,
   });
