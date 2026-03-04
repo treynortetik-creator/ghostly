@@ -475,11 +475,11 @@ export async function middleware(request: NextRequest) {
         });
         if (request.cookies.get(ACTIVE_ORG_COOKIE_NAME)?.value !== resolvedOrgId) {
           response.cookies.set(ACTIVE_ORG_COOKIE_NAME, resolvedOrgId, {
-            httpOnly: true,
+            httpOnly: false,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             path: '/',
-            maxAge: 60 * 60 * 24 * 30,
+            maxAge: 60 * 60 * 24 * 365,
           });
         }
         return withRequestId(response, requestId);
@@ -521,11 +521,11 @@ export async function middleware(request: NextRequest) {
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   if (request.cookies.get(ACTIVE_ORG_COOKIE_NAME)?.value !== resolvedOrgId) {
     response.cookies.set(ACTIVE_ORG_COOKIE_NAME, resolvedOrgId, {
-      httpOnly: true,
+      httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 30,
+      maxAge: 60 * 60 * 24 * 365,
     });
   }
 
