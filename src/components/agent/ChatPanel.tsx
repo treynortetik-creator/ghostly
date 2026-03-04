@@ -678,7 +678,7 @@ export function ChatPanel({ isOpen, onClose, onMinimize, eventId }: ChatPanelPro
         onDrop={handleDrop}
       >
         <div
-          className="hidden md:block absolute left-0 top-0 h-full w-1.5 cursor-ew-resize bg-transparent hover:bg-spectral/20 transition-colors"
+          className="hidden md:block absolute left-0 top-0 h-full w-2.5 cursor-ew-resize bg-transparent hover:bg-spectral/20 transition-colors"
           onMouseDown={(e) => {
             e.preventDefault();
             setIsResizing(true);

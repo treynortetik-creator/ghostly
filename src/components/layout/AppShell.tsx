@@ -324,7 +324,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                           {item.name}
                         </span>
                         {isCollapsed && (
-                          <span className="absolute left-full ml-2 px-2 py-1 rounded bg-ghost-light text-phantom text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+                          <span aria-hidden="true" className="absolute left-full ml-2 px-2 py-1 rounded bg-ghost-light text-phantom text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
                             {item.name}
                           </span>
                         )}
@@ -358,7 +358,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                               {child.name}
                             </span>
                             {isCollapsed && (
-                              <span className="absolute left-full ml-2 px-2 py-1 rounded bg-ghost-light text-phantom text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+                              <span aria-hidden="true" className="absolute left-full ml-2 px-2 py-1 rounded bg-ghost-light text-phantom text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
                                 {child.name}
                               </span>
                             )}
@@ -400,7 +400,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {themeLabels[theme]}
             </span>
             {isCollapsed && (
-              <span className="absolute left-full ml-2 px-2 py-1 rounded bg-ghost-light text-phantom text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+              <span aria-hidden="true" className="absolute left-full ml-2 px-2 py-1 rounded bg-ghost-light text-phantom text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
                 Theme: {themeLabels[theme]}
               </span>
             )}
@@ -429,7 +429,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               Collapse
             </span>
             {isCollapsed && (
-              <span className="absolute left-full ml-2 px-2 py-1 rounded bg-ghost-light text-phantom text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+              <span aria-hidden="true" className="absolute left-full ml-2 px-2 py-1 rounded bg-ghost-light text-phantom text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
                 Expand sidebar
               </span>
             )}
@@ -453,7 +453,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               Sign Out
             </span>
             {isCollapsed && (
-              <span className="absolute left-full ml-2 px-2 py-1 rounded bg-ghost-light text-phantom text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+              <span aria-hidden="true" className="absolute left-full ml-2 px-2 py-1 rounded bg-ghost-light text-phantom text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
                 Sign Out
               </span>
             )}
