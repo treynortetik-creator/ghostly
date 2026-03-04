@@ -75,21 +75,6 @@ export async function GET(request: NextRequest) {
     overallStatus = 'degraded';
   }
 
-  // OpenRouter connectivity check
-  try {
-    const orKey = process.env.OPENROUTER_API_KEY;
-    if (!orKey) throw new Error('not configured');
-
-    const res = await fetch('https://openrouter.ai/api/v1/models', {
-      headers: { 'Authorization': `Bearer ${orKey}` },
-      signal: AbortSignal.timeout(5000),
-    });
-
-    if (!res.ok) throw new Error('unhealthy');
-  } catch {
-    if (overallStatus === 'healthy') overallStatus = 'degraded';
-  }
-
   const uptimeSeconds = Math.floor((Date.now() - startedAt) / 1000);
 
   return NextResponse.json(

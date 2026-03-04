@@ -17,11 +17,13 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
+              // unsafe-inline required: Next.js injects inline scripts for
+              // theme-flash prevention in layout.tsx (and hydration bootstrapping)
               "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob:",
               "font-src 'self'",
-              "connect-src 'self'",
+              "connect-src 'self' https://*.supabase.co https://openrouter.ai",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",
