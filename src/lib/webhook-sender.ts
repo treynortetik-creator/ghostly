@@ -9,6 +9,37 @@ import { createClient } from '@/lib/supabase/server';
 import { createHmac } from 'crypto';
 import type { Json } from '@/types/database';
 
+// ============================================
+// Webhook Event Type Constants
+// ============================================
+// Consumers can subscribe to specific types or '*' for all.
+
+export const WEBHOOK_EVENT_TYPES = {
+  // CRUD events
+  'event.created': 'event.created',
+  'event.updated': 'event.updated',
+  'event.deleted': 'event.deleted',
+  'expense.created': 'expense.created',
+  'expense.updated': 'expense.updated',
+  'expense.deleted': 'expense.deleted',
+  'contact.created': 'contact.created',
+  'contact.updated': 'contact.updated',
+  'document.uploaded': 'document.uploaded',
+
+  // Agent events
+  'agent.run.completed': 'agent.run.completed',
+  'agent.run.failed': 'agent.run.failed',
+  'agent.task.completed': 'agent.task.completed',
+  'agent.heartbeat.completed': 'agent.heartbeat.completed',
+  'agent.cron.completed': 'agent.cron.completed',
+
+  // Budget & notification events
+  'budget.alert': 'budget.alert',
+  'checklist.overdue': 'checklist.overdue',
+} as const;
+
+export type WebhookEventType = keyof typeof WEBHOOK_EVENT_TYPES;
+
 interface WebhookPayload {
   event_type: string;
   timestamp: string;

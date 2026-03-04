@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
-import { OPENROUTER_API_URL, DEFAULT_AGENT_MODEL } from '@/lib/ai';
+import { OPENROUTER_API_URL, DEFAULT_AGENT_MODEL, stripJsonFences } from '@/lib/ai';
 const MAX_SOURCE_CHARS = 20000;
 const MAX_SECTION_CHARS = 6000;
 
@@ -33,21 +33,17 @@ interface DebriefPayload {
 }
 
 function extractJsonPayload(raw: string): DebriefPayload | null {
-  const cleaned = raw
-    .replace(/```json\s*/gi, '')
-    .replace(/```\s*/g, '')
-    .trim();
+  const cleaned = stripJsonFences(raw);
 
   try {
-    const parsed = JSON.parse(cleaned) as DebriefPayload;
-    return parsed;
+    return JSON.parse(cleaned) as DebriefPayload;
   } catch {
+    // Fallback: extract the outermost { ... } if extra text surrounds it
     const start = cleaned.indexOf('{');
     const end = cleaned.lastIndexOf('}');
     if (start === -1 || end === -1 || end <= start) return null;
     try {
-      const parsed = JSON.parse(cleaned.slice(start, end + 1)) as DebriefPayload;
-      return parsed;
+      return JSON.parse(cleaned.slice(start, end + 1)) as DebriefPayload;
     } catch {
       return null;
     }

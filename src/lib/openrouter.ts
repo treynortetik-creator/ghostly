@@ -5,7 +5,7 @@
  * Uses OpenRouter API to suggest event/category assignments.
  */
 
-import { OPENROUTER_API_URL } from '@/lib/ai';
+import { OPENROUTER_API_URL, stripJsonFences } from '@/lib/ai';
 
 // ============================================
 // TYPES
@@ -389,19 +389,7 @@ export async function categorizeTransactions(
 
   // Parse response
   try {
-    // Clean up response (remove markdown if present)
-    let content = response.content.trim();
-    if (content.startsWith('```json')) {
-      content = content.slice(7);
-    }
-    if (content.startsWith('```')) {
-      content = content.slice(3);
-    }
-    if (content.endsWith('```')) {
-      content = content.slice(0, -3);
-    }
-    content = content.trim();
-
+    const content = stripJsonFences(response.content);
     const parsed = JSON.parse(content);
 
     const results: CategorizationResult[] = (parsed.categorizations || []).map((cat: {

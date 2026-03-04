@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import { extractTextFromFile } from '@/lib/agent/file-processor';
-import { OPENROUTER_API_URL, DEFAULT_AGENT_MODEL } from '@/lib/ai';
+import { OPENROUTER_API_URL, DEFAULT_AGENT_MODEL, stripJsonFences } from '@/lib/ai';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -118,7 +118,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'documents' 
     let tags: string[] = [];
 
     try {
-      const jsonStr = rawContent.replace(/```json\s*\n?/g, '').replace(/```\s*$/g, '').trim();
+      const jsonStr = stripJsonFences(rawContent);
       const parsed = JSON.parse(jsonStr);
       summary = parsed.summary || '';
       tags = Array.isArray(parsed.tags) ? parsed.tags : [];

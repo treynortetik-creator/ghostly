@@ -10,6 +10,7 @@ import type { Json } from '@/types/database';
 import { runAgentTask } from '@/lib/agent/runtime';
 import { computeNextRunAt, isDueByCron, minutesSince } from '@/lib/agent/scheduler';
 import { routeNotificationToSlack } from '@/lib/integrations/slack/notifications';
+import { queueWebhookEvent, WEBHOOK_EVENT_TYPES } from '@/lib/webhook-sender';
 import { getErrorMessage } from '@/lib/utils';
 
 type SupabaseClient = ReturnType<typeof createClient>;
@@ -127,6 +128,12 @@ async function runHeartbeatForOrg(supabase: SupabaseClient, orgId: string): Prom
     }
   );
 
+  queueWebhookEvent(WEBHOOK_EVENT_TYPES['agent.heartbeat.completed'], {
+    session_id: result.sessionId,
+    model: result.model,
+    tool_calls: result.toolCalls,
+  }, orgId).catch(() => {});
+
   return 1;
 }
 
@@ -208,6 +215,14 @@ async function runCronJobsForOrg(supabase: SupabaseClient, orgId: string): Promi
         tool_calls: result.toolCalls,
       }
     );
+
+    queueWebhookEvent(WEBHOOK_EVENT_TYPES['agent.cron.completed'], {
+      cron_job_id: job.id,
+      cron_job_name: job.name,
+      session_id: result.sessionId,
+      model: result.model,
+      tool_calls: result.toolCalls,
+    }, orgId).catch(() => {});
 
     runs += 1;
   }
@@ -538,6 +553,12 @@ async function processBackgroundTasksForOrg(supabase: SupabaseClient, orgId: str
           session_id: result.sessionId,
         }
       );
+
+      queueWebhookEvent(WEBHOOK_EVENT_TYPES['agent.task.completed'], {
+        task_id: task.id,
+        task_name: task.name,
+        session_id: result.sessionId,
+      }, orgId).catch(() => {});
 
       runs += 1;
     } catch (runError) {
