@@ -72,7 +72,7 @@ export const POST = withApiHandler({ permission: 'read', resource: 'reminders/ch
       const daysUntil = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
       for (const config of configs) {
-        if (daysUntil <= config.days_before && daysUntil >= 0) {
+        if (config.days_before != null && daysUntil <= config.days_before && daysUntil >= 0) {
           const key = `${config.reminder_type}:${event.id}`;
           if (!sentSet.has(key)) {
             reminders.push({
@@ -81,7 +81,7 @@ export const POST = withApiHandler({ permission: 'read', resource: 'reminders/ch
               event_name: event.name,
               date_start: event.date_start!,
               days_until: daysUntil,
-              channel: config.channel,
+              channel: config.channel ?? 'in_app',
             });
           }
         }

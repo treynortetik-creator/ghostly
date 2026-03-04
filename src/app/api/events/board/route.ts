@@ -112,7 +112,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/board'
         tier: eventData.tier,
         stage,
         budget_amount: eventData.budget_amount ?? 0,
-        shipping_handler: eventData.shipping_handler,
+        shipping_handler: eventData.shipping_handler ?? '',
         event_type_record: event_types ? { id: event_types.id, name: event_types.name } : null,
         task_counts: tasks,
         actual_spent: stats.total,

@@ -4,6 +4,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { buildOrIlikeClause, sanitizePostgrestFilterTerm } from '@/lib/postgrest';
+import type { Json } from '@/types/database';
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1';
 const EMBEDDING_MODEL = 'openai/text-embedding-3-small';
@@ -83,8 +84,6 @@ export async function rememberAgentMemory(params: {
   if (!content) return;
 
   const supabase = await createClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabaseAny = supabase as any;
 
   const embedding = await embedText(content);
   const expiresAt = params.ttlDays && params.ttlDays > 0
@@ -92,20 +91,15 @@ export async function rememberAgentMemory(params: {
     : null;
 
   try {
-    const payload: Record<string, unknown> = {
+    await supabase.from('agent_memories').insert({
       organization_id: params.orgId,
       source_type: params.sourceType,
       source_id: params.sourceId || null,
       content,
-      metadata: params.metadata || {},
+      metadata: (params.metadata || {}) as Json,
       expires_at: expiresAt,
-    };
-
-    if (embedding && embedding.length > 0) {
-      payload.embedding = toPgVectorLiteral(embedding);
-    }
-
-    await supabaseAny.from('agent_memories').insert(payload);
+      embedding: embedding && embedding.length > 0 ? toPgVectorLiteral(embedding) : null,
+    });
   } catch {
     // Non-fatal by design.
   }
@@ -120,14 +114,12 @@ export async function recallAgentMemories(
   if (!trimmed) return [];
 
   const supabase = await createClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabaseAny = supabase as any;
 
   // Attempt semantic recall first.
   const queryEmbedding = await embedText(trimmed);
   if (queryEmbedding && queryEmbedding.length > 0) {
     try {
-      const { data, error } = await supabaseAny.rpc('match_agent_memories', {
+      const { data, error } = await supabase.rpc('match_agent_memories', {
         p_organization_id: orgId,
         p_query_embedding: toPgVectorLiteral(queryEmbedding),
         p_match_count: Math.max(1, Math.min(limit, 20)),
@@ -144,7 +136,7 @@ export async function recallAgentMemories(
   // Fallback: lexical recall (most recent matching snippets)
   try {
     const safe = sanitizePostgrestFilterTerm(trimmed);
-    let queryBuilder = supabaseAny
+    let queryBuilder = supabase
       .from('agent_memories')
       .select('id, source_type, source_id, content, metadata, created_at, expires_at')
       .eq('organization_id', orgId)
@@ -178,23 +170,16 @@ export async function rememberLearning(params: {
   if (!correction) return;
 
   const supabase = await createClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabaseAny = supabase as any;
   const embedding = await embedText(`${params.topic || ''}\n${correction}`.trim());
 
   try {
-    const payload: Record<string, unknown> = {
+    await supabase.from('agent_learnings').insert({
       organization_id: params.orgId,
       topic: params.topic || null,
       correction,
-      metadata: params.metadata || {},
-    };
-
-    if (embedding && embedding.length > 0) {
-      payload.embedding = toPgVectorLiteral(embedding);
-    }
-
-    await supabaseAny.from('agent_learnings').insert(payload);
+      metadata: (params.metadata || {}) as Json,
+      embedding: embedding && embedding.length > 0 ? toPgVectorLiteral(embedding) : null,
+    });
   } catch {
     // Non-fatal by design.
   }
@@ -209,13 +194,11 @@ export async function recallLearnings(
   if (!trimmed) return [];
 
   const supabase = await createClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabaseAny = supabase as any;
 
   const queryEmbedding = await embedText(trimmed);
   if (queryEmbedding && queryEmbedding.length > 0) {
     try {
-      const { data, error } = await supabaseAny.rpc('match_agent_learnings', {
+      const { data, error } = await supabase.rpc('match_agent_learnings', {
         p_organization_id: orgId,
         p_query_embedding: toPgVectorLiteral(queryEmbedding),
         p_match_count: Math.max(1, Math.min(limit, 10)),
@@ -231,7 +214,7 @@ export async function recallLearnings(
 
   try {
     const safe = sanitizePostgrestFilterTerm(trimmed);
-    let queryBuilder = supabaseAny
+    let queryBuilder = supabase
       .from('agent_learnings')
       .select('id, topic, correction, metadata, created_at')
       .eq('organization_id', orgId)

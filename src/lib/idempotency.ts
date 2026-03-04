@@ -51,7 +51,7 @@ export function withIdempotency(handler: RouteHandler): RouteHandler {
 
     if (existing) {
       // Check if expired
-      if (new Date(existing.expires_at) < new Date()) {
+      if (existing.expires_at && new Date(existing.expires_at) < new Date()) {
         // Expired key — delete it and proceed as new
         await supabase
           .from('idempotency_keys')

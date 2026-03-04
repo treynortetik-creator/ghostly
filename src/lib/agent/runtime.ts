@@ -6,6 +6,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import type { Json } from '@/types/database';
 import { buildSystemPrompt } from '@/lib/agent/system-prompt';
 import {
   findTool,
@@ -166,12 +167,10 @@ export async function runAgentTask(input: RunAgentTaskInput): Promise<RunAgentTa
   }
 
   const supabase = await createClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabaseAny = supabase as any;
   let runLogId: string | null = null;
 
   try {
-    const { data: runLog, error: runLogError } = await supabaseAny
+    const { data: runLog, error: runLogError } = await supabase
       .from('agent_runs')
       .insert({
         organization_id: input.orgId,
@@ -409,7 +408,7 @@ export async function runAgentTask(input: RunAgentTaskInput): Promise<RunAgentTa
         session_id: sessionId,
         role: 'assistant',
         content: assistantMessage.content || null,
-        tool_calls: assistantMessage.tool_calls as unknown as Record<string, unknown>[],
+        tool_calls: assistantMessage.tool_calls as unknown as Json[],
       });
 
       messages.push({
@@ -514,7 +513,7 @@ export async function runAgentTask(input: RunAgentTaskInput): Promise<RunAgentTa
 
   if (runLogId) {
     try {
-      await supabaseAny
+      await supabase
         .from('agent_runs')
         .update({
           status: 'completed',
@@ -544,7 +543,7 @@ export async function runAgentTask(input: RunAgentTaskInput): Promise<RunAgentTa
   } catch (error) {
     if (runLogId) {
       try {
-        await supabaseAny
+        await supabase
           .from('agent_runs')
           .update({
             status: 'failed',

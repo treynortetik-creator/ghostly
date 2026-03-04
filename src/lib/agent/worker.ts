@@ -6,6 +6,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import type { Json } from '@/types/database';
 import { runAgentTask } from '@/lib/agent/runtime';
 import { computeNextRunAt, isDueByCron, minutesSince } from '@/lib/agent/scheduler';
 import { routeNotificationToSlack } from '@/lib/integrations/slack/notifications';
@@ -49,7 +50,7 @@ async function createNotification(
       type,
       title,
       message,
-      metadata,
+      metadata: metadata as Json,
     });
 
   if (error) {
@@ -102,9 +103,7 @@ async function runHeartbeatForOrg(orgId: string): Promise<number> {
     return 0;
   }
 
-  const autonomyMode = typeof (settings as Record<string, unknown>).autonomy_mode === 'string'
-    ? String((settings as Record<string, unknown>).autonomy_mode)
-    : 'safe';
+  const autonomyMode = settings?.autonomy_mode === 'full' ? 'full' : 'safe';
 
   const result = await runAgentTask({
     orgId,
@@ -133,8 +132,6 @@ async function runHeartbeatForOrg(orgId: string): Promise<number> {
 
 async function runCronJobsForOrg(orgId: string): Promise<number> {
   const supabase = await createClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabaseAny = supabase as any;
 
   const [{ data: settings }, { data: jobs, error: jobsError }] = await Promise.all([
     supabase
@@ -154,9 +151,7 @@ async function runCronJobsForOrg(orgId: string): Promise<number> {
 
   const now = new Date();
   const nowIso = now.toISOString();
-  const autonomyMode = typeof (settings as Record<string, unknown> | null)?.autonomy_mode === 'string'
-    ? String((settings as Record<string, unknown>).autonomy_mode)
-    : 'safe';
+  const autonomyMode = settings?.autonomy_mode === 'full' ? 'full' : 'safe';
 
   let runs = 0;
 
@@ -167,7 +162,7 @@ async function runCronJobsForOrg(orgId: string): Promise<number> {
     if (!dueByNextRun && !dueByCron) continue;
 
     const nextRunAt = computeNextRunAt(job.cron_expression, now).toISOString();
-    let claimQuery = supabaseAny
+    let claimFilter = supabase
       .from('agent_cron_jobs')
       .update({
         last_run_at: nowIso,
@@ -175,23 +170,21 @@ async function runCronJobsForOrg(orgId: string): Promise<number> {
       })
       .eq('id', job.id)
       .eq('organization_id', orgId)
-      .eq('enabled', true)
-      .select('id')
-      .maybeSingle();
+      .eq('enabled', true);
 
     if (job.next_run_at) {
-      claimQuery = claimQuery.eq('next_run_at', job.next_run_at);
+      claimFilter = claimFilter.eq('next_run_at', job.next_run_at);
     } else {
-      claimQuery = claimQuery.is('next_run_at', null);
+      claimFilter = claimFilter.is('next_run_at', null);
     }
 
     if (job.last_run_at) {
-      claimQuery = claimQuery.eq('last_run_at', job.last_run_at);
+      claimFilter = claimFilter.eq('last_run_at', job.last_run_at);
     } else {
-      claimQuery = claimQuery.is('last_run_at', null);
+      claimFilter = claimFilter.is('last_run_at', null);
     }
 
-    const { data: claimedJob, error: claimError } = await claimQuery;
+    const { data: claimedJob, error: claimError } = await claimFilter.select('id').maybeSingle();
     if (claimError || !claimedJob) continue;
 
     const result = await runAgentTask({
@@ -255,11 +248,9 @@ async function claimTriggerNotification(params: {
   fallbackSinceHours: number;
 }): Promise<boolean> {
   const supabase = await createClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabaseAny = supabase as any;
 
   try {
-    const { data, error } = await supabaseAny
+    const { data, error } = await supabase
       .from('agent_trigger_notifications')
       .insert({
         organization_id: params.orgId,
@@ -476,11 +467,9 @@ async function processTriggerChecksForOrg(orgId: string): Promise<number> {
 
 async function processBackgroundTasksForOrg(orgId: string): Promise<number> {
   const supabase = await createClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabaseAny = supabase as any;
   const nowIso = new Date().toISOString();
 
-  const { data: tasks, error } = await supabaseAny
+  const { data: tasks, error } = await supabase
     .from('agent_background_tasks')
     .select('*')
     .eq('organization_id', orgId)
@@ -502,7 +491,7 @@ async function processBackgroundTasksForOrg(orgId: string): Promise<number> {
   let runs = 0;
 
   for (const task of tasks) {
-    const { data: claimedTask, error: claimError } = await supabaseAny
+    const { data: claimedTask, error: claimError } = await supabase
       .from('agent_background_tasks')
       .update({ status: 'running', started_at: nowIso })
       .eq('id', task.id)
@@ -523,7 +512,7 @@ async function processBackgroundTasksForOrg(orgId: string): Promise<number> {
         allowWriteTools: false,
       });
 
-      await supabaseAny
+      await supabase
         .from('agent_background_tasks')
         .update({
           status: 'completed',
@@ -552,7 +541,7 @@ async function processBackgroundTasksForOrg(orgId: string): Promise<number> {
 
       runs += 1;
     } catch (runError) {
-      await supabaseAny
+      await supabase
         .from('agent_background_tasks')
         .update({
           status: 'failed',

@@ -17,8 +17,8 @@ interface EventTypeWithTotals {
   description: string | null;
   fiscal_year_id: string | null;
   budget_amount: number;
-  is_archived: boolean;
-  display_order: number;
+  is_archived: boolean | null;
+  display_order: number | null;
   created_at: string | null;
   updated_at: string | null;
   actual_spent: number;

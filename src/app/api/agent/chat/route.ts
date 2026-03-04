@@ -18,6 +18,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import type { Json } from '@/types/database';
 import { createClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/permissions';
 import { getOrgId } from '@/lib/api-helpers';
@@ -739,7 +740,7 @@ export async function POST(request: NextRequest) {
             session_id,
             role: 'assistant',
             content: assistantMessage.content || null,
-            tool_calls: assistantMessage.tool_calls as unknown as Record<string, unknown>[],
+            tool_calls: assistantMessage.tool_calls as unknown as Json,
           });
         }
 
