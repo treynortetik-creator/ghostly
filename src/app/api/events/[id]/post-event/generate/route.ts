@@ -10,9 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
-
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1';
-const DEBRIEF_MODEL = 'anthropic/claude-sonnet-4';
+import { OPENROUTER_API_URL, DEFAULT_AGENT_MODEL } from '@/lib/ai';
 const MAX_SOURCE_CHARS = 20000;
 const MAX_SECTION_CHARS = 6000;
 
@@ -109,7 +107,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/post
         'X-Title': 'Ghostly Agent',
       },
       body: JSON.stringify({
-        model: DEBRIEF_MODEL,
+        model: DEFAULT_AGENT_MODEL,
         messages: [
           {
             role: 'system',
@@ -175,7 +173,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/post
         generated_by: 'agent',
         source_label: sourceLabel || null,
         generated_at: new Date().toISOString(),
-        model: DEBRIEF_MODEL,
+        model: DEFAULT_AGENT_MODEL,
       };
 
       if (existing) {

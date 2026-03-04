@@ -33,6 +33,7 @@ import { buildSystemPrompt } from '@/lib/agent/system-prompt';
 import type { ToolExecutionContext } from '@/lib/agent/tools';
 import { getIntegrationTools, ensureIntegrationsRegistered } from '@/lib/integrations/registry';
 import { logError } from '@/lib/error-logger';
+import { OPENROUTER_API_URL, DEFAULT_AGENT_MODEL } from '@/lib/ai';
 import { extractTextFromFile, isImageType } from '@/lib/agent/file-processor';
 import { MAX_FILE_SIZE_BYTES } from '@/lib/constants';
 import {
@@ -44,11 +45,6 @@ import {
 import path from 'path';
 import fs from 'fs/promises';
 import { randomUUID } from 'crypto';
-
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1';
-
-// Agent uses a model that supports tool calling well
-const AGENT_MODEL = 'anthropic/claude-sonnet-4';
 
 interface ChatMessage {
   role: 'system' | 'user' | 'assistant' | 'tool';
@@ -105,7 +101,7 @@ function selectChatModel(
 
   const defaultModel = typeof settings?.default_model === 'string' && settings.default_model.trim()
     ? settings.default_model.trim()
-    : AGENT_MODEL;
+    : DEFAULT_AGENT_MODEL;
 
   const simpleModel = typeof routing.simple_model === 'string' ? routing.simple_model.trim() : '';
   const complexModel = typeof routing.complex_model === 'string' ? routing.complex_model.trim() : '';
@@ -141,7 +137,7 @@ async function generateCompactionSummary(
       'X-Title': 'Ghostly Agent',
     },
     body: JSON.stringify({
-      model: AGENT_MODEL,
+      model: DEFAULT_AGENT_MODEL,
       messages: [
         {
           role: 'system',

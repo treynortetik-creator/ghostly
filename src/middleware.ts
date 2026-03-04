@@ -9,6 +9,9 @@ const ACTIVE_ORG_COOKIE_NAME = 'ghostly-active-org';
 /** Sentinel UUID for auth-related audit entries (matches AUTH_ENTITY_ID in audit.ts) */
 const AUTH_ENTITY_ID = '00000000-0000-0000-0000-000000000000';
 
+/** Default organization ID for backward-compatible single-tenant mode */
+const DEFAULT_ORG_ID = '00000000-0000-0000-0000-000000000001';
+
 /**
  * Fire-and-forget audit log via Supabase REST API (Edge-compatible).
  * Used in middleware where we can't import the SSR-based audit module.
@@ -320,9 +323,6 @@ export async function middleware(request: NextRequest) {
 
   // Generate a unique request ID for tracing
   const requestId = crypto.randomUUID();
-
-  // Default organization ID for backward-compatible single-tenant mode
-  const DEFAULT_ORG_ID = '00000000-0000-0000-0000-000000000001';
 
   // Strip all internal auth headers to prevent client spoofing
   const requestHeaders = new Headers(request.headers);

@@ -7,6 +7,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import type { Json } from '@/types/database';
+import { OPENROUTER_API_URL, DEFAULT_AGENT_MODEL } from '@/lib/ai';
 import { buildSystemPrompt } from '@/lib/agent/system-prompt';
 import {
   findTool,
@@ -23,8 +24,6 @@ import {
   rememberLearning,
 } from '@/lib/agent/memory';
 
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1';
-const DEFAULT_MODEL = 'anthropic/claude-sonnet-4';
 const MAX_TOOL_ROUNDS = 8;
 
 interface ToolCall {
@@ -157,7 +156,7 @@ function selectModel(
   if (!useSimple && complexModel) return complexModel;
 
   if (defaultModel) return defaultModel;
-  return DEFAULT_MODEL;
+  return DEFAULT_AGENT_MODEL;
 }
 
 export async function runAgentTask(input: RunAgentTaskInput): Promise<RunAgentTaskResult> {

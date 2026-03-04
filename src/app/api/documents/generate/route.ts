@@ -8,18 +8,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import { logAudit, getActor } from '@/lib/audit';
+import { OPENROUTER_API_URL, DEFAULT_AGENT_MODEL } from '@/lib/ai';
+import { getUploadBasePath } from '@/lib/uploads';
 import path from 'path';
 import fs from 'fs/promises';
 import { randomUUID } from 'crypto';
-
-const UPLOAD_DIR = process.env.DOCUMENT_UPLOAD_DIR || 'uploads';
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1';
-const AGENT_MODEL = 'anthropic/claude-sonnet-4';
-
-function getUploadBasePath(): string {
-  if (path.isAbsolute(UPLOAD_DIR)) return UPLOAD_DIR;
-  return path.join(process.cwd(), UPLOAD_DIR);
-}
 
 export const POST = withApiHandler({ permission: 'write', resource: 'documents/generate' },
   async (request: NextRequest) => {
@@ -183,7 +176,7 @@ ${sectionInstructions}`;
           'X-Title': 'Ghostly Document Generator',
         },
         body: JSON.stringify({
-          model: AGENT_MODEL,
+          model: DEFAULT_AGENT_MODEL,
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt },

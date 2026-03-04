@@ -4,9 +4,8 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { buildOrIlikeClause, sanitizePostgrestFilterTerm } from '@/lib/postgrest';
+import { OPENROUTER_API_URL } from '@/lib/ai';
 import type { Json } from '@/types/database';
-
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1';
 const EMBEDDING_MODEL = 'openai/text-embedding-3-small';
 const MAX_MEMORY_CONTENT_LENGTH = 8000;
 

@@ -7,17 +7,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
+import { getUploadBasePath } from '@/lib/uploads';
 import path from 'path';
 import fs from 'fs/promises';
-
-const UPLOAD_DIR = process.env.DOCUMENT_UPLOAD_DIR || 'uploads';
-
-function getUploadBasePath(): string {
-  if (path.isAbsolute(UPLOAD_DIR)) {
-    return UPLOAD_DIR;
-  }
-  return path.join(process.cwd(), UPLOAD_DIR);
-}
 
 type RouteContext = { params: Promise<{ id: string }> };
 

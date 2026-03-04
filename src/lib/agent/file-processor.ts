@@ -8,19 +8,9 @@
 
 import path from 'path';
 import fs from 'fs/promises';
+import { getUploadBasePath } from '@/lib/uploads';
 
-const UPLOAD_DIR = process.env.DOCUMENT_UPLOAD_DIR || 'uploads';
 const MAX_TEXT_LENGTH = 50000;
-
-/**
- * Get the absolute upload directory path (matches documents route pattern)
- */
-function getUploadBasePath(): string {
-  if (path.isAbsolute(UPLOAD_DIR)) {
-    return UPLOAD_DIR;
-  }
-  return path.join(process.cwd(), UPLOAD_DIR);
-}
 
 /**
  * Check if a MIME type is an image type

@@ -14,19 +14,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 import { cleanupRateLimitEntries } from '@/lib/rate-limiter';
+import { getUploadBasePath } from '@/lib/uploads';
 import path from 'path';
 import fs from 'fs/promises';
 
-const UPLOAD_DIR = process.env.DOCUMENT_UPLOAD_DIR || 'uploads';
 const MAX_BATCH_SIZE = 500;
 const DEFAULT_BATCH_SIZE = 100;
-
-function getUploadBasePath(): string {
-  if (path.isAbsolute(UPLOAD_DIR)) {
-    return UPLOAD_DIR;
-  }
-  return path.join(process.cwd(), UPLOAD_DIR);
-}
 
 export const POST = withApiHandler({ permission: 'admin', resource: 'admin/cleanup' },
   async (request: NextRequest) => {

@@ -10,9 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import { extractTextFromFile } from '@/lib/agent/file-processor';
-
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1';
-const SUMMARIZE_MODEL = 'anthropic/claude-sonnet-4';
+import { OPENROUTER_API_URL, DEFAULT_AGENT_MODEL } from '@/lib/ai';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -86,7 +84,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'documents' 
         'X-Title': 'Ghostly Agent',
       },
       body: JSON.stringify({
-        model: SUMMARIZE_MODEL,
+        model: DEFAULT_AGENT_MODEL,
         messages: [
           {
             role: 'system',

@@ -12,6 +12,7 @@ import { logAudit, getActor } from '@/lib/audit';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import { parsePagination, paginationMeta, paginationRange } from '@/lib/pagination';
 import { MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_LABEL } from '@/lib/constants';
+import { getUploadBasePath } from '@/lib/uploads';
 import path from 'path';
 import fs from 'fs/promises';
 import { randomUUID } from 'crypto';
@@ -35,8 +36,6 @@ const ALLOWED_EXTENSIONS = [
   '.pdf', '.docx', '.xlsx', '.csv', '.txt', '.md',
   '.json', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.eml',
 ];
-
-const UPLOAD_DIR = process.env.DOCUMENT_UPLOAD_DIR || 'uploads';
 
 const MAX_DOCS_PER_EVENT = 50;
 const MAX_DOCS_PER_EXPENSE = 10;
@@ -78,16 +77,6 @@ function verifyMagicBytes(buffer: Buffer, ext: string): boolean {
   if (buffer.length < expected.length) return false;
   const header = new Uint8Array(buffer.slice(0, expected.length));
   return expected.every((b, i) => header[i] === b);
-}
-
-/**
- * Get the absolute upload directory path
- */
-function getUploadBasePath(): string {
-  if (path.isAbsolute(UPLOAD_DIR)) {
-    return UPLOAD_DIR;
-  }
-  return path.join(process.cwd(), UPLOAD_DIR);
 }
 
 /**

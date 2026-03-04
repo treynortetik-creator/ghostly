@@ -2,12 +2,7 @@
  * Helpers for building safe PostgREST filter fragments from user input.
  */
 
-/**
- * Escape LIKE wildcards and backslashes so user input is treated as literal text.
- */
-export function escapeLikePattern(value: string): string {
-  return value.replace(/[%_\\]/g, '\\$&');
-}
+import { escapeLikePattern } from './business-logic';
 
 /**
  * Strip characters that can break PostgREST boolean/filter expressions.

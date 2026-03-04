@@ -5,6 +5,8 @@
  * Uses OpenRouter API to suggest event/category assignments.
  */
 
+import { OPENROUTER_API_URL } from '@/lib/ai';
+
 // ============================================
 // TYPES
 // ============================================
@@ -65,8 +67,6 @@ export interface CategorizationBatchResult {
 // ============================================
 // OPENROUTER CLIENT
 // ============================================
-
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1';
 
 /**
  * Get the OpenRouter API key from environment
