@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
   // User denied or error from Slack
   if (error) {
-    return NextResponse.redirect(`${appUrl}/integrations?error=${error}`);
+    return NextResponse.redirect(`${appUrl}/integrations?error=${encodeURIComponent(error || 'unknown')}`);
   }
 
   if (!code || !state) {

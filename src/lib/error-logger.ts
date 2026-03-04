@@ -38,7 +38,7 @@ export function logError(
   } = {}
 ): ErrorLogEntry {
   const entry: ErrorLogEntry = {
-    id: `err-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: `err-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
     timestamp: new Date().toISOString(),
     level: options.level || 'error',
     message,
