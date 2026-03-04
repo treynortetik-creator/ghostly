@@ -9,3 +9,5 @@ export type { EventTypeSummaryProps, EventTypeData } from './EventTypeSummary';
 
 export { QuarterSummary } from './QuarterSummary';
 export type { QuarterSummaryProps, QuarterData } from './QuarterSummary';
+
+export { DashboardAlerts } from './DashboardAlerts';

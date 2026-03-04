@@ -14,6 +14,7 @@ import {
   BudgetOverviewCard,
   EventTypeSummary,
   QuarterSummary,
+  DashboardAlerts,
 } from "@/components/dashboard";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import type { QuarterType } from "@/types/database";
@@ -191,6 +192,9 @@ export default function DashboardPage() {
       {/* Dashboard Content */}
       {data && !loading && (
         <div className="space-y-8">
+          {/* Alert Widgets */}
+          <DashboardAlerts />
+
           {/* Budget Overview Card */}
           <BudgetOverviewCard
             budget={data.total.budget}

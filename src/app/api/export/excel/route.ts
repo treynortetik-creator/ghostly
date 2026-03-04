@@ -50,6 +50,8 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/excel'
       { data: rawEvents, error: eventsErr },
       { data: rawCategories, error: catsErr },
       { data: rawExpenses, error: expErr },
+      { data: rawContacts, error: contactsErr },
+      { data: rawTeamMembers, error: teamErr },
     ] = await Promise.all([
       supabase.from('events').select('*, event_types(*)').eq('organization_id', orgId).is('deleted_at', null).limit(10000),
       supabase.from('budget_categories').select('*').eq('organization_id', orgId).is('deleted_at', null).limit(10000),
@@ -61,9 +63,11 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/excel'
         .gte('expense_date', dateRange.start)
         .lte('expense_date', dateRange.end)
         .limit(10000),
+      supabase.from('contacts').select('*').eq('organization_id', orgId).is('deleted_at', null).limit(10000),
+      supabase.from('team_members').select('*').eq('organization_id', orgId).is('deleted_at', null).limit(10000),
     ]);
 
-    if (eventsErr || catsErr || expErr) throw eventsErr || catsErr || expErr;
+    if (eventsErr || catsErr || expErr || contactsErr || teamErr) throw eventsErr || catsErr || expErr || contactsErr || teamErr;
 
     let allExpenses = (rawExpenses || []).map(e => {
       const { events: eventRel, budget_categories: catRel, ...rest } = e as unknown as ExpenseExportRow;
@@ -315,6 +319,54 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/excel'
       '',
       '',
     ]);
+
+    // ============================================
+    // CONTACTS WORKSHEET
+    // ============================================
+    const contactsSheet = workbook.addWorksheet('Contacts');
+    contactsSheet.columns = [
+      { header: 'First Name', width: 18 },
+      { header: 'Last Name', width: 18 },
+      { header: 'Email', width: 30 },
+      { header: 'Phone', width: 18 },
+      { header: 'Company', width: 25 },
+      { header: 'Type', width: 15 },
+      { header: 'Created At', width: 20 },
+    ];
+
+    for (const contact of rawContacts || []) {
+      contactsSheet.addRow([
+        contact.first_name || '',
+        contact.last_name || '',
+        contact.email || '',
+        contact.phone || '',
+        contact.company || '',
+        contact.contact_type || '',
+        contact.created_at ? new Date(contact.created_at).toISOString().split('T')[0] : '',
+      ]);
+    }
+
+    // ============================================
+    // TEAM MEMBERS WORKSHEET
+    // ============================================
+    const teamSheet = workbook.addWorksheet('Team Members');
+    teamSheet.columns = [
+      { header: 'Name', width: 25 },
+      { header: 'Email', width: 30 },
+      { header: 'Phone', width: 18 },
+      { header: 'Default Role', width: 20 },
+      { header: 'Created At', width: 20 },
+    ];
+
+    for (const member of rawTeamMembers || []) {
+      teamSheet.addRow([
+        member.name || '',
+        member.email || '',
+        member.phone || '',
+        member.default_role || '',
+        member.created_at ? new Date(member.created_at).toISOString().split('T')[0] : '',
+      ]);
+    }
 
     // Generate the Excel file buffer
     const excelBuffer = await workbook.xlsx.writeBuffer();
