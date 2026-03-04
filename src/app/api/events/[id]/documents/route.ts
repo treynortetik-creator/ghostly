@@ -14,7 +14,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/docume
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Verify event exists and belongs to org
     const { data: event, error: eventError } = await supabase

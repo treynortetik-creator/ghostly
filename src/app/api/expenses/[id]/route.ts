@@ -61,7 +61,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'expenses/[id]
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: expense, error } = await supabase
       .from('expenses')
@@ -107,7 +107,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'expenses/[id
     const orgId = getOrgId(request);
     const { id } = await context.params;
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Check if expense exists
     const { data: existingExpense, error: findError } = await supabase
@@ -363,10 +363,10 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'expenses/[id
     });
 
     if (existingExpense.event_id) {
-      processBudgetTriggerForEvent(orgId, existingExpense.event_id).catch(() => {});
+      processBudgetTriggerForEvent(orgId, existingExpense.event_id).catch((err) => console.error('Budget trigger failed for event:', existingExpense.event_id, err));
     }
     if (hasEventId && String(newEventId) !== String(existingExpense.event_id || '')) {
-      processBudgetTriggerForEvent(orgId, String(newEventId)).catch(() => {});
+      processBudgetTriggerForEvent(orgId, String(newEventId)).catch((err) => console.error('Budget trigger failed for event:', newEventId, err));
     }
 
     return NextResponse.json({ expense: mapped });
@@ -381,7 +381,7 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'expenses/
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Check if expense exists
     const { data: existingExpense, error: findError } = await supabase
@@ -426,7 +426,7 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'expenses/
     });
 
     if (existingExpense.event_id) {
-      processBudgetTriggerForEvent(orgId, existingExpense.event_id).catch(() => {});
+      processBudgetTriggerForEvent(orgId, existingExpense.event_id).catch((err) => console.error('Budget trigger failed for event:', existingExpense.event_id, err));
     }
 
     return NextResponse.json({

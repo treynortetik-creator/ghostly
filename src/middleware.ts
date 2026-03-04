@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify, SignJWT } from 'jose';
 import { createMiddlewareSupabaseClient } from '@/lib/supabase/middleware';
 
-// Cookie name must match the one in auth.ts
+// Cookie name — duplicated from src/lib/auth.ts because Edge runtime cannot
+// import that file (it uses Node-only 'crypto' module). Keep both in sync.
 const AUTH_COOKIE_NAME = 'ghostly-token';
 const ACTIVE_ORG_COOKIE_NAME = 'ghostly-active-org';
 

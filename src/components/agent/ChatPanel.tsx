@@ -244,7 +244,7 @@ export function ChatPanel({ isOpen, onClose, onMinimize, eventId }: ChatPanelPro
           setAgentName(data.settings.agent_name);
         }
       })
-      .catch(() => {});
+      .catch((err) => console.error('Failed to fetch agent settings:', err));
   }, [isOpen]);
 
   useEffect(() => {

@@ -23,7 +23,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'agent-tools
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Verify the event belongs to this org
     const { data: event, error: eventError } = await supabase

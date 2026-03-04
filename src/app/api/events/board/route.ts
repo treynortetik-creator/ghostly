@@ -36,7 +36,7 @@ const BOARD_STAGES: EventStage[] = ['confirmed', 'in_progress', 'ready', 'active
 export const GET = withApiHandler({ permission: 'read', resource: 'events/board' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
     const today = new Date();
 
     // Fetch non-archived events, expenses, and checklist items in parallel (scoped to org)

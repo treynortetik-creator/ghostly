@@ -37,7 +37,7 @@ export function getRegisteredIntegrations(): IntegrationModule['config'][] {
  * Called by the agent chat endpoint to dynamically extend the tool set.
  */
 export async function getIntegrationTools(orgId: string): Promise<AgentTool[]> {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const { data: integrations } = await supabase
     .from('integrations')

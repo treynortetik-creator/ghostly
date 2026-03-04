@@ -17,7 +17,7 @@ export const PATCH = withApiHandler({ permission: 'write', resource: 'events/rem
     const orgId = getOrgId(request);
     const { id: eventId, rid } = await context.params;
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Verify event belongs to org
     const { data: eventCheck } = await supabase.from('events').select('id').eq('id', eventId).eq('organization_id', orgId).single();

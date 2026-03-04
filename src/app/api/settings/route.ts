@@ -69,7 +69,7 @@ const DEFAULT_NOTE_TYPES = [
 export const GET = withApiHandler({ permission: 'admin', resource: 'settings' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Fetch app config from app_settings table
     const { data: settingsRow, error: settingsError } = await supabase
@@ -142,7 +142,7 @@ export const PUT = withApiHandler({ permission: 'admin', resource: 'settings' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Validate fiscal_year_id if provided
     if (body.fiscal_year_id) {
@@ -342,7 +342,7 @@ export const DELETE = withApiHandler({ permission: 'admin', resource: 'settings'
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { error } = await supabase
       .from('app_settings')

@@ -65,7 +65,7 @@ function getDateRangeForScope(
 export const GET = withApiHandler({ permission: 'read', resource: 'export/preview' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
     const { searchParams } = new URL(request.url);
     const scope = (searchParams.get('scope') || 'year') as ExportScope;
     const fiscalYear = parseInt(searchParams.get('fiscal_year') || '2026', 10);

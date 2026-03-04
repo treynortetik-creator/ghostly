@@ -22,7 +22,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'categories' }
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: category, error: categoryError } = await supabase
       .from('budget_categories')
@@ -91,7 +91,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'categories' 
     const orgId = getOrgId(request);
     const { id } = await context.params;
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Check if category exists
     const { data: existingCategory, error: findError } = await supabase
@@ -212,7 +212,7 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'categorie
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Check if category exists
     const { data: existingCategory, error: findError } = await supabase

@@ -237,7 +237,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/brex
     }
 
     // Get existing data from Supabase
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const [
       { data: existingExpenses },

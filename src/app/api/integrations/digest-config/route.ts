@@ -11,7 +11,7 @@ export const GET = withApiHandler(
   { permission: 'read', resource: 'integrations' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data, error } = await supabase
       .from('integration_digest_config')
@@ -28,7 +28,7 @@ export const PUT = withApiHandler(
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     if (!body.digest_type || !['daily', 'weekly'].includes(body.digest_type)) {
       return NextResponse.json({ error: 'digest_type must be daily or weekly' }, { status: 400 });

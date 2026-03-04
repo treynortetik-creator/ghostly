@@ -143,7 +143,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'expenses' },
       filters.ids = idsParam.split(',');
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // If fiscal year filter is specified, look up valid event/category IDs
     let fiscalEventIds: Set<string> | null = null;
@@ -414,7 +414,7 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Validate event_id exists if provided
     let eventName: string | null = null;
@@ -540,7 +540,7 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
     });
 
     if (hasEventId) {
-      processBudgetTriggerForEvent(orgId, eventId).catch(() => {});
+      processBudgetTriggerForEvent(orgId, eventId).catch((err) => console.error('Budget trigger failed for event:', eventId, err));
     }
 
     return NextResponse.json(response, { status: 201 });

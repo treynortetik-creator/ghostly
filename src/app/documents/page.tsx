@@ -46,7 +46,7 @@ export default function DocumentsPage() {
 
   // Seed defaults on mount (fire and forget)
   useEffect(() => {
-    fetch("/api/templates/seed", { method: "POST" }).catch(() => {});
+    fetch("/api/templates/seed", { method: "POST" }).catch((err) => console.error('Template seed request failed:', err));
   }, []);
 
   const fetchTemplates = useCallback(async () => {

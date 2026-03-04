@@ -49,7 +49,7 @@ export interface DashboardSummary {
 export const GET = withApiHandler({ permission: 'read', resource: 'dashboard/summary' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Fetch settings to determine fiscal year (scoped to org)
     const { data: settingsRow } = await supabase

@@ -14,7 +14,7 @@ export const PATCH = withApiHandler({ permission: 'write', resource: 'reminders/
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { rid } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // First verify the reminder belongs to an event in this org
     const { data: reminder } = await supabase

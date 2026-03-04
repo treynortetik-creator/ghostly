@@ -16,7 +16,7 @@ import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 export const GET = withApiHandler({ permission: 'read', resource: 'stats' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Get active fiscal year from app_settings
     const { data: settingsRow, error: settingsError } = await supabase

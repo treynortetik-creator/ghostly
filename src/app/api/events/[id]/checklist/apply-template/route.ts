@@ -20,7 +20,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/chec
       return NextResponse.json({ error: 'template_id is required' }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Verify event belongs to org
     const { data: eventCheck } = await supabase.from('events').select('id').eq('id', eventId).eq('organization_id', orgId).single();

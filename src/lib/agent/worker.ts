@@ -58,7 +58,7 @@ async function createNotification(
     throw error;
   }
 
-  routeNotificationToSlack(orgId, type, title, message, metadata).catch(() => {});
+  routeNotificationToSlack(orgId, type, title, message, metadata).catch((err) => console.error('Slack notification routing failed:', err));
 }
 
 async function getOrgIds(supabase: SupabaseClient, orgId?: string): Promise<string[]> {

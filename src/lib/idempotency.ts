@@ -40,7 +40,7 @@ export function withIdempotency(handler: RouteHandler): RouteHandler {
 
     const method = request.method;
     const path = new URL(request.url).pathname;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Check for existing key
     const { data: existing } = await supabase
@@ -127,7 +127,7 @@ export function withIdempotency(handler: RouteHandler): RouteHandler {
  * Call periodically (e.g., from a cron endpoint or on startup).
  */
 export async function cleanupExpiredKeys(): Promise<number> {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data } = await supabase
     .from('idempotency_keys')
     .delete()

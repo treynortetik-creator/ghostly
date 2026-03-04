@@ -19,7 +19,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'agent-session
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Fetch session
     const { data: session, error: sessionError } = await supabase
@@ -57,7 +57,7 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'agent-ses
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Verify session belongs to this org
     const { data: session } = await supabase

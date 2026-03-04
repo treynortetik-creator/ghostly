@@ -16,7 +16,7 @@ export async function generateAndSendDigest(
   orgId: string,
   digestType: 'daily' | 'weekly'
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   // Get integration credentials
   const { data: integration } = await supabase
@@ -65,7 +65,7 @@ export async function generateAndSendDigest(
  * Called by a cron endpoint.
  */
 export async function processDigests(digestType: 'daily' | 'weekly'): Promise<number> {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const { data: configs } = await supabase
     .from('integration_digest_config')

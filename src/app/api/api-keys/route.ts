@@ -18,7 +18,7 @@ import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 export const GET = withApiHandler({ permission: 'admin', resource: 'api-keys' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data, error } = await supabase
       .from('api_keys')
@@ -69,7 +69,7 @@ export const POST = withApiHandler({ permission: 'admin', resource: 'api-keys' }
     const rawKey = generateApiKey(agentName, environment);
     const keyHash = hashApiKey(rawKey);
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data, error } = await supabase
       .from('api_keys')

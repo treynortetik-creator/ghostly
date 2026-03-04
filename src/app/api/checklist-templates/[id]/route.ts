@@ -16,7 +16,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'checklist-tem
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: template, error: templateError } = await supabase
       .from('checklist_templates')
@@ -50,7 +50,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'checklist-te
     const orgId = getOrgId(request);
     const { id } = await context.params;
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (body.name !== undefined) updates.name = body.name.trim();
@@ -78,7 +78,7 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'checklist
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data, error } = await supabase
       .from('checklist_templates')

@@ -12,7 +12,7 @@ import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 export const GET = withApiHandler({ permission: 'read', resource: 'agent-tools' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Fetch all events and expense totals for the org
     const [eventsResult, expenseTotalsResult] = await Promise.all([

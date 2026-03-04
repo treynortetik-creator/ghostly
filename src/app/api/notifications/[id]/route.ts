@@ -13,7 +13,7 @@ export const DELETE = withApiHandler(
   async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { error } = await supabase
       .from('notifications')

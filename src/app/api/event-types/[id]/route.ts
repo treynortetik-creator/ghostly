@@ -22,7 +22,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'event-types/[
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: eventType, error } = await supabase
       .from('event_types')
@@ -51,7 +51,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'event-types/
     const orgId = getOrgId(request);
     const { id } = await context.params;
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Validate name if provided
     if (body.name !== undefined) {
@@ -156,7 +156,7 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'event-typ
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Archive instead of delete (soft delete)
     const { data: archived, error } = await supabase

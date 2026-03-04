@@ -176,7 +176,7 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Phase 2: Collect unique event_ids and category_ids for batch validation
     const eventIds = new Set<string>();
@@ -336,7 +336,7 @@ export const POST = withIdempotency(withApiHandler({ permission: 'write', resour
         .filter((eventId): eventId is string => typeof eventId === 'string' && eventId.length > 0)
     );
     for (const eventId of eventIdsToCheck) {
-      processBudgetTriggerForEvent(orgId, eventId).catch(() => {});
+      processBudgetTriggerForEvent(orgId, eventId).catch((err) => console.error('Budget trigger failed for event:', eventId, err));
     }
 
     // Audit log (non-blocking)

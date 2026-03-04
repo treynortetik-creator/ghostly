@@ -28,7 +28,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'checklist-tem
       filters.modified_after = modifiedAfter;
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     let query = supabase
       .from('checklist_templates')
@@ -81,7 +81,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'checklist-t
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data, error } = await supabase
       .from('checklist_templates')

@@ -16,7 +16,7 @@ const VALID_CONTENT_TYPES = ['text', 'table', 'list', 'custom'];
 export const GET = withApiHandler({ permission: 'read', resource: 'templates' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data, error } = await supabase
       .from('document_templates')
@@ -61,7 +61,7 @@ export const POST = withIdempotency(
         }
       }
 
-      const supabase = await createClient();
+      const supabase = createClient();
 
       const { data: template, error: templateError } = await supabase
         .from('document_templates')

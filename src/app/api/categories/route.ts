@@ -70,7 +70,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'categories' }
       filters.ids = idsParam.split(',');
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     let query = supabase
       .from('budget_categories')
@@ -167,7 +167,7 @@ export const POST = withIdempotency(
         );
       }
 
-      const supabase = await createClient();
+      const supabase = createClient();
 
       // Check for duplicate name (escape LIKE special characters)
       const escapedName = String(body.name).replace(/[%_\\]/g, '\\$&');

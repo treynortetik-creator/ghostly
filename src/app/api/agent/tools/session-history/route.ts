@@ -19,7 +19,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'agent-session
     const limitParam = parseInt(searchParams.get('limit') || '20', 10);
     const limit = Math.min(Math.max(limitParam, 1), 50);
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     let query = supabase
       .from('chat_messages')

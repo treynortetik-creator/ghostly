@@ -16,7 +16,7 @@ import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 export const GET = withApiHandler({ permission: 'read', resource: 'agent-sessions' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Fetch sessions with message count and last message preview
     const { data: sessions, error } = await supabase
@@ -67,7 +67,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'agent-sessi
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
     const body = await request.json().catch(() => ({}));
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: newSession, error } = await supabase
       .from('chat_sessions')

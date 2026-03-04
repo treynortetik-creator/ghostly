@@ -61,7 +61,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'event-types' 
       filters.modified_after = modifiedAfter;
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     let query = supabase
       .from('event_types')
@@ -186,7 +186,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'event-types
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Check for duplicate name in same fiscal year
     // Escape LIKE wildcards (%, _, \) to prevent pattern injection

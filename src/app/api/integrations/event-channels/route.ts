@@ -12,7 +12,7 @@ export const GET = withApiHandler(
   { permission: 'read', resource: 'integrations' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
     const url = new URL(request.url);
     const eventId = url.searchParams.get('event_id');
 
@@ -35,7 +35,7 @@ export const POST = withApiHandler(
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     if (!body.event_id || !body.slack_channel_id) {
       return NextResponse.json({ error: 'event_id and slack_channel_id required' }, { status: 400 });
@@ -78,7 +78,7 @@ export const DELETE = withApiHandler(
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     if (!body.event_id) {
       return NextResponse.json({ error: 'event_id required' }, { status: 400 });

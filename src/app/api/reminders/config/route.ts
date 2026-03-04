@@ -17,7 +17,7 @@ import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 export const GET = withApiHandler({ permission: 'admin', resource: 'reminders/config' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data, error } = await supabase
       .from('reminder_config')
@@ -41,7 +41,7 @@ export const GET = withApiHandler({ permission: 'admin', resource: 'reminders/co
 export const PUT = withApiHandler({ permission: 'admin', resource: 'reminders/config' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
     const body = await request.json();
 
     const { reminder_type, enabled, days_before, channel } = body;

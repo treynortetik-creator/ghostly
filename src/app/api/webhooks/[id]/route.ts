@@ -25,7 +25,7 @@ export const GET = withApiHandler({ permission: 'admin', resource: 'webhooks/[id
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const [webhookResult, deliveriesResult] = await Promise.all([
       supabase.from('webhooks').select('*').eq('id', id).eq('organization_id', orgId).single(),
@@ -60,7 +60,7 @@ export const PUT = withApiHandler({ permission: 'admin', resource: 'webhooks/[id
     const orgId = getOrgId(request);
     const { id } = await context.params;
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Verify webhook exists
     const { data: existing, error: fetchError } = await supabase
@@ -137,7 +137,7 @@ export const DELETE = withApiHandler({ permission: 'admin', resource: 'webhooks/
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { error } = await supabase.from('webhooks').delete().eq('id', id).eq('organization_id', orgId);
 

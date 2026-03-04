@@ -16,7 +16,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'team/[id]' },
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data, error } = await supabase
       .from('team_members')
@@ -39,7 +39,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'team/[id]' }
     const orgId = getOrgId(request);
     const { id } = await context.params;
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
 
@@ -79,7 +79,7 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'team/[id]
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data, error } = await supabase
       .from('team_members')

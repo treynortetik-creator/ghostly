@@ -21,7 +21,7 @@ interface WebhookPayload {
  */
 export async function queueWebhookEvent(eventType: string, data: Record<string, unknown>, organizationId: string): Promise<void> {
   try {
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Find all active webhooks that subscribe to this event type, scoped to the org
     const { data: webhooks } = await supabase
@@ -64,7 +64,7 @@ export async function queueWebhookEvent(eventType: string, data: Record<string, 
     for (const delivery of inserted) {
       const webhook = matching.find(w => w.id === delivery.webhook_id);
       if (webhook) {
-        deliverWebhook(delivery.id, webhook.url, webhook.secret, payload).catch(() => {});
+        deliverWebhook(delivery.id, webhook.url, webhook.secret, payload).catch((err) => console.error(`Webhook delivery ${delivery.id} failed:`, err));
       }
     }
   } catch (err) {
@@ -89,7 +89,7 @@ async function deliverWebhook(
     headers['X-Webhook-Signature'] = `sha256=${signature}`;
   }
 
-  const supabase = await createClient();
+  const supabase = createClient();
 
   try {
     const res = await fetch(url, {

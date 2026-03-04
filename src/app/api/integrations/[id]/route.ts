@@ -12,7 +12,7 @@ export const GET = withApiHandler(
   async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
     const orgId = getOrgId(request);
     const { id } = await params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data, error } = await supabase
       .from('integrations')
@@ -34,7 +34,7 @@ export const DELETE = withApiHandler(
   async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
     const orgId = getOrgId(request);
     const { id } = await params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Soft disconnect — keep the record but mark inactive and clear credentials
     const { error } = await supabase

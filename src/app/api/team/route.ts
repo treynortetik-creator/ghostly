@@ -37,7 +37,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'team' },
       filters.ids = idsParam.split(',');
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     let query = supabase
       .from('team_members')
@@ -76,7 +76,7 @@ export const POST = withIdempotency(
         return NextResponse.json({ error: 'Name must be 200 characters or fewer' }, { status: 400 });
       }
 
-      const supabase = await createClient();
+      const supabase = createClient();
 
       const { data, error } = await supabase
         .from('team_members')

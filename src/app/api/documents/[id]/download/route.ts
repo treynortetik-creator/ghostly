@@ -29,7 +29,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'documents' },
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: doc, error } = await supabase
       .from('documents')

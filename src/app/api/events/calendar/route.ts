@@ -43,7 +43,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/calend
     const endDateStr = format(monthEnd, 'yyyy-MM-dd');
     const todayStr = format(new Date(), 'yyyy-MM-dd');
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Fetch events that overlap the month, expenses, and checklist items in parallel (scoped to org)
     const [eventsResult, expenseTotalsResult, checklistResult] = await Promise.all([

@@ -82,7 +82,7 @@ export function buildSlackTools(orgId: string, integrationId: string): AgentTool
 
         // If event_id provided, look up the linked channel
         if (!channelId && args.event_id) {
-          const supabase = await createClient();
+          const supabase = createClient();
           const { data } = await supabase
             .from('integration_event_channels')
             .select('slack_channel_id')
@@ -140,7 +140,7 @@ export function buildSlackTools(orgId: string, integrationId: string): AgentTool
         let channelId = args.channel_id as string | undefined;
 
         if (!channelId && args.event_id) {
-          const supabase = await createClient();
+          const supabase = createClient();
           const { data } = await supabase
             .from('integration_event_channels')
             .select('slack_channel_id')
@@ -156,7 +156,7 @@ export function buildSlackTools(orgId: string, integrationId: string): AgentTool
         }
 
         // Fetch the document metadata
-        const supabase = await createClient();
+        const supabase = createClient();
         const { data: doc } = await supabase
           .from('documents')
           .select('filename, original_filename, storage_path, mime_type')
@@ -206,7 +206,7 @@ export function buildSlackTools(orgId: string, integrationId: string): AgentTool
         required: ['event_id', 'channel_id'],
       },
       execute: async (args) => {
-        const supabase = await createClient();
+        const supabase = createClient();
 
         // Verify the event exists and belongs to this org
         const { data: event } = await supabase

@@ -51,7 +51,7 @@ export const POST = withApiHandler({ permission: 'admin', resource: 'admin/clean
 
     const results: Record<string, { deleted: number; errors?: string[] }> = {};
 
-    const supabase = await createClient();
+    const supabase = createClient();
     const now = new Date();
 
     // 1. Clean old error_logs (> 30 days), limited to batch size

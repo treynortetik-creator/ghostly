@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { createToken } from '@/lib/auth'
+import { createToken, AUTH_COOKIE_NAME } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       // Use email as the username identifier.
       const username = user.email || user.id
       const token = await createToken(username)
-      cookieStore.set('ghostly-token', token, {
+      cookieStore.set(AUTH_COOKIE_NAME, token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',

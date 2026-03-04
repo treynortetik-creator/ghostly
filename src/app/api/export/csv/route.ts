@@ -41,7 +41,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'export/csv' }
 
     const dateRange = getDateRangeForScope(scope, fiscalYear, quarter, month, dateStart, dateEnd);
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Fetch all data from Supabase in parallel (scoped to org)
     const [

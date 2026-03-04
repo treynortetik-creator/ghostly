@@ -69,7 +69,7 @@ export function logError(
 }
 
 async function persistToSupabase(entry: ErrorLogEntry): Promise<void> {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   // Merge request ID into context for DB persistence
   const contextWithRequestId = entry.requestId

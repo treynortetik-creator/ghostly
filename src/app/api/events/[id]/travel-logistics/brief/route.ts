@@ -42,7 +42,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/travel
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id: eventId } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: event } = await supabase
       .from('events')

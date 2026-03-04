@@ -17,7 +17,7 @@ import type { ToolPermissionMode } from '@/lib/agent/tools';
 export const GET = withApiHandler({ permission: 'read', resource: 'agent-settings' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Try to fetch existing settings
     const { data: existingSettings, error: fetchError } = await supabase
@@ -54,7 +54,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'agent-settin
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Validate inputs
     const updates: Record<string, unknown> = {};

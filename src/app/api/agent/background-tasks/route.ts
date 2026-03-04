@@ -12,7 +12,7 @@ import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 export const GET = withApiHandler({ permission: 'read', resource: 'agent/background-tasks' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
@@ -47,7 +47,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'agent/backg
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const name = String(body.name || '').trim();
     const prompt = String(body.prompt || '').trim();

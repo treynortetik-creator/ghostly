@@ -30,7 +30,7 @@ export const GET = withApiHandler(
   { permission: 'read', resource: 'agent-cron-jobs' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: tasks, error } = await supabase
       .from('agent_cron_jobs')
@@ -53,7 +53,7 @@ export const POST = withApiHandler(
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Validate name
     const name = String(body.name || '').trim();

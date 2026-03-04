@@ -138,7 +138,7 @@ export default function EventDetailPage({ params }: PageProps) {
         const slack = (data.connected || []).find((i: { type: string; status: string }) => i.type === 'slack' && i.status === 'active');
         setSlackConnected(!!slack);
       })
-      .catch(() => {});
+      .catch((err) => console.error('Failed to fetch integrations:', err));
 
     fetch(`/api/integrations/event-channels?event_id=${id}`)
       .then(r => r.json())
@@ -147,7 +147,7 @@ export default function EventDetailPage({ params }: PageProps) {
           setSlackChannel(data.event_channels[0]);
         }
       })
-      .catch(() => {});
+      .catch((err) => console.error('Failed to fetch event channels:', err));
   }, [id]);
 
   // Handle update event

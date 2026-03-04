@@ -36,7 +36,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/travel
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id: eventId } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: eventCheck } = await supabase
       .from('events')
@@ -126,7 +126,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/trav
     const orgId = getOrgId(request);
     const { id: eventId } = await context.params;
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const travelerName = trimOrNull(body.traveler_name);
     if (!travelerName) {

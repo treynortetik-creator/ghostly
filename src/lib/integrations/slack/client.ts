@@ -222,7 +222,7 @@ export async function exchangeOAuthCode(
  */
 export async function getSlackBotToken(orgId: string): Promise<string | null> {
   const { createClient } = await import('@/lib/supabase/server');
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const { data } = await supabase
     .from('integrations')

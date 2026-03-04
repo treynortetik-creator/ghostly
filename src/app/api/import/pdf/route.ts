@@ -399,7 +399,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/pdf'
 
     if (process.env.OPENROUTER_API_KEY) {
       try {
-        const supabase = await createClient();
+        const supabase = createClient();
 
         // Fetch events and categories for assignment context (scoped to org)
         const [{ data: events }, { data: categories }] = await Promise.all([

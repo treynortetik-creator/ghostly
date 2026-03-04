@@ -39,7 +39,7 @@ const DEFAULT_TEMPLATES = [
 export const POST = withApiHandler({ permission: 'write', resource: 'templates/seed' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Check if defaults already exist
     const { data: existing } = await supabase

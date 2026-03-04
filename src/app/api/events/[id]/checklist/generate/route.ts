@@ -32,7 +32,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/chec
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id: eventId } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // 1. Fetch the event (scoped to org)
     const { data: event, error: eventError } = await supabase

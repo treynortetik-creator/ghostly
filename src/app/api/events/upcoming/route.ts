@@ -31,7 +31,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/upcomi
     const todayISO = now.toISOString().split('T')[0];
     const cutoffISO = cutoff.toISOString().split('T')[0];
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Fetch upcoming events, expenses, checklist items, and team counts in parallel (scoped to org)
     const [eventsResult, expenseTotalsResult, checklistResult, teamCountsResult] = await Promise.all([

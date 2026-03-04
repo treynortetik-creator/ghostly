@@ -18,7 +18,7 @@ import { ensureIntegrationsRegistered, getIntegrationTools } from '@/lib/integra
 export const GET = withApiHandler({ permission: 'read', resource: 'agent-settings' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: settings } = await supabase
       .from('agent_settings')

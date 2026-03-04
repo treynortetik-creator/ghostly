@@ -14,7 +14,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'expenses/[id]
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Verify expense exists and belongs to org
     const { data: expense, error: expenseError } = await supabase

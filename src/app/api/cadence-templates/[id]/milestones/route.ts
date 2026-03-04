@@ -35,7 +35,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'cadence-mil
       return NextResponse.json({ error: 'notify_channel must be agent, in_app, or both' }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Verify template belongs to org
     const { data: templateCheck } = await supabase.from('cadence_templates').select('id').eq('id', templateId).eq('organization_id', orgId).single();

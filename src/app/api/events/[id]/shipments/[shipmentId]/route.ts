@@ -18,7 +18,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/shipme
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id: eventId, shipmentId } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Verify event belongs to org
     const { data: eventCheck } = await supabase.from('events').select('id').eq('id', eventId).eq('organization_id', orgId).single();
@@ -45,7 +45,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'events/shipm
     const orgId = getOrgId(request);
     const { id: eventId, shipmentId } = await context.params;
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Verify event belongs to org
     const { data: eventCheck } = await supabase.from('events').select('id').eq('id', eventId).eq('organization_id', orgId).single();
@@ -104,7 +104,7 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'events/sh
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id: eventId, shipmentId } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Verify event belongs to org
     const { data: eventCheck } = await supabase.from('events').select('id').eq('id', eventId).eq('organization_id', orgId).single();

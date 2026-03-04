@@ -23,7 +23,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'documents' },
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: doc, error } = await supabase
       .from('documents')

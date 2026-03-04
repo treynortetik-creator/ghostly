@@ -240,7 +240,7 @@ export async function POST(request: NextRequest) {
       const files = formData.getAll('files') as File[];
       const filesToProcess = files.slice(0, 5);
 
-      const supabaseForFiles = await createClient();
+      const supabaseForFiles = createClient();
 
       const ALLOWED_CHAT_EXTENSIONS = [
         '.pdf', '.docx', '.xlsx', '.csv', '.txt', '.md',
@@ -343,7 +343,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // ─── Load or create session ──────────────────────────────────────────
     let sessionContextTokens = 0;
@@ -597,7 +597,7 @@ export async function POST(request: NextRequest) {
           event_id: event_id || null,
         },
         ttlDays: 180,
-      }).catch(() => {});
+      }).catch((err) => console.error('Chat memory write (user message) failed:', err));
 
       const normalizedMessage = message.trim();
       if (/^(remember|note|correction)[:\\-\\s]/i.test(normalizedMessage) || /please remember/i.test(normalizedMessage)) {
@@ -606,7 +606,7 @@ export async function POST(request: NextRequest) {
           topic: eventName || null,
           correction: normalizedMessage,
           metadata: { session_id },
-        }).catch(() => {});
+        }).catch((err) => console.error('Chat learning write failed:', err));
       }
     }
 
@@ -632,7 +632,7 @@ export async function POST(request: NextRequest) {
             'x-organization-id': orgId,
             'x-auth-type': 'cookie',
           },
-        }).catch(() => {});
+        }).catch((err) => console.error('Document summarization request failed:', err));
       }
     }
 
@@ -902,7 +902,7 @@ export async function POST(request: NextRequest) {
         event_id: event_id || null,
       },
       ttlDays: 180,
-    }).catch(() => {});
+    }).catch((err) => console.error('Chat memory write (assistant response) failed:', err));
 
     if (lastPromptTokens > 0) {
       await supabase

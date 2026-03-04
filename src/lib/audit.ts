@@ -32,7 +32,7 @@ export interface AuditParams {
  */
 export async function logAudit(params: AuditParams): Promise<void> {
   try {
-    const supabase = await createClient();
+    const supabase = createClient();
     const { error } = await supabase.from('audit_log').insert({
       entity_type: params.entity_type,
       entity_id: params.entity_id,

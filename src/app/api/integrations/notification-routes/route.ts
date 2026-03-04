@@ -18,7 +18,7 @@ export const GET = withApiHandler(
   { permission: 'read', resource: 'integrations' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: routes, error } = await supabase
       .from('integration_notification_routes')
@@ -36,7 +36,7 @@ export const PUT = withApiHandler(
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     if (!Array.isArray(body.routes)) {
       return NextResponse.json({ error: 'routes must be an array' }, { status: 400 });

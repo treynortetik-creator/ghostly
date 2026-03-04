@@ -11,7 +11,7 @@ export const GET = withApiHandler(
   { permission: 'read', resource: 'integrations' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: connected, error } = await supabase
       .from('integrations')

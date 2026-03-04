@@ -64,7 +64,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/post
     const orgId = getOrgId(request);
     const { id: eventId } = await context.params;
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const sourceText = typeof body.source_text === 'string' ? body.source_text.trim() : '';
     const sourceLabel = typeof body.source_label === 'string' ? body.source_label.trim() : '';

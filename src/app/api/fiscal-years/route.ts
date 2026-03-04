@@ -33,7 +33,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'fiscal-years'
       filters.modified_after = modifiedAfter;
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     let query = supabase
       .from('fiscal_years')
@@ -67,7 +67,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'fiscal-year
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Validate required field
     if (!body.year) {

@@ -14,7 +14,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/summar
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Fetch event, expenses, checklist items, and team assignments in parallel
     const [eventResult, expensesResult, checklistResult, teamResult] = await Promise.all([

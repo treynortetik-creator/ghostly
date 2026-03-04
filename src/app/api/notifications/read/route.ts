@@ -13,7 +13,7 @@ export const PATCH = withApiHandler(
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     if (body.all === true) {
       // Mark all unread notifications as read

@@ -31,7 +31,7 @@ export const GET = withApiHandler({ permission: 'admin', resource: 'audit-log' }
     const pagination = parsePagination(searchParams);
     const { from: rangeFrom, to: rangeTo } = paginationRange(pagination);
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     let query = supabase
       .from('audit_log')

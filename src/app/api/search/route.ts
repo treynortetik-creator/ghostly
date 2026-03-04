@@ -78,7 +78,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'search' },
       });
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
     const response: SearchResponse = {
       results: { events: [], expenses: [] },
       meta: { query: rawQuery, total: 0 },

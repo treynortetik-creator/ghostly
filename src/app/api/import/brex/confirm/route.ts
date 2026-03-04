@@ -68,7 +68,7 @@ const MAX_TRANSACTIONS_PER_REQUEST = 100;
 export const POST = withApiHandler({ permission: 'write', resource: 'import/brex/confirm' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
     const body = await request.json();
     const { transactions } = body as { transactions: TransactionToImport[] };
 
@@ -331,7 +331,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'import/brex
           .filter((eventId): eventId is string => typeof eventId === 'string' && eventId.length > 0)
       );
       for (const eventId of eventIds) {
-        processBudgetTriggerForEvent(orgId, eventId).catch(() => {});
+        processBudgetTriggerForEvent(orgId, eventId).catch((err) => console.error('Budget trigger failed for event:', eventId, err));
       }
     }
 

@@ -27,7 +27,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'documents' }
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Check document exists and belongs to org
     const { data: existing, error: findError } = await supabase

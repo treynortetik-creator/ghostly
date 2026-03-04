@@ -27,7 +27,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'checklist-t
       return NextResponse.json({ error: 'Valid phase is required (pre_event, day_of, post_event)' }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Verify template belongs to org
     const { data: templateCheck } = await supabase.from('checklist_templates').select('id').eq('id', templateId).eq('organization_id', orgId).single();

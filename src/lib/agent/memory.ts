@@ -82,7 +82,7 @@ export async function rememberAgentMemory(params: {
   const content = String(params.content || '').trim().slice(0, MAX_MEMORY_CONTENT_LENGTH);
   if (!content) return;
 
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const embedding = await embedText(content);
   const expiresAt = params.ttlDays && params.ttlDays > 0
@@ -112,7 +112,7 @@ export async function recallAgentMemories(
   const trimmed = String(query || '').trim();
   if (!trimmed) return [];
 
-  const supabase = await createClient();
+  const supabase = createClient();
 
   // Attempt semantic recall first.
   const queryEmbedding = await embedText(trimmed);
@@ -168,7 +168,7 @@ export async function rememberLearning(params: {
   const correction = String(params.correction || '').trim().slice(0, MAX_MEMORY_CONTENT_LENGTH);
   if (!correction) return;
 
-  const supabase = await createClient();
+  const supabase = createClient();
   const embedding = await embedText(`${params.topic || ''}\n${correction}`.trim());
 
   try {
@@ -192,7 +192,7 @@ export async function recallLearnings(
   const trimmed = String(query || '').trim();
   if (!trimmed) return [];
 
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const queryEmbedding = await embedText(trimmed);
   if (queryEmbedding && queryEmbedding.length > 0) {

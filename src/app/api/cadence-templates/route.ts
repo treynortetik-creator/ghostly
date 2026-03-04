@@ -12,7 +12,7 @@ import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 export const GET = withApiHandler({ permission: 'read', resource: 'cadence-templates' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: templates, error } = await supabase
       .from('cadence_templates')
@@ -60,7 +60,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'cadence-tem
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data, error } = await supabase
       .from('cadence_templates')

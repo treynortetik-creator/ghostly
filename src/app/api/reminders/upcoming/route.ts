@@ -28,7 +28,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'reminders/upc
     endDate.setDate(endDate.getDate() + days);
     const endStr = endDate.toISOString().split('T')[0];
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // First get org's event IDs, then filter reminders
     const { data: orgEvents } = await supabase

@@ -52,7 +52,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/travel
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id: eventId, entryId } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const eventExists = await ensureEventInOrg(supabase, eventId, orgId);
     if (!eventExists) {
@@ -80,7 +80,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'events/trave
     const orgId = getOrgId(request);
     const { id: eventId, entryId } = await context.params;
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: event } = await supabase
       .from('events')
@@ -198,7 +198,7 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'events/tr
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id: eventId, entryId } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const eventExists = await ensureEventInOrg(supabase, eventId, orgId);
     if (!eventExists) {

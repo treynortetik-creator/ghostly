@@ -19,7 +19,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'templates/[id
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data, error } = await supabase
       .from('document_templates')
@@ -46,7 +46,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'templates/[i
     const orgId = getOrgId(request);
     const { id } = await context.params;
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: existing, error: findError } = await supabase
       .from('document_templates')
@@ -134,7 +134,7 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'templates
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: existing, error: findError } = await supabase
       .from('document_templates')

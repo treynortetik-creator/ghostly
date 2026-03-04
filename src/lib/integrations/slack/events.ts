@@ -34,7 +34,7 @@ export async function handleSlackEvent(payload: SlackEventPayload): Promise<void
   // Ignore bot messages to prevent loops
   if (payload.event.bot_id) return;
 
-  const supabase = await createClient();
+  const supabase = createClient();
 
   // Look up the integration by team_id to get org context
   const { data: integration } = await supabase

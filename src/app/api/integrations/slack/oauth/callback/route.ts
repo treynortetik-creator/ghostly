@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     const redirectUri = `${appUrl}/api/integrations/slack/oauth/callback`;
     const tokens = await exchangeOAuthCode(code, redirectUri);
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Upsert the integration record
     const { error: dbError } = await supabase

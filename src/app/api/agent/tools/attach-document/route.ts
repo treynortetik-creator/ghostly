@@ -23,7 +23,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'documents' 
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Verify document exists in this org
     const { data: doc, error: docError } = await supabase

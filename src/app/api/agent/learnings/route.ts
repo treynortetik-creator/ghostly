@@ -13,7 +13,7 @@ import { rememberLearning } from '@/lib/agent/memory';
 export const GET = withApiHandler({ permission: 'read', resource: 'agent/learnings' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const supabaseAny = supabase as any;
 

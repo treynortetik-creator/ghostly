@@ -19,7 +19,7 @@ export async function routeNotificationToSlack(
   message: string,
   metadata?: Record<string, unknown>
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   // Check if there's a Slack integration and a routing rule for this type
   const { data: integration } = await supabase

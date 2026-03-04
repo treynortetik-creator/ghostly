@@ -23,7 +23,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events' },
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: event, error: eventError } = await supabase
       .from('events')
@@ -96,7 +96,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'events' },
     const orgId = getOrgId(request);
     const { id } = await context.params;
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Check if event exists
     const { data: existingEvent, error: findError } = await supabase
@@ -234,6 +234,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'events' },
       .from('expenses')
       .select('*')
       .eq('event_id', id)
+      .eq('organization_id', orgId)
       .is('deleted_at', null);
 
     const expenseList = expenses || [];
@@ -284,7 +285,7 @@ export const DELETE = withApiHandler({ permission: 'write', resource: 'events' }
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Check if event exists
     const { data: existingEvent, error: findError } = await supabase

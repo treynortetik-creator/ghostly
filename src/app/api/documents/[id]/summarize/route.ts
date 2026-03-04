@@ -18,7 +18,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'documents' 
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Fetch document scoped to org, not soft-deleted
     const { data: doc, error } = await supabase

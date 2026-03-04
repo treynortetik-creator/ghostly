@@ -15,7 +15,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/remi
     const orgId = getOrgId(request);
     const { id: eventId } = await context.params;
     const body = await request.json().catch(() => ({}));
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Fetch event with date_start (scoped to org)
     const { data: event, error: eventError } = await supabase

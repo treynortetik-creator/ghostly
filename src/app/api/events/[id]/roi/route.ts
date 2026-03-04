@@ -15,7 +15,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/roi' }
   async (request: NextRequest, context: RouteContext) => {
     const orgId = getOrgId(request);
     const { id } = await context.params;
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: event, error: eventError } = await supabase
       .from('events')

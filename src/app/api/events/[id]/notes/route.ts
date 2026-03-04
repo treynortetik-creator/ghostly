@@ -20,7 +20,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/notes'
     const { searchParams } = new URL(request.url);
     const noteType = searchParams.get('note_type');
     const pinned = searchParams.get('pinned');
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Verify event belongs to org
     const { data: eventCheck } = await supabase.from('events').select('id').eq('id', eventId).eq('organization_id', orgId).single();
@@ -56,7 +56,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/note
     const orgId = getOrgId(request);
     const { id: eventId } = await context.params;
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Validate required fields
     if (!body.content || typeof body.content !== 'string' || body.content.trim().length === 0) {

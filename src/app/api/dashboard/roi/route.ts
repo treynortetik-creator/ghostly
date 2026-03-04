@@ -26,7 +26,7 @@ interface EventROIRow {
 export const GET = withApiHandler({ permission: 'read', resource: 'dashboard/roi' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Fetch all non-deleted events with event_types join (scoped to org)
     const { data: events, error: eventsError } = await supabase

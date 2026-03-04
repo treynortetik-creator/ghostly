@@ -15,7 +15,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'agent-tools' 
     const { searchParams } = new URL(request.url);
     const eventId = searchParams.get('event_id');
 
-    const supabase = await createClient();
+    const supabase = createClient();
     const today = new Date().toISOString().split('T')[0];
 
     let query = supabase

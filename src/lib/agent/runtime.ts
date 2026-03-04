@@ -165,7 +165,7 @@ export async function runAgentTask(input: RunAgentTaskInput): Promise<RunAgentTa
     throw new Error('OPENROUTER_API_KEY is not configured');
   }
 
-  const supabase = await createClient();
+  const supabase = createClient();
   let runLogId: string | null = null;
 
   try {
@@ -359,7 +359,7 @@ export async function runAgentTask(input: RunAgentTaskInput): Promise<RunAgentTa
       event_id: input.eventId || null,
     },
     ttlDays: 180,
-  }).catch(() => {});
+  }).catch((err) => console.error('Agent memory write (user prompt) failed:', err));
 
   if (/^(remember|note|correction)[:\\-\\s]/i.test(userPrompt) || /please remember/i.test(userPrompt)) {
     rememberLearning({
@@ -370,7 +370,7 @@ export async function runAgentTask(input: RunAgentTaskInput): Promise<RunAgentTa
         source: input.source,
         session_id: sessionId,
       },
-    }).catch(() => {});
+    }).catch((err) => console.error('Agent learning write failed:', err));
   }
 
   const model = selectModel(input.model, settings, input);
@@ -501,7 +501,7 @@ export async function runAgentTask(input: RunAgentTaskInput): Promise<RunAgentTa
       tool_rounds: toolRounds,
     },
     ttlDays: 180,
-  }).catch(() => {});
+  }).catch((err) => console.error('Agent memory write (assistant response) failed:', err));
 
   if (promptTokens > 0) {
     await supabase

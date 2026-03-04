@@ -179,7 +179,7 @@ export const PUT = withIdempotency(withApiHandler({ permission: 'write', resourc
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Phase 2: Fetch all existing expenses to validate they exist (scoped to org)
     const expenseIds = body.updates.map((item: UpdateInput) => item.id as string);
@@ -463,7 +463,7 @@ export const PUT = withIdempotency(withApiHandler({ permission: 'write', resourc
     }
 
     for (const eventId of allEventIds) {
-      processBudgetTriggerForEvent(orgId, eventId).catch(() => {});
+      processBudgetTriggerForEvent(orgId, eventId).catch((err) => console.error('Budget trigger failed for event:', eventId, err));
     }
 
     // Fetch any event/category names we don't already have

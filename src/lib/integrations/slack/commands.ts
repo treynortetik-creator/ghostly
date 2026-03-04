@@ -29,7 +29,7 @@ interface CommandResponse {
  * Handle a verified slash command.
  */
 export async function handleSlackCommand(cmd: SlackCommand): Promise<CommandResponse> {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   // Look up org from team_id
   const { data: integration } = await supabase
@@ -72,7 +72,7 @@ export async function handleSlackCommand(cmd: SlackCommand): Promise<CommandResp
 }
 
 async function handleEventsCommand(orgId: string): Promise<CommandResponse> {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const { data: events } = await supabase
     .from('events')
@@ -100,7 +100,7 @@ async function handleEventsCommand(orgId: string): Promise<CommandResponse> {
 }
 
 async function handleBudgetCommand(orgId: string, eventName: string): Promise<CommandResponse> {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   if (!eventName) {
     return { response_type: 'ephemeral', text: 'Usage: `/ghostly budget <event name>`' };
@@ -140,7 +140,7 @@ async function handleBudgetCommand(orgId: string, eventName: string): Promise<Co
 }
 
 async function handleOverdueCommand(orgId: string): Promise<CommandResponse> {
-  const supabase = await createClient();
+  const supabase = createClient();
   const today = new Date().toISOString().split('T')[0];
 
   const { data: items } = await supabase
@@ -169,7 +169,7 @@ async function handleOverdueCommand(orgId: string): Promise<CommandResponse> {
 }
 
 async function handleContactsCommand(orgId: string, query: string): Promise<CommandResponse> {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   if (!query) {
     return { response_type: 'ephemeral', text: 'Usage: `/ghostly contacts <search term>`' };

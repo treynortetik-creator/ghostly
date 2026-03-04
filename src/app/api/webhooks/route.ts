@@ -21,7 +21,7 @@ const VALID_EVENT_TYPES: readonly string[] = VALID_WEBHOOK_EVENT_TYPES;
 export const GET = withApiHandler({ permission: 'admin', resource: 'webhooks' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: webhooks, error } = await supabase
       .from('webhooks')
@@ -70,7 +70,7 @@ export const POST = withApiHandler({ permission: 'admin', resource: 'webhooks' }
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: webhook, error } = await supabase
       .from('webhooks')

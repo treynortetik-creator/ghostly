@@ -2,7 +2,9 @@ import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 import { createHash, timingSafeEqual, randomBytes } from 'crypto';
 import { cookies } from 'next/headers';
 
-// Cookie name for the auth token
+// Cookie name for the auth token.
+// NOTE: This is duplicated in src/middleware.ts because Edge runtime cannot
+// import from this file (it uses Node-only 'crypto' module). Keep both in sync.
 const AUTH_COOKIE_NAME = 'ghostly-token';
 
 // Token expiration time (24 hours)

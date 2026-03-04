@@ -52,7 +52,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events' },
       }
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Verify all events belong to this org and are not deleted
     const { data: validEvents, error: fetchError } = await supabase

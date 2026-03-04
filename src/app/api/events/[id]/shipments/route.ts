@@ -19,7 +19,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events/shipme
     const { id: eventId } = await context.params;
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Verify event belongs to org
     const { data: eventCheck } = await supabase.from('events').select('id').eq('id', eventId).eq('organization_id', orgId).single();
@@ -51,7 +51,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/ship
     const orgId = getOrgId(request);
     const { id: eventId } = await context.params;
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Validate required fields
     if (!body.description || typeof body.description !== 'string' || body.description.trim().length === 0) {

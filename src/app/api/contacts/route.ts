@@ -39,7 +39,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'contacts' },
 
     const filters: Record<string, unknown> = {};
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     let query = supabase
       .from('contacts')
@@ -116,7 +116,7 @@ export const POST = withIdempotency(
         );
       }
 
-      const supabase = await createClient();
+      const supabase = createClient();
 
       const { data, error } = await supabase
         .from('contacts')

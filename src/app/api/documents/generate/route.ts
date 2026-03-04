@@ -22,7 +22,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'documents/g
       return NextResponse.json({ error: 'template_id and event_id are required' }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Load template with sections
     const { data: template, error: tErr } = await supabase

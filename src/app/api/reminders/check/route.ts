@@ -16,7 +16,7 @@ import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 export const POST = withApiHandler({ permission: 'read', resource: 'reminders/check' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
 

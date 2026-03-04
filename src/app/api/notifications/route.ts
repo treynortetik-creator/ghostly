@@ -21,7 +21,7 @@ export const GET = withApiHandler(
   { permission: 'read', resource: 'notifications' },
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
-    const supabase = await createClient();
+    const supabase = createClient();
     const url = new URL(request.url);
 
     const status = url.searchParams.get('status') || 'unread';
@@ -71,7 +71,7 @@ export const POST = withApiHandler(
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Validate type
     if (!body.type || !VALID_TYPES.includes(body.type)) {
@@ -114,7 +114,7 @@ export const POST = withApiHandler(
     if (error) throw error;
 
     // Fire-and-forget: route to Slack if configured
-    routeNotificationToSlack(orgId, body.type, title, message, body.metadata).catch(() => {});
+    routeNotificationToSlack(orgId, body.type, title, message, body.metadata).catch((err) => console.error('Slack notification routing failed:', err));
 
     return NextResponse.json({ notification }, { status: 201 });
   }
@@ -129,7 +129,7 @@ export const DELETE = withApiHandler(
   async (request: NextRequest) => {
     const orgId = getOrgId(request);
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     if (body.dismissed === true) {
       // Delete all dismissed notifications for this org

@@ -111,7 +111,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events' },
       filters.ids = idsParam.split(',');
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     let query = supabase
       .from('events')
@@ -181,15 +181,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'events' },
       };
     });
 
-    // Sort by date_start (null dates at end), then by name
-    events.sort((a, b) => {
-      if (a.date_start && b.date_start) {
-        return a.date_start.localeCompare(b.date_start);
-      }
-      if (a.date_start && !b.date_start) return -1;
-      if (!a.date_start && b.date_start) return 1;
-      return a.name.localeCompare(b.name);
-    });
+    // DB already returns results sorted by date_start via .order() above.
 
     return NextResponse.json({
       events,
@@ -251,7 +243,7 @@ export const POST = withIdempotency(
         );
       }
 
-      const supabase = await createClient();
+      const supabase = createClient();
 
       // Validate that event_type_id exists in event_types table
       const { data: eventType, error: eventTypeError } = await supabase

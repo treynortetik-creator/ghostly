@@ -18,7 +18,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events' },
     const orgId = getOrgId(request);
     const { id } = await context.params;
     const body = await request.json().catch(() => ({}));
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Fetch the source event
     const { data: sourceEvent, error: fetchError } = await supabase

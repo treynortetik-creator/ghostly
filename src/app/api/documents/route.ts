@@ -117,7 +117,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'documents' },
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     let query = supabase
       .from('documents')
@@ -215,7 +215,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'documents' 
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Validate event_id exists if provided + check document count limit
     if (eventId) {

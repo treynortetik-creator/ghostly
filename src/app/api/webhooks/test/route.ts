@@ -19,7 +19,7 @@ export const POST = withApiHandler({ permission: 'admin', resource: 'webhooks/te
       return NextResponse.json({ error: 'webhook_id is required' }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const { data: webhook, error: fetchError } = await supabase
       .from('webhooks')
