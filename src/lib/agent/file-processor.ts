@@ -9,6 +9,7 @@
 import path from 'path';
 import fs from 'fs/promises';
 import { getUploadBasePath } from '@/lib/uploads';
+import { downloadDocument } from '@/lib/storage';
 
 const MAX_TEXT_LENGTH = 50000;
 
@@ -146,6 +147,23 @@ function extractXlsxText(buffer: Buffer): string {
 }
 
 /**
+ * Read a file buffer from either Supabase Storage or local filesystem.
+ * Legacy paths (starting with "uploads/") read from disk; new paths
+ * download from Supabase Storage.
+ */
+async function readFileBuffer(storagePath: string): Promise<Buffer> {
+  if (storagePath.startsWith('uploads/')) {
+    // Legacy: local filesystem
+    const relativePath = storagePath.replace(/^uploads\//, '');
+    const fullPath = path.join(getUploadBasePath(), relativePath);
+    return fs.readFile(fullPath);
+  }
+  // New: Supabase Storage
+  const blob = await downloadDocument(storagePath);
+  return Buffer.from(await blob.arrayBuffer());
+}
+
+/**
  * Extract text content from a file based on its MIME type.
  * Images return a placeholder since they are handled via vision API.
  */
@@ -153,12 +171,7 @@ export async function extractTextFromFile(
   storagePath: string,
   mimeType: string,
 ): Promise<string> {
-  // Resolve the full path from the storage path
-  // storagePath format: "uploads/YYYY/MM/uuid.ext"
-  const relativePath = storagePath.replace(/^uploads\//, '');
-  const fullPath = path.join(getUploadBasePath(), relativePath);
-
-  const buffer = await fs.readFile(fullPath);
+  const buffer = await readFileBuffer(storagePath);
 
   // Images are handled separately via vision API
   if (isImageType(mimeType)) {

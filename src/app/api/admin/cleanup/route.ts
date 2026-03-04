@@ -14,6 +14,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
 import { cleanupRateLimitEntries } from '@/lib/rate-limiter';
+import { deleteDocument } from '@/lib/storage';
 import { getUploadBasePath } from '@/lib/uploads';
 import path from 'path';
 import fs from 'fs/promises';
@@ -115,24 +116,41 @@ export const POST = withApiHandler({ permission: 'admin', resource: 'admin/clean
 
     if (!odErr && orphanedDocs && orphanedDocs.length > 0) {
       const basePath = getUploadBasePath();
+      const supabaseStoragePaths: string[] = [];
 
       for (const doc of orphanedDocs) {
-        const relativePath = doc.storage_path.replace(/^uploads\//, '');
-        const filePath = path.join(basePath, relativePath);
+        if (doc.storage_path.startsWith('uploads/')) {
+          // Legacy: local filesystem
+          const relativePath = doc.storage_path.replace(/^uploads\//, '');
+          const filePath = path.join(basePath, relativePath);
 
-        // Security: ensure path is within uploads
-        const resolvedPath = path.resolve(filePath);
-        const resolvedBase = path.resolve(basePath);
-        if (!resolvedPath.startsWith(resolvedBase)) {
-          fileErrors.push(`Skipped unsafe path: ${doc.id}`);
-          continue;
-        }
+          // Security: ensure path is within uploads
+          const resolvedPath = path.resolve(filePath);
+          const resolvedBase = path.resolve(basePath);
+          if (!resolvedPath.startsWith(resolvedBase)) {
+            fileErrors.push(`Skipped unsafe path: ${doc.id}`);
+            continue;
+          }
 
-        try {
-          await fs.unlink(filePath);
+          try {
+            await fs.unlink(filePath);
+            filesDeleted++;
+          } catch {
+            // File may already be gone -- that's fine
+          }
+        } else {
+          // New: Supabase Storage -- batch these for a single delete call
+          supabaseStoragePaths.push(doc.storage_path);
           filesDeleted++;
-        } catch {
-          // File may already be gone — that's fine
+        }
+      }
+
+      // Batch-delete Supabase Storage files
+      if (supabaseStoragePaths.length > 0) {
+        try {
+          await deleteDocument(supabaseStoragePaths);
+        } catch (err) {
+          fileErrors.push(`Supabase Storage batch delete error: ${(err as Error).message}`);
         }
       }
 

@@ -2,16 +2,28 @@
  * Ghostly - Document Download API
  *
  * GET /api/documents/:id/download - Download the actual file
+ *
+ * Downloads from Supabase Storage for new files, falls back to
+ * local filesystem for legacy files (storage_path starting with "uploads/").
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, auditMutation, getOrgId } from '@/lib/api-helpers';
+import { downloadDocument } from '@/lib/storage';
 import { getUploadBasePath } from '@/lib/uploads';
 import path from 'path';
 import fs from 'fs/promises';
 
 type RouteContext = { params: Promise<{ id: string }> };
+
+/**
+ * Legacy storage paths start with "uploads/" and point to the local filesystem.
+ * New paths use the Supabase Storage format: "{orgId}/{docId}/{filename}".
+ */
+function isLegacyPath(storagePath: string): boolean {
+  return storagePath.startsWith('uploads/');
+}
 
 export const GET = withApiHandler({ permission: 'read', resource: 'documents' },
   async (request: NextRequest, context: RouteContext) => {
@@ -34,30 +46,43 @@ export const GET = withApiHandler({ permission: 'read', resource: 'documents' },
       );
     }
 
-    // Construct file path from storage_path
-    // storage_path is like: uploads/2026/02/{uuid}.pdf
-    // We need to strip the leading "uploads/" since getUploadBasePath already points to the uploads dir
-    const relativePath = doc.storage_path.replace(/^uploads\//, '');
-    const filePath = path.join(getUploadBasePath(), relativePath);
+    let fileBlob: Blob;
 
-    // Security: ensure the resolved path is within the upload directory
-    const resolvedPath = path.resolve(filePath);
-    const resolvedBase = path.resolve(getUploadBasePath());
-    if (!resolvedPath.startsWith(resolvedBase)) {
-      return NextResponse.json(
-        { error: 'Invalid file path' },
-        { status: 400 }
-      );
-    }
+    if (isLegacyPath(doc.storage_path)) {
+      // Legacy: local filesystem
+      const relativePath = doc.storage_path.replace(/^uploads\//, '');
+      const filePath = path.join(getUploadBasePath(), relativePath);
 
-    // Check file exists
-    try {
-      await fs.access(filePath);
-    } catch {
-      return NextResponse.json(
-        { error: 'File not found on disk' },
-        { status: 404 }
-      );
+      // Security: ensure the resolved path is within the upload directory
+      const resolvedPath = path.resolve(filePath);
+      const resolvedBase = path.resolve(getUploadBasePath());
+      if (!resolvedPath.startsWith(resolvedBase)) {
+        return NextResponse.json(
+          { error: 'Invalid file path' },
+          { status: 400 }
+        );
+      }
+
+      try {
+        const buf = await fs.readFile(filePath);
+        fileBlob = new Blob([buf], { type: doc.mime_type });
+      } catch {
+        return NextResponse.json(
+          { error: 'File not found on disk' },
+          { status: 404 }
+        );
+      }
+    } else {
+      // New: Supabase Storage
+      try {
+        fileBlob = await downloadDocument(doc.storage_path);
+      } catch (err) {
+        console.error('Supabase Storage download failed:', err);
+        return NextResponse.json(
+          { error: 'File not found in storage' },
+          { status: 404 }
+        );
+      }
     }
 
     // Audit log the download
@@ -69,10 +94,7 @@ export const GET = withApiHandler({ permission: 'read', resource: 'documents' },
       metadata: { filename: doc.original_filename },
     });
 
-    // Read file and stream it back
-    const fileBuffer = await fs.readFile(filePath);
-
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(fileBlob, {
       status: 200,
       headers: {
         'Content-Type': doc.mime_type,

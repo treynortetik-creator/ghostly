@@ -12,9 +12,8 @@ import { logAudit, getActor } from '@/lib/audit';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import { parsePagination, paginationMeta, paginationRange } from '@/lib/pagination';
 import { MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_LABEL } from '@/lib/constants';
-import { getUploadBasePath } from '@/lib/uploads';
+import { uploadDocument, deleteDocument } from '@/lib/storage';
 import path from 'path';
-import fs from 'fs/promises';
 import { randomUUID } from 'crypto';
 
 const ALLOWED_MIME_TYPES = [
@@ -280,12 +279,8 @@ export const POST = withApiHandler({ permission: 'write', resource: 'documents' 
       }
     }
 
-    // Generate storage path
-    const now = new Date();
-    const year = now.getFullYear().toString();
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    // Generate document ID
     const docId = randomUUID();
-    const storagePath = `uploads/${year}/${month}/${docId}${ext}`;
 
     // Read file bytes and verify magic bytes match claimed type
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -296,10 +291,8 @@ export const POST = withApiHandler({ permission: 'write', resource: 'documents' 
       );
     }
 
-    // Write file to disk
-    const absolutePath = path.join(getUploadBasePath(), year, month);
-    await fs.mkdir(absolutePath, { recursive: true });
-    await fs.writeFile(path.join(absolutePath, `${docId}${ext}`), buffer);
+    // Upload file to Supabase Storage
+    const storagePath = await uploadDocument(orgId, docId, buffer, file.type, `${docId}${ext}`);
 
     // Determine source and uploaded_by
     const { actor, actor_type } = await getActor(request);
@@ -325,9 +318,9 @@ export const POST = withApiHandler({ permission: 'write', resource: 'documents' 
       .single();
 
     if (insertError || !newDoc) {
-      // Clean up the file if DB insert fails
+      // Clean up the file from Supabase Storage if DB insert fails
       try {
-        await fs.unlink(path.join(absolutePath, `${docId}${ext}`));
+        await deleteDocument(storagePath);
       } catch { /* ignore cleanup errors */ }
       throw insertError || new Error('Failed to insert document record');
     }

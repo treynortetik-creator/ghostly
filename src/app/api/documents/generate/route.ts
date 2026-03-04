@@ -9,9 +9,7 @@ import { createClient } from '@/lib/supabase/server';
 import { withApiHandler, getOrgId } from '@/lib/api-helpers';
 import { logAudit, getActor } from '@/lib/audit';
 import { OPENROUTER_API_URL, DEFAULT_AGENT_MODEL } from '@/lib/ai';
-import { getUploadBasePath } from '@/lib/uploads';
-import path from 'path';
-import fs from 'fs/promises';
+import { uploadDocument, deleteDocument } from '@/lib/storage';
 import { randomUUID } from 'crypto';
 
 export const POST = withApiHandler({ permission: 'write', resource: 'documents/generate' },
@@ -209,18 +207,11 @@ ${sectionInstructions}`;
       return NextResponse.json({ error: 'AI returned empty content' }, { status: 502 });
     }
 
-    // Save as .md file
-    const now = new Date();
-    const year = now.getFullYear().toString();
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    // Save as .md file to Supabase Storage
     const docId = randomUUID();
     const filename = `${template.name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}-${event.name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}.md`;
-    const storagePath = `uploads/${year}/${month}/${docId}.md`;
-
-    const absolutePath = path.join(getUploadBasePath(), year, month);
-    await fs.mkdir(absolutePath, { recursive: true });
     const buffer = Buffer.from(markdownContent, 'utf-8');
-    await fs.writeFile(path.join(absolutePath, `${docId}.md`), buffer);
+    const storagePath = await uploadDocument(orgId, docId, buffer, 'text/markdown', `${docId}.md`);
 
     // Insert document record
     const { actor, actor_type } = await getActor(request);
@@ -243,7 +234,7 @@ ${sectionInstructions}`;
       .single();
 
     if (insertError) {
-      try { await fs.unlink(path.join(absolutePath, `${docId}.md`)); } catch { /* ignore */ }
+      try { await deleteDocument(storagePath); } catch { /* ignore */ }
       throw insertError;
     }
 
