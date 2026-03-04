@@ -21,6 +21,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/permissions';
 import { getOrgId } from '@/lib/api-helpers';
+import { checkRateLimit } from '@/lib/rate-limiter';
 import {
   agentTools,
   findTool,
@@ -67,6 +68,27 @@ interface ToolCall {
 
 // Max tool-call rounds to prevent runaway loops
 const MAX_TOOL_ROUNDS = 8;
+
+// Rate limiting: 20 requests per 60 seconds
+const RATE_LIMIT_MAX = 20;
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+
+// Message size limit: 16KB
+const MAX_MESSAGE_LENGTH = 16_384;
+
+function getClientIp(request: NextRequest): string {
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  if (forwardedFor) {
+    const candidate = forwardedFor.split(',')[0]?.trim();
+    if (candidate) return candidate;
+  }
+
+  return (
+    request.headers.get('x-real-ip') ||
+    request.headers.get('cf-connecting-ip') ||
+    'unknown'
+  );
+}
 
 // Context window management
 const CONTEXT_LIMIT = 196000;
@@ -177,6 +199,21 @@ export async function POST(request: NextRequest) {
   const denied = requirePermission(request, 'write');
   if (denied) return denied;
 
+  // Rate limiting
+  const ip = getClientIp(request);
+  const rateCheck = await checkRateLimit(`agent_chat:${ip}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
+  if (!rateCheck.allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please try again later.' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(Math.ceil((rateCheck.resetAt.getTime() - Date.now()) / 1000)),
+        },
+      }
+    );
+  }
+
   try {
     const orgId = getOrgId(request);
 
@@ -281,6 +318,14 @@ export async function POST(request: NextRequest) {
         }
         approvedToolCallIds = body.approved_tool_call_ids.map((id: unknown) => String(id));
       }
+    }
+
+    // Message size limit
+    if (message && message.length > MAX_MESSAGE_LENGTH) {
+      return NextResponse.json(
+        { error: `Message too long. Maximum ${MAX_MESSAGE_LENGTH} characters.` },
+        { status: 400 }
+      );
     }
 
     // Require either a message or files
