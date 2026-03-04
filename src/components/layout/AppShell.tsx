@@ -130,27 +130,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(SIDEBAR_KEY) === "true";
-  });
+  // Initialize with server-safe defaults to avoid hydration mismatch.
+  // Read actual values from localStorage in useEffect after mount.
+  const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
-    if (typeof window === "undefined") return new Set();
-    const stored = localStorage.getItem(SECTIONS_KEY);
-    if (!stored) return new Set();
-    try {
-      return new Set(JSON.parse(stored));
-    } catch {
-      return new Set();
-    }
-  });
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(
+    new Set()
+  );
   // Extract event_id from URL if on an event detail page (e.g. /events/[uuid])
   const eventIdMatch = pathname.match(/^\/events\/([0-9a-f-]{36})/);
   const currentEventId = eventIdMatch ? eventIdMatch[1] : null;
 
-  // Mark mounted to prevent hydration flicker in the sidebar layout.
+  // Read persisted layout state from localStorage after mount to avoid hydration mismatch.
   useEffect(() => {
+    setCollapsed(localStorage.getItem(SIDEBAR_KEY) === "true");
+    try {
+      const stored = localStorage.getItem(SECTIONS_KEY);
+      if (stored) setCollapsedSections(new Set(JSON.parse(stored)));
+    } catch { /* ignore corrupt data */ }
     setMounted(true);
   }, []);
 

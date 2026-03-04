@@ -39,22 +39,24 @@ function applyTheme(resolved: ResolvedTheme) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window === "undefined") return "system";
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored === "light" || stored === "dark" || stored === "system"
-      ? stored
-      : "system";
-  });
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => {
-    if (typeof window === "undefined") return "light";
+  // Initialize with server-safe defaults to avoid hydration mismatch.
+  // The inline <script> in layout.tsx already applies the correct class
+  // before React hydrates, so there's no visible flash.
+  const [theme, setThemeState] = useState<Theme>("system");
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
+
+  // Read the actual stored theme after mount
+  useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     const initial: Theme =
       stored === "light" || stored === "dark" || stored === "system"
         ? stored
         : "system";
-    return initial === "system" ? getSystemTheme() : initial;
-  });
+    const resolved = initial === "system" ? getSystemTheme() : initial;
+    setThemeState(initial);
+    setResolvedTheme(resolved);
+    applyTheme(resolved);
+  }, []);
 
   useEffect(() => {
     applyTheme(resolvedTheme);
