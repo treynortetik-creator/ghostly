@@ -64,7 +64,10 @@ export async function getIntegrationTools(orgId: string): Promise<AgentTool[]> {
  * Call this once before using getIntegrationTools().
  */
 export async function ensureIntegrationsRegistered(): Promise<void> {
-  if (registeredIntegrations.size === 0) {
+  if (!registeredIntegrations.has('slack')) {
     await import('./slack/index');
+  }
+  if (!registeredIntegrations.has('email')) {
+    await import('./email/index');
   }
 }
