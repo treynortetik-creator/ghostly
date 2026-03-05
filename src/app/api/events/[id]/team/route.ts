@@ -73,6 +73,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/team
       .from('event_team_assignments')
       .insert({
         event_id: eventId,
+        organization_id: orgId,
         team_member_id: body.team_member_id,
         event_role: body.event_role?.trim() || null,
         notes: body.notes?.trim() || null,

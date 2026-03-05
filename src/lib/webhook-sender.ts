@@ -79,6 +79,7 @@ export async function queueWebhookEvent(eventType: string, data: Record<string, 
     // Insert delivery records and get IDs back
     const deliveries = matching.map(w => ({
       webhook_id: w.id,
+      organization_id: organizationId,
       event_type: eventType,
       payload: payload as unknown as Json,
       status: 'pending',

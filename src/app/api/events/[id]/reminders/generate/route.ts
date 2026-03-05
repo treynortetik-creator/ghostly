@@ -99,6 +99,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/remi
 
       return {
         event_id: eventId,
+        organization_id: orgId,
         milestone_id: m.id,
         reminder_date: dateStr,
         title: m.title,

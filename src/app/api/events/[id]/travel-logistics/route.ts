@@ -186,6 +186,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/trav
       .from('event_travel_logistics')
       .insert({
         event_id: eventId,
+        organization_id: orgId,
         team_member_id: body.team_member_id || null,
         traveler_name: travelerName,
         traveler_email: trimOrNull(body.traveler_email),

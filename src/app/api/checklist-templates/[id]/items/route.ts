@@ -37,6 +37,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'checklist-t
       .from('checklist_template_items')
       .insert({
         template_id: templateId,
+        organization_id: orgId,
         title: body.title.trim(),
         description: body.description?.trim() || null,
         phase: body.phase as ChecklistPhase,

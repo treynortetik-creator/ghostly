@@ -91,6 +91,7 @@ export const POST = withApiHandler({ permission: 'read', resource: 'reminders/ch
     // Log the reminders we're returning (so they won't be returned again today)
     if (reminders.length > 0) {
       const logEntries = reminders.map(r => ({
+        organization_id: orgId,
         reminder_type: r.type,
         entity_type: 'event',
         entity_id: r.event_id,

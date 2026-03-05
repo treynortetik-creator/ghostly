@@ -79,6 +79,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/ship
       .from('event_shipments')
       .insert({
         event_id: eventId,
+        organization_id: orgId,
         description: body.description.trim(),
         carrier: body.carrier?.trim() || null,
         tracking_number: body.tracking_number?.trim() || null,

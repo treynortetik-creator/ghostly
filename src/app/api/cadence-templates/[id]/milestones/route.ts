@@ -45,6 +45,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'cadence-mil
       .from('cadence_milestones')
       .insert({
         template_id: templateId,
+        organization_id: orgId,
         title: body.title.trim(),
         description: body.description?.trim() || null,
         offset_days: offsetDays,
