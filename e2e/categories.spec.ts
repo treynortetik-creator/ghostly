@@ -1,7 +1,5 @@
 import { test, expect } from '@playwright/test';
 
-const TEST_CATEGORY_NAME = 'PW-Test-Category-' + Date.now();
-
 test.describe('Categories', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/categories');
@@ -50,7 +48,10 @@ test.describe('Categories', () => {
 });
 
 test.describe('Categories CRUD', () => {
-  test('create, navigate, edit, and delete category', async ({ page }) => {
+  test('create, navigate, edit (save), and delete category', async ({ page }) => {
+    const TEST_CATEGORY_NAME = 'PW-Test-Category-' + Date.now();
+    const EDITED_CATEGORY_NAME = TEST_CATEGORY_NAME + '-Edited';
+
     // --- CREATE ---
     await page.goto('/categories');
     await page.waitForLoadState('networkidle');
@@ -89,7 +90,7 @@ test.describe('Categories CRUD', () => {
     // Back to Categories link
     await expect(page.getByText('Back to Categories').first()).toBeVisible();
 
-    // --- EDIT (verify form opens, fields pre-populated, then cancel) ---
+    // --- EDIT (change name and budget, then save) ---
     await page.getByRole('button', { name: /^edit$/i }).click();
     await expect(page.getByRole('heading', { name: /edit category details/i })).toBeVisible({ timeout: 10_000 });
 
@@ -97,15 +98,18 @@ test.describe('Categories CRUD', () => {
     await expect(page.locator('#name')).toHaveValue(TEST_CATEGORY_NAME);
     await expect(page.locator('#budget_amount')).toHaveValue('5000');
 
-    // Verify Save Changes and Cancel buttons are present
-    await expect(page.getByRole('button', { name: /save changes/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /cancel/i })).toBeVisible();
+    // Change the name and budget
+    await page.locator('#name').clear();
+    await page.locator('#name').fill(EDITED_CATEGORY_NAME);
+    await page.locator('#budget_amount').clear();
+    await page.locator('#budget_amount').fill('7500');
 
-    // Cancel to go back to detail view
-    await page.getByRole('button', { name: /cancel/i }).click();
+    // Save changes (bug fix: categories PUT now sanitizes empty fiscal_year_id to null)
+    await page.getByRole('button', { name: /save changes/i }).click();
+    await page.waitForLoadState('networkidle');
 
-    // Should be back on detail view
-    await expect(page.getByRole('heading', { name: TEST_CATEGORY_NAME })).toBeVisible({ timeout: 10_000 });
+    // Should be back on detail view with updated name
+    await expect(page.getByRole('heading', { name: EDITED_CATEGORY_NAME })).toBeVisible({ timeout: 10_000 });
 
     // --- DELETE ---
     await page.getByRole('button', { name: /^delete$/i }).click();
@@ -117,7 +121,8 @@ test.describe('Categories CRUD', () => {
     // Should redirect back to categories list
     await expect(page).toHaveURL(/\/categories$/, { timeout: 10_000 });
 
-    // Deleted category should not be in list
+    // Deleted category should not be in list (check both original and edited names)
+    await expect(page.getByText(EDITED_CATEGORY_NAME)).not.toBeVisible({ timeout: 5_000 });
     await expect(page.getByText(TEST_CATEGORY_NAME)).not.toBeVisible({ timeout: 5_000 });
   });
 });

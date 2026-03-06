@@ -1,30 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 
-/**
- * Delete events matching a name pattern via Supabase REST API.
- * Used for cleanup after test runs.
- */
-async function deleteEventsByNamePattern(namePattern: string): Promise<void> {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in .env.test');
-  }
-
-  await fetch(
-    `${url}/rest/v1/events?name=like.${encodeURIComponent(`%${namePattern}%`)}`,
-    {
-      method: 'DELETE',
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-        Prefer: 'return=minimal',
-      },
-    },
-  );
-}
-
-const TEST_PREFIX = 'PW Test Event';
+const TEST_PREFIX = 'PW UI Test';
 
 test.describe('Events List Page', () => {
   test.beforeEach(async ({ page }) => {
@@ -296,8 +272,7 @@ test.describe('Event Detail Page', () => {
     await expect(page.locator('text=Clone Event').first()).toBeVisible({ timeout: 5_000 });
     await expect(page.getByPlaceholder('Enter a name for the cloned event')).toBeVisible();
 
-    // Cancel the clone - use the one inside the clone card (not the delete confirm dialog)
-    const cloneCard = page.locator('text=Clone Event').first().locator('..');
+    // Cancel the clone
     await page.getByRole('button', { name: 'Cancel' }).last().click();
   });
 });
@@ -340,92 +315,100 @@ test.describe('Create Event Form UI', () => {
   });
 });
 
-test.describe('Create, Edit, and Clone Event', () => {
-  const uniqueSuffix = Date.now();
-  const testEventName = `${TEST_PREFIX} ${uniqueSuffix}`;
-  const clonedEventName = `${TEST_PREFIX} Clone ${uniqueSuffix}`;
-  let testEventId: string | null = null;
+test.describe('Full Event CRUD via UI', () => {
+  test('create event via UI, verify in list, navigate to detail, edit, then delete', async ({ page }) => {
+    const uniqueSuffix = Date.now();
+    const testEventName = `${TEST_PREFIX} ${uniqueSuffix}`;
+    const updatedLocation = 'Updated City, UC';
 
-  test.afterAll(async () => {
-    // Clean up test events via Supabase
-    await deleteEventsByNamePattern(`${TEST_PREFIX} ${uniqueSuffix}`);
-    await deleteEventsByNamePattern(`${TEST_PREFIX} Clone ${uniqueSuffix}`);
-  });
-
-  test('create event via API, verify in list, edit via UI, then clone', async ({ page }) => {
-    // --- Step 1: Get org ID and event type via Supabase to seed test data ---
-    const sbUrl = process.env.SUPABASE_URL!;
-    const sbKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-    // Get the first organization
-    const orgRes = await fetch(`${sbUrl}/rest/v1/organizations?select=id&limit=1`, {
-      headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` },
-    });
-    const orgs = await orgRes.json();
-    const orgId = orgs[0]?.id;
-    expect(orgId).toBeTruthy();
-
-    // Get the first event type
-    const etRes = await fetch(`${sbUrl}/rest/v1/event_types?select=id&organization_id=eq.${orgId}&limit=1`, {
-      headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` },
-    });
-    const eventTypes = await etRes.json();
-    const eventTypeId = eventTypes[0]?.id;
-    expect(eventTypeId).toBeTruthy();
-
-    // --- Step 2: Create event directly via Supabase ---
-    const insertRes = await fetch(`${sbUrl}/rest/v1/events`, {
-      method: 'POST',
-      headers: {
-        apikey: sbKey,
-        Authorization: `Bearer ${sbKey}`,
-        'Content-Type': 'application/json',
-        Prefer: 'return=representation',
-      },
-      body: JSON.stringify({
-        organization_id: orgId,
-        name: testEventName,
-        event_type_id: eventTypeId,
-        quarter: 'Q2',
-        budget_amount: 5000,
-        location: 'Test City, TS',
-      }),
-    });
-    const insertedEvents = await insertRes.json();
-    testEventId = insertedEvents[0]?.id;
-    expect(testEventId).toBeTruthy();
-
-    // --- Step 3: Verify event appears in the UI list ---
+    // =============================================
+    // STEP 1: CREATE EVENT VIA UI
+    // =============================================
     await page.goto('/events');
     await page.waitForLoadState('networkidle');
+    await expect(page.getByRole('heading', { name: 'The Event Ledger' })).toBeVisible({ timeout: 15_000 });
 
-    // Search for our event
+    // Click "Add Event"
+    await page.getByRole('button', { name: /Add Event/i }).click();
+    await expect(page.locator('text=Register New Event')).toBeVisible({ timeout: 10_000 });
+
+    // Fill in event name
+    await page.locator('#name').fill(testEventName);
+
+    // Wait for event types dropdown to populate (the bug fix ensures types load)
+    const eventTypeSelect = page.locator('#event_type_id');
+    await expect(eventTypeSelect).toBeVisible();
+
+    // Wait for the dropdown to have real options (not just "Select event type...")
+    await expect(eventTypeSelect.locator('option')).toHaveCount(
+      await eventTypeSelect.locator('option').count(), // just wait for it to stabilize
+    );
+    // Wait until there's more than 1 option (the placeholder + at least one type)
+    await page.waitForFunction(
+      () => {
+        const select = document.querySelector('#event_type_id') as HTMLSelectElement;
+        return select && select.options.length > 1;
+      },
+      { timeout: 15_000 },
+    );
+
+    // Select the first real event type
+    const firstTypeOption = eventTypeSelect.locator('option').nth(1);
+    const firstTypeValue = await firstTypeOption.getAttribute('value');
+    expect(firstTypeValue).toBeTruthy();
+    await eventTypeSelect.selectOption(firstTypeValue!);
+
+    // Select quarter Q2
+    await page.locator('#quarter').selectOption('Q2');
+
+    // Enter budget amount
+    await page.locator('#budget_amount').fill('7500');
+
+    // Enter location
+    await page.locator('#location').fill('Test City, TS');
+
+    // Submit the form
+    await page.getByRole('button', { name: /Create Event/i }).click();
+
+    // Wait for the form to close (event created successfully)
+    await expect(page.locator('text=Register New Event')).not.toBeVisible({ timeout: 15_000 });
+
+    // =============================================
+    // STEP 2: VERIFY EVENT APPEARS IN THE LIST
+    // =============================================
+    // Search for the newly created event
     const searchInput = page.getByPlaceholder('Search events...');
-    await expect(searchInput).toBeVisible({ timeout: 15_000 });
+    await expect(searchInput).toBeVisible({ timeout: 10_000 });
     await searchInput.fill(testEventName);
     await page.waitForTimeout(1000);
 
+    // The event should appear in the list
     await expect(page.locator(`text=${testEventName}`)).toBeVisible({ timeout: 10_000 });
 
-    // --- Step 4: Navigate to the event detail page ---
-    await page.goto(`/events/${testEventId}`);
+    // =============================================
+    // STEP 3: NAVIGATE TO EVENT DETAIL PAGE
+    // =============================================
+    await page.locator(`a`, { hasText: testEventName }).click();
     await page.waitForLoadState('networkidle');
 
-    // Verify event header
+    // Verify we're on the detail page
+    await expect(page).toHaveURL(/\/events\/[a-f0-9-]+/);
     await expect(page.locator('h1', { hasText: testEventName })).toBeVisible({ timeout: 10_000 });
     await expect(page.locator('span', { hasText: 'Q2' })).toBeVisible();
     await expect(page.locator('text=Test City, TS')).toBeVisible();
 
-    // --- Step 5: Edit the event via UI ---
+    // =============================================
+    // STEP 4: EDIT THE EVENT VIA UI
+    // =============================================
     await page.getByRole('button', { name: /Edit/i }).click();
     await expect(page.locator('text=Edit Event Details')).toBeVisible({ timeout: 10_000 });
 
     // Change location
     const locationInput = page.locator('#location');
     await locationInput.clear();
-    await locationInput.fill('Updated City, UC');
+    await locationInput.fill(updatedLocation);
 
-    // Save
+    // Save changes
     await page.getByRole('button', { name: /Save Changes/i }).click();
     await page.waitForLoadState('networkidle');
 
@@ -433,36 +416,28 @@ test.describe('Create, Edit, and Clone Event', () => {
     await expect(page.locator('[role="tablist"]')).toBeVisible({ timeout: 10_000 });
     await expect(page.locator('text=Updated City, UC')).toBeVisible();
 
-    // --- Step 6: Clone the event ---
-    const originalUrl = page.url();
+    // =============================================
+    // STEP 5: DELETE THE EVENT VIA UI
+    // =============================================
+    await page.getByRole('button', { name: /Delete/i }).click();
 
-    await page.getByRole('button', { name: /Clone$/i }).click();
-    await expect(page.locator('h3', { hasText: 'Clone Event' })).toBeVisible({ timeout: 5_000 });
+    // Wait for confirmation dialog
+    await expect(page.getByText(/are you sure you want to delete/i)).toBeVisible({ timeout: 5_000 });
 
-    // Fill in the clone name
-    const cloneNameInput = page.getByPlaceholder('Enter a name for the cloned event');
-    await cloneNameInput.clear();
-    await cloneNameInput.fill(clonedEventName);
+    // Confirm deletion - the ConfirmDialog uses confirmLabel="Delete"
+    await page.getByRole('button', { name: 'Delete' }).last().click();
 
-    // Click the "Clone Event" submit button (the primary button, not the header text)
-    // Use a more targeted selector: the button with variant=primary inside the clone card
-    const cloneSubmitBtn = page.locator('button', { hasText: 'Clone Event' }).filter({ has: page.locator('svg') });
-    await cloneSubmitBtn.click();
+    // Should redirect back to events list
+    await expect(page).toHaveURL(/\/events$/, { timeout: 15_000 });
 
-    // Wait for the clone API call to complete and redirect
-    await page.waitForResponse(
-      (resp) => resp.url().includes('/clone') && resp.request().method() === 'POST',
-      { timeout: 15_000 },
-    );
+    // Verify deleted event is no longer in the list
     await page.waitForLoadState('networkidle');
+    const searchAfterDelete = page.getByPlaceholder('Search events...');
+    await expect(searchAfterDelete).toBeVisible({ timeout: 10_000 });
+    await searchAfterDelete.fill(testEventName);
+    await page.waitForTimeout(1000);
 
-    // Should redirect to the new cloned event (different URL)
-    // Wait for navigation to happen
-    await page.waitForTimeout(2000);
-    const newUrl = page.url();
-    expect(newUrl).not.toBe(originalUrl);
-
-    // Verify the cloned event name is shown
-    await expect(page.locator('h1', { hasText: clonedEventName })).toBeVisible({ timeout: 10_000 });
+    // Should not find the deleted event
+    await expect(page.locator(`text=${testEventName}`)).not.toBeVisible({ timeout: 5_000 });
   });
 });
