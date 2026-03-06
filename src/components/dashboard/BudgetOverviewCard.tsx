@@ -33,6 +33,7 @@ export function BudgetOverviewCard({
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -44,12 +45,14 @@ export function BudgetOverviewCard({
 
   const startEditing = () => {
     setEditValue(budget.toString());
+    setSaveError(null);
     setIsEditing(true);
   };
 
   const cancelEditing = () => {
     setIsEditing(false);
     setEditValue("");
+    setSaveError(null);
   };
 
   const saveBudget = async () => {
@@ -60,9 +63,13 @@ export function BudgetOverviewCard({
     }
 
     setIsSaving(true);
+    setSaveError(null);
     try {
       const res = await fetch("/api/settings");
-      if (!res.ok) throw new Error("Failed to fetch settings");
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || `Settings fetch failed (${res.status})`);
+      }
       const data = await res.json();
 
       const putRes = await fetch("/api/settings", {
@@ -75,19 +82,27 @@ export function BudgetOverviewCard({
         }),
       });
 
-      if (!putRes.ok) throw new Error("Failed to save budget");
+      if (!putRes.ok) {
+        const errBody = await putRes.json().catch(() => ({}));
+        throw new Error(errBody.error || `Save failed (${putRes.status})`);
+      }
 
-      onBudgetChange?.(newBudget);
       setIsEditing(false);
-    } catch {
-      // Revert on error
+      onBudgetChange?.(newBudget);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to save";
+      setSaveError(msg);
+      console.error("Budget save error:", err);
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") saveBudget();
+    if (e.key === "Enter") {
+      e.preventDefault();
+      saveBudget();
+    }
     if (e.key === "Escape") cancelEditing();
   };
 
@@ -181,20 +196,25 @@ export function BudgetOverviewCard({
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={saveBudget}
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); saveBudget(); }}
                     disabled={isSaving}
-                    className="px-3 py-1 text-xs font-medium bg-spectral text-white rounded-md hover:bg-spectral-light transition-colors disabled:opacity-50"
+                    className="px-3 py-1 text-xs font-medium bg-spectral text-white rounded-md hover:bg-spectral-light transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     {isSaving ? "Saving..." : "Save"}
                   </button>
                   <button
-                    onClick={cancelEditing}
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); cancelEditing(); }}
                     disabled={isSaving}
-                    className="px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                    className="px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
                 </div>
+                {saveError && (
+                  <p className="text-xs text-destructive">{saveError}</p>
+                )}
               </div>
             ) : (
               <button
