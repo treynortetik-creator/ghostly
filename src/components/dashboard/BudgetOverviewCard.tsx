@@ -162,22 +162,39 @@ export function BudgetOverviewCard({
               </span>
             </div>
             {isEditing ? (
-              <div className="relative inline-flex items-center">
-                <span className="absolute left-2 text-xl font-bold text-spectral">$</span>
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={editValue}
-                  onChange={(e) => {
-                    const cleaned = e.target.value.replace(/[^0-9.]/g, "");
-                    const parts = cleaned.split(".");
-                    setEditValue(parts.length > 2 ? parts[0] + "." + parts.slice(1).join("") : cleaned);
-                  }}
-                  onKeyDown={handleKeyDown}
-                  onBlur={saveBudget}
-                  disabled={isSaving}
-                  className="w-48 pl-7 pr-3 py-1 text-3xl font-bold text-foreground tabular-nums bg-background border border-spectral rounded-md focus:outline-none focus:ring-2 focus:ring-spectral/50 text-center"
-                />
+              <div className="inline-flex flex-col items-center gap-2">
+                <div className="relative inline-flex items-center">
+                  <span className="absolute left-2 text-xl font-bold text-spectral">$</span>
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={editValue}
+                    onChange={(e) => {
+                      const cleaned = e.target.value.replace(/[^0-9.]/g, "");
+                      const parts = cleaned.split(".");
+                      setEditValue(parts.length > 2 ? parts[0] + "." + parts.slice(1).join("") : cleaned);
+                    }}
+                    onKeyDown={handleKeyDown}
+                    disabled={isSaving}
+                    className="w-48 pl-7 pr-3 py-1 text-3xl font-bold text-foreground tabular-nums bg-background border border-spectral rounded-md focus:outline-none focus:ring-2 focus:ring-spectral/50 text-center"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={saveBudget}
+                    disabled={isSaving}
+                    className="px-3 py-1 text-xs font-medium bg-spectral text-white rounded-md hover:bg-spectral-light transition-colors disabled:opacity-50"
+                  >
+                    {isSaving ? "Saving..." : "Save"}
+                  </button>
+                  <button
+                    onClick={cancelEditing}
+                    disabled={isSaving}
+                    className="px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             ) : (
               <button
