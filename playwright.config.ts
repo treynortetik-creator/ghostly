@@ -33,7 +33,7 @@ export default defineConfig({
     // Authenticated tests (depend on setup)
     {
       name: 'authenticated',
-      testMatch: /\/(auth|dashboard)\.spec\.ts$/,
+      testMatch: /\/(auth|dashboard|events|expenses|categories|contacts|team|documents|settings|admin|app-shell|roi)\.spec\.ts$/,
       dependencies: ['setup'],
       use: {
         ...devices['Desktop Chrome'],
