@@ -81,7 +81,9 @@ export async function checkRateLimit(
       return { allowed: false, remaining: 0, resetAt };
     }
 
-    const data = await res.json();
+    const raw = await res.json();
+    // The RPC returns an array of rows; unwrap the first element.
+    const data = Array.isArray(raw) ? raw[0] : raw;
     if (!data || typeof data !== 'object') {
       if (failOpenOnError) {
         return { allowed: true, remaining: limit, resetAt };
