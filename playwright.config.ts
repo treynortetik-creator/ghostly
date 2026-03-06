@@ -30,10 +30,20 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
 
+    // Security tests (no auth — uses fresh context)
+    {
+      name: 'security',
+      testMatch: /auth-security\.spec\.ts$/,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: { cookies: [], origins: [] },
+      },
+    },
+
     // Authenticated tests (depend on setup)
     {
       name: 'authenticated',
-      testMatch: /\/(auth|dashboard|events|expenses|categories|contacts|team|documents|settings|admin|app-shell|roi|export|import|webhooks|integrations|calendar)\.spec\.ts$/,
+      testMatch: /\/(auth|dashboard|events|expenses|categories|contacts|team|documents|settings|admin|app-shell|roi|export|import|file-upload|webhooks|integrations|calendar|edge-cases|api)\.spec\.ts$/,
       dependencies: ['setup'],
       use: {
         ...devices['Desktop Chrome'],
