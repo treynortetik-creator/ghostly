@@ -80,6 +80,7 @@ export const POST = withApiHandler({ permission: 'admin', resource: 'webhooks/te
     // Record the test delivery
     await supabase.from('webhook_deliveries').insert({
       webhook_id: webhook.id,
+      organization_id: orgId,
       event_type: 'webhook.test',
       payload: testPayload as unknown as Json,
       status: deliveryStatus,

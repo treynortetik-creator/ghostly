@@ -1,14 +1,16 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, ProgressBar } from "@/components/ui";
 import { formatCurrency } from "@/lib/format";
-import { DollarSign, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { DollarSign, TrendingDown, TrendingUp, Wallet, Pencil } from "lucide-react";
 
 /* ============================================
    BUDGET OVERVIEW CARD
    ============================================
    Displays total budget, actual spending, and remaining
    with Ghostly-themed presentation and progress bar.
+   Budget is inline-editable — click to change.
    ============================================ */
 
 export interface BudgetOverviewCardProps {
@@ -17,6 +19,7 @@ export interface BudgetOverviewCardProps {
   actual: number;
   remaining: number;
   className?: string;
+  onBudgetChange?: (newBudget: number) => void;
 }
 
 export function BudgetOverviewCard({
@@ -25,7 +28,84 @@ export function BudgetOverviewCard({
   actual,
   remaining,
   className,
+  onBudgetChange,
 }: BudgetOverviewCardProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const startEditing = () => {
+    setEditValue(budget.toString());
+    setSaveError(null);
+    setIsEditing(true);
+  };
+
+  const cancelEditing = () => {
+    setIsEditing(false);
+    setEditValue("");
+    setSaveError(null);
+  };
+
+  const saveBudget = async () => {
+    const newBudget = parseFloat(editValue) || 0;
+    if (newBudget === budget) {
+      cancelEditing();
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      const res = await fetch("/api/settings");
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || `Settings fetch failed (${res.status})`);
+      }
+      const data = await res.json();
+
+      const putRes = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fiscal_year_id: data.settings.fiscal_year_id,
+          openrouter_model: data.settings.openrouter_model,
+          total_budget: newBudget,
+        }),
+      });
+
+      if (!putRes.ok) {
+        const errBody = await putRes.json().catch(() => ({}));
+        throw new Error(errBody.error || `Save failed (${putRes.status})`);
+      }
+
+      setIsEditing(false);
+      onBudgetChange?.(newBudget);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to save";
+      setSaveError(msg);
+      console.error("Budget save error:", err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      saveBudget();
+    }
+    if (e.key === "Escape") cancelEditing();
+  };
+
   const hasSetBudget = allocated !== undefined && allocated !== budget;
   const percentUsed = budget > 0 ? (actual / budget) * 100 : 0;
   const isOverBudget = actual > budget;
@@ -84,26 +164,70 @@ export function BudgetOverviewCard({
 
         {/* Main Stats Grid */}
         <div className="grid grid-cols-3 gap-6 mb-6">
-          {/* Total Budget */}
+          {/* Total Budget — inline editable */}
           <div
             className="text-center border-r border-border pr-6"
-           
           >
             <div
               className="flex items-center justify-center gap-2 text-muted-foreground mb-1"
-             
             >
               <DollarSign className="w-4 h-4" />
               <span className="text-sm font-medium">
                 Total Budget
               </span>
             </div>
-            <p
-              className="text-3xl font-bold text-foreground tabular-nums"
-             
-            >
-              {formatCurrency(budget)}
-            </p>
+            {isEditing ? (
+              <div className="inline-flex flex-col items-center gap-2">
+                <div className="relative inline-flex items-center">
+                  <span className="absolute left-2 text-xl font-bold text-spectral">$</span>
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={editValue}
+                    onChange={(e) => {
+                      const cleaned = e.target.value.replace(/[^0-9.]/g, "");
+                      const parts = cleaned.split(".");
+                      setEditValue(parts.length > 2 ? parts[0] + "." + parts.slice(1).join("") : cleaned);
+                    }}
+                    onKeyDown={handleKeyDown}
+                    disabled={isSaving}
+                    className="w-48 pl-7 pr-3 py-1 text-3xl font-bold text-foreground tabular-nums bg-background border border-spectral rounded-md focus:outline-none focus:ring-2 focus:ring-spectral/50 text-center"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); saveBudget(); }}
+                    disabled={isSaving}
+                    className="px-3 py-1 text-xs font-medium bg-spectral text-white rounded-md hover:bg-spectral-light transition-colors disabled:opacity-50 cursor-pointer"
+                  >
+                    {isSaving ? "Saving..." : "Save"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); cancelEditing(); }}
+                    disabled={isSaving}
+                    className="px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+                {saveError && (
+                  <p className="text-xs text-destructive">{saveError}</p>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={startEditing}
+                className="group inline-flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                title="Click to edit budget"
+              >
+                <p className="text-3xl font-bold text-foreground tabular-nums">
+                  {formatCurrency(budget)}
+                </p>
+                <Pencil className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+            )}
           </div>
 
           {/* Actual Spent */}

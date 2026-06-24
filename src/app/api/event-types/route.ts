@@ -39,13 +39,6 @@ export const GET = withApiHandler({ permission: 'read', resource: 'event-types' 
     const modifiedAfter = searchParams.get('modified_after');
     const idsParam = searchParams.get('ids');
 
-    if (!fiscalYearId) {
-      return NextResponse.json(
-        { error: 'fiscal_year_id is required' },
-        { status: 400 }
-      );
-    }
-
     // Validate modified_after if provided
     if (modifiedAfter && isNaN(Date.parse(modifiedAfter))) {
       return NextResponse.json(
@@ -54,9 +47,10 @@ export const GET = withApiHandler({ permission: 'read', resource: 'event-types' 
       );
     }
 
-    const filters: { fiscal_year_id: string; modified_after?: string } = {
-      fiscal_year_id: fiscalYearId,
-    };
+    const filters: { fiscal_year_id?: string; modified_after?: string } = {};
+    if (fiscalYearId) {
+      filters.fiscal_year_id = fiscalYearId;
+    }
     if (modifiedAfter) {
       filters.modified_after = modifiedAfter;
     }
@@ -67,8 +61,12 @@ export const GET = withApiHandler({ permission: 'read', resource: 'event-types' 
       .from('event_types')
       .select('*')
       .eq('organization_id', orgId)
-      .eq('fiscal_year_id', fiscalYearId)
       .order('display_order', { ascending: true });
+
+    // Filter by fiscal year if provided; otherwise return all event types for the org
+    if (fiscalYearId) {
+      query = query.eq('fiscal_year_id', fiscalYearId);
+    }
 
     if (!includeArchived) {
       query = query.eq('is_archived', false);
@@ -80,14 +78,18 @@ export const GET = withApiHandler({ permission: 'read', resource: 'event-types' 
       query = query.in('id', idsParam.split(','));
     }
 
+    let eventsQuery = supabase
+      .from('events')
+      .select('id, event_type_id, budget_amount')
+      .eq('organization_id', orgId)
+      .is('deleted_at', null);
+    if (fiscalYearId) {
+      eventsQuery = eventsQuery.eq('fiscal_year_id', fiscalYearId);
+    }
+
     const [eventTypesResult, eventsResult, expensesResult] = await Promise.all([
       query,
-      supabase
-        .from('events')
-        .select('id, event_type_id, budget_amount')
-        .eq('organization_id', orgId)
-        .eq('fiscal_year_id', fiscalYearId)
-        .is('deleted_at', null),
+      eventsQuery,
       supabase
         .from('expenses')
         .select('event_id, amount')

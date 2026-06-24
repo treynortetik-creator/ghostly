@@ -88,6 +88,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/note
       .from('event_notes')
       .insert({
         event_id: eventId,
+        organization_id: orgId,
         author: body.author.trim(),
         note_type: body.note_type || 'general',
         title: body.title?.trim() || null,

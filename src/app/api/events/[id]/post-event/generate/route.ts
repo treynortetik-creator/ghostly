@@ -190,6 +190,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/post
           .from('event_notes')
           .insert({
             event_id: eventId,
+            organization_id: orgId,
             author: 'Ghostly Agent',
             note_type: 'post_event',
             title: section.title,

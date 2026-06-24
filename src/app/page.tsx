@@ -336,12 +336,6 @@ export default function LandingPage() {
             </span>
           </Link>
 
-          {/* Right: Sign In */}
-          <Link href="/login">
-            <Button variant="ghost" size="sm">
-              Sign In
-            </Button>
-          </Link>
         </div>
       </nav>
 

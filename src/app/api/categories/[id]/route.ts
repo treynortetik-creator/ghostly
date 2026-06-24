@@ -156,7 +156,7 @@ export const PUT = withApiHandler({ permission: 'write', resource: 'categories' 
     };
 
     if (body.name !== undefined) updateData.name = body.name;
-    if (body.fiscal_year_id !== undefined) updateData.fiscal_year_id = body.fiscal_year_id;
+    if (body.fiscal_year_id !== undefined) updateData.fiscal_year_id = body.fiscal_year_id?.trim() || null;
     if (body.budget_amount !== undefined) updateData.budget_amount = parseFloat(body.budget_amount);
     if (body.description !== undefined) updateData.description = body.description;
 

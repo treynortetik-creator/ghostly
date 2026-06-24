@@ -73,6 +73,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/chec
 
         return {
           event_id: eventId,
+          organization_id: orgId,
           template_item_id: ti.id,
           title: ti.title,
           description: ti.description,

@@ -56,6 +56,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'agent-tools
       .from('event_checklist_items')
       .insert({
         event_id,
+        organization_id: orgId,
         title,
         description: description || null,
         phase: phase || 'pre_event',

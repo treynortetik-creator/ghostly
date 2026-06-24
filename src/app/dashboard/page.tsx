@@ -201,7 +201,7 @@ export default function DashboardPage() {
             allocated={data.total.allocated}
             actual={data.total.actual}
             remaining={data.total.remaining}
-
+            onBudgetChange={() => fetchDashboardData()}
           />
 
           {/* Event Type and Quarter Summary Grid */}

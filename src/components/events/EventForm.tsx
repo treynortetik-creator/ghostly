@@ -91,16 +91,21 @@ export function EventForm({
           const settingsRes = await fetch("/api/settings");
           if (settingsRes.ok) {
             const settingsData = await settingsRes.json();
-            fyId = settingsData.settings?.fiscal_year_id;
+            fyId = settingsData.settings?.fiscal_year_id || "";
+            // Populate the form's fiscal_year_id so the created event is associated correctly
+            if (fyId) {
+              setFormData((prev) => ({ ...prev, fiscal_year_id: fyId }));
+            }
           }
         }
 
-        if (fyId) {
-          const res = await fetch(`/api/event-types?fiscal_year_id=${fyId}`);
-          if (res.ok) {
-            const data = await res.json();
-            setEventTypes(data.event_types || []);
-          }
+        const url = fyId
+          ? `/api/event-types?fiscal_year_id=${fyId}`
+          : '/api/event-types';
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          setEventTypes(data.event_types || []);
         }
       } catch (err) {
         console.error("Failed to load event types:", err);

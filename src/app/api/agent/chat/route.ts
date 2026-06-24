@@ -570,6 +570,7 @@ export async function POST(request: NextRequest) {
 
       await supabase.from('chat_messages').insert({
         session_id,
+        organization_id: orgId,
         role: 'user',
         content: message.trim() || (uploadedFiles.length > 0 ? `[${uploadedFiles.length} file(s) attached]` : ''),
         attachments: attachments.length > 0 ? attachments : [],
@@ -721,6 +722,7 @@ export async function POST(request: NextRequest) {
 
           await supabase.from('chat_messages').insert({
             session_id,
+            organization_id: orgId,
             role: 'assistant',
             content: assistantMessage.content || null,
             tool_calls: assistantMessage.tool_calls as unknown as Json,
@@ -849,6 +851,7 @@ export async function POST(request: NextRequest) {
 
         await supabase.from('chat_messages').insert({
           session_id,
+          organization_id: orgId,
           role: 'tool',
           content: null,
           tool_results: toolResults,
@@ -875,6 +878,7 @@ export async function POST(request: NextRequest) {
     // ─── Save final assistant response to DB ─────────────────────────────
     await supabase.from('chat_messages').insert({
       session_id,
+      organization_id: orgId,
       role: 'assistant',
       content: finalContent,
     });

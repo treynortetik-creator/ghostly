@@ -71,6 +71,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'templates/s
 
       const sectionRows = tmpl.sections.map((s) => ({
         template_id: template.id,
+        organization_id: orgId,
         title: s.title,
         content_type: s.content_type as SectionContentType,
         ai_instructions: s.ai_instructions,

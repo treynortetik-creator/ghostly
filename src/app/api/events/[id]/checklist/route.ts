@@ -96,6 +96,7 @@ export const POST = withApiHandler({ permission: 'write', resource: 'events/chec
       .from('event_checklist_items')
       .insert({
         event_id: eventId,
+        organization_id: orgId,
         title: body.title.trim(),
         description: body.description?.trim() || null,
         phase: body.phase as ChecklistPhase,

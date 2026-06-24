@@ -79,6 +79,7 @@ export const POST = withIdempotency(
 
       const sectionRows = sections.map((s: Record<string, unknown>, i: number) => ({
         template_id: template.id,
+        organization_id: orgId,
         title: String(s.title).trim(),
         content_type: (s.content_type as SectionContentType) || 'text',
         ai_instructions: s.ai_instructions ? String(s.ai_instructions).trim() : null,
